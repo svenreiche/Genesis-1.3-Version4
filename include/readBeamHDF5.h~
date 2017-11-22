@@ -1,0 +1,39 @@
+
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <string>
+#include <math.h>
+#include <vector>
+
+#ifndef __GEN_READPARTICLEHDF5__
+#define __GEN_READPARTICLEHDF5__
+
+
+#include "hdf5.h"
+#include "HDF5base.h"
+#include "Particle.h"
+
+using namespace std;
+
+class ReadParticleHDF5 : public HDF5Base {
+ public:
+  ReadParticleHDF5();
+  virtual ~ReadParticleHDF5();
+
+  bool open(char *, double *, int *, bool *);
+  bool readpart(double , vector<Particle> *, double *);
+
+
+ private:
+  hid_t fid;
+  int count;
+  double s0,reflen,slen;
+  double *work;
+  int nwork;
+};
+
+
+
+#endif
+

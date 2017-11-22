@@ -1,0 +1,17 @@
+QF1: Quadrupole = { l=0.08, k1= 2.1 };
+QF2: Quadrupole = { l=0.08, k1=-2.1 };
+
+CHIC: Chicane={l=0.34, lb=0.03, ld=0.05,delay=1e-6};
+
+D1:   Drift = { l=0.355 };
+D2:   Drift = { l=0.34 };
+
+Un: Undulator = {lambdau=0.015,nwig=265, aw=0.8485};
+
+FODO: LINE = {Un,D1,QF1,CHIC,Un,D1,QF2,CHIC};
+FODOREF: LINE = {Un,D1,QF1,D2,Un,D1,QF2,D2};
+
+FEL: LINE = {FODO};
+FELREF: LINE = {6*FODOREF};
+
+

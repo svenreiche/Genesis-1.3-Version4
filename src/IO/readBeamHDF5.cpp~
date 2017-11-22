@@ -1,0 +1,122 @@
+#include "readparticleHDF5.h"
+
+ReadParticleHDF5::ReadParticleHDF5()
+{
+  isOpen=false;
+  nwork=1024;
+  work=new double [nwork];
+}
+
+ReadParticleHDF5::~ReadParticleHDF5()
+{
+  delete [] work; 
+  if (isOpen){
+    H5Fclose(fid);
+  }
+}
+
+
+bool ReadParticleHDF5::open(char * filename, double *reflen, int *nbins,bool *one4one)
+{
+
+  hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
+  H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+  fid=H5Fopen(filename,H5F_ACC_RDONLY,pid);
+  H5Pclose(pid);
+
+
+  isOpen=true;
+
+  int tmp;
+
+  readDataDouble(fid,(char *)"refposition",&s0,1);
+  readDataDouble(fid,(char *)"slicelength",reflen,1);
+  readDataDouble(fid,(char *)"slicespacing",&slen,1);
+  readDataInt(fid,(char *)"slicecount",&count,1);
+  readDataInt(fid,(char *)"beamletsize",nbins,1);
+  readDataInt(fid,(char *)"one4one",&tmp,1);
+  *one4one=true;
+  if (tmp==0){ *one4one=false;}
+  
+  return true; 
+}
+
+
+
+bool ReadParticleHDF5::readpart(double s, vector<Particle> *slice, double *current){
+
+  
+  slice->resize(0);
+  *current=0;
+
+  if(!isOpen){ return false; } // skip if partfile option is not selected
+
+  double rslice=(s-s0)/slen;
+  if (fabs(rslice-round(rslice))>1e-3){ return false; }
+  int islice=static_cast<int> (round(rslice))+1;
+
+
+  if ((islice<1)||(islice>count)){
+    return true;
+  }
+
+  // get size of data set from slice
+  char name[20];
+  sprintf(name,"slice%6.6d/gamma",islice);
+  int nsize=getDatasetSize(fid, name);
+
+
+
+  if (nsize>nwork){ // allocate extra work array to hold field
+    delete [] work;
+    nwork=nsize;
+    work=new double [nwork];
+  }
+   
+  // allocate data in the beam record
+  slice->resize(nsize);
+  Particle p;
+
+  // get current   
+  sprintf(name,"slice%6.6d/current",islice);
+  readDataDouble(fid,name,current,1);
+
+  sprintf(name,"slice%6.6d/gamma",islice);
+  readDataDouble(fid,name,work,nsize);
+  for (int i=0;i<nsize;i++){
+    slice->at(i).gamma=work[i];
+  }
+  
+  sprintf(name,"slice%6.6d/theta",islice);
+  readDataDouble(fid,name,work,nsize);
+  for (int i=0;i<nsize;i++){
+    slice->at(i).theta=work[i];
+  }
+
+  sprintf(name,"slice%6.6d/x",islice);
+  readDataDouble(fid,name,work,nsize);
+  for (int i=0;i<nsize;i++){
+    slice->at(i).x=work[i];
+  }
+
+  sprintf(name,"slice%6.6d/y",islice);
+  readDataDouble(fid,name,work,nsize);
+  for (int i=0;i<nsize;i++){
+    slice->at(i).y=work[i];
+  }
+
+  sprintf(name,"slice%6.6d/px",islice);
+  readDataDouble(fid,name,work,nsize);
+  for (int i=0;i<nsize;i++){
+    slice->at(i).px=work[i];
+  }
+
+  sprintf(name,"slice%6.6d/py",islice);
+  readDataDouble(fid,name,work,nsize);
+  for (int i=0;i<nsize;i++){
+    slice->at(i).py=work[i];
+  }
+  
+  return true;
+}
+

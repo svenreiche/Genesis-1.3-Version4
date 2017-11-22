@@ -1,0 +1,47 @@
+#ifndef __GENESIS_OUTPUT__
+#define __GENESIS_OUTPUT__
+
+#include <vector>
+#include <iostream>
+#include <string>
+#include <math.h>
+
+#include "hdf5.h"
+#include "HDF5base.h"
+#include "Particle.h"
+#include "Beam.h"
+#include "Field.h"
+#include "Undulator.h"
+
+using namespace std;
+
+extern const double vacimp;
+extern const double eev;
+
+class Output : public HDF5Base {
+ public:
+   Output();
+   virtual ~Output();
+   void open(const char *,int, vector<Field*> *, hsize_t,hsize_t,int,int);
+   void close();
+   void writePosition(int, double);
+   void writeField(int, Field *);
+   void writeGlobalBeam(Beam *, double, double, double, double);
+   void writeBeam(int,Beam *);
+ private:
+   void write(hsize_t,string,string,double *);
+   void writeSingleNode(string,string,double *,int);
+
+   hid_t fid;   
+   hsize_t s0, ds, chunksize;  // position and length within the datasets
+   
+   double *xavg, *xsig, *yavg, *ysig, *gavg, *gsig, *bavg, *bphi;
+   double *power, *intensity, *farfield, *phinf, *phiff;
+   double *pxavg, *pyavg;
+   
+   vector<double> zpos;
+     
+};
+
+
+#endif

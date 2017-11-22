@@ -1,0 +1,34 @@
+#include "Beam.h"
+#include "Field.h"
+
+
+
+Beam::~Beam(){}
+Beam::Beam(){}
+
+void Beam::init(int nsize, int nbins_in, double reflen_in, bool one4one_in )
+{  
+
+  nbins=nbins_in;
+  reflength=reflen_in;
+  one4one=one4one_in;
+
+  current.resize(nsize);
+  beam.resize(nsize);
+
+  return;
+}
+
+
+void Beam::track(double delz,Field *field, Undulator *und){
+
+  field->setStepsize(delz);
+
+  solver.track(delz*0.5,this,und,false);   // track transverse coordinates first half of integration step
+  solver.advance(delz,this,field,und);     // advance longitudinal variables
+  solver.applyR56(this,und,field->xlambda);  // apply the longitudinalphase shift due to R56 if a chicane is selected.
+  solver.track(delz*0.5,this,und,true);      // apply corrector settings and track second half for transverse coordinate
+  return;
+
+
+}

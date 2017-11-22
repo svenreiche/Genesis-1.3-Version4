@@ -1,0 +1,50 @@
+&setup
+rootname=FullChirp
+lattice=Lattice.lat
+beamline=FEL
+lambda0=1e-10
+gamma0=11357.66
+delz=0.045
+shotnoise = 1
+one4one= 1
+&end
+
+
+&profile_polynom
+label=XChirp
+c0=-50e-6
+c1=100
+&end
+
+
+&lattice
+zmatch=9.5
+&end
+
+&time
+slen = 10e-6
+sample =2.5	
+&end
+
+&field
+power=0
+dgrid=0.3e-3
+ngrid=151
+waist_size=31e-6
+&end
+
+
+
+&beam
+xcenter=@XChirp
+delgam=0.685
+ex=0.3e-6
+ey=0.3e-6
+current=6000
+&end
+
+
+&track
+output_step=10
+&end
+

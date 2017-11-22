@@ -1,0 +1,103 @@
+
+#include "writefieldHDF5.h"
+
+
+// constructor destructor
+WriteFieldHDF5::WriteFieldHDF5()
+{
+}
+
+WriteFieldHDF5::~WriteFieldHDF5()
+{
+}
+
+void WriteFieldHDF5::close()
+{
+  H5Fclose(fid);
+  delete [] work;
+  return;
+}
+
+void WriteFieldHDF5::open(string file, int rank, int count, int ngrid, double dgrid, double slen, double space, double sref)
+{
+  nwork=ngrid*ngrid;
+  work=new double [nwork];
+
+    // create the file for parallel access
+  hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
+  H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+  fid=H5Fcreate(file.c_str(),H5F_ACC_TRUNC,H5P_DEFAULT, pid); 
+  H5Pclose(pid);
+
+  int nsize=0;
+  if (rank==0) {nsize=1;}
+  double dx=2*dgrid/static_cast<double>(ngrid-1); 
+  
+  this->writeDouble1D(nsize,1,&slen,fid,"wavelength");
+  this->writeDouble1D(nsize,1,&space,fid,"slicespacing");
+  this->writeDouble1D(nsize,1,&sref,fid,"refposition");
+  this->writeDouble1D(nsize,1,&dx,fid,"gridsize");
+  this->writeInt1D(nsize,1,&count,fid,"slicecount");
+ 
+
+  for (int islice=1; islice<=count; islice++){
+       char slicename[20];
+       sprintf(slicename,"slice%6.6d",islice);
+       hid_t gid=H5Gcreate(fid,slicename,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+
+       int dataset_rank=1;
+       hsize_t dims[1] = {nwork}; // dataset size must be the same for all nodes
+       hsize_t chunkdims[1]={nwork};
+       pid=H5Pcreate(H5P_DATASET_CREATE);
+       H5Pset_chunk(pid,dataset_rank,chunkdims);
+
+       hid_t filespace = H5Screate_simple(dataset_rank,dims,NULL);
+
+       hid_t did=H5Dcreate(gid,"field-real",H5T_NATIVE_DOUBLE,filespace,H5P_DEFAULT,pid,H5P_DEFAULT);  
+       H5Dclose(did); 
+
+       did=H5Dcreate(gid,"field-imag",H5T_NATIVE_DOUBLE,filespace,H5P_DEFAULT,pid,H5P_DEFAULT);  
+       H5Dclose(did); 
+
+       H5Sclose(filespace);
+       H5Pclose(pid);
+
+       H5Gclose(gid);
+
+  }
+
+  return;
+
+}
+
+
+
+void WriteFieldHDF5::writeSlice(int islice, int reclen, complex< double > *field)
+{
+
+  //  double *data;
+
+  char slicename[20];
+  sprintf(slicename,"slice%6.6d",islice);
+
+  hid_t gid=H5Gopen(fid,slicename,H5P_DEFAULT);
+
+  //  hid_t gid=H5Gcreate(fid,slicename,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+
+
+  for (int i=0;i<nwork;i++){
+    work[i]  =field[i].real();
+  }
+  this->writeDouble1DExist(nwork,work,gid,"field-real");
+
+  for (int i=0;i<nwork;i++){
+    work[i]=field[i].imag();
+  }
+  this->writeDouble1DExist(nwork,work,gid,"field-imag");
+
+  H5Gclose(gid);
+
+  return;
+}
+
+
