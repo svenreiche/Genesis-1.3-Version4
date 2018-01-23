@@ -1,5 +1,5 @@
 #include "Sorting.h"
-#include "MPEProfiling.h"
+
 
 Sorting::Sorting()
 {
@@ -71,7 +71,7 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
   double invslen=1./slen;
 
   // note that global sorting comes first. Therefore all particles are staying in the same domain 
-  mpe.logComm(false,"Local Sorting");
+
   for (int a=0;a<recdat->size();a++){  //Run over the slices 
     for (int b=0;b<recdat->at(a).size();b++) {  //Loop over the partiles in the slice
 
@@ -102,7 +102,7 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
       }
     }  
   }
-  mpe.logComm(true,"Local Sorting");
+
 
   return;
 }
@@ -134,7 +134,6 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
     if (rank==0) {cout << "Sorting: Transferring " << nreduce/6 << " particles to other nodes at iteration " << size-maxiter << endl;}
 
 
-     mpe.logComm(false,"Global Sorting");
 
   // step one - pairing ranks (0,1) (2,3) etc, the last rank, if uneven last element should clear its pushforward.
      bool transfer = true;
@@ -167,8 +166,7 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
        }
        pushbackward.clear();
      }
-     mpe.logComm(true,"Global Sorting");
-
+ 
      maxiter--;
      nforward=pushforward.size();
      nbackward=pushbackward.size();

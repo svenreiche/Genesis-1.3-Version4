@@ -1,6 +1,5 @@
 #include "Track.h"
 #include "Gencore.h"
-#include "MPEProfiling.h"
 
 Track::Track()
 {
@@ -67,7 +66,6 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
 
 
   if (rank==0){
-    mpe.logIO(false,false,"Create OutputFile");
 
     hid_t fid=H5Fcreate(file.c_str(),H5F_ACC_TRUNC,H5P_DEFAULT, H5P_DEFAULT); 
 
@@ -77,7 +75,6 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
     setup->writeGlobal(fid,zstop,output_step,dumpFieldStep,dumpBeamStep,sortStep,s0,slen,sample,isTime,isScan);
 
     H5Fclose(fid);  
-    mpe.logIO(true,false,"Create OutputFile");
 
   }
 
@@ -87,6 +84,8 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
 
   Gencore core;
   core.run(file.c_str(),beam,field);
+
+  if  (rank==0) { cout << "End of Track" << endl;}
  
   return true;
 

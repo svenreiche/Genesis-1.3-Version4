@@ -1,5 +1,4 @@
 #include "LoadField.h"
-#include "MPEProfiling.h"
 
 LoadField::LoadField()
 {
@@ -104,7 +103,6 @@ bool LoadField::init(int rank, int size, map<string,string> *arg, vector<Field *
   // field points now to the record which is filled
 
 
-  mpe.logLoading(false,"Generatring Field Distribution");
   if (rank==0){ 
     if (add) { cout << "Adding "; } else  { cout << "Generating "; }
     cout << "input radiation field for HARM = " << harm <<  " ..." << endl; 
@@ -157,9 +155,6 @@ bool LoadField::init(int rank, int size, map<string,string> *arg, vector<Field *
   // if (idx<0){fieldin->push_back(field);}
 
   
-  mpe.logLoading(true,"Generatring Field Distribution");
-
-  mpe.logEvent("End: LoadField::init");
 
   return true;
 

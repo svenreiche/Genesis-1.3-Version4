@@ -1,6 +1,5 @@
 #include "ImportBeam.h"
 #include "readBeamHDF5.h"
-#include "MPEProfiling.h"
 
 
 ImportBeam::ImportBeam()
@@ -73,7 +72,6 @@ bool ImportBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, S
   beam->init(time->getNodeNSlice(),nbins,lambda,sample*lambda,s[0],one4one);
 
 
-  mpe.logLoading(false,"Importing Particle Distribution");
 
   for (int j=0; j<time->getNodeNSlice(); j++){
     int i=j+time->getNodeOffset();
@@ -81,10 +79,6 @@ bool ImportBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, S
     import.readSlice(s[i],&beam->beam[j],&beam->current[j]);
   }
   import.close();
-
-  mpe.logLoading(true,"Importing Particle Distribution");
-
-  mpe.logEvent("End: ImportBeam::init");
 
   return true;
 

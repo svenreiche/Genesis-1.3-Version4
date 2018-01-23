@@ -2,7 +2,13 @@
 #include "Control.h"
 #include "writeFieldHDF5.h"
 #include "writeBeamHDF5.h"
-#include "MPEProfiling.h"
+
+
+#ifdef VTRACE
+#include "vt_user.h"
+#endif
+
+
 
 Control::Control()
 {
@@ -59,7 +65,6 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
   root=sroot.str();
   root.resize(root.size()-7);  // remove the extension ".h5"
 
-  mpe.logIO(false,true,"Initialize Core Run");  
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
   H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
   hid_t fid=H5Fopen(file,H5F_ACC_RDONLY,pid);
@@ -94,11 +99,9 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
   
   H5Fclose(fid);
 
-  mpe.logIO(true,true,"Initialize Core Run");  
 
  
 
-  mpe.logComm(false,"Broadcast Run Size");  
 
   MPI::COMM_WORLD.Barrier(); // synchronize all nodes till root has finish writing the output file
 
@@ -110,7 +113,6 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
   MPI::COMM_WORLD.Reduce(&nslice,&ntotal,1,MPI::INT,MPI::SUM,0);
   MPI::COMM_WORLD.Bcast(&ntotal,1,MPI::INT,0);
 
-  mpe.logComm(true,"Broadcast Run Size");  
 
   //  cout <<"Rank: " << rank << " Slices: " << nslice << " Offset: " << noffset << endl;  
 
@@ -128,7 +130,6 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
   
 
   if (rank==0) { cout << "Opening Output File..."  << endl; }
-  mpe.logIO(false,true,"Allocate Space in Output File"); 
 
   out->open(file,noffset,nslice);
   beam->initDiagnostics(und->outlength());
@@ -138,9 +139,6 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
       field->at(i)->initDiagnostics(und->outlength());
       field->at(i)->diagnostics(true);  // initial values
   }	
-  mpe.logIO(true,true,"Allocate Space in Output File");  
-
-  mpe.logEvent("End: Control::init");
 
   return true;  
 }
@@ -149,10 +147,14 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
 
 void Control::applySlippage(double slippage, Field *field)
 {
+
+#ifdef VTRACE
+  VT_TRACER("Slippage");
+#endif  
+
   if (timerun==false) { return; }
 
-  mpe.logComm(false,"Apply Slippage");  
-
+ 
   // update accumulated slippage
   accushift+=slippage;
 
@@ -242,6 +244,5 @@ void Control::applySlippage(double slippage, Field *field)
 	field->first=(last+1) % field->field.size();
       }
   }
-  mpe.logComm(true,"Apply Slippage");  
 
 }

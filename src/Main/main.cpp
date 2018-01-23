@@ -41,7 +41,6 @@
 #include "writeBeamHDF5.h"
 #include "writeFieldHDF5.h"
 
-#include "MPEProfiling.h"
 
 
 
@@ -77,7 +76,6 @@ int main (int argc, char *argv[]) {
           cout << "MPI-Comm Size: " << size << " nodes" << endl << endl;
         }
 
-        mpe.init(rank);    
 
         //---------------------------------------------------------
         // Instance of beam and field class to carry the distribution
@@ -272,7 +270,6 @@ int main (int argc, char *argv[]) {
 
         }
 
-        mpe.finilize();
 
         MPI::Finalize(); // node turned off
 

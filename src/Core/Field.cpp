@@ -1,6 +1,9 @@
 #include "Field.h"
 #include "genesis_fortran_common.h"
 
+#ifdef VTRACE
+#include "vt_user.h"
+#endif
 
 
 Field::~Field(){}
@@ -93,6 +96,11 @@ bool Field::getLLGridpoint(double x, double y, double *wx, double *wy, int *idx)
 void Field::track(double delz, Beam *beam, Undulator *und)
 {
   
+#ifdef VTRACE
+  VT_TRACER("Field_Tracking");
+#endif  
+
+
   solver.getDiag(delz,dgrid,xks,ngrid);  // check whether step size has changed and recalculate aux arrays
   solver.advance(delz,this,beam,und);
   return;

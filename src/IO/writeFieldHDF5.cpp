@@ -1,6 +1,6 @@
 
 #include "writeFieldHDF5.h"
-#include "MPEProfiling.h"
+
 
 // constructor destructor
 WriteFieldHDF5::WriteFieldHDF5()
@@ -24,7 +24,6 @@ void WriteFieldHDF5::write(string fileroot, vector<Field *> *field){
   MPI::COMM_WORLD.Reduce(&nslice,&ntotal,1,MPI::INT,MPI::SUM,0);
 
 
-  mpe.logIO(false,true,"Write Field Dump to File");  
 
   for (int i=0; i<field->size();i++){
     int harm=field->at(i)->harm;
@@ -37,7 +36,7 @@ void WriteFieldHDF5::write(string fileroot, vector<Field *> *field){
     }
     this->writeMain(file,field->at(i),ntotal);
   }
-  mpe.logIO(true,true,"Write Field Dump to File");  
+
   return;
 }
 

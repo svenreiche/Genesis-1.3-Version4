@@ -5,7 +5,6 @@ Output::~Output(){}
 
 void Output::close(){
 
-
   H5Fclose(fid);
 
   
@@ -26,7 +25,8 @@ void Output::open(const char * file, int s0_in, int ds_in)
   // create the file for parallel access
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
   H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
-  fid=H5Fopen(file,H5F_ACC_RDWR, pid); 
+  //  fid=H5Fopen(file,H5F_ACC_RDWR, pid); 
+  fid=H5Fcreate(file,H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
   H5Pclose(pid);
 
 }
@@ -36,6 +36,9 @@ void Output::open(const char * file, int s0_in, int ds_in)
 void Output::writeBeamBuffer(Beam *beam)
 {
 
+  MPI::COMM_WORLD.Barrier(); // synchronize cores
+
+  return;
 
   // step 1 - create the group
   hid_t gid;
@@ -63,11 +66,10 @@ void Output::writeBeamBuffer(Beam *beam)
   // step 3 - close group and done
 
   H5Gclose(gid);
-
   // step 4 - write z-posiiton for plotting
-  gid=H5Gopen(fid,"Global",H5P_DEFAULT);
-  this->writeSingleNode(gid,"zplot",&beam->zpos);
-  H5Gclose(gid);
+  //  gid=H5Gopen(fid,"Global",H5P_DEFAULT);
+  //  this->writeSingleNode(gid,"zplot",&beam->zpos);
+  // H5Gclose(gid);
 
   return;
 }
@@ -76,6 +78,7 @@ void Output::writeBeamBuffer(Beam *beam)
 void Output::writeFieldBuffer(Field *field)
 {
 
+  MPI::COMM_WORLD.Barrier();
 
   // step 1 - create the group
   hid_t gid;
@@ -123,8 +126,6 @@ void Output::writeBuffer(hid_t gid, string dataset,vector<double> *data){
   hid_t filespace=H5Screate_simple(2,fblock,NULL);
   hid_t did=H5Dcreate(gid,dataset.c_str(),H5T_NATIVE_DOUBLE,filespace,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);   
   H5Sclose(filespace);
-
-
 
   // step 2 - file space
   hsize_t count[2]={dz,ds};

@@ -1,6 +1,6 @@
 
 #include "writeBeamHDF5.h"
-#include "MPEProfiling.h"
+
 
 // constructor destructor
 WriteBeamHDF5::WriteBeamHDF5()
@@ -26,7 +26,6 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam){
 
   MPI::COMM_WORLD.Reduce(&nslice,&ntotal,1,MPI::INT,MPI::SUM,0);
 
-  mpe.logIO(false,true,"Write Beam Dump to File");  
 
 
   char filename[100];
@@ -56,7 +55,6 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam){
     }
   }
 
-  mpe.logIO(true,true,"Write Beam Dump to File");  
 
   return;
 }

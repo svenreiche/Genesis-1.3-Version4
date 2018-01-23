@@ -1,5 +1,4 @@
 #include "LoadBeam.h"
-#include "MPEProfiling.h"
 
 LoadBeam::LoadBeam()
 {
@@ -100,7 +99,6 @@ bool LoadBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, Set
 
 
   if (rank==0){cout << "Generating input particle distribution..." << endl; }
-  mpe.logLoading(false,"Generatring Particle Distribution");
 
 
   double theta0=4.*asin(1.);
@@ -195,9 +193,6 @@ bool LoadBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, Set
   delete [] beamslice;  
 
 
-  mpe.logLoading(true,"Generatring Particle Distribution");
-
-  mpe.logEvent("End: LoadBeam::init");
 
  
   return true;

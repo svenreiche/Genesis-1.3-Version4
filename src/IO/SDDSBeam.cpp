@@ -1,5 +1,5 @@
 #include "SDDSBeam.h"
-#include "MPEProfiling.h"
+
 
 SDDSBeam::SDDSBeam()
 {
@@ -120,7 +120,6 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
 
   int status = 0;
   if (sdds){
-    mpe.logCalc(false,true,"System call SDDS2HDF5");
     if (rank==0) { cout << "Converting SDDS distribution file " << file << " into HDF5 file... " << endl;}
     string command="sdds2hdf-dist.sh " + file;
     if (rank==0){
@@ -128,7 +127,6 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
       if (status!=0){ cout << "*** Error: SDDS Distribution file " << file << " does not exist" << endl;} 
     }
 
-    mpe.logCalc(true,true,"System call SDDS2HDF5");
   }
 
   MPI::COMM_WORLD.Bcast(&status,1,MPI::INT,0); // this statement keeps also all nodes on hold till the converison has been done
@@ -139,7 +137,7 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   if (rank==0) { cout << "Importing converted distribution file... " << endl;}
 
 
-  mpe.logIO(false,true,"Read External Distribution"); 
+
   string anafile=file;
   string h5file=file;
   if (sdds){  
@@ -185,7 +183,6 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
 
   H5Fclose(fid);
 
-  mpe.logIO(true,true,"Read External Distribution"); 
 
 
   if (rank==0) { cout << "Analysing external distribution... " << endl;}
@@ -322,7 +319,6 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
 
   // now each node has all the particles, which is needed for the phase space reconstruction
   if (rank==0) {cout << "Generating internal particle distribution..." << endl; }
-  mpe.logLoading(false,"External Distribution");
 
 
 
@@ -402,14 +398,12 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
    
   }
 
-  mpe.logLoading(true,"External Distribution");
 
   dist[0].clear();
   delete ran;
   delete [] work;
   
   
-  mpe.logEvent("End: SDDSBeam::init");
 
 
   return true;

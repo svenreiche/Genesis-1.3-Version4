@@ -1,6 +1,5 @@
 #include "ImportField.h"
 #include "readFieldHDF5.h"
-#include "MPEProfiling.h"
 
 
 ImportField::ImportField()
@@ -75,7 +74,6 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
   beam->init(time->getNodeNSlice(),nbins,lambda,sample*lambda,s[0],one4one);
 
 
-  mpe.logLoading(false,"Importing Particle Distribution");
 
   for (int j=0; j<time->getNodeNSlice(); j++){
     int i=j+time->getNodeOffset();
@@ -84,9 +82,7 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
   }
   import.close();
   
-  mpe.logLoading(true,"Importing Particle Distribution");
   */ 
-  mpe.logEvent("End: ImportField::init");
 
   return true;
 
