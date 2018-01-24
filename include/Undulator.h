@@ -17,7 +17,7 @@ class Undulator: public HDF5Base{
    Undulator();
    virtual ~Undulator();
 
-   bool init(hid_t);
+   //   bool init(hid_t);
 
    bool advance(int);
    bool inUndulator();
@@ -30,11 +30,16 @@ class Undulator: public HDF5Base{
    int getMarker();
 
    void updateMarker(int, int, int, double);
+   void updateOutput(double,int);
+
+
+
    void getUndulatorParameters(double *, double *, double *, double *, double *, double *);
    void getQuadrupoleParameters(double *, double *, double *);
    void getCorrectorParameters(double *, double *);
    void getChicaneParameters(double *, double *, double *, double *);
    double getGammaRef();
+   void setGammaRef(double);
 
    double getaw();
    double getku();
@@ -45,12 +50,16 @@ class Undulator: public HDF5Base{
 
    int getStep();
 
- private: 
+
    vector<double> aw,ax,ay,ku,kx,ky,cx,cy,gradx,grady;
    vector<double> qf,qx,qy,z,dz,slip,phaseshift; 
    vector<double> chic_angle,chic_lb,chic_ld,chic_lt; 
    vector<double> paw,pkx,pky,pgradx,pgrady,pphase; // perpendicular undulator parameters
    vector<int> helical,marker;
+
+
+ private: 
+
    vector<bool> out;
 
    double gammaref,zstop;  
@@ -108,6 +117,11 @@ inline double Undulator::autophase(){
 
 inline double Undulator::getGammaRef(){
   return gammaref;
+}
+
+inline void Undulator::setGammaRef(double gamma_in){
+  gammaref=gamma_in;
+  return;
 }
 
 

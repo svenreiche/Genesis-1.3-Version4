@@ -8,20 +8,25 @@
 #include <map>
 
 
-#include "HDF5base.h"
+//#include "HDF5base.h"
+
 #include "LatticeParser.h"
 #include "Optics.h"
 #include "AlterLattice.h"
+#include "Undulator.h"
 
 using namespace std;
 
 class AlterLattice;
 
-class Lattice : public HDF5Base{
+class Lattice{
  public:
    Lattice();
    virtual ~Lattice();
-   bool writeLattice(hid_t,double, double, double,AlterLattice *);
+   bool generateLattice(double, double, double,AlterLattice *, Undulator *);
+
+   //   bool writeLattice(hid_t,double, double, double,AlterLattice *);
+
    bool parse(string,string,int);
    void getMatchedOptics(double *, double *, double *, double *);
    void match(int, double, double);

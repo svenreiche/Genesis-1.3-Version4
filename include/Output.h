@@ -22,10 +22,12 @@ class Output : public HDF5Base {
  public:
    Output();
    virtual ~Output();
-   void open(const char *,int,int);
+   void open(string,int,int);
    void close();
    void writeFieldBuffer(Field *);
    void writeBeamBuffer(Beam *);
+   void writeLattice(Beam *, Undulator *);
+   void writeGlobal(double,double,double,double,bool,bool,bool);
 
  private:
    void write(hsize_t,string,string,double *);

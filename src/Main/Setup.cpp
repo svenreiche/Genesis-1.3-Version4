@@ -72,6 +72,8 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat)
 
 }
 
+
+/*
 bool Setup::writeGlobal(hid_t fid, double zstop, int nout, int nfldout, int nparout, int nsort, double s0, double slen, double sample,bool time, bool scan)
 {
   
@@ -108,7 +110,7 @@ bool Setup::writeGlobal(hid_t fid, double zstop, int nout, int nfldout, int npar
   return true;
 
 }
-
+*/
 
 
 /*

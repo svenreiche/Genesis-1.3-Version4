@@ -5,13 +5,68 @@ Undulator::~Undulator(){}
 Undulator::Undulator()
 {
   istepz=-1;
+  zstop=1e9;
 }
 
+
+void Undulator::updateOutput(double zstop_in,int nzout)
+{
+
+
+// calculate the size of the output record
+
+  zstop=zstop_in;
+
+
+  istepz=-1;
+  nstepz=aw.size();
+  nout=1;
+  out.resize(nstepz+1);
+  out[0]=true;  // first is always output
+  for (int i=1;i<(nstepz+1);i++){   
+    out[i]=false;
+    if (((i % nzout)==0)&&(z[i-1]<zstop)){
+      out[i]=true;
+      nout++;
+    } 
+  }
+  return;
+}
+
+
+
+void Undulator::updateMarker(int nfld, int npar, int nsort, double zstop)
+{
+  for (int i=0; i<marker.size();i++){
+    if (nfld > 0){  // field dump
+     if ((i % nfld) == 0) {
+      marker[i]|=1;
+     }
+    }
+    if (npar > 0){    // particle dump
+     if ((i % npar) == 0) {
+      marker[i]|=2;
+     }
+    }
+    if (nsort > 0){    // sorting
+     if ((i % nsort) == 0) {
+      marker[i]|=4;
+     }
+    }
+    if (z[i]>zstop) {  // stop calculation
+      marker[i]|=8;
+    }
+  }  
+  return;
+} 
+
+
+/*
 
 bool Undulator::init(hid_t fid)
 {
 
-  int nzout=1; 
+  nzout=1; 
   zstop=1e9;
 
   readDataDouble(fid,(char *)"/Global/gamma0",&gammaref,1);
@@ -116,32 +171,7 @@ bool Undulator::init(hid_t fid)
   return true;
 
 }
-
-
-void Undulator::updateMarker(int nfld, int npar, int nsort, double zstop)
-{
-  for (int i=0; i<marker.size();i++){
-    if (nfld > 0){  // field dump
-     if ((i % nfld) == 0) {
-      marker[i]|=1;
-     }
-    }
-    if (npar > 0){    // particle dump
-     if ((i % npar) == 0) {
-      marker[i]|=2;
-     }
-    }
-    if (nsort > 0){    // sorting
-     if ((i % nsort) == 0) {
-      marker[i]|=4;
-     }
-    }
-    if (z[i]>zstop) {  // stop calculation
-      marker[i]|=8;
-    }
-  }  
-  return;
-} 
+*/
 
 
 bool Undulator::advance(int rank)

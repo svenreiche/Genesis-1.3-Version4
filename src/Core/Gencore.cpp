@@ -5,7 +5,7 @@
 #endif
 
 
-int Gencore::run(const char *file, Beam *beam, vector<Field*> *field)
+int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan)
 {
 
 
@@ -30,10 +30,8 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field)
 	// init beam, field and undulator class
 
         Control   *control=new Control;
-        Undulator *und=new Undulator;
-        Output    *out=new Output;
 
-	control->init(rank,size,file,beam,field,und,out); 
+	control->init(rank,size,file,beam,field,und,isTime,isScan); 
 
 
         //------------------------------------------
@@ -93,24 +91,19 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field)
 
           
         }
-       
      
         //---------------------------
         // end and clean-up 
 
-	for (int i=0; i<field->size();i++){
-	  //	    out->writeFieldBuffer(field->at(i));
-        }
-  	// out->writeBeamBuffer(beam);
 
 	if (rank==0){
-	  cout << "Closing Output File." << endl;
+	  cout << "Writing Output File..." << endl;
 	}
 
-      	out->close();
+	control->output(beam,field,und);
 
-        delete und;
-        delete out; 
+
+
 	delete control;
       
         if (rank==0){

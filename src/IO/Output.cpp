@@ -1,9 +1,33 @@
 #include "Output.h"
+#include <stdlib.h> 
 
-Output::Output(){}
+Output::Output(){
+  fid=-1;
+}
+
 Output::~Output(){}
 
 void Output::close(){
+
+  // output of unclosed elements
+
+  
+   int norphans = H5Fget_obj_count(fid, H5F_OBJ_ALL);
+   if (norphans > 1) { /* expect 1 for the file we have not closed */
+       int i;
+       H5O_info_t info;
+       char name[64];
+       hid_t *objects = (hid_t *) calloc(norphans, sizeof(hid_t));
+       H5Fget_obj_ids(fid, H5F_OBJ_ALL, -1, objects);
+       for (i=0; i<norphans; i++) {
+           H5Oget_info(objects[i], &info);
+           H5Iget_name(objects[i], name, 64);
+	   cout << "Slice " <<s0/ds << " : " << i+1 << " of " << norphans << " things still open: " << objects[i] << " with name " << name << " of type " << info.type << endl; 
+	   //           printf("%d of %zd things still open: %d with name %s of type %d", i, norphans, objects[i], name, info.type);
+       }
+   }
+
+
 
   H5Fclose(fid);
 
@@ -11,7 +35,7 @@ void Output::close(){
 }
 
 
-void Output::open(const char * file, int s0_in, int ds_in)
+void Output::open(string file, int s0_in, int ds_in)
 {
   // ns = total number of slices
   // nz = total number of integration steps
@@ -25,20 +49,78 @@ void Output::open(const char * file, int s0_in, int ds_in)
   // create the file for parallel access
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
   H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
-  //  fid=H5Fopen(file,H5F_ACC_RDWR, pid); 
-  fid=H5Fcreate(file,H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
+  fid=H5Fcreate(file.c_str(),H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
   H5Pclose(pid);
 
 }
 
 
+void Output::writeGlobal(double gamma, double lambda, double sample, double slen, bool one4one, bool time, bool scan)
+{
+  vector<double> tmp;
+  tmp.resize(1);
+  hid_t gid;
+
+  gid=H5Gcreate(fid,"Global",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+
+  tmp[0]=gamma;
+  this->writeSingleNode(gid,"gamma0",&tmp);
+  tmp[0]=lambda;
+  this->writeSingleNode(gid,"lambdaref",&tmp);
+  tmp[0]=sample;
+  this->writeSingleNode(gid,"sample",&tmp);
+  tmp[0]=slen;
+  this->writeSingleNode(gid,"slen",&tmp);
+  tmp[0] = one4one ? 1. : 0 ;
+  this->writeSingleNode(gid,"one4one",&tmp);
+  tmp[0] = time ? 1. : 0 ;
+  this->writeSingleNode(gid,"time",&tmp);
+  tmp[0] = scan ? 1. : 0 ;
+  this->writeSingleNode(gid,"scan",&tmp);
+
+  H5Gclose(gid);
+
+}
+
+
+
+ 
+void Output::writeLattice(Beam * beam,Undulator *und)
+{
+  hid_t gid;
+  gid=H5Gcreate(fid,"Lattice",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+
+  this->writeSingleNode(gid,"zplot",&beam->zpos);
+  this->writeSingleNode(gid,"z",&und->z);
+  this->writeSingleNode(gid,"dz",&und->dz);
+  this->writeSingleNode(gid,"aw",&und->aw);
+  this->writeSingleNode(gid,"ax",&und->ax);
+  this->writeSingleNode(gid,"ay",&und->ay);
+  this->writeSingleNode(gid,"ku",&und->ku);
+  this->writeSingleNode(gid,"kx",&und->kx);
+  this->writeSingleNode(gid,"ky",&und->ky);
+  this->writeSingleNode(gid,"qf",&und->qf);
+  this->writeSingleNode(gid,"qx",&und->qx);
+  this->writeSingleNode(gid,"qy",&und->qy);
+  this->writeSingleNode(gid,"cx",&und->cx);
+  this->writeSingleNode(gid,"cy",&und->cy);
+  this->writeSingleNode(gid,"gradx",&und->gradx);
+  this->writeSingleNode(gid,"grady",&und->grady);
+  this->writeSingleNode(gid,"slippage",&und->slip);
+  this->writeSingleNode(gid,"phaseshift",&und->phaseshift);
+  this->writeSingleNode(gid,"chic_angle",&und->chic_angle);
+  this->writeSingleNode(gid,"chic_lb",&und->chic_lb);
+  this->writeSingleNode(gid,"chic_ld",&und->chic_ld);
+  this->writeSingleNode(gid,"chic_lt",&und->chic_lt);
+
+  H5Gclose(gid);
+
+
+}
 
 void Output::writeBeamBuffer(Beam *beam)
 {
 
-  MPI::COMM_WORLD.Barrier(); // synchronize cores
-
-  return;
 
   // step 1 - create the group
   hid_t gid;
@@ -66,10 +148,6 @@ void Output::writeBeamBuffer(Beam *beam)
   // step 3 - close group and done
 
   H5Gclose(gid);
-  // step 4 - write z-posiiton for plotting
-  //  gid=H5Gopen(fid,"Global",H5P_DEFAULT);
-  //  this->writeSingleNode(gid,"zplot",&beam->zpos);
-  // H5Gclose(gid);
 
   return;
 }
@@ -78,7 +156,6 @@ void Output::writeBeamBuffer(Beam *beam)
 void Output::writeFieldBuffer(Field *field)
 {
 
-  MPI::COMM_WORLD.Barrier();
 
   // step 1 - create the group
   hid_t gid;
@@ -122,6 +199,7 @@ void Output::writeBuffer(hid_t gid, string dataset,vector<double> *data){
 
 
   hsize_t dz=data->size()/ds;
+
   hsize_t fblock[2]={dz,size*ds};
   hid_t filespace=H5Screate_simple(2,fblock,NULL);
   hid_t did=H5Dcreate(gid,dataset.c_str(),H5T_NATIVE_DOUBLE,filespace,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);   
@@ -146,10 +224,10 @@ void Output::writeBuffer(hid_t gid, string dataset,vector<double> *data){
 
   
   // close all HDF5 stuff 
-  H5Dclose(did);
   H5Sclose(memspace);
   H5Sclose(filespace);
   H5Pclose(pid);
+  H5Dclose(did);
 
 }
 
@@ -170,40 +248,7 @@ void Output::writeSingleNode(hid_t gid, string dataset,vector<double> *data){
     H5Dwrite(did,H5T_NATIVE_DOUBLE,memspace,filespace,H5P_DEFAULT,&data->at(0));
 
   }
-  /*
-  hsize_t block[1],count[1],offset[1],stride[1];
-  int dataset_rank=1;
-  if (s0==0) {
-    block[0] =nd; // chunck size
-    count[0] = 1;     // repeatition of block 
-    offset[0]= 0;   // offset of record entry
-    stride[0]= 1;
-  } else{
-    block[0] = 0; // chunck size
-    count[0] = 0;     // repeatition of block 
-    offset[0]= 0;   // offset of record entry
-    stride[0]= 1;
-  }
-
-  //  cout << offset[1] << " " << stride[1] << " "  << count[1] << " " << block[1] << endl; 
-
-  
-  // set up memory and file space - filespac eneeds to by a hyperslab
-  hid_t memspace=H5Screate_simple(dataset_rank,block,NULL);
-  filespace=H5Dget_space(did);
-
  
-  H5Sselect_hyperslab(filespace,H5S_SELECT_SET,offset,stride,count,block);
-  //H5Sselect_hyperslab(filespace,H5S_SELECT_SET,offset,NULL,count,NULL);
-  
-  // set up transfer and write
-  hid_t pid =  H5Pcreate(H5P_DATASET_XFER);
-  H5Pset_dxpl_mpio(pid,H5FD_MPIO_INDEPENDENT);    
-  H5Dwrite(did,H5T_NATIVE_DOUBLE,memspace,filespace,pid,data);
- 
-  // close all HDF5 stuff except for the file id fid
-  H5Pclose(pid);
-  */
   H5Sclose(memspace);
   H5Sclose(filespace);
   H5Dclose(did);

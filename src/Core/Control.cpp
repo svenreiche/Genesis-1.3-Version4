@@ -53,68 +53,66 @@ bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und)
 }
 
 
+void Control::output(Beam *beam, vector<Field*> *field, Undulator *und)
+{
 
 
-bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<Field*> *field, Undulator *und, Output *out)
+  
+  Output *out=new Output;
+
+  string file=root.append(".out.h5");
+  out->open(file,noffset,nslice);
+  
+  out->writeGlobal(und->getGammaRef(),reflen,sample,slen,one4one,timerun,scanrun);
+  out->writeLattice(beam,und);
+
+
+
+  for (int i=0; i<field->size();i++){
+       out->writeFieldBuffer(field->at(i));
+  }
+
+  out->writeBeamBuffer(beam);
+  out->close();
+ 
+  delete out;
+  return;
+
+
+
+}
+
+
+bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<Field*> *field, Undulator *und, bool inTime, bool inScan)
 {
 
   rank=inrank;
   size=insize;
   accushift=0;
+
   stringstream sroot(file);
   root=sroot.str();
   root.resize(root.size()-7);  // remove the extension ".h5"
 
-  hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
-  H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
-  hid_t fid=H5Fopen(file,H5F_ACC_RDONLY,pid);
-  H5Pclose(pid);
+  one4one=beam->one4one;
+  reflen=beam->reflength;
+  sample=beam->slicelength/reflen;
 
-
-  int nzfld,nzpar,nsort;
-  double zstop;
-
-  readDataDouble(fid,(char *)"/Global/lambdaref",&reflen,1);
-  readDataDouble(fid,(char *)"/Global/sample",&sample,1);
-  readDataDouble(fid,(char *)"/Global/slen",&slen,1);
-  readDataDouble(fid,(char *)"/Global/sref",&sref,1);
-  readDataInt(fid, (char *)"/Global/nzout",&nzout,1);
-  readDataInt(fid, (char *)"/Global/nzfld",&nzfld,1);
-  readDataInt(fid, (char *)"/Global/nzpar",&nzpar,1);
-  readDataInt(fid, (char *)"/Global/nsort",&nzpar,1);
-  readDataDouble(fid,(char *)"/Global/zstop",&zstop,1);
+  timerun=inTime;
+  scanrun=inScan;
  
-  int tmp;
-  readDataInt(fid, (char *)"/Global/one4one",&tmp,1);
-  one4one=!(tmp==0);
-  readDataInt(fid, (char *)"/Global/time",&tmp,1);
-  timerun=!(tmp==0);
-  readDataInt(fid, (char *)"/Global/scan",&tmp,1);
-  scanrun=!(tmp==0);
-
  
 
-  und->init(fid);  // read lattice from file
-  und->updateMarker(nzfld,nzpar,nsort,zstop);   // include output from the &track namelist  
-  
-  H5Fclose(fid);
-
-
- 
-
-
-  MPI::COMM_WORLD.Barrier(); // synchronize all nodes till root has finish writing the output file
+  // cross check simulation size
 
   nslice=beam->beam.size();
-  MPI::COMM_WORLD.Bcast(&nslice,1,MPI::INT,0);
   noffset=rank*nslice;
-  nslice=beam->beam.size();
+  slen=ntotal*sample*reflen;
 
   MPI::COMM_WORLD.Reduce(&nslice,&ntotal,1,MPI::INT,MPI::SUM,0);
   MPI::COMM_WORLD.Bcast(&ntotal,1,MPI::INT,0);
 
 
-  //  cout <<"Rank: " << rank << " Slices: " << nslice << " Offset: " << noffset << endl;  
 
   if (rank==0){
     if(scanrun) { 
@@ -129,9 +127,11 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
   }
   
 
-  if (rank==0) { cout << "Opening Output File..."  << endl; }
 
-  out->open(file,noffset,nslice);
+  // initial diagnostic
+
+  if (rank==0) { cout << "Initial analysis of electron beam and radiation field..."  << endl; }
+
   beam->initDiagnostics(und->outlength());
   beam->diagnostics(true,0);
   beam->diagnosticsStart();

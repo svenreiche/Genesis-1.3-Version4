@@ -5,9 +5,9 @@ Track::Track()
 {
   zstop=1e9;
   output_step=1;
+  sort_step=0;
   dumpFieldStep=0;
   dumpBeamStep=0;
-  sortStep=0;
 }
 
 Track::~Track(){}
@@ -45,10 +45,10 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   if (arg->find("zstop")!=end)  {zstop= atof(arg->at("zstop").c_str());  arg->erase(arg->find("zstop"));}
   if (arg->find("s0")!=end)     {s0= atof(arg->at("s0").c_str());  arg->erase(arg->find("s0"));}
   if (arg->find("slen")!=end)   {slen= atof(arg->at("slen").c_str());  arg->erase(arg->find("slen"));}
-  if (arg->find("output_step")!=end)   {output_step= atof(arg->at("output_step").c_str());  arg->erase(arg->find("output_step"));}
-  if (arg->find("field_dump_step")!=end)  {dumpFieldStep= atof(arg->at("field_dump_step").c_str()); arg->erase(arg->find("field_dump_step"));}
-  if (arg->find("beam_dump_step")!=end)   {dumpBeamStep = atof(arg->at("beam_dump_step").c_str());  arg->erase(arg->find("beam_dump_step"));}
-  if (arg->find("sort_step")!=end)   {output_step= atof(arg->at("sort_step").c_str());  arg->erase(arg->find("sort_step"));}
+  if (arg->find("output_step")!=end)   {output_step= atoi(arg->at("output_step").c_str());  arg->erase(arg->find("output_step"));}
+  if (arg->find("field_dump_step")!=end)  {dumpFieldStep= atoi(arg->at("field_dump_step").c_str()); arg->erase(arg->find("field_dump_step"));}
+  if (arg->find("beam_dump_step")!=end)   {dumpBeamStep = atoi(arg->at("beam_dump_step").c_str());  arg->erase(arg->find("beam_dump_step"));}
+  if (arg->find("sort_step")!=end)   {sort_step= atoi(arg->at("sort_step").c_str());  arg->erase(arg->find("sort_step"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &track" << endl; this->usage();}
@@ -63,8 +63,8 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   file.append(".out.h5");
 
 
-
-
+  /*
+ 
   if (rank==0){
 
     hid_t fid=H5Fcreate(file.c_str(),H5F_ACC_TRUNC,H5P_DEFAULT, H5P_DEFAULT); 
@@ -72,19 +72,30 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
 
 
     lat->writeLattice(fid,setup->getStepLength(),setup->getReferenceLength(),setup->getReferenceEnergy(),alt);
-    setup->writeGlobal(fid,zstop,output_step,dumpFieldStep,dumpBeamStep,sortStep,s0,slen,sample,isTime,isScan);
+    setup->writeGlobal(fid,zstop,output_step,dumpFieldStep,dumpBeamStep,sort_step,s0,slen,sample,isTime,isScan);
 
     H5Fclose(fid);  
 
   }
-
+ 
   MPI::COMM_WORLD.Barrier(); // synchronize all nodes till root has finish writing the output file
+  */
+
+  Undulator *und = new Undulator;
+
+  lat->generateLattice(setup->getStepLength(),setup->getReferenceLength(),setup->getReferenceEnergy(),alt, und);  
+  und->updateOutput(zstop,output_step);
+  und->updateMarker(dumpFieldStep,dumpBeamStep,sort_step,zstop);
+
 
   // call to gencore to do the actual tracking.  
 
   Gencore core;
-  core.run(file.c_str(),beam,field);
+  core.run(file.c_str(),beam,field,und,isTime,isScan);
 
+
+  delete und;
+   
   if  (rank==0) { cout << "End of Track" << endl;}
  
   return true;

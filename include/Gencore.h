@@ -17,7 +17,6 @@
 #include "Beam.h"
 #include "Field.h"
 #include "Undulator.h"
-#include "Output.h"
 #include "Control.h"
 
 //extern const double vacimp;
@@ -29,7 +28,7 @@ class Gencore{
  public:
   Gencore(){};
   virtual ~Gencore(){};
-  int run(const char *,Beam *, vector<Field *> *);
+  int run(const char *,Beam *, vector<Field *> *, Undulator *,bool,bool);
 };
 
 

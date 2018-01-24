@@ -52,12 +52,105 @@ bool Lattice::parse(string filename, string beamline, int rank)
 }
 
 
+// generate from the input lattice the explicit representation, including some modification with 'alt'
+
+bool Lattice::generateLattice(double delz, double lambda, double gamma, AlterLattice *alt,Undulator *und)
+{
+
+  this->unrollLattice(delz);  
+  this->calcSlippage(lambda,gamma);
+
+  und->setGammaRef(gamma);
+
+  int ndata=lat_aw.size();
+
+  und->aw.resize(ndata);
+  und->ax.resize(ndata);
+  und->ay.resize(ndata);
+  und->ku.resize(ndata);
+  und->kx.resize(ndata);
+  und->ky.resize(ndata);
+  und->gradx.resize(ndata);
+  und->grady.resize(ndata);
+  und->qf.resize(ndata);
+  und->qx.resize(ndata);
+  und->qy.resize(ndata);
+  und->cx.resize(ndata);
+  und->cy.resize(ndata);
+  und->chic_angle.resize(ndata);
+  und->chic_lb.resize(ndata);
+  und->chic_ld.resize(ndata);
+  und->chic_lt.resize(ndata);
+  und->slip.resize(ndata);
+  und->phaseshift.resize(ndata);
+  und->z.resize(ndata);
+  und->dz.resize(ndata);
+  und->helical.resize(ndata);
+  und->marker.resize(ndata);
+
+  for (int i=0; i<ndata;i++){
+      und->aw[i]=lat_aw[i];
+      und->ax[i]=lat_ax[i];
+      und->ay[i]=lat_ay[i];
+      und->ku[i]=lat_ku[i];
+      und->kx[i]=lat_kx[i];
+      und->ky[i]=lat_ky[i];
+      und->gradx[i]=lat_gradx[i];
+      und->grady[i]=lat_grady[i];
+      und->qf[i]=lat_qf[i];
+      und->qx[i]=lat_qx[i];
+      und->qy[i]=lat_qx[i];
+      und->cx[i]=lat_cx[i];
+      und->cy[i]=lat_cy[i];
+
+      und->chic_angle[i]=lat_delay[i];  // here it is the delay but will converted to angle
+      und->chic_lb[i]=lat_lb[i];
+      und->chic_ld[i]=lat_ld[i];
+      und->chic_lt[i]=lat_lt[i];       // here it is the total length but it will change to the time delay.
+      
+      if (und->chic_angle[i]!=0){
+       double delay=fabs(und->chic_angle[i]);
+       double tmin=0;
+       double tmax=asin(1)-0.001;
+       bool converged=false;
+       double theta,d;
+       while (!converged){
+         theta=0.5*(tmax+tmin);
+         d=4*und->chic_lb[i]*(theta/sin(theta)-1)+2*und->chic_ld[i]*(1/cos(theta)-1);
+         if (d>delay) {
+           tmax=theta;
+         } else {
+          tmin=theta;
+	 }
+         if (fabs(delay-d)<1e-15) { converged=true; }
+       }
+       und->chic_angle[i]=theta;
+      }
+
+
+      und->slip[i]=lat_slip[i];
+      und->phaseshift[i]=lat_phase[i];
+      und->z[i]=lat_z[i];
+      und->dz[i]=lat_dz[i];
+      und->helical[i]=lat_helical[i];
+      und->marker[i]=lat_mk[i];
+
+  }
+
+  return true;
+
+
+
+
+}
+
+
+/*
 
 bool Lattice::writeLattice(hid_t fid, double delz, double lambda, double gamma, AlterLattice *alt)
 {
-  
-  this->unrollLattice(delz);  
-  this->calcSlippage(lambda,gamma);
+
+  this->generateLattice(delz,lambda,gamma,alt);
   
   string group="Lattice";
   hid_t gid=H5Gcreate(fid,group.c_str(),H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
@@ -94,6 +187,7 @@ bool Lattice::writeLattice(hid_t fid, double delz, double lambda, double gamma, 
   return true;
 
 }
+*/
 
 
 void Lattice::calcSlippage(double lambda, double gamma)

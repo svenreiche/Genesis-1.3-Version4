@@ -27,6 +27,7 @@ void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, d
 
 void Beam::initDiagnostics(int nz)
 {
+  
   idx=0;
   int ns=current.size();
   zpos.resize(nz);
