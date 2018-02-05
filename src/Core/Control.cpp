@@ -107,11 +107,11 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
 
   nslice=beam->beam.size();
   noffset=rank*nslice;
-  slen=ntotal*sample*reflen;
-
+ 
   MPI::COMM_WORLD.Reduce(&nslice,&ntotal,1,MPI::INT,MPI::SUM,0);
   MPI::COMM_WORLD.Bcast(&ntotal,1,MPI::INT,0);
 
+  slen=ntotal*sample*reflen;
 
 
   if (rank==0){

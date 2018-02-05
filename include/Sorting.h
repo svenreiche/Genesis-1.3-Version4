@@ -41,7 +41,7 @@ class Sorting{
   double s0,slen,sendmin,sendmax,keepmin,keepmax;
 
 
-  double reflen,slicelen;
+  double reflen;
   bool doshift,dosort,globalframe;
   vector<double> pushforward,pushbackward;
 

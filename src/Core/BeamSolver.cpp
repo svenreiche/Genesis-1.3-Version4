@@ -34,7 +34,12 @@ void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undul
 
 
   xku=und->getku();
+  if (xku==0){   // in the case of drifts - the beam stays in phase if it has the reference energy // this requires that the phase slippage is not applied
+    xku=xks*0.5/und->getGammaRef()/und->getGammaRef();
+  }
+	    
   double aw=und->getaw();
+
   double autophase=und->autophase();
 
 

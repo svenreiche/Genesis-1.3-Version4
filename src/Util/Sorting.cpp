@@ -1,5 +1,6 @@
 #include "Sorting.h"
 
+#include <algorithm>
 
 Sorting::Sorting()
 {
@@ -50,6 +51,8 @@ int Sorting::sort(vector <vector <Particle> > * recdat){
   int shift =0;
   // step one - calculate global shift and see whether it can be adjusted by shifting radiation instead
   //////  int shift = this->centerShift(recdat);
+
+
   // step two - push outside particles to other nodes
   this->globalSort(recdat);
   // step three - sort within the given node
@@ -84,12 +87,13 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
 	  p.y    =recdat->at(a).at(b).y;
 	  p.px   =recdat->at(a).at(b).px;
 	  p.py   =recdat->at(a).at(b).py;
-	  int targ=a+atar;
-	  if (targ < 0 or targ > recdat->size()){
-	    cout << "Phase: " << theta << " Origin: " << a << " Target: " << a+atar << " Shift: " << atar << endl;
-	  }
 
-	  //////////////	  recdat->at(a+atar).push_back(p);  // pushing particle in correct slice
+	  //	  int targ=a+atar;
+	  //	  if (targ < 0 or targ > recdat->size()){
+	  //	    cout << "Phase: " << theta << " Origin: " << a << " Target: " << a+atar << " Shift: " << atar << endl;
+	  //	  }
+
+	  recdat->at(a+atar).push_back(p);  // pushing particle in correct slice
 	  // eliminating the current particle
       	  recdat->at(a).at(b).theta=recdat->at(a).at(recdat->at(a).size()-1).theta;
 	  recdat->at(a).at(b).gamma=recdat->at(a).at(recdat->at(a).size()-1).gamma;
@@ -137,7 +141,7 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
 
   // step one - pairing ranks (0,1) (2,3) etc, the last rank, if uneven last element should clear its pushforward.
      bool transfer = true;
-     if (((rank % 2) == 0) && (rank == (size -1))) { transfer = false; }
+     if (((rank % 2) == 0) && (rank == (size -1))) { transfer = false; }  // last rank for an uneven count of cores -> no forward transmission
 
      if ((rank % 2)==0) {   // even ranks sending
        if (transfer) {this->send(rank+1,&pushforward);}        // sends its forward particles to higher node
@@ -152,8 +156,8 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
   // step two - pairing ranks (1,2) (3,4) etc
 
      transfer == true;
-     if (((rank % 2) == 1) && (rank == (size -1))) { transfer = false; }
-     if (rank==0) { transfer = false; }
+     if (((rank % 2) == 1) && (rank == (size -1))) { transfer = false; }  // last core for an even number
+     if (rank==0) { transfer = false; }                                  // as well as first core.
      
      if ((rank % 2)==1) {  // odd ranks sending
        if (transfer) {this->send(rank+1,&pushforward);}
@@ -163,8 +167,8 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
        if (transfer){
 	   this->recv(rank-1,rec,&pushforward); 
            this->send(rank-1,&pushbackward);
+           pushbackward.clear();
        }
-       pushbackward.clear();
      }
  
      maxiter--;
@@ -200,7 +204,7 @@ void Sorting::send(int target, vector<double> *data)
  void Sorting::recv(int source, vector <vector <Particle> > *rec ,vector<double> *olddata)
 {
 
-  double shift=sendmax;
+  double shift=slen;
   if(globalframe){shift=0;}
 
    MPI::Status status;
@@ -208,25 +212,26 @@ void Sorting::send(int target, vector<double> *data)
 
 
    MPI::COMM_WORLD.Recv(&ndata,1,MPI::INT,source,0,status);
-   if (ndata==0) {
+   if (ndata==0) {  // no data received.
      return;
    }
 
    vector<double> data (ndata);
-   MPI::COMM_WORLD.Recv(&data.front(),ndata,MPI::DOUBLE,source,0,status); 
+   MPI::COMM_WORLD.Recv(&data.front(),ndata,MPI::DOUBLE,source,0,status); // geting the particles from adjacent node.
  
 
    //Determines whether the data needs to be pushed forward or backwards or stored in the correct slices
-   int np=rec->size();
+   int np=rec->size();                      // number of slices
    if (source>rank) {                       // data are coming from higher node -> particles are pushed backward
      for (int a=0;a<ndata;a+=6) {
-       if (data[a]<sendmin){
-         olddata->push_back(data[a]+shift);
+       double s = s0+slen*(np-1)+data[a];  // get the actual positionassume that backward the particles are placed in the last slice !
+       if (s<sendmin){
+         olddata->push_back(data[a]+shift*np);  // if the particle isstillpushed through than it phase is adjusted by slen*slicenumber
 	 for (int b=1;b<6;b++){
            olddata->push_back(data[a+b]);
          }
        } 
-       if (data[a]>=keepmin){
+       if (s>=keepmin){
          Particle par;
          par.theta=data[a];
          par.gamma=data[a+1];
@@ -239,13 +244,14 @@ void Sorting::send(int target, vector<double> *data)
      }
    } else {    // particles are coming from a lower node -> particles are pushed forward
      for (int a=0;a<ndata;a+=6) {
-       if (data[a]>sendmax){
-	 olddata->push_back(data[a]-shift);
+       double s = s0+data[a];  // get the actual position assume that forward the particles are placed in the first slice !
+       if (s>sendmax){
+	 olddata->push_back(data[a]-shift*np);
 	 for (int b=1;b<6;b++){
            olddata->push_back(data[a+b]);
          }
        } 
-       if (data[a]<=keepmax){
+       if (s<=keepmax){
          Particle par;
          par.theta=data[a];
          par.gamma=data[a+1];
@@ -270,16 +276,17 @@ void Sorting::fillPushVectors(vector< vector <Particle> >*rec)
   //step one - fill the push vectors
   pushforward.clear();
   pushbackward.clear();
+  
+  int nsize=rec->size();
+  double shift=slen;  // flag to indicate correction in position because each slice has its own position ( 3pi in slice 5 is pi in slice 6}
+  if (globalframe) {shift = 0;} // don't change position if it is a global frame (e.g. when importing elegant distibution)
+  
 
-
-  double shift=sendmax;
-  if (globalframe) {shift = 0;}
-  if (rank==0) { cout << "Shift: " << shift << endl;}
-  for (int i = 0; i < rec->size(); i++){
-    for (int j = 0; j < rec->at(i).size(); j++){
-      double s = s0+slicelen*i+rec->at(i).at(j).theta;  // get the actual position
+  for (int i = 0; i < nsize; i++){  // loop over slices
+    for (int j = 0; j < rec->at(i).size(); j++){ // loop over particles in slice
+      double s = s0+slen*i+rec->at(i).at(j).theta;  // get the actual position
       if (s<sendmin){
-	pushbackward.push_back(rec->at(i).at(j).theta+(i+1)*slicelen ); 
+	pushbackward.push_back(rec->at(i).at(j).theta+(i+1)*shift); 
 	// example: in first slice phase is -1. Particle needs to be sent to previous node to the last slice there. Therefore
         // the offset is just the slice  length (normally 2 pi). In the second slice it needs to be a value of -7 < - 2 pi.
 	pushbackward.push_back(rec->at(i).at(j).gamma);
@@ -289,7 +296,7 @@ void Sorting::fillPushVectors(vector< vector <Particle> >*rec)
 	pushbackward.push_back(rec->at(i).at(j).py);
       }
       if (s>sendmax){
-	pushforward.push_back(rec->at(i).at(j).theta-shift+i*slicelen); 
+	pushforward.push_back(rec->at(i).at(j).theta-(nsize-i)*shift); 
 	// example: last slice has value of 7 > 2 pi to be pushed to next node in the first slice there. The offset correction would be - 2 pi, which is given by
 	// -(nlen-i)*slicelength  with i = nlen-1 for the last slice
 	pushforward.push_back(rec->at(i).at(j).gamma);
@@ -299,19 +306,28 @@ void Sorting::fillPushVectors(vector< vector <Particle> >*rec)
 	pushforward.push_back(rec->at(i).at(j).py);
 
       }
-      // delete particle outside of the window
-      if ((s<keepmin)||(s>keepmax)){
-	int ilast=rec->at(i).size()-1;
-	rec->at(i).at(j).theta=rec->at(i).at(ilast).theta;
-	rec->at(i).at(j).gamma=rec->at(i).at(ilast).gamma;
-	rec->at(i).at(j).x    =rec->at(i).at(ilast).x;
-	rec->at(i).at(j).y    =rec->at(i).at(ilast).y;
-	rec->at(i).at(j).px   =rec->at(i).at(ilast).px;
-	rec->at(i).at(j).py   =rec->at(i).at(ilast).py;
-	rec->at(i).pop_back();
-	j--;
-      }
     }
+
+    int j=0;
+
+ 
+    while (j<rec->at(i).size()){
+        double s = s0+slen*i+rec->at(i).at(j).theta;  // get the actual position
+        if ((s<keepmin)||(s>keepmax)){
+
+ 	  int ilast=rec->at(i).size()-1;
+	  rec->at(i).at(j).theta=rec->at(i).at(ilast).theta;
+	  rec->at(i).at(j).gamma=rec->at(i).at(ilast).gamma;
+	  rec->at(i).at(j).x    =rec->at(i).at(ilast).x;
+	  rec->at(i).at(j).y    =rec->at(i).at(ilast).y;
+	  rec->at(i).at(j).px   =rec->at(i).at(ilast).px;
+	  rec->at(i).at(j).py   =rec->at(i).at(ilast).py;
+	  rec->at(i).pop_back();
+	} else {
+	  j++;
+	}
+    }
+
   }
 
 }

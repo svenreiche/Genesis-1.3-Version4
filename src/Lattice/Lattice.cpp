@@ -208,16 +208,17 @@ void Lattice::calcSlippage(double lambda, double gamma)
       lat_slip[i]=lat_dz[i]/tmp;
       lat_phase[i]=0;
 
-      if ((Lz>0) && (i>0)){ // apply last drift section
+      if ((Lz>0) && (i>0)){ // apply previous drift section
         tmp=Lz/2/gamma/gamma/lambda;  
-        lat_slip[i-1]+=floor(tmp);   
-        tmp-=floor(tmp);
-        lat_phase[i-1]+=tmp*4*asin(1);   // auto phasing
+        lat_slip[i-1]+=floor(tmp)+1;  //auto phasing would always add some slippage   
+	//        tmp-=floor(tmp);
+	//        lat_phase[i-1]+=tmp*4*asin(1);   // auto phasing
 	Lz=0; // clear last intra beam section 
       } 
       // reset drift parameters
     } else {
       Lz   +=lat_dz[i];
+      if (lat_delay[i]>0) { cout << "Delay: " << lat_delay[i] << " Lambda: " << lambda << endl; } 
       tmp=lat_delay[i]/lambda;  // affect of chicane is always autophasing!!!
       lat_slip[i]=floor(tmp);
       lat_phase[i]=lat_ps[i];     // phase shifter goes here
@@ -225,8 +226,9 @@ void Lattice::calcSlippage(double lambda, double gamma)
   }
   // correct for the end of the lattice that autophasing is applied in case for second, suceeding run
   tmp=Lz/2/gamma/gamma/lambda;  
-  tmp-=floor(tmp);
-  lat_phase[nz-1]+=tmp*4*asin(1);
+  lat_slip[nz-1]+=floor(tmp)+1;   
+  //  tmp-=floor(tmp);
+  // lat_phase[nz-1]+=tmp*4*asin(1);
 
 }
 
