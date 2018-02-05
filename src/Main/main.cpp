@@ -50,6 +50,10 @@ const double vacimp = 376.73;
 const double eev    = 510999.06; 
 const double ce     = 4.8032045e-11;
 
+const int versionmajor = 4;
+const int versionminor = 0;
+const int versionrevision = 2;
+const bool versionbeta=true;
 
 
 int main (int argc, char *argv[]) {
@@ -71,7 +75,9 @@ int main (int argc, char *argv[]) {
 	if (rank==0) {
           time(&timer);
           cout << "---------------------------------------------" << endl;
-          cout << "GENESIS - Version 4.0.1 (beta) has started..." << endl;
+          cout << "GENESIS - Version " <<  versionmajor <<"."<< versionminor << "." << versionrevision ;
+	  if (versionbeta) {cout << " (beta)";}
+	  cout << " has started..." << endl;			
 	  cout << "Starting Time: " << ctime(&timer)<< endl;
           cout << "MPI-Comm Size: " << size << " nodes" << endl << endl;
         }
