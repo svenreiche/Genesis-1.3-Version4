@@ -218,7 +218,7 @@ void Lattice::calcSlippage(double lambda, double gamma)
       // reset drift parameters
     } else {
       Lz   +=lat_dz[i];
-      if (lat_delay[i]>0) { cout << "Delay: " << lat_delay[i] << " Lambda: " << lambda << endl; } 
+      //      if (lat_delay[i]>0) { cout << "Delay: " << lat_delay[i] << " Lambda: " << lambda << endl; } 
       tmp=lat_delay[i]/lambda;  // affect of chicane is always autophasing!!!
       lat_slip[i]=floor(tmp);
       lat_phase[i]=lat_ps[i];     // phase shifter goes here

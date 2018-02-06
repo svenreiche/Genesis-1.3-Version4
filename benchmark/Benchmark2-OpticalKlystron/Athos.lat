@@ -1,0 +1,33 @@
+D1: DRIFT = { l = 0.200000 };
+D2: DRIFT = { l = 0.494000 };
+QF: QUADRUPOLE = { l = 0.080000, k1= 5.000000 };
+QD: QUADRUPOLE = { l = 0.080000, k1= -5.000000 };
+C01: CHICANE = { l = 0.200000,lb = 0.025000, ld = 0.050000, delay = 5.000000e-07 };
+C02: CHICANE = { l = 0.200000,lb = 0.025000, ld = 0.050000, delay = 5.000000e-07 };
+C03: CHICANE = { l = 0.200000,lb = 0.025000, ld = 0.050000, delay = 5.000000e-07 };
+C04: CHICANE = { l = 0.200000,lb = 0.025000, ld = 0.050000, delay = 0.000000e+00 };
+C05: CHICANE = { l = 0.200000,lb = 0.025000, ld = 0.050000, delay = 0.000000e+00 };
+C06: CHICANE = { l = 0.200000,lb = 0.025000, ld = 0.050000, delay = 0.000000e+00 };
+C07: CHICANE = { l = 0.200000,lb = 0.025000, ld = 0.050000, delay = 0.000000e+00 };
+C08: CHICANE = { l = 0.200000,lb = 0.025000, ld = 0.050000, delay = 0.000000e+00 };
+
+U01: UNDULATOR = { lambdau=0.038000,nwig=52,aw=2.474874};
+U02: UNDULATOR = { lambdau=0.038000,nwig=52,aw=2.474874};
+U03: UNDULATOR = { lambdau=0.038000,nwig=52,aw=2.474874};
+U04: UNDULATOR = { lambdau=0.038000,nwig=52,aw=2.474874};
+U05: UNDULATOR = { lambdau=0.038000,nwig=52,aw=2.473470};
+U06: UNDULATOR = { lambdau=0.038000,nwig=52,aw=2.469259};
+U07: UNDULATOR = { lambdau=0.038000,nwig=52,aw=2.462240};
+U08: UNDULATOR = { lambdau=0.038000,nwig=52,aw=2.452414};
+
+
+
+ATHOS: LINE={U01,C01,QF,D2,
+	U02,C02,QD,D2,
+	U03,C03,QF,D2,
+	U04,C04,QD,D2,
+	U05,C05,QF,D2,
+	U06,C06,QD,D2,
+	U07,C07,QF,D2,
+	U08,C08,QD,D2};
+

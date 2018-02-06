@@ -1,0 +1,46 @@
+
+
+
+QF1: QUADRUPOLE = { l = 0.160000, k1= 1.5  };
+QD1: QUADRUPOLE = { l = 0.160000, k1= -1.5 };
+QF2: QUADRUPOLE = { l = 0.160000, k1= 1.1  };
+QD2: QUADRUPOLE = { l = 0.160000, k1= -1.5 };
+QF3: QUADRUPOLE = { l = 0.160000, k1= 1.7  };
+QD3: QUADRUPOLE = { l = 0.160000, k1= -1.55 };
+QF4: QUADRUPOLE = { l = 0.160000, k1= 1.5 };
+QD4: QUADRUPOLE = { l = 0.160000, k1= -1.5 };
+QF5: QUADRUPOLE = { l = 0.160000, k1= 1.5  };
+QD5: QUADRUPOLE = { l = 0.160000, k1= -1.5 };
+QF6: QUADRUPOLE = { l = 0.160000, k1= 1.5  };
+
+M: Marker = {dumpbeam=1};
+
+MOD1: UNDULATOR = { lambdau=0.1,nwig=30,aw=6.167};
+D1: DRIFT = { l = 0.24};
+C1: CHICANE = { l = 0.70,lb = 0.175, ld = 0., delay = 0.000000e-07 };
+D2: DRIFT = { l = 0.30};
+DRAD: DRIFT = { l = 3.56};
+D3: DRIFT = { l=0.02};
+D4:DRIFT = { l = 0.27};
+D5: DRIFT = { l = 0.35};
+C2: CHICANE = { l = 1.5,lb = 0.375, ld = 0., delay = 1.050000e-03 };
+D6: DRIFT = { l = 1.05};
+
+
+MOD2: UNDULATOR = { lambdau=0.113,nwig=13,aw=5.7915};
+D7: DRIFT = { l = 0.706};
+C3: CHICANE = { l = 0.70,lb = 0.175, ld = 0.0, delay = 3.76e-05 };
+D8: DRIFT = { l = 0.32};
+D9: DRIFT = { l = 0.6425};
+
+
+
+RAD: UNDULATOR = { lambdau=0.035,nwig=69,aw=1.109, helical=true};
+DD1: DRIFT= {l=0.55};
+DD2: DRIFT= {l=0.605};
+
+FERMI1: LINE = { MOD1,D1,C1,D2, QF1,DRAD,QD1,DRAD, QF2,DRAD,D3,QD2,D4,C2,D5,QF3,D6};
+FERMI2: LINE = { MOD2,D7,C3,D8,QD3,D9};
+FERMI3: LINE = { RAD,DD1,QF4,DD2,RAD,DD1,QD4,DD2,RAD,DD1,QF5,DD2,RAD,DD1,QD5,DD2,RAD,DD1,QF6,DD2,RAD};
+
+FERMI: LINE = {FERMI1, FERMI2, FERMI3};

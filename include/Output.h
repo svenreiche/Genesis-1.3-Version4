@@ -18,6 +18,13 @@ using namespace std;
 extern const double vacimp;
 extern const double eev;
 
+extern const int versionmajor;
+extern const int versionminor;
+extern const int versionrevision;
+extern const bool versionbeta;
+extern string *meta_inputfile;
+extern string *meta_latfile;
+
 class Output : public HDF5Base {
  public:
    Output();
@@ -28,11 +35,13 @@ class Output : public HDF5Base {
    void writeBeamBuffer(Beam *);
    void writeLattice(Beam *, Undulator *);
    void writeGlobal(double,double,double,double,bool,bool,bool);
+   void writeMeta();
 
  private:
    void write(hsize_t,string,string,double *);
    void writeBuffer(hid_t,string,vector<double> *);
    void writeSingleNode(hid_t,string,vector<double> *);
+   void writeSingleNodeString(hid_t,string, string *);
 
    hid_t fid;   
    hsize_t s0, ds;

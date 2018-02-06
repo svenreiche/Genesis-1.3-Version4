@@ -19,7 +19,7 @@ void AlterSetup::usage(){
   cout << "List of keywords for ALTER_SETUP" << endl;
   cout << "&alter_setup" << endl;
   cout << " string rootname = <taken from SETUP + Increment>" << endl;
-  cout << " string lattice = <taken from SETUP>" << endl;
+  //  cout << " string lattice = <taken from SETUP>" << endl;
   cout << " string beamline = <empty>" << endl;
   cout << " double delz = <taken from SETUP>" << endl;
   cout << " int harmonic = 1" << endl;
@@ -40,7 +40,7 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
   map<string,string>::iterator end=arg->end();
 
   if (arg->find("rootname")!=end){rootname = arg->at("rootname"); arg->erase(arg->find("rootname"));}
-  if (arg->find("lattice")!=end) {lattice  = arg->at("lattice"); arg->erase(arg->find("lattice"));}
+  //  if (arg->find("lattice")!=end) {lattice  = arg->at("lattice"); arg->erase(arg->find("lattice"));}
   if (arg->find("beamline")!=end){beamline = arg->at("beamline"); arg->erase(arg->find("beamline"));}
   if (arg->find("delz")!=end)    {delz     = atof(arg->at("delz").c_str());  arg->erase(arg->find("delz"));}
   if (arg->find("subharmonic")!=end){subharmonic  = atoi(arg->at("subharmonic").c_str());  arg->erase(arg->find("subharmonic"));}
@@ -56,7 +56,7 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
   if (!time->isTime()){ resample=false; }  // no resampling in non-timedependent runs allowed
 
   // step one: Select new lattice if selected
-  if (beamline!=""){
+  if (beamline!="") {
      bool status = lat->parse(lattice,beamline,rank);
      if (status==false) { return status ; }
   }

@@ -1,6 +1,16 @@
 #include "Output.h"
 #include <stdlib.h> 
 
+// Meta info
+#include <ctime>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+
+#include <fstream>
+#include <streambuf>
+
+
 Output::Output(){
   fid=-1;
 }
@@ -55,8 +65,63 @@ void Output::open(string file, int s0_in, int ds_in)
 }
 
 
+void Output::writeMeta()
+{
+  hid_t gid,gidsub;
+  vector<double> tmp;
+  tmp.resize(1);
+
+  gid=H5Gcreate(fid,"Meta",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+
+  gidsub=H5Gcreate(gid,"Version",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  tmp[0]=versionmajor;
+  this->writeSingleNode(gidsub,"Major",&tmp);
+  tmp[0]=versionminor;
+  this->writeSingleNode(gidsub,"Minor",&tmp);
+  tmp[0]=versionrevision;
+  this->writeSingleNode(gidsub,"Revision",&tmp);
+  tmp[0]=0;
+  if (versionbeta) { tmp[0]=1;}
+  this->writeSingleNode(gidsub,"Beta",&tmp);
+  H5Gclose(gidsub);  
+  
+  time_t timer;
+  time(&timer);
+  string tim (ctime(&timer));
+  this->writeSingleNodeString(gid,"TimeStamp", &tim);
+
+
+  struct passwd *pws;
+  pws = getpwuid(getuid());
+  string user (pws->pw_name);
+  this->writeSingleNodeString(gid,"User", &user);
+
+
+  ifstream inFile (meta_inputfile->c_str());
+  stringstream buffer;
+  buffer << inFile.rdbuf();//read the file
+  string str=buffer.str();
+  this->writeSingleNodeString(gid,"InputFile", &str);
+  inFile.close();
+
+  ifstream inFile2 (meta_latfile->c_str());
+  stringstream buffer2;
+  buffer2 << inFile2.rdbuf();//read the file
+  string str2=buffer2.str();
+  this->writeSingleNodeString(gid,"LatticeFile", &str2);
+  inFile2.close(); 
+
+
+
+  H5Gclose(gid);
+
+
+}
+
 void Output::writeGlobal(double gamma, double lambda, double sample, double slen, bool one4one, bool time, bool scan)
 {
+
+  this->writeMeta();   
   vector<double> tmp;
   tmp.resize(1);
   hid_t gid;
@@ -256,6 +321,39 @@ void Output::writeSingleNode(hid_t gid, string dataset,vector<double> *data){
 
 }
 
+void Output::writeSingleNodeString(hid_t gid, string dataset, string *data){
+
+
+ 
+  int nd = data->size();
+
+  hsize_t fblock[1]={1};
+  hid_t filespace=H5Screate_simple(1,fblock,NULL);
+
+
+   hid_t dtype = H5Tcopy (H5T_C_S1);
+   herr_t status = H5Tset_size (dtype, nd);
+
+
+
+  hid_t did=H5Dcreate(gid,dataset.c_str(),dtype,filespace,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);   
+  H5Sclose(filespace);
+
+
+  hid_t memspace=H5Screate_simple(1,fblock,NULL);
+  filespace=H5Dget_space(did);
+
+  if (s0==0){
+    H5Dwrite(did,dtype,memspace,filespace,H5P_DEFAULT,data->c_str());
+
+  }
+ 
+  H5Sclose(memspace);
+  H5Sclose(filespace);
+  H5Dclose(did);
+  
+
+}
 
 
 

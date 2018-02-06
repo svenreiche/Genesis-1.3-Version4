@@ -55,6 +55,9 @@ const int versionminor = 0;
 const int versionrevision = 2;
 const bool versionbeta=true;
 
+string *meta_inputfile;
+string *meta_latfile;
+
 
 int main (int argc, char *argv[]) {
 
@@ -103,6 +106,8 @@ int main (int argc, char *argv[]) {
         Profile *profile=new Profile;
         Time *timewindow=new Time;
 
+	meta_inputfile=new string (argv[argc-1]);
+
         parser.open(argv[argc-1],rank);
 
         while(parser.parse(&element,&argument)){
@@ -112,6 +117,7 @@ int main (int argc, char *argv[]) {
 
           if (element.compare("&setup")==0){
             if (!setup->init(rank,&argument,lattice)){ break;}
+	    meta_latfile=new string (setup->getLattice());
             continue;  
           }  
 

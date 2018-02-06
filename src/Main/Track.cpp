@@ -63,24 +63,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   file.append(".out.h5");
 
 
-  /*
  
-  if (rank==0){
-
-    hid_t fid=H5Fcreate(file.c_str(),H5F_ACC_TRUNC,H5P_DEFAULT, H5P_DEFAULT); 
-
-
-
-    lat->writeLattice(fid,setup->getStepLength(),setup->getReferenceLength(),setup->getReferenceEnergy(),alt);
-    setup->writeGlobal(fid,zstop,output_step,dumpFieldStep,dumpBeamStep,sort_step,s0,slen,sample,isTime,isScan);
-
-    H5Fclose(fid);  
-
-  }
- 
-  MPI::COMM_WORLD.Barrier(); // synchronize all nodes till root has finish writing the output file
-  */
-
   Undulator *und = new Undulator;
 
   lat->generateLattice(setup->getStepLength(),setup->getReferenceLength(),setup->getReferenceEnergy(),alt, und);  
