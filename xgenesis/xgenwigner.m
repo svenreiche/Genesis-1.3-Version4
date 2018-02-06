@@ -21,7 +21,7 @@ end
 dat2=dat{1};
 
 
-z=xgenstat.z(1:xgenstat.nz:length(xgenstat.z));
+z=xgenstat.zplot;
        
 dz=abs(z-ref);
 [zmin,idx]=min(dz);

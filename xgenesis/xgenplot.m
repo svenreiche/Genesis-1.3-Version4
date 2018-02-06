@@ -1,6 +1,8 @@
-function xgenplot(field,mode,ref)
+function ret = xgenplot(field,mode,ref)
 % XGENPLOT generate a plot with the information specified
 % xgenplot(field,mode,ref)
+%
+% returns in an cell array the data which has been plotted
 %
 % field  - regular expression of a dataset name in the hdf output file.
 %          It will plot all datasets which matches the string
@@ -61,8 +63,11 @@ function xgenplot(field,mode,ref)
         end
     end
     
+    ret = {};
     for i=1:length(dat)
         [x,y]=xgensingleplot(dat{i},lab{i},mode,ref);
+        ret{end+1}={x,y};
+        
         hold on
     end
  
@@ -187,23 +192,9 @@ function [x,y]=xgensingleplot(dat,label,mode,ref)
     dims=size(dat);
     ns=dims(1);
     nz=dims(2);
-
-    z=xgenstat.z(1:xgenstat.nz:length(xgenstat.z));
-    z(end+1)=xgenstat.z(end)+xgenstat.dz(end);
-
-    %%%%%%%%%%%%
-    % to be debugged for sample rate larger than 1
-    nz0=length(z);
-    if nz0<nz
-        dz=z(end)-z(end-1);
-        for i=1:(nz-nz0)
-            z(end+1)=z(end)+dz(end);
-        end
-    end
-    
-    
+    z=xgenstat.zplot;    
     s=((1:ns)-1)*xgenstat.ds;
-    zlab='z(m)';
+    zlab='z (m)';
     slab='s (m)';
     
     if isspec~=0
