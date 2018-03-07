@@ -54,7 +54,6 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 	  // -----------------------------------------
 	  // step 3 - Beam post processing, e.g. sorting
 
-	  sort=false;
 
 	  if (sort){
 	    int shift=beam->sort();
@@ -95,9 +94,24 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
         //---------------------------
         // end and clean-up 
 
+	// perform last marker action
+
+	bool sort=control->applyMarker(beam, field, und);
+	if (sort){
+	    int shift=beam->sort();
+
+	    if (shift!=0){
+	      for (int i=0;i<field->size();i++){
+		control->applySlippage(shift, field->at(i));  
+	      }
+	    }
+	}
+
+
+	// write out diagnostic arrays
 
 	if (rank==0){
-	  cout << "Writing Output File..." << endl;
+	  cout << "Writing output file..." << endl;
 	}
 
 	control->output(beam,field,und);

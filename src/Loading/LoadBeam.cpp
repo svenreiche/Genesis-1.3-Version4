@@ -173,7 +173,7 @@ bool LoadBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, Set
         beamslice = new Particle [nbeam];
     }
 
-    ql.loadQuiet(beamslice, &slice, npartloc, nbins,theta0);
+    ql.loadQuiet(beamslice, &slice, npartloc, nbins,theta0,i);
     if ((shotnoise)&&(!one4one)&&(dotime)){ sn.applyShotNoise(beamslice,npartloc,nbins,ne); }
 
     beam->beam[j].resize(npartloc);

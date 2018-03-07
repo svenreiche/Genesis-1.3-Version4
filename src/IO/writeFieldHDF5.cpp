@@ -45,7 +45,7 @@ void WriteFieldHDF5::writeMain(string fileroot, Field *field){
 
   char filename[100];
   sprintf(filename,"%s.fld.h5",fileroot.c_str()); 
-  if (rank == 0) { cout << "Writing field distribution to file " <<filename << " ..." << endl;} 
+  if (rank == 0) { cout << "Writing field distribution to file: " <<filename << " ..." << endl;} 
 
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
   H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);

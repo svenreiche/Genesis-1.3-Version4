@@ -47,16 +47,21 @@ void QuietLoading::init(bool one4one, int *base)
 
 }
 
-void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nbins, double theta0)
+void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nbins, double theta0, int islice)
 {
-  // resets Hammersley sequence but doe snothing for random sequence; 
-  
-  st->set(0);
-  sg->set(0);
-  sx->set(0);
-  sy->set(0);
-  spx->set(0);
-  spy->set(0);
+
+
+  // resets Hammersley sequence but does nothing for random sequence; 
+  Sequence *seed = (Sequence *) new RandomU(islice);
+  int iseed=static_cast<int>(round(seed->getElement()*1e9));
+
+  // initialize the sequence to new values to avoid that all core shave the same distribution
+  st->set(iseed);
+  sg->set(iseed);
+  sx->set(iseed);
+  sy->set(iseed);
+  spx->set(iseed);
+  spy->set(iseed);
 
   int mpart=npart/nbins; 
   

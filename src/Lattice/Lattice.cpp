@@ -30,7 +30,9 @@ bool Lattice::parse(string filename, string beamline, int rank)
 
   if (rank == 0) { cout << "Parsing lattice file..." << endl; }
   bool err=parser.parse(filename,beamline,rank, lat);
-  if (err==false) { return err; }
+  if (err==false) { 
+    return err; 
+  }
   
   layout.clear();
   
@@ -86,7 +88,7 @@ bool Lattice::generateLattice(double delz, double lambda, double gamma, AlterLat
   und->z.resize(ndata);
   und->dz.resize(ndata);
   und->helical.resize(ndata);
-  und->marker.resize(ndata);
+  und->marker.resize(ndata+1);
 
   for (int i=0; i<ndata;i++){
       und->aw[i]=lat_aw[i];
@@ -136,6 +138,14 @@ bool Lattice::generateLattice(double delz, double lambda, double gamma, AlterLat
       und->marker[i]=lat_mk[i];
 
   }
+  int lastmark=this->findMarker(und->z[ndata-1]+und->dz[ndata-1],"Marker");
+  if (lastmark < 0){
+    und->marker[ndata]=0;
+  } else {
+        Marker *mark=(Marker *)lat[lastmark];
+        und->marker[ndata]=mark->action; 
+  }
+
 
   return true;
 
@@ -144,50 +154,6 @@ bool Lattice::generateLattice(double delz, double lambda, double gamma, AlterLat
 
 }
 
-
-/*
-
-bool Lattice::writeLattice(hid_t fid, double delz, double lambda, double gamma, AlterLattice *alt)
-{
-
-  this->generateLattice(delz,lambda,gamma,alt);
-  
-  string group="Lattice";
-  hid_t gid=H5Gcreate(fid,group.c_str(),H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
-
-  int ndata=lat_aw.size();
-    
-  this->writeDataDouble(gid,(char *)"z",&lat_z[0],ndata);
-  this->writeDataDouble(gid,(char *)"dz",&lat_dz[0],ndata);
-  this->writeDataDouble(gid,(char *)"aw",&lat_aw[0],ndata);
-  this->writeDataDouble(gid,(char *)"ax",&lat_ax[0],ndata);
-  this->writeDataDouble(gid,(char *)"ay",&lat_ay[0],ndata);
-  this->writeDataDouble(gid,(char *)"ku",&lat_ku[0],ndata);
-  this->writeDataDouble(gid,(char *)"kx",&lat_kx[0],ndata);
-  this->writeDataDouble(gid,(char *)"ky",&lat_ky[0],ndata);
-  this->writeDataDouble(gid,(char *)"gradx",&lat_gradx[0],ndata);
-  this->writeDataDouble(gid,(char *)"grady",&lat_grady[0],ndata);
-  this->writeDataDouble(gid,(char *)"qf",&lat_qf[0],ndata);
-  this->writeDataDouble(gid,(char *)"qx",&lat_qx[0],ndata);
-  this->writeDataDouble(gid,(char *)"qy",&lat_qy[0],ndata);
-  this->writeDataDouble(gid,(char *)"delay",&lat_delay[0],ndata);
-  this->writeDataDouble(gid,(char *)"lb",&lat_lb[0],ndata);
-  this->writeDataDouble(gid,(char *)"ld",&lat_ld[0],ndata);
-  this->writeDataDouble(gid,(char *)"lt",&lat_lt[0],ndata);
-  this->writeDataDouble(gid,(char *)"cx",&lat_cx[0],ndata);
-  this->writeDataDouble(gid,(char *)"cy",&lat_cy[0],ndata);
-  this->writeDataInt(gid,(char *)"marker",&lat_mk[0],ndata);
-  this->writeDataInt(gid,(char *)"helical",&lat_helical[0],ndata);
-  this->writeDataDouble(gid,(char *)"slippage",&lat_slip[0],ndata);
-  this->writeDataDouble(gid,(char *)"phaseshift",&lat_phase[0],ndata);
-  
-
-  H5Gclose(gid);
-
-  return true;
-
-}
-*/
 
 
 void Lattice::calcSlippage(double lambda, double gamma)

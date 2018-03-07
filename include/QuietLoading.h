@@ -53,7 +53,7 @@ class QuietLoading  {
 public:
 	QuietLoading();
 	~QuietLoading();
-        void loadQuiet(Particle *beam, BeamSlice *, int, int, double); 
+        void loadQuiet(Particle *beam, BeamSlice *, int, int, double,int); 
         void init(bool, int *); 
 	
 	
