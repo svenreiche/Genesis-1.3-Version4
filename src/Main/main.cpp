@@ -53,7 +53,7 @@ const double ce     = 4.8032045e-11;
 
 const int versionmajor = 4;
 const int versionminor = 0;
-const int versionrevision = 2;
+const int versionrevision = 3;
 const bool versionbeta=true;
 
 string *meta_inputfile;
