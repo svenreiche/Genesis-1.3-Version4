@@ -16,16 +16,21 @@
 
 using namespace std;
 
+
+extern const double vacimp;
+extern const double eev;
+
 class WriteFieldHDF5 : public HDF5Base {
  public:
   WriteFieldHDF5();
   virtual ~WriteFieldHDF5();
-  void writeMain(string fileroot, Field *field,int);
   void write(string fileroot, vector<Field *> *field);
-  void writeGlobal(hid_t,double,double,double,double,int);
-  int writeSlice(hid_t,Field *field,int);
+
 
  private:
+  void writeMain(string fileroot, Field *field);
+  void writeGlobal(double, double, double, double, int, int);
+  hid_t fid;
   int rank, size;
 };
 

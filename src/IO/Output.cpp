@@ -246,7 +246,25 @@ void Output::writeFieldBuffer(Field *field)
   this->writeBuffer(gid, "phase-farfield",&field->ff_phi);
 
 
+
+  vector<double> tmp;
+  tmp.resize(1);
+  tmp[0]=field->dgrid;
+  this->writeSingleNode(gid,"dgrid",&tmp);
+  
+  vector<int> itmp;
+  itmp.resize(1);
+  itmp[0]=field->ngrid;
+  this->writeSingleNodeInt(gid,"ngrid",&itmp);
+
+
+
   // step 3 - close group and done
+
+
+
+
+
 
   H5Gclose(gid);
   return;
@@ -254,107 +272,5 @@ void Output::writeFieldBuffer(Field *field)
  
 
 }
-
-
-void Output::writeBuffer(hid_t gid, string dataset,vector<double> *data){
-
-
-  // step 1 - calculate the file space and create dataset
-  int size=MPI::COMM_WORLD.Get_size(); // get size of cluster
-
-
-  hsize_t dz=data->size()/ds;
-
-  hsize_t fblock[2]={dz,size*ds};
-  hid_t filespace=H5Screate_simple(2,fblock,NULL);
-  hid_t did=H5Dcreate(gid,dataset.c_str(),H5T_NATIVE_DOUBLE,filespace,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);   
-  H5Sclose(filespace);
-
-  // step 2 - file space
-  hsize_t count[2]={dz,ds};
-  hsize_t offset[2] = {0,s0};   // offset of record entry
-  hid_t memspace=H5Screate_simple(2,count,NULL);
-
-
-  // step 3 - set up hyperslab for file transfer.
-  filespace=H5Dget_space(did);
-  H5Sselect_hyperslab(filespace,H5S_SELECT_SET,offset,NULL,count,NULL);
-
-
-
-  // step 4 - set up transfer and write
-  hid_t pid =  H5Pcreate(H5P_DATASET_XFER);
-  H5Pset_dxpl_mpio(pid,H5FD_MPIO_COLLECTIVE);    
-  H5Dwrite(did,H5T_NATIVE_DOUBLE,memspace,filespace,pid,&data->at(0));
-
-  
-  // close all HDF5 stuff 
-  H5Sclose(memspace);
-  H5Sclose(filespace);
-  H5Pclose(pid);
-  H5Dclose(did);
-
-}
-
-void Output::writeSingleNode(hid_t gid, string dataset,vector<double> *data){
-
-
-  int nd = data->size();
-
-  hsize_t fblock[1]={nd};
-  hid_t filespace=H5Screate_simple(1,fblock,NULL);
-  hid_t did=H5Dcreate(gid,dataset.c_str(),H5T_NATIVE_DOUBLE,filespace,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);   
-  H5Sclose(filespace);
-  
-  hid_t memspace=H5Screate_simple(1,fblock,NULL);
-  filespace=H5Dget_space(did);
-
-  if (s0==0){
-    H5Dwrite(did,H5T_NATIVE_DOUBLE,memspace,filespace,H5P_DEFAULT,&data->at(0));
-
-  }
- 
-  H5Sclose(memspace);
-  H5Sclose(filespace);
-  H5Dclose(did);
-  
-
-}
-
-void Output::writeSingleNodeString(hid_t gid, string dataset, string *data){
-
-
- 
-  int nd = data->size();
-
-  hsize_t fblock[1]={1};
-  hid_t filespace=H5Screate_simple(1,fblock,NULL);
-
-
-   hid_t dtype = H5Tcopy (H5T_C_S1);
-   herr_t status = H5Tset_size (dtype, nd);
-
-
-
-  hid_t did=H5Dcreate(gid,dataset.c_str(),dtype,filespace,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);   
-  H5Sclose(filespace);
-
-
-  hid_t memspace=H5Screate_simple(1,fblock,NULL);
-  filespace=H5Dget_space(did);
-
-  if (s0==0){
-    H5Dwrite(did,dtype,memspace,filespace,H5P_DEFAULT,data->c_str());
-
-  }
- 
-  H5Sclose(memspace);
-  H5Sclose(filespace);
-  H5Dclose(did);
-  
-
-}
-
-
 
 

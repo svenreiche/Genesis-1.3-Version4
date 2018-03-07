@@ -24,7 +24,18 @@ class HDF5Base{
   bool isOpen;
   int nwork;
   double *work; 
+  int s0;  // flag for single Node to be written
+  hsize_t ds; // size in s for 2D array inwrite buffer
+
   
+  // function from output and wrideHDF5beam/field
+  void writeBuffer(hid_t,string,vector<double> *);
+  void writeSingleNode(hid_t,string,vector<double> *);
+  void writeSingleNodeString(hid_t,string, string *);
+  void writeSingleNodeInt(hid_t, string,vector<int> *);
+
+
+
   void createExpDataset(hid_t fid, char *name, hsize_t nz, hsize_t ns);
   void expandDataset(hid_t fid, vector<double> *rec, int pos, hsize_t recsize, hsize_t slice, char *name);
   void writeDataDouble(hid_t fid, const char *name, const double *data, int size);

@@ -39,12 +39,8 @@ class Output : public HDF5Base {
 
  private:
    void write(hsize_t,string,string,double *);
-   void writeBuffer(hid_t,string,vector<double> *);
-   void writeSingleNode(hid_t,string,vector<double> *);
-   void writeSingleNodeString(hid_t,string, string *);
 
    hid_t fid;   
-   hsize_t s0, ds;
 };
 
 

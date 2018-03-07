@@ -10,7 +10,7 @@ LoadField::LoadField()
   phaseref="";
   z0=0;
   z0ref="";
-  w0=0;
+  w0=100e-6;
   w0ref="";
   dgrid=1e-3;
   ngrid=151;

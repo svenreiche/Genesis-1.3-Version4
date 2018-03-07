@@ -10,6 +10,7 @@
 #include "BeamSolver.h"
 #include "Incoherent.h"
 #include "Sorting.h"
+#include "Collective.h"
 
 using namespace std;
 
@@ -44,6 +45,7 @@ class Beam{
  private:
    BeamSolver solver;
    Incoherent incoherent;
+   Collective col;
    Sorting sorting;
    int idx;
 };

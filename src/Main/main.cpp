@@ -42,13 +42,14 @@
 #include "writeFieldHDF5.h"
 
 
-
+#include "Collective.h"
 
 using namespace std;
 
 const double vacimp = 376.73;
 const double eev    = 510999.06; 
 const double ce     = 4.8032045e-11;
+
 
 const int versionmajor = 4;
 const int versionminor = 0;
@@ -73,6 +74,10 @@ int main (int argc, char *argv[]) {
         int size=MPI::COMM_WORLD.Get_size(); // get size of cluster
         int rank=MPI::COMM_WORLD.Get_rank(); // assign rank to node
 
+
+	Collective col;
+	//        col.WakeRes();
+	//	col.WakeGeo();
 
         time_t timer;
 	if (rank==0) {
@@ -234,6 +239,7 @@ int main (int argc, char *argv[]) {
 
 	  if (element.compare("&write")==0){
             Dump *dump=new Dump;
+	    if (rank==0) {cout << "main-dump:: " << field.size() << endl;}
 	    if (!dump->init(rank,size,&argument,setup,beam,&field)){ break;}
             delete dump;
             continue;  
