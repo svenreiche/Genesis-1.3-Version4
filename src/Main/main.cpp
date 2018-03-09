@@ -239,7 +239,6 @@ int main (int argc, char *argv[]) {
 
 	  if (element.compare("&write")==0){
             Dump *dump=new Dump;
-	    if (rank==0) {cout << "main-dump:: " << field.size() << endl;}
 	    if (!dump->init(rank,size,&argument,setup,beam,&field)){ break;}
             delete dump;
             continue;  

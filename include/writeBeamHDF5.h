@@ -21,10 +21,13 @@ class WriteBeamHDF5 : public HDF5Base {
   WriteBeamHDF5();
   virtual ~WriteBeamHDF5();
   void write(string, Beam *);
-  void writeGlobal(hid_t,int,bool,double,double,double,int);
-  int writeSlice(hid_t, Beam *, int);
+ 
 
  private:
+  int rank,size;
+  hid_t fid;
+  void writeGlobal(int,bool,double,double,double,int);
+
 };
 
 

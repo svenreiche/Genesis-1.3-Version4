@@ -14,112 +14,134 @@ WriteBeamHDF5::~WriteBeamHDF5()
 
 void WriteBeamHDF5::write(string fileroot, Beam *beam){
 
-  MPI::Status status;
 
-  int size=MPI::COMM_WORLD.Get_size(); // get size of cluster
-  int rank=MPI::COMM_WORLD.Get_rank(); // assign rank to node
-
-  int tag=1;
-  int slicecount=0;
-  int ntotal=0;
-  int nslice=beam->beam.size();
-
-  MPI::COMM_WORLD.Reduce(&nslice,&ntotal,1,MPI::INT,MPI::SUM,0);
-
-
+  size=MPI::COMM_WORLD.Get_size(); // get size of cluster
+  rank=MPI::COMM_WORLD.Get_rank(); // assign rank to node
 
   char filename[100];
-  sprintf(filename,"%s.par.h5",fileroot.c_str());
+  sprintf(filename,"%s.par.h5",fileroot.c_str()); 
+  if (rank == 0) { cout << "Writing particle distribution to file: " <<filename << " ..." << endl;} 
 
-  if (rank==0){
+  hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
+  H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+  fid=H5Fcreate(filename,H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
+  H5Pclose(pid);
 
-    hid_t fid=H5Fcreate(filename,H5F_ACC_TRUNC,H5P_DEFAULT, H5P_DEFAULT); 
-    this->writeGlobal(fid,beam->nbins,beam->one4one,beam->reflength,beam->slicelength,beam->s0,ntotal);
-    slicecount+=this->writeSlice(fid, beam, slicecount);
-    H5Fclose(fid);
+  s0=rank;
+  int ntotal=size*beam->beam.size();
 
-    if (size > 1){
-      	MPI::COMM_WORLD.Send(&slicecount, 1, MPI::INT, rank+1, tag);
-    }
+  // write global data
 
-  } else {
-
-    MPI::COMM_WORLD.Recv(&slicecount, 1, MPI::INT, rank-1, tag,status);
-
-    hid_t fid=H5Fopen(filename,H5F_ACC_RDWR,H5P_DEFAULT);   
-    slicecount+=this->writeSlice(fid, beam, slicecount);
-    H5Fclose(fid);
-
-    if (rank < (size-1)){
-      	MPI::COMM_WORLD.Send(&slicecount, 1, MPI::INT, rank+1, tag);
-    }
-  }
+  this->writeGlobal(beam->nbins,beam->one4one,beam->reflength,beam->slicelength,beam->s0,ntotal);
 
 
-  return;
-}
+  // write slices
 
-void WriteBeamHDF5::writeGlobal(hid_t fid,int nbins,bool one4one, double reflen, double slicelen, double s0, int count)
-{
-
-  int tmp=0;
-  if (one4one) { tmp=1; }
-
-  this->writeDataDouble(fid, "slicelength", &reflen, 1);
-  this->writeDataDouble(fid, "slicespacing", &slicelen, 1);
-  this->writeDataDouble(fid, "refposition", &s0, 1);
-
-  this->writeDataInt(fid, "slicecount", &count, 1);
-  this->writeDataInt(fid, "beamletsize", &nbins, 1);
-  this->writeDataInt(fid, "one4one", &tmp, 1);
-
-  return;
-}
-
-
-int WriteBeamHDF5::writeSlice(hid_t fid, Beam *beam, int off)
-{
-  int nslice=beam->beam.size();
+  // loop through slices
   
+  int smin=rank*beam->beam.size();
+  int smax=smin+beam->beam.size();
+
+  vector<double> work,cur;
+  cur.resize(1);
+  int nwork=0;
   int npart=0;
-  vector<double> work;
 
-  for (int islice=0;islice<nslice;islice++){
- 
-      int npart=beam->beam.at(islice).size();
-      if (npart>work.size()){ work.resize(npart); }
-      char slicename[20];
-      sprintf(slicename,"slice%6.6d",islice+off+1);
-      hid_t gid=H5Gcreate(fid,slicename,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  for (int i=0; i<(ntotal);i++){
+    s0=-1;
+    char name[11];
+    sprintf(name,"slice%6.6d",i+1);
+    hid_t gid=H5Gcreate(fid,name,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
-      
-      this->writeDataDouble(gid, "current", &beam->current.at(islice), 1);
+    int islice= i % beam->beam.size() ;   // count inside the given slice range
 
-      for (int i=0; i<npart;i++){ work[i]=beam->beam.at(islice).at(i).gamma;}  
-      this->writeDataDouble(gid, "gamma", &work[0], npart);
+    if ((i>=smin) && (i<smax)){
+      s0=0;    // select the slice which is writing
+      npart=beam->beam.at(islice).size();
+    }
 
-      for (int i=0; i<npart;i++){ work[i]=beam->beam.at(islice).at(i).theta;}  
-      this->writeDataDouble(gid, "theta", &work[0], npart);
+    int root = i /beam->beam.size();  // the current rank which sends the informationof a slice
+    MPI::COMM_WORLD.Bcast(&npart,1,MPI::INT, root);
+    if (npart != nwork){   // all cores do need to have the same length -> otherwise one4one crashes
+	nwork=npart;
+	work.resize(nwork);
+    }
 
-      for (int i=0; i<npart;i++){ work[i]=beam->beam.at(islice).at(i).x;}  
-      this->writeDataDouble(gid, "x", &work[0], npart);
+    if (s0==0) {
+       for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).gamma;}
+    }
+    this->writeSingleNode(gid,"gamma"  ,&work);
 
-      for (int i=0; i<npart;i++){ work[i]=beam->beam.at(islice).at(i).y;}  
-      this->writeDataDouble(gid, "y", &work[0], npart);
+    if (s0==0) {
+       for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).theta;}
+    }
+    this->writeSingleNode(gid,"theta"  ,&work);
 
-      for (int i=0; i<npart;i++){ work[i]=beam->beam.at(islice).at(i).px;}  
-      this->writeDataDouble(gid, "px", &work[0], npart);
+    if (s0==0) {
+       for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).x;}
+    }
+    this->writeSingleNode(gid,"x"  ,&work);
 
-      for (int i=0; i<npart;i++){ work[i]=beam->beam.at(islice).at(i).py;}  
-      this->writeDataDouble(gid, "py", &work[0], npart);
+    if (s0==0) {
+       for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).y;}
+    }
+    this->writeSingleNode(gid,"y"  ,&work);
 
+    if (s0==0) {
+       for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).px;}
+    }
+    this->writeSingleNode(gid,"px"  ,&work);
 
-      H5Gclose(gid);
-       
+    if (s0==0) {
+       for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).py;}
+    }
+    this->writeSingleNode(gid,"py"  ,&work);
 
+    if (s0==0){
+      cur[0]=beam->current.at(islice);
+    }
+    this->writeSingleNode(gid,"current",&cur);
+
+          
+    H5Gclose(gid);
   }
-  return nslice;
+
+  H5Fclose(fid);
+
+ 
+
+  return;
 }
+
+void WriteBeamHDF5::writeGlobal(int nbins,bool one4one, double reflen, double slicelen, double s0, int count)
+{
+
+
+
+  vector<double> tmp;
+  tmp.resize(1);
+
+  tmp[0]=reflen;
+  this->writeSingleNode(fid,"slicelength",&tmp);
+  tmp[0]=slicelen;
+  this->writeSingleNode(fid,"slicespacing",&tmp);
+  tmp[0]=s0;
+  this->writeSingleNode(fid,"refposition",&tmp);
+  
+  vector<int> itmp;
+  itmp.resize(1);
+
+  itmp[0]=nbins;
+  this->writeSingleNodeInt(fid,"beamletsize",&itmp);
+  itmp[0]=count;
+  this->writeSingleNodeInt(fid,"slicecount",&itmp);
+  itmp[0]=static_cast<int>(one4one);
+  this->writeSingleNodeInt(fid,"one4one",&itmp);
+  
+  return;
+}
+
+
 
 
 
