@@ -73,7 +73,7 @@ void WriteFieldHDF5::writeMain(string fileroot, Field *field){
 
   for (int i=0; i<ntotal;i++){
     s0=-1;
-    char name[11];
+    char name[16];
     sprintf(name,"slice%6.6d",i+1);
     hid_t gid=H5Gcreate(fid,name,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
