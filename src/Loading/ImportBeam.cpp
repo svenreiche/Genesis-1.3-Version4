@@ -52,7 +52,7 @@ bool ImportBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, S
   
 
   if (rank==0){
-    cout << "Analysing particle distribution..." << endl; 
+    cout << "Importing particle distribution from file: " << file << " ..." << endl; 
   }
 
   ReadBeamHDF5 import;
@@ -62,6 +62,8 @@ bool ImportBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, S
     import.close();
     return check; 
   }
+
+
 
   // sample rate and time dependent run could have changed when taken by externaldistribution in readGlobal
   double sample=static_cast<double>(time->getSampleRate());         // check slice length

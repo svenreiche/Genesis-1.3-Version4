@@ -10,39 +10,49 @@ ReadFieldHDF5::~ReadFieldHDF5()
   if (nwork>0){
    delete [] work;
   }
-  if (isOpen){
-   H5Fclose(fid);
-  }  
 }
 
-bool ReadFieldHDF5::open(char *filename, int *ngrid, double *dgrid, double *lambda)
+
+void ReadFieldHDF5::close(){
+  if (isOpen){ H5Fclose(fid); }
+}
+  
+
+bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time *time, double offset, bool dotime)
 {
 
-  hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
-  H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
-  fid=H5Fopen(filename,H5F_ACC_RDONLY,pid);
-  H5Pclose(pid);
+
+  isOpen=false;
+  // read global data
+
+  double reflen,slen,gridsize;
+  int count,ngrid;
 
 
+  fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);  
+  readDataDouble(fid,(char *)"refposition",&s0,1);
+  readDataDouble(fid,(char *)"gridsize",&gridsize,1);
+  readDataDouble(fid,(char *)"wavelength",&reflen,1);
+  readDataDouble(fid,(char *)"slicespacing",&slicelen,1);
+  readDataInt(fid,(char *)"slicecount",&count,1);
+  readDataInt(fid,(char *)"gridpoints",&ngrid,1);
   isOpen=true;
 
-  nwork=getDatasetSize(fid,(char *)"/slice000001/field-real");
-  *ngrid=sqrt(nwork);
-  readDataInt(fid,(char *)"slicecount",&count,1);
-  readDataDouble(fid,(char *)"gridsize",dgrid,1);
-  readDataDouble(fid,(char *)"wavelength",lambda,1);  
-  readDataDouble(fid,(char *)"refposition",&s0,1);
-  readDataDouble(fid,(char *)"slicespacing",&slen,1);
+  nwork=ngrid*ngrid;
+  work = new double [nwork];
+
+  
+
+  double lambda=setup->getReferenceLength();                        // reference length for theta
+  
+  s0=s0+offset;  // add offset from input deck
+  slen=slicelen*count;
+  return true;
+} 
 
 
 
-  // allocate some work arrays
-  work=new double [nwork];
-
-  return true; 
-}
-
-
+/*
 bool ReadFieldHDF5::readfield(double s, vector< complex<double> > *field){
 
   for(int i=0;i<nwork;i++){
@@ -79,5 +89,5 @@ bool ReadFieldHDF5::readfield(double s, vector< complex<double> > *field){
 
   return true;
 }
-
+*/
 

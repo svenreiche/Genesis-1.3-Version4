@@ -19,8 +19,13 @@ void ReadBeamHDF5::close(){
 bool ReadBeamHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time *time, double offset, bool dotime)
 {
 
-  double slen,reflen;
+
+  isOpen=false;
+  // read global data
+
+  double reflen,slen;
   int count,nbins,one4one;
+
 
   fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);  
   readDataDouble(fid,(char *)"refposition",&s0,1);
@@ -29,19 +34,21 @@ bool ReadBeamHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time
   readDataInt(fid,(char *)"slicecount",&count,1);
   readDataInt(fid,(char *)"beamletsize",&nbins,1);
   readDataInt(fid,(char *)"one4one",&one4one,1);
-
-  s0=s0+offset;  // add offset from input deck
-  slen=slicelen*count;
   isOpen=true;
 
-  double lambda=setup->getReferenceLength();   // reference length for theta
-  double sample=static_cast<double>(time->getSampleRate());         // check slice length
+
+  double lambda=setup->getReferenceLength();                        // reference length for theta
   
+  s0=s0+offset;  // add offset from input deck
+  slen=slicelen*count;
+
+
 
   if (fabs((lambda-reflen)/lambda)>1e-6){
       if (rank==0){ cout << "*** Error: Mismatch between reference length of run and of input file" << endl;}
       return false;    
   }
+
 
   if (nbins!=setup->getNbins()){
       if (rank==0){ cout << "*** Error: Mismatch between beamlet size (NBINS) of run and of input file" << endl;}
@@ -55,28 +62,34 @@ bool ReadBeamHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time
   }
 
 
-
-  if (time->isInitialized()){                       // the time window has been defined
-    double ts0=time->getTimeWindowStart();
-    double tslen=time->getTimeWindowLength(); 
-    if ((ts0<s0) || (ts0+tslen)>(s0+slen)){
-      if (rank==0){ cout << "*** Error: Defined time window is larger than given by input file" << endl;}
-      return false;
-    }
-    if (slicelen>(lambda*sample)){
-      if (rank==0){ cout << "*** Error: Defined sample rate is finer than given by input file" << endl;}
-      return false;
-    }
-  } else {
-    if (count > 1){   // define time element
+  // set-up time window if not set.
+  if ((!time->isInitialized())&& (count >1)){
       time->setSampleRate(slicelen/reflen); 
       time->setTimeWindowStart(s0);
       time->setTimeWindowLength(slen);
+
       map<string,string> arg;
       if (dotime) { arg["time"]="true"; } else { arg["time"]="false"; }
       bool check=time->init(rank, size, &arg, setup);
       if (!check){ return check; }
-    }
+  }
+
+
+
+  double sample=static_cast<double>(time->getSampleRate());         // check slice length
+  if (fabs(slicelen-lambda*sample)/slicelen>1e-6){
+      if (rank==0){ cout << "*** Error: Mismatch in sample rate of run and of input file" << endl;}
+      return false;
+  }
+
+
+
+
+  double ts0=time->getTimeWindowStart();
+  double tslen=time->getTimeWindowLength(); 
+  if ((ts0<s0) || (ts0+tslen)>(s0+slen)){
+      if (rank==0){ cout << "*** Error: Defined time window is larger than given by input file" << endl;}
+      return false;
   }
 
   // check if time window fits or whether it is defined by the external file

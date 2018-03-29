@@ -148,6 +148,10 @@ bool Beam::harmonicConversion(int harmonic, bool resample)
     }
     beam[i].clear(); 
   }
+
+
+  // updating the sorting algorithm
+
   int shift=this->sort();  // sort the particles and update current
   return true;
 }
@@ -198,6 +202,11 @@ bool Beam::subharmonicConversion(int harmonic, bool resample)
   }
   beam.resize(nsize/harmonic);
   current.resize(nsize/harmonic);
+
+  // updating the sorting algorithm
+  int isz=beam.size();
+  double sl=4*asin(1.)*slicelength/reflength;
+  sorting.configure(0,sl,0,sl*isz,0,sl*isz,false); 
 
 
   int shift=this->sort();  // sort the particles and update current

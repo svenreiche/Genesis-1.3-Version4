@@ -47,23 +47,19 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
     return false;
   }
 
-  
-
   if (rank==0){
-    cout << "Analysing field distribution..." << endl; 
+    cout << "Importing field distribution from file: " << file << " ..." << endl; 
   }
 
-  // not yet working!!!!!!!!!!!!!!!
-
-  /*
-
-  ReadBeamHDF5 import;
+  ReadFieldHDF5 import;
 
   bool check=import.readGlobal(rank, size, file, setup, time, offset,dotime);
   if (!check) { 
     import.close();
     return check; 
   }
+
+  /*
 
   // sample rate and time dependent run could have changed when taken by externaldistribution in readGlobal
   double sample=static_cast<double>(time->getSampleRate());         // check slice length

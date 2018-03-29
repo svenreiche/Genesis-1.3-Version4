@@ -111,7 +111,7 @@ void Field::track(double delz, Beam *beam, Undulator *und)
 bool Field::subharmonicConversion(int harm_in, bool resample)
 {
   // note that only an existing harmonic will be preserved
-  harm=harm_in;
+  harm=harm * harm_in;
   if ((!resample)|| (harm_in==1)){
     return true;
   }
@@ -120,32 +120,31 @@ bool Field::subharmonicConversion(int harm_in, bool resample)
   int nsize=field.size();
 
 
-  if ((nsize % harm) !=0) { return false;} 
-
-  for (int i=0; i<nsize/harm;i++){
+  if ((nsize % harm_in) !=0) { return false;} 
+  for (int i=0; i<nsize/harm_in;i++){
     int jstart=0;
     if (i==0){jstart=1;}
-    for (int j=jstart; j<harm;j++){
-      int idx=i*harm+j;  // that is the slice where the particles are copied from
+    for (int j=jstart; j<harm_in;j++){
+      int idx=i*harm_in+j;  // that is the slice where the particles are copied from
       for (int k=0; k<ngrid*ngrid;k++){
-	field[i].at(k)+=field[idx].at(k);  // add field to slice
+	field[i].at(k)=field[idx].at(k);  // add field to slice
 	field[idx].at(k)=0;
       }
     }
   }
 
-  field.resize(nsize/harm);
-  double scl=1./static_cast<double>(harm);
+  field.resize(nsize/harm_in);
+  double scl=1./static_cast<double>(harm_in);
   for (int i=0; i<field.size();i++){
      for (int k=0; k<ngrid*ngrid;k++){
        field[i].at(k)*scl;  // do mean average because field were added up.
      }
   }
   
-  if ((first % harm) != 0){
-    first-=(first%harm);
+  if ((first % harm_in) != 0){
+    first-=(first%harm_in);
   }
-  first=first/harm;
+  first=first/harm_in;
   return true;
 }
 
@@ -176,7 +175,6 @@ bool Field::harmonicConversion(int harm_in, bool resample)
       }
     }
   }
-  cout << "Slicing field" << endl;
   first*=harm_in; // adjust pointer of first slice
   return true;
 }
