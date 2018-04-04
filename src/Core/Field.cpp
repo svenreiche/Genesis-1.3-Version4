@@ -1,3 +1,4 @@
+
 #include "Field.h"
 #include "genesis_fortran_common.h"
 
@@ -119,32 +120,63 @@ bool Field::subharmonicConversion(int harm_in, bool resample)
   slicelength*=static_cast<double>(harm_in);
   int nsize=field.size();
 
+  // step zero - calculate the radiation power, per slice
 
-  if ((nsize % harm_in) !=0) { return false;} 
-  for (int i=0; i<nsize/harm_in;i++){
-    int jstart=0;
-    if (i==0){jstart=1;}
-    for (int j=jstart; j<harm_in;j++){
-      int idx=i*harm_in+j;  // that is the slice where the particles are copied from
-      for (int k=0; k<ngrid*ngrid;k++){
-	field[i].at(k)=field[idx].at(k);  // add field to slice
-	field[idx].at(k)=0;
-      }
+  vector<double> pow;
+  pow.resize(nsize);
+  for (int i=0;i<nsize;i++){
+    pow[i]=0;
+    for (int k=0; k<ngrid*ngrid;k++){
+      complex<double> loc =field[i].at(k);  
+      pow[i]+=loc.real()*loc.real()+loc.imag()*loc.imag();
     }
   }
 
-  field.resize(nsize/harm_in);
+ 
+  // step one - merge adjacent files into the first. 
+  for (int i=0; i<nsize;i=i+harm_in){
+    int is0= (i+first) % nsize; // loop over slices in the right order
+    for (int j=1; j<harm_in; j++){
+       int is1= (i+j+first) % nsize; // loop over slices to be merged
+       for (int k=0; k<ngrid*ngrid;k++){
+	 field[is0].at(k)+=field[is1].at(k);  // add field to slice
+       }
+       pow[is0]+=pow[is1];                  // add up power
+
+    }
+  }
+
+  // step two - copy the merged one in the right order
   double scl=1./static_cast<double>(harm_in);
-  for (int i=0; i<field.size();i++){
+
+  int di=first % harm_in;
+  for (int i=0; i<nsize/harm_in;i++){
      for (int k=0; k<ngrid*ngrid;k++){
-       field[i].at(k)*scl;  // do mean average because field were added up.
+	field[i].at(k)=field[i*harm_in+di].at(k);
      }
+     pow[i]=pow[i*harm_in+di]*scl;    // calculate the normalized power
   }
+  first=(first-di)/harm_in;
+
+  // step three - average field by the subharmonic number
+  field.resize(nsize/harm_in);
+  for (int i=0; i<field.size();i++){
+    double powloc=0;
+    for (int k=0; k<ngrid*ngrid;k++){
+       complex<double> loc =field[i].at(k);  
+       powloc+=loc.real()*loc.real()+loc.imag()*loc.imag();
+    }
+    if (pow[i]>0){
+     for (int k=0; k<ngrid*ngrid;k++){
+       field[i].at(k)*=sqrt(pow[i]/powloc);  // do mean average because field were added up.
+     }
+    }
+
+  }
+
+
   
-  if ((first % harm_in) != 0){
-    first-=(first%harm_in);
-  }
-  first=first/harm_in;
+
   return true;
 }
 
