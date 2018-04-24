@@ -8,6 +8,7 @@ Track::Track()
   sort_step=0;
   dumpFieldStep=0;
   dumpBeamStep=0;
+  bunchharm=1;
 }
 
 Track::~Track(){}
@@ -23,6 +24,7 @@ void Track::usage(){
   cout << " int field_dump_step  = 0" << endl;
   cout << " int beam_dump_step  = 0" << endl;
   cout << " int sort_step = 0" << endl;
+  cout << " int bunchharm = 1" << endl;
   cout << "&end" << endl << endl;
   return;
 }
@@ -32,6 +34,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
  
   rank=inrank;
   size=insize;
+  bunchharm=1; //reset to default for each tracking
   
   bool isTime=time->isTime();
   bool isScan=time->isScan();
@@ -49,6 +52,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   if (arg->find("field_dump_step")!=end)  {dumpFieldStep= atoi(arg->at("field_dump_step").c_str()); arg->erase(arg->find("field_dump_step"));}
   if (arg->find("beam_dump_step")!=end)   {dumpBeamStep = atoi(arg->at("beam_dump_step").c_str());  arg->erase(arg->find("beam_dump_step"));}
   if (arg->find("sort_step")!=end)   {sort_step= atoi(arg->at("sort_step").c_str());  arg->erase(arg->find("sort_step"));}
+  if (arg->find("bunchharm")!=end)   {bunchharm= atoi(arg->at("bunchharm").c_str());  arg->erase(arg->find("bunchharm"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &track" << endl; this->usage();}
@@ -70,7 +74,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   und->updateOutput(zstop,output_step);
   und->updateMarker(dumpFieldStep,dumpBeamStep,sort_step,zstop);
 
-
+  beam->setBunchingHarmonicOutput(bunchharm);
   // call to gencore to do the actual tracking.  
 
   Gencore core;

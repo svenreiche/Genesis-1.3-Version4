@@ -43,6 +43,8 @@ void Sorting::configure(double s0_in, double slicelen_in, double sendmin_in, dou
 
 int Sorting::sort(vector <vector <Particle> > * recdat){
 
+      cout << "Rank: " << rank << " s0: " << s0 << " slen: " << slen << " sendmin: " << sendmin << " sendmax: " << sendmax << " keepmin: " << keepmin << " keepmax: " << keepmax << " globaL : " << globalframe << endl;
+
   if (!dosort) {
     if (rank==0) {cout << "*** Warning: Sorting only enabled for one-2-one simulations" << endl;}
     return 0;
@@ -76,6 +78,7 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
   // note that global sorting comes first. Therefore all particles are staying in the same domain 
 
   for (int a=0;a<recdat->size();a++){  //Run over the slices 
+    //    int count =0;
     for (int b=0;b<recdat->at(a).size();b++) {  //Loop over the partiles in the slice
 
       double theta=recdat->at(a).at(b).theta;
@@ -103,8 +106,10 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
 	  recdat->at(a).at(b).py   =recdat->at(a).at(recdat->at(a).size()-1).py;
 	  recdat->at(a).pop_back();
 	  b--;
+	  //	  count++;
       }
-    }  
+    }
+    //    cout << "Rank: " << rank << " Slice: " << a << " Shifted: " << count << endl;
   }
 
 
@@ -124,6 +129,8 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
   if (rank==0) { pushbackward.clear(); }
 
   if (size==1) { return; } // no need to transfer if only one node is used.
+  
+  cout << "Rank: " << rank << " - Forward: " << pushforward.size()/6 << " - Backward: " << pushbackward.size()/6 << endl;
 
   int maxiter=size-1;  
   int nforward=pushforward.size();
@@ -281,6 +288,7 @@ void Sorting::fillPushVectors(vector< vector <Particle> >*rec)
   double shift=slen;  // flag to indicate correction in position because each slice has its own position ( 3pi in slice 5 is pi in slice 6}
   if (globalframe) {shift = 0;} // don't change position if it is a global frame (e.g. when importing elegant distibution)
   
+  int count = 0;
 
   for (int i = 0; i < nsize; i++){  // loop over slices
     for (int j = 0; j < rec->at(i).size(); j++){ // loop over particles in slice
@@ -310,11 +318,10 @@ void Sorting::fillPushVectors(vector< vector <Particle> >*rec)
 
     int j=0;
 
- 
     while (j<rec->at(i).size()){
         double s = s0+slen*i+rec->at(i).at(j).theta;  // get the actual position
         if ((s<keepmin)||(s>keepmax)){
-
+          count++;
  	  int ilast=rec->at(i).size()-1;
 	  rec->at(i).at(j).theta=rec->at(i).at(ilast).theta;
 	  rec->at(i).at(j).gamma=rec->at(i).at(ilast).gamma;
@@ -329,7 +336,7 @@ void Sorting::fillPushVectors(vector< vector <Particle> >*rec)
     }
 
   }
-
+  cout << "Rank: " <<rank << " Deleted: " << count << endl;
 }
 
 

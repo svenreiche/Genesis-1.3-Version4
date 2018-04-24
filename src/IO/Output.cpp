@@ -210,6 +210,16 @@ void Output::writeBeamBuffer(Beam *beam)
   this->writeBuffer(gid, "emitx",&beam->ex);
   this->writeBuffer(gid, "emity",&beam->ey);
   this->writeBuffer(gid, "current",&beam->cu);
+
+  int bh=beam->getBunchingHarmonics();
+  char bgroup[20];
+  for (int i=1; i<bh;i++){
+    sprintf(bgroup,"bunching%d",(i+1));
+    this->writeBuffer(gid, bgroup,  &beam->bh[i-1]);
+    sprintf(bgroup,"bunchingphase%d",(i+1));
+    this->writeBuffer(gid, bgroup,  &beam->ph[i-1]);
+  }
+
   // step 3 - close group and done
 
   H5Gclose(gid);

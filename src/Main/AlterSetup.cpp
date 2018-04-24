@@ -9,6 +9,7 @@ AlterSetup::AlterSetup()
   harmonic=1;
   subharmonic=1;
   resample=false;
+  disable=false;
 
 }
 
@@ -25,6 +26,7 @@ void AlterSetup::usage(){
   cout << " int harmonic = 1" << endl;
   cout << " int subharmonic = 1" << endl;
   cout << " bool resample = false" << endl;
+  cout << " bool disable = false" << endl;
   cout << "&end" << endl << endl;
   return;
 }
@@ -46,6 +48,7 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
   if (arg->find("subharmonic")!=end){subharmonic  = atoi(arg->at("subharmonic").c_str());  arg->erase(arg->find("subharmonic"));}
   if (arg->find("harmonic")!=end){harmonic  = atoi(arg->at("harmonic").c_str());  arg->erase(arg->find("harmonic"));}
   if (arg->find("resample")!=end){resample  = atob(arg->at("resample"));  arg->erase(arg->find("resample"));}
+  if (arg->find("disable")!=end){disable  = atob(arg->at("disable"));  arg->erase(arg->find("disable"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &alter_setup" << endl; this->usage();}
@@ -121,9 +124,15 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
     // step 4.3 - field
     for (int i=0; i<field->size();i++){
       if (field->at(i)->getHarm()!=harmonic){
-	if (rank==0) {cout << "Deleting non-matching radiation harmonic: " << field->at(i)->getHarm() << " in harmonic conversion" << endl;}
-	field->erase(field->begin()+i);
-	i--; // reseting the count
+        if (disable) {
+	    if (rank==0) {cout << "Disabling non-matching radiation harmonic: " << field->at(i)->getHarm() << " in harmonic conversion" << endl;}
+	    field->at(i)->disable(1./static_cast<double>(harmonic));
+
+	} else {
+	    if (rank==0) {cout << "Deleting non-matching radiation harmonic: " << field->at(i)->getHarm() << " in harmonic conversion" << endl;}
+	    field->erase(field->begin()+i);
+	    i--; // reseting the count
+        }
       }else{
 	if (rank==0) {cout << "Converting radiation harmonic: " << harmonic << " to fundamental and keep it in memory" << endl;}
 	 if (!(field->at(i)->harmonicConversion(harmonic,resample))){

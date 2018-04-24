@@ -25,6 +25,8 @@ void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, d
 }
 
 
+
+
 void Beam::initDiagnostics(int nz)
 {
   
@@ -49,6 +51,17 @@ void Beam::initDiagnostics(int nz)
   ex.resize(ns);
   ey.resize(ns);
   cu.resize(ns);
+  
+  bh.clear();
+  ph.clear();
+  if (bharm>1){
+    bh.resize(bharm-1);
+    ph.resize(bharm-1);
+    for (int i=0;i<(bharm-1);i++){
+      bh[i].resize(nz*ns);
+      ph[i].resize(nz*ns);
+    }
+  }
 
 }
 
@@ -258,6 +271,7 @@ void Beam::diagnostics(bool output, double z)
       br+=cos(btmp);
       bi+=sin(btmp);
     }
+
     double scl=1;
     if (nsize>0){
       scl=1./static_cast<double>(nsize);
@@ -286,6 +300,17 @@ void Beam::diagnostics(bool output, double z)
     pyavg[ioff+is]=bpyavg;
     bunch[ioff+is]=bbavg;
     bphi[ioff+is]=bbphi;
+    for (int ih=1; ih<bharm;ih++){   // calculate the harmonics of the bunching
+      br=0;
+      bi=0;
+      for (int i=0;i < nsize;i++){
+        double btmp=static_cast<double>(ih+1)*beam.at(is).at(i).theta;
+        br+=cos(btmp);
+        bi+=sin(btmp);
+      }
+      bh[ih-1][ioff+is]=sqrt(bi*bi+br*br)*scl;
+      ph[ih-1][ioff+is]=atan2(bi,br);
+    }
   }
   idx++;
 }

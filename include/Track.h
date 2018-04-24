@@ -29,7 +29,7 @@ class Track{
  private:
    void usage();
    double zstop,slen,s0;
-   int output_step,dumpFieldStep,dumpBeamStep,sort_step;
+   int output_step,dumpFieldStep,dumpBeamStep,sort_step,bunchharm;
    int rank, size;
 };
 

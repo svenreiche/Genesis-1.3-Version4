@@ -32,7 +32,7 @@ class AlterSetup: public StringProcessing, public HDF5Base {
    void usage();
    string rootname,lattice,beamline;
    double delz;
-   bool resample;
+   bool resample,disable;
    int harmonic,subharmonic,rank;
 };
 

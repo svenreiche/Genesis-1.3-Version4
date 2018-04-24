@@ -11,6 +11,7 @@ Field::~Field(){}
 Field::Field(){
   harm=1;
   polarization=false;
+  disabled=false;
 }
 
 
@@ -51,6 +52,7 @@ void Field::init(int nsize, int ngrid_in, double dgrid_in, double xlambda0, doub
 void Field::initDiagnostics(int nz)
 {
   idx=0;
+  accuslip=0;    
   int ns=field.size();
 
 

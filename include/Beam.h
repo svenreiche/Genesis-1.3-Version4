@@ -31,6 +31,10 @@ class Beam{
    int sort();
    void track(double, vector<Field *> *, Undulator *);
 
+
+   void setBunchingHarmonicOutput(int harm_in);
+   int getBunchingHarmonics();
+
    vector< vector<Particle> > beam;
    vector<double> current;
    double reflength,slicelength;   // for conversion of theta in Particle to real position
@@ -41,6 +45,7 @@ class Beam{
    // output buffer
    vector<double> zpos,gavg,gsig,xavg,xsig,yavg,ysig,pxavg,pyavg,bunch,bphi;
    vector<double> bx,by,ax,ay,ex,ey,cu;
+   vector< vector<double> > bh,ph;  // harmonic bunching and bunching phase
    
  private:
    BeamSolver solver;
@@ -48,12 +53,24 @@ class Beam{
    Collective col;
    Sorting sorting;
    int idx;
+   int bharm;
 };
 
 
 inline void Beam::initEField(double rmax, int ngrid, int nz, int nphi, double lambda){
   solver.initEField(rmax,ngrid,nz,nphi,lambda);
   return;
+}
+
+
+inline void Beam::setBunchingHarmonicOutput(int harm_in)
+{
+  bharm=harm_in;
+}
+
+inline int Beam::getBunchingHarmonics()
+{
+  return bharm;
 }
 
 #endif

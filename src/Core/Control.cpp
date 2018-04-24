@@ -171,11 +171,12 @@ void Control::applySlippage(double slippage, Field *field)
 
   int direction=1;
 
+
   while(abs(accushift)>(sample*0.8)){
       // check for anormal direction of slippage (backwards slippage)
       if (accushift<0) {direction=-1;} 
 
-      accushift-=sample*direction;
+      accushift-=sample*direction; 
 
       // get adjacent node before and after in chain
       int rank_next=rank+1;

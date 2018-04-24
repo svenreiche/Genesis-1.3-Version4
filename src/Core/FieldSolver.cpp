@@ -24,7 +24,7 @@ void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
 
     int harm=field->getHarm();
     // construc source term
-    if (und->inUndulator()) { 
+    if (und->inUndulator()&& field->isEnabled()) { 
       double scl=und->fc(harm)*vacimp*beam->current[ii]*field->xks*delz;
        scl/=4*eev*beam->beam[ii].size()*field->dgrid*field->dgrid;
        complex<double> cpart;
