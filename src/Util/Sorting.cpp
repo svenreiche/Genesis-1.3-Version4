@@ -279,7 +279,8 @@ void Sorting::send(int target, vector<double> *data)
 
 void Sorting::fillPushVectors(vector< vector <Particle> >*rec)
 {
-
+  cout << "Rank: " << rank << " sendmin: " << sendmin << " sendmax: " << sendmax << endl;
+  cout << "Rank: " << rank << " keepmin: " << keepmin << " keepmax: " << keepmax << endl;
   //step one - fill the push vectors
   pushforward.clear();
   pushbackward.clear();
@@ -336,7 +337,7 @@ void Sorting::fillPushVectors(vector< vector <Particle> >*rec)
     }
 
   }
-  cout << "Rank: " <<rank << " Deleted: " << count << endl;
+  cout << "Rank: " <<rank << " Deleted: " << count << " Forward: " << pushforward.size()/6 << " Backward: " <<pushbackward.size()/6 << endl;
 }
 
 

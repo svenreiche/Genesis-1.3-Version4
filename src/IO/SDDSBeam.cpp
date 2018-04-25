@@ -16,6 +16,7 @@ SDDSBeam::SDDSBeam()
   betay=15;
   alphay=0;
   charge=0;
+  settime=false;
   center=false;
   match=false;
   matchs0=0;
@@ -23,8 +24,6 @@ SDDSBeam::SDDSBeam()
   align=0;
   aligns0=0;
   aligns1=0;
-  sdds=false;
-  
 }
 
 SDDSBeam::~SDDSBeam(){}
@@ -34,9 +33,9 @@ void SDDSBeam::usage(){
   cout << "List of keywords for importdistribution" << endl;
   cout << "&importdistribution" << endl;
   cout << " string file = <empty> " << endl;
-  cout << " bool sdds = false" << endl;
-  cout << " double charge   = 0" << endl;
+  cout << " double charge   = 0 / <distribution file>" << endl;
   cout << " double slicewidth = 0.01" << endl;
+  cout << " bool settimewindow = true" << endl;
   cout << " bool output = false " << endl;
   cout << " bool center = false " << endl;
   cout << " double gamma0 = gammaref " << endl;
@@ -109,52 +108,56 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   if (arg->find("match")!=end)    {match = atob(arg->at("match").c_str()); arg->erase(arg->find("match"));}
   if (arg->find("center")!=end)   {center= atob(arg->at("center").c_str());arg->erase(arg->find("center"));}
   if (arg->find("output")!=end)   {output= atob(arg->at("output").c_str());arg->erase(arg->find("output"));}
-  if (arg->find("sdds")!=end)     {sdds= atob(arg->at("sdds").c_str());arg->erase(arg->find("sdds"));}
+  if (arg->find("settimewindow")!=end)   {settime= atob(arg->at("settimewindow").c_str());arg->erase(arg->find("settimewindow"));}
 
 
 
   if (arg->size()!=0){
-    if (rank==0){ cout << "*** Error: Unknown elements in &sddsbeam" << endl; this->usage();}
+    if (rank==0){ cout << "*** Error: Unknown elements in &importdistribution" << endl; this->usage();}
     return false;
   }
 
-  int status = 0;
-  if (sdds){
-    if (rank==0) { cout << "Converting SDDS distribution file " << file << " into HDF5 file... " << endl;}
-    string command="sdds2hdf-dist.sh " + file;
-    if (rank==0){
-      status=system(command.c_str());
-      if (status!=0){ cout << "*** Error: SDDS Distribution file " << file << " does not exist" << endl;} 
-    }
+  
 
-  }
+  if (rank==0) { cout << "Importing distribution file... " << endl;}
 
-  MPI::COMM_WORLD.Bcast(&status,1,MPI::INT,0); // this statement keeps also all nodes on hold till the converison has been done
-  if (status!=0) {return false;}
-
-
-
-  if (rank==0) { cout << "Importing converted distribution file... " << endl;}
-
-
-
-  string anafile=file;
-  string h5file=file;
-  if (sdds){  
-     string h5file=file.append(".h5");
-  } 
-    
-
+ 
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
   H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
   hid_t fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,pid);
   H5Pclose(pid);
 
+  // step 1 - check whether the field "charge" is present in the distribution
+
+  int hascharge = H5Lexists(fid,"/charge",H5P_DEFAULT);
+  if (hascharge>0){
+    double extcharge;
+    readDouble1D(fid,"charge" ,&extcharge,1,0);
+    if (charge <=0) {
+      charge=extcharge;
+    }
+  }
+  if (rank==0) {cout << "Charge of external distribution: " << charge << endl; }
+
+
+  // step 2 - get size of particle distribution
+
   string dset="t";
+  int hasrecord = H5Lexists(fid,"/t",H5P_DEFAULT);
+  if (hasrecord<=0){
+    if (rank==0) { cout << "*** Error: Missing dataset in distribution file "<< file << endl;}
+     H5Fclose(fid);
+    return false;
+  }
+
   int ntotal=getDatasetSize(fid, (char *)dset.c_str());
   double dQ=charge/static_cast<double> (ntotal);
 
-  if (rank==0) {cout << "DEBUG: Charge: " << charge << " for " <<ntotal << " particles in external distribution" << endl;}
+  if (rank==0) {cout << "Particles in external distribution: " << ntotal << endl;}
+
+ 
+  // step 3 - read datasets - this has to be checked that in parallel read the file can be not equivalent to the chunck size....
+
   int nchunk=ntotal/size;
   if ((ntotal % size) !=0) {nchunk++;}
 
@@ -168,29 +171,66 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   px.resize(nsize);
   py.resize(nsize);
 
+  bool error=false;
   string dname="t";
-  readDouble1D(fid,dname.c_str(),&t[0],nsize,rank*nchunk);
-  dname="p"; 
-  readDouble1D(fid,dname.c_str(),&g[0],nsize,rank*nchunk);
-  dname="x"; 
-  readDouble1D(fid,dname.c_str(),&x[0],nsize,rank*nchunk);
-  dname="xp"; 
-  readDouble1D(fid,dname.c_str(),&px[0],nsize,rank*nchunk);
-  dname="y"; 
-  readDouble1D(fid,dname.c_str(),&y[0],nsize,rank*nchunk);
-  dname="yp"; 
-  readDouble1D(fid,dname.c_str(),&py[0],nsize,rank*nchunk);
-
+  hasrecord=H5Lexists(fid,dname.c_str(),H5P_DEFAULT);
+  if (hasrecord>0){    
+     readDouble1D(fid,dname.c_str(),&t[0],nsize,rank*nchunk);
+  } else {
+    error=true;
+  }
+  dname="p";
+  hasrecord=H5Lexists(fid,dname.c_str(),H5P_DEFAULT);
+  if (hasrecord>0){    
+     readDouble1D(fid,dname.c_str(),&g[0],nsize,rank*nchunk);
+  } else {
+    error=true;
+  }
+  dname="x";
+  hasrecord=H5Lexists(fid,dname.c_str(),H5P_DEFAULT);
+  if (hasrecord>0){    
+     readDouble1D(fid,dname.c_str(),&x[0],nsize,rank*nchunk);
+  } else {
+    error=true;
+  }
+  dname="xp";
+  hasrecord=H5Lexists(fid,dname.c_str(),H5P_DEFAULT);
+  if (hasrecord>0){    
+     readDouble1D(fid,dname.c_str(),&px[0],nsize,rank*nchunk);
+  } else {
+    error=true;
+  }
+  dname="y";
+  hasrecord=H5Lexists(fid,dname.c_str(),H5P_DEFAULT);
+  if (hasrecord>0){    
+     readDouble1D(fid,dname.c_str(),&y[0],nsize,rank*nchunk);
+  } else {
+    error=true;
+  }
+  dname="yp";
+  hasrecord=H5Lexists(fid,dname.c_str(),H5P_DEFAULT);
+  if (hasrecord>0){    
+     readDouble1D(fid,dname.c_str(),&py[0],nsize,rank*nchunk);
+  } else {
+    error=true;
+  }
   H5Fclose(fid);
 
+  if (error) {
+    if (rank==0) { cout << "*** Error: Missing dataset in distribution file " << file << endl;} 
+    return false;
+  }
+
+
+  // step 4 - analysing data file and setting up time window
 
 
   if (rank==0) { cout << "Analysing external distribution... " << endl;}
 
 
   for (int i=0; i<nsize; i++){
-    t[i]*=-3e8;
-    g[i]+=1.;
+    t[i]*=-3e8;       // convert to positin in meters
+    g[i]+=1.;         // convert from kinetic energy to total energy
   }
 
 
@@ -200,14 +240,19 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   MPI::COMM_WORLD.Allreduce(&tmp,&tmin,1,MPI::DOUBLE,MPI::MIN);
   tmp=*max_element(t.begin(),t.end());
   MPI::COMM_WORLD.Allreduce(&tmp,&tmax,1,MPI::DOUBLE,MPI::MAX);
-  tmp=accumulate(g.begin(),g.end(),0);
-
 
   double ttotal=tmax-tmin;
 
   for (int i=0; i<nsize; i++){
     t[i]-=tmin;
   }
+
+
+  if (settime){
+    time->setTimeWindowStart(0); 
+    time->setTimeWindowLength(ttotal); 
+    time->finishInit(setup);
+  } 
 
 
   if (rank==0) {
@@ -217,7 +262,8 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
 
   this->analyse(ttotal,nsize);
 
-
+ 
+  // step 5 - match/center distribution
 
   if (match) {
     if (rank==0){cout << "Matching external distribution..." << endl; }
@@ -274,7 +320,8 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   }
 
 
-  // slicing external distribution to fill given slizes
+  // step 6 - sort distribution
+
 
   vector<double> s;
   int nslice=time->getPosition(&s);
@@ -288,8 +335,10 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   if (rank==0) {cout << "Sorting external distribution..." << endl; }
 
   double dslen=ds*ttotal;  // ds is the relative width to extract the samples (equivalent to 1/NDCUT)
+
   vector<vector<Particle> > dist;
   dist.resize(1);
+  dist[0].clear();
 
   // copying all particles into the dist vector to enable sorting
   Particle part;
@@ -310,17 +359,17 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   py.clear();
 
 
-  // needs to be fixed....
+  
   Sorting sort;
   sort.init(rank,size,false,true);  
   sort.configure(0,0,smin+0.5*dslen,smax-0.5*dslen,smin-0.5*dslen,smax+0.5*dslen,true); 
   sort.globalSort(&dist);
 
 
+  // step 7 - populate internal distribution
+
   // now each node has all the particles, which is needed for the phase space reconstruction
   if (rank==0) {cout << "Generating internal particle distribution..." << endl; }
-
-
 
 
   this->initRandomSeq(setup->getSeed());
@@ -357,7 +406,7 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
     if (beam->beam.at(islice).size() >= mpart){
       this->removeParticles(&beam->beam.at(islice),mpart);
     } else {
-      this->addParticles(&beam->beam.at(islice),mpart);
+      this->addParticles(&beam->beam.at(islice),mpart);  // check for empty slices
     }
 
     // step 4 - refill particle phase completely new
@@ -414,9 +463,30 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
 
 void SDDSBeam::addParticles(vector<Particle> *beam, int mpart){
    
+
+  // check for error if there are only one or none particle to fill up distribution 
   int  ndist=beam->size();
+  Particle par;
+
   if (ndist==0){
-    return;
+     par.x=0;
+     par.y=0;
+     par.px=0;
+     par.py=0;
+     par.theta=0;
+     par.gamma=gamma;
+     beam->push_back(par);
+     ndist++;
+  }
+  if (ndist==1){   // mirror particle for algorithm to work 
+    par.x    =beam->at(0).x;
+    par.y    =beam->at(0).y;
+    par.px   =beam->at(0).px;
+    par.py   =beam->at(0).py;
+    par.theta=beam->at(0).theta;
+    par.gamma=beam->at(0).gamma;
+    beam->push_back(par);
+    ndist++;
   }
 
   // step 1 - calculate the center and the rms beam size
@@ -474,7 +544,6 @@ void SDDSBeam::addParticles(vector<Particle> *beam, int mpart){
   
   // step 4 - add particles
   int ndist0=ndist;
-  Particle par;
   while (ndist<mpart){
     int n1=static_cast<int>(floor(static_cast<double>(ndist0)*ran->getElement()));
     double rmin=1e9;
