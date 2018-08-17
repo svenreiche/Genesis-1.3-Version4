@@ -1,6 +1,8 @@
 
 #include "writeBeamHDF5.h"
 
+extern bool MPISingle;
+
 
 // constructor destructor
 WriteBeamHDF5::WriteBeamHDF5()
@@ -17,13 +19,19 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam){
 
   size=MPI::COMM_WORLD.Get_size(); // get size of cluster
   rank=MPI::COMM_WORLD.Get_rank(); // assign rank to node
+  if (MPISingle){
+    size=1;
+    rank=0;
+  }
 
   char filename[100];
   sprintf(filename,"%s.par.h5",fileroot.c_str()); 
   if (rank == 0) { cout << "Writing particle distribution to file: " <<filename << " ..." << endl;} 
 
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
-  H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+  if (size>1){
+    H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+  }
   fid=H5Fcreate(filename,H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
   H5Pclose(pid);
 
@@ -61,7 +69,10 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam){
     }
 
     int root = i /beam->beam.size();  // the current rank which sends the informationof a slice
-    MPI::COMM_WORLD.Bcast(&npart,1,MPI::INT, root);
+    if (size>1){
+       MPI::COMM_WORLD.Bcast(&npart,1,MPI::INT, root);
+    }
+
     if (npart != nwork){   // all cores do need to have the same length -> otherwise one4one crashes
 	nwork=npart;
 	work.resize(nwork);

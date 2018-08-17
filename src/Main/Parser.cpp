@@ -8,15 +8,27 @@ Parser::~Parser()
 {
 }
 
-bool Parser::open(string file, int inrank)
+bool Parser::open(string file, int inrank, bool streaming)
 {
 
-  rank=inrank;
-  fin.open(file.c_str(),ios_base::in);
+  string instring;
+  ostringstream os;
+  fstream fin;
 
-  if (!fin){
-    if (rank==0) {cout << "*** Error: Cannot open main input file: " << file << endl;}
-    return false;
+  rank=inrank;
+  if (!streaming){
+      fin.open(file.c_str(),ios_base::in);
+      if (!fin){
+         if (rank==0) {cout << "*** Error: Cannot open main input file: " << file << endl;}
+         return false;
+      }
+      while(getline(fin,instring,'\n')){
+	os << instring <<endl;
+      }
+      fin.close();
+      input.str(os.str());
+  } else {
+    input.str(file);   // in the case that the input file is streamed
   }
   return true;
 
@@ -31,7 +43,7 @@ bool Parser::parse(string *element, map<string,string> *argument)
   bool accumulate=false;
   
   
-  while(getline(fin,instring,'\n')){    // read line
+  while(getline(input,instring)){    // read line
     this->trim(instring);
 
     // check for empty lines or comments
@@ -68,7 +80,6 @@ bool Parser::parse(string *element, map<string,string> *argument)
     }
   }
   
-  fin.close();
   return false;
 
 }

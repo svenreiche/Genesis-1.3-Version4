@@ -1,5 +1,7 @@
 #include "Sorting.h"
 
+extern bool MPISingle;
+ 
 #include <algorithm>
 
 Sorting::Sorting()
@@ -43,7 +45,7 @@ void Sorting::configure(double s0_in, double slicelen_in, double sendmin_in, dou
 
 int Sorting::sort(vector <vector <Particle> > * recdat){
 
-      cout << "Rank: " << rank << " s0: " << s0 << " slen: " << slen << " sendmin: " << sendmin << " sendmax: " << sendmax << " keepmin: " << keepmin << " keepmax: " << keepmax << " globaL : " << globalframe << endl;
+  //   cout << "Rank: " << rank << " s0: " << s0 << " slen: " << slen << " sendmin: " << sendmin << " sendmax: " << sendmax << " keepmin: " << keepmin << " keepmax: " << keepmax << " globaL : " << globalframe << endl;
 
   if (!dosort) {
     if (rank==0) {cout << "*** Warning: Sorting only enabled for one-2-one simulations" << endl;}
@@ -60,6 +62,7 @@ int Sorting::sort(vector <vector <Particle> > * recdat){
   // step three - sort within the given node
   this->localSort(recdat);
 
+
   return shift;
 
 }
@@ -74,45 +77,61 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
   Particle p;  
 
   double invslen=1./slen;
-
+  cout << "Testfloor: " << floor(-0.2) << " and " << static_cast<int>(floor(-0.2)) << endl;
   // note that global sorting comes first. Therefore all particles are staying in the same domain 
+  
+  vector<int> count,count2;
+  count.resize(recdat->size());
+  count2.resize(recdat->size());
+  for  (int i=0; i< count.size(); i++){ 
+     count[i]=0;
+     count2[i]=0;
+  }
+
 
   for (int a=0;a<recdat->size();a++){  //Run over the slices 
-    //    int count =0;
-    for (int b=0;b<recdat->at(a).size();b++) {  //Loop over the partiles in the slice
-
+    int b=0;
+    while ( b < recdat->at(a).size()){
       double theta=recdat->at(a).at(b).theta;
       int atar=static_cast<int>(floor(theta*invslen));   // relative target slice. atar = 0 -> stays in same slice
+
       if (atar!=0) {     // particle not in the same slice
+
 	  p.theta=recdat->at(a).at(b).theta-slen*(atar);
 	  p.gamma=recdat->at(a).at(b).gamma;
 	  p.x    =recdat->at(a).at(b).x;
 	  p.y    =recdat->at(a).at(b).y;
 	  p.px   =recdat->at(a).at(b).px;
 	  p.py   =recdat->at(a).at(b).py;
-
-	  //	  int targ=a+atar;
-	  //	  if (targ < 0 or targ > recdat->size()){
-	  //	    cout << "Phase: " << theta << " Origin: " << a << " Target: " << a+atar << " Shift: " << atar << endl;
-	  //	  }
-
 	  recdat->at(a+atar).push_back(p);  // pushing particle in correct slice
+
+          count[a+atar]+=1;
+          count2[a]-=1;
+
 	  // eliminating the current particle
-      	  recdat->at(a).at(b).theta=recdat->at(a).at(recdat->at(a).size()-1).theta;
-	  recdat->at(a).at(b).gamma=recdat->at(a).at(recdat->at(a).size()-1).gamma;
-	  recdat->at(a).at(b).x    =recdat->at(a).at(recdat->at(a).size()-1).x;
-	  recdat->at(a).at(b).y    =recdat->at(a).at(recdat->at(a).size()-1).y;
-	  recdat->at(a).at(b).px   =recdat->at(a).at(recdat->at(a).size()-1).px;
-	  recdat->at(a).at(b).py   =recdat->at(a).at(recdat->at(a).size()-1).py;
+ 	  int ilast=recdat->at(a).size()-1;
+      	  recdat->at(a).at(b).theta=recdat->at(a).at(ilast).theta;
+	  recdat->at(a).at(b).gamma=recdat->at(a).at(ilast).gamma;
+	  recdat->at(a).at(b).x    =recdat->at(a).at(ilast).x;
+	  recdat->at(a).at(b).y    =recdat->at(a).at(ilast).y;
+	  recdat->at(a).at(b).px   =recdat->at(a).at(ilast).px;
+	  recdat->at(a).at(b).py   =recdat->at(a).at(ilast).py;
 	  recdat->at(a).pop_back();
-	  b--;
-	  //	  count++;
+      } else {
+	b++;
       }
     }
-    //    cout << "Rank: " << rank << " Slice: " << a << " Shifted: " << count << endl;
-  }
+  }	  
+	  //	  count++;
+      
+    
 
 
+
+  for (int i=0; i<count.size(); i++){
+    cout<<"Rank: " << rank << " Slice: " << i << " received: " << count[i] << " send: "<<count2[i]<<endl;
+  } 
+   
   return;
 }
 
@@ -127,7 +146,6 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
   this->fillPushVectors(rec);   // here is the actual sorting to fill the vectore pushforward and pushbackward
   if (rank==(size-1)) { pushforward.clear(); }        
   if (rank==0) { pushbackward.clear(); }
-
   if (size==1) { return; } // no need to transfer if only one node is used.
   
   cout << "Rank: " << rank << " - Forward: " << pushforward.size()/6 << " - Backward: " << pushbackward.size()/6 << endl;
@@ -359,10 +377,15 @@ int Sorting::centerShift(vector <vector <Particle> > * recdat)
   }
 
   double tshift,tpart;
+  if (MPISingle){
+    tshift=shift;
+    tpart=part;
 
-  MPI::COMM_WORLD.Allreduce(&shift,&tshift,1,MPI::DOUBLE,MPI::SUM);  // get the info on total number of particles shifted among nodes
-  MPI::COMM_WORLD.Allreduce(&part,&tpart,1,MPI::DOUBLE,MPI::SUM);  // get the info on total number of particles shifted among nodes
-  
+  } else {
+     MPI::COMM_WORLD.Allreduce(&shift,&tshift,1,MPI::DOUBLE,MPI::SUM);  // get the info on total number of particles shifted among nodes
+     MPI::COMM_WORLD.Allreduce(&part,&tpart,1,MPI::DOUBLE,MPI::SUM);  // get the info on total number of particles shifted among nodes
+  }
+
   int nshift=-static_cast<int>(round(tshift/tpart));  // instead of moving more than half the particles forward, it is easier to move the field backwards. Also theta needs to be corrected
 
   for (int a=0;a<recdat->size();a++){  //Run over the slices 

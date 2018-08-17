@@ -29,7 +29,7 @@ void Track::usage(){
   return;
 }
 
-bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, vector<Field *> *field,Setup *setup, Lattice *lat, AlterLattice *alt,Time *time)
+bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, vector<Field *> *field,Setup *setup, Lattice *lat, AlterLattice *alt,Time *time,bool supressOutput)
 {
  
   rank=inrank;
@@ -78,7 +78,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   // call to gencore to do the actual tracking.  
 
   Gencore core;
-  core.run(file.c_str(),beam,field,und,isTime,isScan);
+  core.run(file.c_str(),beam,field,und,isTime,isScan,supressOutput);
 
 
   delete und;

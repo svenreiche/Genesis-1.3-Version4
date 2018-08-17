@@ -1,5 +1,0 @@
-#include "EField.h"
-
-EField::Efield(){}
-EField::~EField(){}
-

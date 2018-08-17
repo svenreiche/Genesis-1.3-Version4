@@ -41,7 +41,7 @@ void Beam::initDiagnostics(int nz)
   gsig.resize(nz*ns);
   pxavg.resize(nz*ns);
   pyavg.resize(nz*ns);
-  bunch.resize(nz*ns);
+  bunch.resize(nz*ns); 
   bphi.resize(nz*ns);
 
   bx.resize(ns);
@@ -126,7 +126,7 @@ bool Beam::harmonicConversion(int harmonic, bool resample)
   }
   for (int i=0; i<beam.size(); i++){
     for (int j=0; j<beam[i].size();j++){
-      beam[i].at(j).theta*=static_cast<double>(harmonic);
+      beam[i].at(j).theta*=static_cast<double>(harmonic); 
     }
   }
   if (!resample) { return true; }
@@ -162,7 +162,6 @@ bool Beam::harmonicConversion(int harmonic, bool resample)
     beam[i].clear(); 
   }
 
-
   // updating the sorting algorithm
 
   int shift=this->sort();  // sort the particles and update current
@@ -178,16 +177,19 @@ bool Beam::subharmonicConversion(int harmonic, bool resample)
   if (resample){ // needs a lot of working here............
     slicelength=slicelength*static_cast<double>(harmonic);
   }
+
+
   for (int i=0; i<beam.size(); i++){
     for (int j=0; j<beam[i].size();j++){
-      beam[i].at(j).theta/=static_cast<double>(harmonic);
+      beam[i].at(j).theta/=static_cast<double>(harmonic);   // preparing to push everything into first slice
     }
   }
   if (!resample) { return true; }
 
- 
-  // copying particles from adjacend slices into one
+  
 
+
+// prepare to copy everyting into the first slice
   int nsize=beam.size();
   Particle p;
 
@@ -196,22 +198,18 @@ bool Beam::subharmonicConversion(int harmonic, bool resample)
   //return true;
 
   double dtheta=4.*asin(1)*slicelength/reflength/static_cast<double>(harmonic);
-  for (int i=0; i<nsize/harmonic;i++){
-    int jstart=0;
-    if (i==0){jstart=1;}
-    for (int j=jstart; j<harmonic;j++){
-      int idx=i*harmonic+j;  // that is the slice where the particles are copied from
-      for (int k=0; k<beam.at(idx).size();k++){
-	p.gamma=beam[idx].at(k).gamma;
-	p.theta=beam[idx].at(k).theta+j*dtheta;
-	p.x    =beam[idx].at(k).x;
-	p.y    =beam[idx].at(k).y;
-	p.px   =beam[idx].at(k).px;
-	p.py   =beam[idx].at(k).py;
-	beam[i].push_back(p);
+
+  for (int i=1; i<nsize;i++){
+      for (int k=0; k<beam.at(i).size();k++){
+	p.gamma=beam[i].at(k).gamma;
+	p.theta=beam[i].at(k).theta+i*dtheta;
+	p.x    =beam[i].at(k).x;
+	p.y    =beam[i].at(k).y;
+	p.px   =beam[i].at(k).px;
+	p.py   =beam[i].at(k).py;
+	beam[0].push_back(p);
       }
-      beam[idx].clear();
-    }
+      beam[i].clear(); 
   }
   beam.resize(nsize/harmonic);
   current.resize(nsize/harmonic);

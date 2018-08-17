@@ -39,7 +39,7 @@ class Output : public HDF5Base {
 
  private:
    void write(hsize_t,string,string,double *);
-
+   bool noOutput;
    hid_t fid;   
 };
 

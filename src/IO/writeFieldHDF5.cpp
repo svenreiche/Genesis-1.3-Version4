@@ -1,6 +1,7 @@
 
 #include "writeFieldHDF5.h"
 
+extern bool MPISingle;
 
 // constructor destructor
 WriteFieldHDF5::WriteFieldHDF5()
@@ -18,6 +19,10 @@ void WriteFieldHDF5::write(string fileroot, vector<Field *> *field){
 
   size=MPI::COMM_WORLD.Get_size(); // get size of cluster
   rank=MPI::COMM_WORLD.Get_rank(); // assign rank to node
+  if (MPISingle){
+    size=1;
+    rank=0;
+  }
 
   for (int i=0; i<field->size();i++){
     int harm=field->at(i)->harm;
@@ -48,7 +53,9 @@ void WriteFieldHDF5::writeMain(string fileroot, Field *field){
   if (rank == 0) { cout << "Writing field distribution to file: " <<filename << " ..." << endl;} 
 
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
-  H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+  if (size>1){
+    H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+  }
   fid=H5Fcreate(filename,H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
   H5Pclose(pid);
 

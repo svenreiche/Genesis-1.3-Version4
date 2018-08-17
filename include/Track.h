@@ -25,7 +25,7 @@ class Track{
  public:
    Track();
    virtual ~Track();
-   bool init(int, int, map<string,string> *,Beam *, vector<Field *> *,Setup *, Lattice *, AlterLattice *, Time *);
+   bool init(int, int, map<string,string> *,Beam *, vector<Field *> *,Setup *, Lattice *, AlterLattice *, Time *,bool);
  private:
    void usage();
    double zstop,slen,s0;

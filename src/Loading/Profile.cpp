@@ -272,31 +272,22 @@ string ProfileFile::init(int rank, map<string,string>*arg)
   int ndata=-1;
   bool success;
 
-  if (rank==0){
-    success=this->simpleReadDouble1D(xdataset,&xdat);
-    if (success){
-      ndata=xdat.size();
-    } else {
-      cout << "*** Error: Cannot read the HDF5 dataset: " << xdataset << endl;}
+  success=this->simpleReadDouble1D(xdataset,&xdat);
+  if (!success){
+    if (rank==0){
+      cout << "*** Error: Cannot read the HDF5 dataset: " << xdataset << endl;
+    }
+    return "";
   }
-  MPI::COMM_WORLD.Bcast(&ndata,1,MPI::INT,0);
-  if (ndata<1) { return ""; }
-  if (rank>0) {xdat.resize(ndata);}
-  MPI::COMM_WORLD.Bcast(&xdat[0],ndata,MPI::DOUBLE,0);
 
-  ndata=-1;  
-
-  if (rank==0){
-    success=this->simpleReadDouble1D(ydataset,&ydat);
-    if (success){
-      ndata=ydat.size();
-    } else {
-      cout << "*** Error: Cannot read the HDF5 dataset: " << ydataset << endl;}
+  success=this->simpleReadDouble1D(ydataset,&ydat);
+  if (!success){
+    if (rank==0){
+      cout << "*** Error: Cannot read the HDF5 dataset: " << ydataset << endl;
+    }
+    return "";
   }
-  MPI::COMM_WORLD.Bcast(&ndata,1,MPI::INT,0);
-  if (ndata<1) { return ""; }
-  if (rank>0) {ydat.resize(ndata);}
-  MPI::COMM_WORLD.Bcast(&ydat[0],ndata,MPI::DOUBLE,0);
+
 
   if (isTime){ 
     for (int i=0; i<xdat.size();i++){

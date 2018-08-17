@@ -56,7 +56,6 @@ bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und)
 void Control::output(Beam *beam, vector<Field*> *field, Undulator *und)
 {
 
-
   
   Output *out=new Output;
 
@@ -69,7 +68,7 @@ void Control::output(Beam *beam, vector<Field*> *field, Undulator *und)
 
 
   for (int i=0; i<field->size();i++){
-       out->writeFieldBuffer(field->at(i));
+        out->writeFieldBuffer(field->at(i));
   }
 
   out->writeBeamBuffer(beam);
@@ -107,9 +106,7 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
 
   nslice=beam->beam.size();
   noffset=rank*nslice;
- 
-  MPI::COMM_WORLD.Reduce(&nslice,&ntotal,1,MPI::INT,MPI::SUM,0);
-  MPI::COMM_WORLD.Bcast(&ntotal,1,MPI::INT,0);
+  ntotal=size*nslice;  // all cores have the same amount of slices
 
   slen=ntotal*sample*reflen;
 

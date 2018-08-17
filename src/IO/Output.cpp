@@ -10,6 +10,7 @@
 #include <fstream>
 #include <streambuf>
 
+extern bool MPISingle;
 
 Output::Output(){
   fid=-1;
@@ -47,6 +48,9 @@ void Output::close(){
 
 void Output::open(string file, int s0_in, int ds_in)
 {
+  
+
+
   // ns = total number of slices
   // nz = total number of integration steps
   // s0 = slice number of first slice for a given node
@@ -58,7 +62,9 @@ void Output::open(string file, int s0_in, int ds_in)
   
   // create the file for parallel access
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
-  H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+  if (!MPISingle){
+    H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+  }
   fid=H5Fcreate(file.c_str(),H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
   H5Pclose(pid);
 
@@ -67,6 +73,9 @@ void Output::open(string file, int s0_in, int ds_in)
 
 void Output::writeMeta()
 {
+
+
+
   hid_t gid,gidsub;
   vector<double> tmp;
   tmp.resize(1);
@@ -121,6 +130,8 @@ void Output::writeMeta()
 void Output::writeGlobal(double gamma, double lambda, double sample, double slen, bool one4one, bool time, bool scan)
 {
 
+
+
   this->writeMeta();   
   vector<double> tmp;
   tmp.resize(1);
@@ -152,6 +163,9 @@ void Output::writeGlobal(double gamma, double lambda, double sample, double slen
  
 void Output::writeLattice(Beam * beam,Undulator *und)
 {
+
+
+
   hid_t gid;
   gid=H5Gcreate(fid,"Lattice",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
@@ -187,6 +201,7 @@ void Output::writeBeamBuffer(Beam *beam)
 {
 
 
+
   // step 1 - create the group
   hid_t gid;
   gid=H5Gcreate(fid,"Beam",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
@@ -218,7 +233,7 @@ void Output::writeBeamBuffer(Beam *beam)
     this->writeBuffer(gid, bgroup,  &beam->bh[i-1]);
     sprintf(bgroup,"bunchingphase%d",(i+1));
     this->writeBuffer(gid, bgroup,  &beam->ph[i-1]);
-  }
+    }
 
   // step 3 - close group and done
 
@@ -230,6 +245,7 @@ void Output::writeBeamBuffer(Beam *beam)
 
 void Output::writeFieldBuffer(Field *field)
 {
+
 
 
   // step 1 - create the group

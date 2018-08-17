@@ -1,11 +1,13 @@
 #include "Gencore.h"
 
+extern bool MPISingle;
+
 #ifdef VTRACE
 #include "vt_user.h"
 #endif
 
 
-int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan)
+int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan, bool supressOutput)
 {
 
 
@@ -17,10 +19,11 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 #endif  
         int size=1;
         int rank=0;
-       
-        size=MPI::COMM_WORLD.Get_size(); // get size of cluster
-        rank=MPI::COMM_WORLD.Get_rank(); // assign rank to node
 
+	if (!MPISingle){
+           size=MPI::COMM_WORLD.Get_size(); // get size of cluster
+           rank=MPI::COMM_WORLD.Get_rank(); // assign rank to node
+        }
 
 	if (rank==0) {
           cout << endl << "Running Core Simulation..." << endl;
@@ -114,8 +117,9 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 	  cout << "Writing output file..." << endl;
 	}
 
-	control->output(beam,field,und);
-
+        if (!supressOutput) {
+   	   control->output(beam,field,und);
+        }
 
 
 	delete control;

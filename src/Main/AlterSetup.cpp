@@ -60,7 +60,7 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
 
   // step one: Select new lattice if selected
   if (beamline!="") {
-     bool status = lat->parse(lattice,beamline,rank);
+    bool status = lat->parse(lattice,beamline,rank, false);
      if (status==false) { return status ; }
   }
 

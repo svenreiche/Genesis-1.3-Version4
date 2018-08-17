@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string>
+#include <sstream>
 #include <fstream>
 
 #include "StringProcessing.h"
@@ -20,7 +21,7 @@ class LatticeParser : public StringProcessing {
  public:
    LatticeParser();
    virtual ~LatticeParser();
-   bool parse(string,string, int, vector<Element *> &);
+   bool parse(string,string, int, vector<Element *> &,bool);
  private:
 
    Quadrupole *parseQuad(int,int,double);

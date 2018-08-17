@@ -6,6 +6,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string>
+#include <sstream>
 #include <map>
 #include <fstream>
 
@@ -20,13 +21,13 @@ class Parser : public StringProcessing {
  public:
    Parser();
    virtual ~Parser();
-   bool open(string, int);
+   bool open(string, int,bool);
    bool parse(string *,map<string,string> *);
 
  private:
 
    int rank;
-   ifstream fin;
+   istringstream input;
    bool fillMap(string *,map<string,string> *);
 
 };

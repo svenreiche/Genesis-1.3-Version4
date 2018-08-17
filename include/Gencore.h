@@ -28,7 +28,7 @@ class Gencore{
  public:
   Gencore(){};
   virtual ~Gencore(){};
-  int run(const char *,Beam *, vector<Field *> *, Undulator *,bool,bool);
+  int run(const char *,Beam *, vector<Field *> *, Undulator *,bool,bool,bool);
 };
 
 

@@ -10,30 +10,45 @@ LatticeParser::~LatticeParser()
 }
 
 
-bool LatticeParser::parse(string file, string line, int rank, vector<Element *> &lat)
+bool LatticeParser::parse(string file, string line, int rank, vector<Element *> &lat,bool streaming)
 {
 
-  ifstream fin(file.c_str(),ios_base::in);
+  istringstream input;
+  string instring;
+  ostringstream os;
+  
+  if (streaming){
+    input.str(file);
+  } else {
 
-  if (!fin){
-    if (rank==0) {cout << "*** Error: Cannot open magnetic lattice file: " << file << endl;}
-    return false;
+    ifstream fin(file.c_str(),ios_base::in);
+
+    if (!fin){
+      if (rank==0) {cout << "*** Error: Cannot open magnetic lattice file: " << file << endl;}
+      return false;
+    }
+    while(getline(fin,instring,'\n')){
+	os << instring <<endl;
+    }
+    fin.close();
+    input.str(os.str());
   }
+
 
   //------------------------------------------------------
   // step one - coarse parsing of the input deck
 
-  string instring;
   string comstring="";
   vector<string> content;
 
-  while(getline(fin,instring,'\n')){    // read line
+  while(getline(input,instring)){    // read line
+    //    cout << instring<<endl;
     this->trim(instring);
     if ((!instring.compare(0,1,"#") || instring.length() < 1)){ continue; } // skip comment and empty rows
     comstring.append(" ");
     comstring.append(instring);  // add all content into one string
   }
-  fin.close();
+
 
   for (int i=0; i<comstring.size();i++){ // convert to lower case
     comstring[i]=tolower(comstring[i]);

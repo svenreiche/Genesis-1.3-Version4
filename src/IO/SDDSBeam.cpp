@@ -5,7 +5,6 @@ SDDSBeam::SDDSBeam()
 {
   file="";
   ds=0.01;
-  output=false; 
   xcen=0;
   ycen=0;
   pxcen=0;
@@ -36,7 +35,6 @@ void SDDSBeam::usage(){
   cout << " double charge   = 0 / <distribution file>" << endl;
   cout << " double slicewidth = 0.01" << endl;
   cout << " bool settimewindow = true" << endl;
-  cout << " bool output = false " << endl;
   cout << " bool center = false " << endl;
   cout << " double gamma0 = gammaref " << endl;
   cout << " double x0 = 0 " << endl;
@@ -107,7 +105,6 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   if (arg->find("align")!=end)    {align = atoi(arg->at("align").c_str()); arg->erase(arg->find("align"));}
   if (arg->find("match")!=end)    {match = atob(arg->at("match").c_str()); arg->erase(arg->find("match"));}
   if (arg->find("center")!=end)   {center= atob(arg->at("center").c_str());arg->erase(arg->find("center"));}
-  if (arg->find("output")!=end)   {output= atob(arg->at("output").c_str());arg->erase(arg->find("output"));}
   if (arg->find("settimewindow")!=end)   {settime= atob(arg->at("settimewindow").c_str());arg->erase(arg->find("settimewindow"));}
 
 
@@ -123,7 +120,9 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
 
  
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
-  H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+  if (size>1){
+     H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+  }
   hid_t fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,pid);
   H5Pclose(pid);
 
@@ -237,9 +236,17 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   double tmin,tmax;
 
   double tmp=*min_element(t.begin(),t.end());
-  MPI::COMM_WORLD.Allreduce(&tmp,&tmin,1,MPI::DOUBLE,MPI::MIN);
+  if (size==1){
+    tmin=tmp;
+  } else {
+     MPI::COMM_WORLD.Allreduce(&tmp,&tmin,1,MPI::DOUBLE,MPI::MIN);
+  }
   tmp=*max_element(t.begin(),t.end());
-  MPI::COMM_WORLD.Allreduce(&tmp,&tmax,1,MPI::DOUBLE,MPI::MAX);
+  if (size==1){
+    tmax=tmp;
+  } else {
+     MPI::COMM_WORLD.Allreduce(&tmp,&tmax,1,MPI::DOUBLE,MPI::MAX);
+  }
 
   double ttotal=tmax-tmin;
 
@@ -641,19 +648,33 @@ void SDDSBeam::analyse(double ttotal,int nsize)
     }
   }
 
-
-  MPI::COMM_WORLD.Allreduce(&ncount,&nmean,1,MPI::INT,MPI::SUM);
-  MPI::COMM_WORLD.Allreduce(&e1,&gavg, 1,MPI::DOUBLE,MPI::SUM);
-  MPI::COMM_WORLD.Allreduce(&a1,&xavg, 1,MPI::DOUBLE,MPI::SUM);
-  MPI::COMM_WORLD.Allreduce(&b1,&pxavg,1,MPI::DOUBLE,MPI::SUM);
-  MPI::COMM_WORLD.Allreduce(&c1,&yavg, 1,MPI::DOUBLE,MPI::SUM);
-  MPI::COMM_WORLD.Allreduce(&d1,&pyavg,1,MPI::DOUBLE,MPI::SUM);
-  MPI::COMM_WORLD.Allreduce(&a2,&xvar, 1,MPI::DOUBLE,MPI::SUM);
-  MPI::COMM_WORLD.Allreduce(&b2,&pxvar,1,MPI::DOUBLE,MPI::SUM);
-  MPI::COMM_WORLD.Allreduce(&ab,&xpx,  1,MPI::DOUBLE,MPI::SUM);
-  MPI::COMM_WORLD.Allreduce(&c2,&yvar, 1,MPI::DOUBLE,MPI::SUM);
-  MPI::COMM_WORLD.Allreduce(&d2,&pyvar,1,MPI::DOUBLE,MPI::SUM);
-  MPI::COMM_WORLD.Allreduce(&cd,&ypy,  1,MPI::DOUBLE,MPI::SUM);
+  if (size==1){
+    nmean=ncount;
+    gavg=e1;
+    xavg=a1;
+    pxavg=b1;
+    yavg=c1;
+    pyavg=e1;
+    xvar=a2;
+    pxvar=b2;
+    xpx=ab;
+    yvar=c2;
+    pyvar=d2;
+    ypy=cd;
+  } else {
+    MPI::COMM_WORLD.Allreduce(&ncount,&nmean,1,MPI::INT,MPI::SUM);
+    MPI::COMM_WORLD.Allreduce(&e1,&gavg, 1,MPI::DOUBLE,MPI::SUM);
+    MPI::COMM_WORLD.Allreduce(&a1,&xavg, 1,MPI::DOUBLE,MPI::SUM);
+    MPI::COMM_WORLD.Allreduce(&b1,&pxavg,1,MPI::DOUBLE,MPI::SUM);
+    MPI::COMM_WORLD.Allreduce(&c1,&yavg, 1,MPI::DOUBLE,MPI::SUM);
+    MPI::COMM_WORLD.Allreduce(&d1,&pyavg,1,MPI::DOUBLE,MPI::SUM);
+    MPI::COMM_WORLD.Allreduce(&a2,&xvar, 1,MPI::DOUBLE,MPI::SUM);
+    MPI::COMM_WORLD.Allreduce(&b2,&pxvar,1,MPI::DOUBLE,MPI::SUM);
+    MPI::COMM_WORLD.Allreduce(&ab,&xpx,  1,MPI::DOUBLE,MPI::SUM);
+    MPI::COMM_WORLD.Allreduce(&c2,&yvar, 1,MPI::DOUBLE,MPI::SUM);
+    MPI::COMM_WORLD.Allreduce(&d2,&pyvar,1,MPI::DOUBLE,MPI::SUM);
+    MPI::COMM_WORLD.Allreduce(&cd,&ypy,  1,MPI::DOUBLE,MPI::SUM);
+  }
 
   if (nmean>0){
     double tmp=1./static_cast<double>(nmean);

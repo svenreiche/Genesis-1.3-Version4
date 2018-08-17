@@ -42,7 +42,7 @@ void Setup::usage(){
   return;
 }
 
-bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat)
+bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstring,bool streaming)
 {
 
   rank=inrank;
@@ -68,8 +68,13 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat)
     return false;
   }
 
-  return lat->parse(lattice,beamline,rank);
-
+  if (streaming) {
+    lattice="streaming";
+    lat->parse(latstring,beamline,rank,streaming);
+  }else{
+    lat->parse(lattice,beamline,rank,streaming);
+  }
+  return true;
 }
 
 

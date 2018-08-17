@@ -23,9 +23,14 @@ EXECUTABLE = gencore
 #
 # targets
 #
-OBJECTS = Sorting.o BesselJ.o Inverfc.o Hammerslay.o RandomU.o GaussHermite.o StringProcessing.o Track.o Setup.o AlterSetup.o Time.o Parser.o Dump.o SponRad.o EField.o LoadBeam.o ImportBeam.o LoadField.o ImportField.o Profile.o ShotNoise.o QuietLoading.o Optics.o Lattice.o LatticeElements.o LatticeParser.o AlterLattice.o Gencore.o TrackBeam.o Control.o Field.o FieldSolver.o EFieldSolver.o Incoherent.o Collective.o Beam.o BeamSolver.o Undulator.o HDF5base.o readBeamHDF5.o writeBeamHDF5.o readFieldHDF5.o writeFieldHDF5.o SDDSBeam.o Output.o  main.o
+OBJECTS = Sorting.o BesselJ.o Inverfc.o Hammerslay.o RandomU.o GaussHermite.o StringProcessing.o Track.o Setup.o AlterSetup.o Time.o Parser.o Dump.o SponRad.o EField.o LoadBeam.o ImportBeam.o LoadField.o ImportField.o Profile.o ShotNoise.o QuietLoading.o Optics.o Lattice.o LatticeElements.o LatticeParser.o AlterLattice.o Gencore.o TrackBeam.o Control.o Field.o FieldSolver.o EFieldSolver.o Incoherent.o Collective.o Beam.o BeamSolver.o Undulator.o HDF5base.o readBeamHDF5.o writeBeamHDF5.o readFieldHDF5.o writeFieldHDF5.o SDDSBeam.o Output.o  GenMain.o 
 
 genesis:	$(OBJECTS)
+	ar -cvq libgenesis13.a $(OBJECTS)
+	mv libgenesis13.a ./lib
+	$(CCOMPILER) src/Main/mainwrap.cpp -o $(EXECUTABLE) $(INCLUDE) $(LIB) -lgenesis13 -Llib
+
+genesisexecutable:	$(OBJECTS)
 	$(CCOMPILER)  -o $(EXECUTABLE) $(OBJECTS) $(LIB)
 
 
@@ -33,13 +38,16 @@ genesis:	$(OBJECTS)
 .cpp.o:
 	$(CCOMPILER) -O2 -c $(DMACRO) $(INCLUDE) $<
 
-.f.o:
-	$(FCOMPILER) -O  -c $<
-
 clean:
-	rm -f *~
+	rm -f src/Core/*~
+	rm -f src/IO/*~
+	rm -f src/Lattice/*~
+	rm -f src/Loading/*~
+	rm -f src/Main/*~
+	rm -f src/Util/*~
+	rm -f include/*~
 	rm -f *.o
-	rm $(EXECUTABLE)
+	rm -f lib/*.a
 
 install:
 	cp ./$(EXECUTABLE) ~/bin/genesis4
