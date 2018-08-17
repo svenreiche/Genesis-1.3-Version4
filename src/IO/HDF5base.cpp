@@ -24,7 +24,6 @@ void HDF5Base::writeBuffer(hid_t gid, string dataset,vector<double> *data){
 
   hsize_t fblock[2]={dz,size*ds};
 
-  return;
   hid_t filespace=H5Screate_simple(2,fblock,NULL);
   hid_t did=H5Dcreate(gid,dataset.c_str(),H5T_NATIVE_DOUBLE,filespace,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);   
   H5Sclose(filespace);
