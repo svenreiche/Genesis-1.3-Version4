@@ -34,22 +34,14 @@ bool Lattice::parse(string filename, string beamline, int rank, bool streaming)
     return err; 
   }
   
-  layout.clear();
+  layout.clear();  // layout holds start and end point of each value
   
   for(int i=0; i<lat.size();i++){
     double z0=lat[i]->z;    
-    if (lat[i]->type.compare("Drift")==0){
-      continue;
-    }
     layout[z0]=1;
     layout[z0+lat[i]->l]=1;
   }
-  int last = lat.size()-1;
-  if (lat[last]->type.compare("Drift")==0){
-    double z0=lat[last]->z;
-    layout[z0]=1;
-    layout[z0+lat[last]->l]=1;
-  }
+
   return true;
 }
 
@@ -99,7 +91,7 @@ bool Lattice::generateLattice(double delz, double lambda, double gamma, AlterLat
       und->ky[i]=lat_ky[i];
       und->gradx[i]=lat_gradx[i];
       und->grady[i]=lat_grady[i];
-      und->qf[i]=lat_qf[i];
+      und->qf[i]=lat_qf[i]; 
       und->qx[i]=lat_qx[i];
       und->qy[i]=lat_qx[i];
       und->cx[i]=lat_cx[i];
@@ -314,6 +306,7 @@ void Lattice::unrollLattice(double delz)
   
 
   // first fill lattice with undulator
+  
 
   while(it !=iend){
       //default
@@ -392,16 +385,17 @@ void Lattice::unrollLattice(double delz)
   }
 
   int lastChicane=-1;
+
+
   for (int i=0;i<nz;i++){
     double z0=lat_z[i];
     double z1=z0+lat_dz[i];
 
     bool inUnd=(lat_aw[i]>0);
     bool inQuad=0;
-
     int iele=this->findElement(z0,z1,"Quadrupole");
 
-    if (iele!=-1){                                     // outside of an undulator
+    if (iele!=-1){     // found quadrupole
         Quadrupole *quad=(Quadrupole *)lat[iele];
         lat_qf[i]=quad->k1; 
         lat_qx[i]=quad->dx; 
