@@ -23,7 +23,7 @@ const int iq1=53668;
 const int ir1=12211;
 const int ntab=32;
 int k;
-iseed = (1 < abs(istart)) ? abs(istart) : 1 ;
+iseed = (1 < istart) ? istart : 1 ;
 iseed2=iseed;
 for (int i=ntab+7;i>=0;i--){
 	k=iseed/iq1;
