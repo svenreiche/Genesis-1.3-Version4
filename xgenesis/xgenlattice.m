@@ -1,4 +1,4 @@
-function success = xgenlattice(lambda,lambdau,Elim,Klim,Nwig,Nsec,Fodo,Taper,Delay,Root,Line)
+function success = xgenlattice(lambda,lambdau,Elim,Klim,Nwig,Nsec,Fodo,Quad,Taper,Delay,Root,Line)
 % XGENLATTICE  Generate a lattice file for Genesis  
 % success = xgenlattice(lambda,Elim,Klim,Nwig,Nsec,Fodo,Taper,Root,Line)
 %
@@ -8,11 +8,11 @@ function success = xgenlattice(lambda,lambdau,Elim,Klim,Nwig,Nsec,Fodo,Taper,Del
 % Klim    : [Kmin, Kmax] - Array for energy range in GeV
 % Nwig    : Number of undulator periods
 % Nsec    : Number of section (undulator modules)
-% Fodo    : [k1,Lq,Ld,Lfodo] = Array for focusing strength, quad length,
-%           k1    - Focusing strength in 1/m
+% Fodo    : [Lq,Ld,Lfodo] = Array for focusing strength, quad length,
 %           Lq    - Quadrupole length in m
 %           Ld    - Drift between module and quadrupole m
 %           Lfodo - Fodo cell length (2 modules) in m
+% Quad    : Array of quadrpole values, will wrap around
 % Taper   : [z,a,b,c] = Array for taper
 %           z - taper start in m
 %           a - general linear taper with K=K0*(1+a*z)
@@ -66,10 +66,14 @@ fprintf('Energy (GeV)   : %f\n', gam*0.511*1e-3);
 
 
 Lund=Nwig*lambdau;
-qgrad=Fodo(1);
-Lq=Fodo(2);
-Ld1=Fodo(3);
-Ldrift=0.5*Fodo(4)-Lund;
+
+nq=length(Quad);
+
+
+    
+Lq=Fodo(1);
+Ld1=Fodo(2);
+Ldrift=0.5*Fodo(3)-Lund;
 
 if (Lq+Ld1) > Ldrift
       fprintf('Quadrupole and Drift not fitting into FODO lattice\n');
@@ -81,8 +85,8 @@ fid = fopen(sprintf('%s.lat',Root),'w');
 
 fprintf(fid,'D1: DRIFT = { l = %f };\n',Ld1);
 fprintf(fid,'D2: DRIFT = { l = %f };\n',Ld2);
-fprintf(fid,'QF: QUADRUPOLE = { l = %f, k1= %f };\n',Lq,qgrad);
-fprintf(fid,'QD: QUADRUPOLE = { l = %f, k1= %f };\n',Lq,-qgrad);
+fprintf(fid,'QF: QUADRUPOLE = { l = %f, k1= %f };\n',Lq,Quad(1));
+fprintf(fid,'QD: QUADRUPOLE = { l = %f, k1= %f };\n',Lq,Quad(2));
 
 
 nchic=length(Delay);
@@ -106,7 +110,7 @@ end
      else
         Kloc=K*(1+atap*z);     
      end
-     z=z+0.5*Fodo(4);
+     z=z+0.5*Fodo(3);
      fprintf(fid,'U%2.2d: UNDULATOR = { lambdau=%f,nwig=%d,aw=%f};\n',i,lambdau,Nwig,Kloc/sqrt(2));
 end
  

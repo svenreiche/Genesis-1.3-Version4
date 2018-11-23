@@ -26,6 +26,7 @@ class Beam{
    void init(int, int, double,double, double,bool);
    void initSorting(int,int,bool,bool);
    void initEField(double,int,int,int,double);
+   void initIncoherent(int, int, bool,bool);
    bool harmonicConversion(int,bool);
    bool subharmonicConversion(int,bool);
    int sort();
@@ -56,6 +57,10 @@ class Beam{
    int bharm;
 };
 
+inline void Beam::initIncoherent(int base, int rank, bool spread, bool loss){
+  incoherent.init(base,rank,spread,loss);
+  return;
+}
 
 inline void Beam::initEField(double rmax, int ngrid, int nz, int nphi, double lambda){
   solver.initEField(rmax,ngrid,nz,nphi,lambda);

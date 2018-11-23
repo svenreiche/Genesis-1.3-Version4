@@ -31,9 +31,7 @@ bool SponRad::init(int rank, int size, map<string,string> *arg,  Beam *beam)
     return false;
   }
 
-
-  //  beam->initEField(rmax,ngrid,nz,nphi,lambda);
-
+  beam->initIncoherent(seed,rank,doLoss,doSpread);
 
   return true;
 }
