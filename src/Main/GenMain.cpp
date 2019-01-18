@@ -41,6 +41,7 @@
 #include "writeBeamHDF5.h"
 #include "writeFieldHDF5.h"
 #include "Collective.h"
+#include "Wake.h"
 
 #include <sstream>
 
@@ -193,6 +194,16 @@ double genmain (string mainstring, string latstring, bool streaming, bool supres
             if (!sponrad->init(rank,size,&argument,beam)){ break;}
 	    delete sponrad;
             continue;  
+          }  
+
+          //----------------------------------------------------
+          // setup wakefield
+
+	  if (element.compare("&wake")==0){
+	    Wake *wake = new Wake;
+            if (!wake->init(rank,size,&argument,timewindow, setup, beam)){ break;}
+	    delete wake;
+	    continue;  
           }  
 
           //----------------------------------------------------

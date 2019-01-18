@@ -19,6 +19,11 @@ void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, d
   one4one=one4one_in;
 
   current.resize(nsize);
+  eloss.resize(nsize);
+  for (int i=0; i<nsize; i++){
+    eloss[i]=0;
+  }
+
   beam.resize(nsize);
 
   return;
@@ -43,6 +48,7 @@ void Beam::initDiagnostics(int nz)
   pyavg.resize(nz*ns);
   bunch.resize(nz*ns); 
   bphi.resize(nz*ns);
+  efld.resize(nz*ns);
 
   bx.resize(ns);
   by.resize(ns);
@@ -107,7 +113,8 @@ void Beam::track(double delz,vector<Field *> *field, Undulator *und){
   solver.advance(delz,this,field,und);     // advance longitudinal variables 
 
   incoherent.apply(this,und,delz);         // apply effect of incoherent synchrotron
-
+  col.apply(this,und,delz);         // apply effect of collective effects
+  
   solver.applyR56(this,und,reflength);    // apply the longitudinalphase shift due to R56 if a chicane is selected.
 
   solver.track(delz*0.5,this,und,true);      // apply corrector settings and track second half for transverse coordinate
@@ -298,6 +305,8 @@ void Beam::diagnostics(bool output, double z)
     pyavg[ioff+is]=bpyavg;
     bunch[ioff+is]=bbavg;
     bphi[ioff+is]=bbphi;
+    efld[ioff+is]=eloss[is];  
+
     for (int ih=1; ih<bharm;ih++){   // calculate the harmonics of the bunching
       br=0;
       bi=0;

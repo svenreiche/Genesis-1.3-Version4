@@ -40,7 +40,7 @@
 #include "ImportField.h"
 #include "writeBeamHDF5.h"
 #include "writeFieldHDF5.h"
-
+#include "Wake.h"
 
 #include "Collective.h"
 
@@ -111,16 +111,19 @@ int main (int argc, char *argv[]) {
         Profile *profile=new Profile;
         Time *timewindow=new Time;
 
+
 	meta_inputfile=new string (argv[argc-1]);
 
         parser.open(argv[argc-1],rank);
 
         while(parser.parse(&element,&argument)){
+	  cout << "Element: " << element << endl;
            
           //----------------------------------------------
 	  // setup & parsing the lattice file
 
           if (element.compare("&setup")==0){
+	    cout << "Setup........." << endl;
             if (!setup->init(rank,&argument,lattice)){ break;}
 	    meta_latfile=new string (setup->getLattice());
             continue;  
@@ -192,6 +195,17 @@ int main (int argc, char *argv[]) {
             if (!sponrad->init(rank,size,&argument,beam)){ break;}
 	    delete sponrad;
             continue;  
+          }  
+
+          //----------------------------------------------------
+          // setup wakefield
+
+	  if (element.compare("&wake")==0){
+	    cout << "found wake" << endl;
+	    Wake *wake = new Wake;
+            if (!wake->init(rank,size,&argument,timewindow, setup, beam)){ break;}
+	    delete wake;
+	    continue;  
           }  
 
           //----------------------------------------------------
@@ -272,7 +286,7 @@ int main (int argc, char *argv[]) {
           // error because the element typ is not defined
 
           if (rank==0){
-            cout << "*** Error: Unknow element in input file: " << element << endl; 
+            cout << "*** Error: Unknown namelist in input file: " << element << endl; 
 	  }
           break;
         } 

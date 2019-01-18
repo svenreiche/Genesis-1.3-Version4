@@ -7,8 +7,14 @@
 #include <complex>
 #include <math.h>
 
-extern const double vacimp;
-extern const double ce;
+#include "mpi.h"
+#include "Particle.h"
+#include "Undulator.h"
+
+class Beam;
+
+extern bool MPISingle; 
+extern const double ce;   
 
 using namespace std;
 
@@ -17,28 +23,15 @@ class Collective{
  public:
    Collective();
    virtual ~Collective();
-
-   void WakeRes();
-   void WakeGeo();
-   void WakeRou();
+   void initWake(unsigned int, double, double *, double, bool);
+   void apply(Beam *,Undulator *, double );
 
  private:
-   bool doWakes,doSpaceCharge,doCSR;
-
-   vector<double> current;  // holds current profile
-   double ds;               // sample rate
-   double ns;               // sample points
-
-   // for wakefields:
-   vector<double> wakeres,wakegeo,wakerou;
-   
-   double r,sigma,tau;  // beam pipe radius,, conductivity and relaxation time
-   double gap,lgap;    // gap and the normalization length for the gap.
-   double hrough,lrough; // amplitude and periodlength of roughness
-   bool roundpipe;
-
-
-
+   bool transient,hasWake;
+   double ztrans;
+   double ds;
+   unsigned int ns;
+   double *wakeres, *current;
 };
 
 #endif

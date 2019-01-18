@@ -16,19 +16,27 @@ class Beam;
 
 using namespace std;
 
+extern const double vacimp; 
+extern const double ce; 
 
 class Wake: public StringProcessing{
  public:
    Wake();
    virtual ~Wake();
-   bool init(int,int,map<string,string> *, Beam *);
+   bool init(int,int,map<string,string> *, Time *, Setup *, Beam *);
 
 
- private:
+ private:   
    void usage();
-   double radius, relaxation,conductivity;
-   bool roundpipe;
+   void singleWakeResistive(int);
 
+
+   double radius, relaxation,conductivity,ztrans;
+   bool roundpipe,transient, hasWake;
+
+   unsigned int ns;
+   double slen,ds;
+   double *wakeres;
 
 };
 

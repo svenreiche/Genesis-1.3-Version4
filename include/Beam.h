@@ -27,6 +27,7 @@ class Beam{
    void initSorting(int,int,bool,bool);
    void initEField(double,int,int,int,double);
    void initIncoherent(int, int, bool,bool);
+   void initWake(unsigned int, double, double *, double, bool);
    bool harmonicConversion(int,bool);
    bool subharmonicConversion(int,bool);
    int sort();
@@ -37,14 +38,14 @@ class Beam{
    int getBunchingHarmonics();
 
    vector< vector<Particle> > beam;
-   vector<double> current;
+   vector<double> current,eloss;
    double reflength,slicelength;   // for conversion of theta in Particle to real position
    double s0;         // starting position of the time-window
    bool one4one;     // flag whether one4one simulation is done
    int nbins;
 
    // output buffer
-   vector<double> zpos,gavg,gsig,xavg,xsig,yavg,ysig,pxavg,pyavg,bunch,bphi;
+   vector<double> zpos,gavg,gsig,xavg,xsig,yavg,ysig,pxavg,pyavg,bunch,bphi,efld;
    vector<double> bx,by,ax,ay,ex,ey,cu;
    vector< vector<double> > bh,ph;  // harmonic bunching and bunching phase
    
@@ -65,6 +66,10 @@ inline void Beam::initIncoherent(int base, int rank, bool spread, bool loss){
 inline void Beam::initEField(double rmax, int ngrid, int nz, int nphi, double lambda){
   solver.initEField(rmax,ngrid,nz,nphi,lambda);
   return;
+}
+
+inline void Beam::initWake(unsigned int ns, double ds, double *wakeres, double ztrans, bool transient){
+  col.initWake(ns, ds, wakeres, ztrans, transient);
 }
 
 
