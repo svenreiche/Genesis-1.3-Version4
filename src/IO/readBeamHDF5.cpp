@@ -16,15 +16,15 @@ void ReadBeamHDF5::close(){
 }
   
 
-bool ReadBeamHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time *time, double offset, bool dotime)
+bool ReadBeamHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time *time, bool dotime)
 {
 
 
   isOpen=false;
   // read global data
 
-  double reflen,slen;
-  int count,nbins,one4one;
+  double reflen;
+  int nbins,one4one;
 
 
   fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);  
@@ -39,8 +39,7 @@ bool ReadBeamHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time
 
   double lambda=setup->getReferenceLength();                        // reference length for theta
   
-  s0=s0+offset;  // add offset from input deck
-  slen=slicelen*count;
+  slen=slicelen*count;       // window of the imported distribution                 
 
 
 
@@ -85,16 +84,6 @@ bool ReadBeamHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time
 
 
 
-  double ts0=time->getTimeWindowStart();
-  double tslen=time->getTimeWindowLength(); 
-  if ((ts0<s0) || (ts0+tslen)>(s0+slen)){
-      if (rank==0){ cout << "*** Error: Defined time window is larger than given by input file" << endl;}
-      return false;
-  }
-
-  // check if time window fits or whether it is defined by the external file
-
-
   return true; 
 
 
@@ -103,12 +92,13 @@ bool ReadBeamHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time
 
 
 
-bool ReadBeamHDF5::readSlice(double s, vector<Particle> *slice, double *current){
+bool ReadBeamHDF5::readSlice(double s, vector<Particle> *slice, double *current, bool one4one){
 
   
   slice->resize(0);
   *current=0;
 
+ 
   if(!isOpen){ return false; } // skip if partfile option is not selected
 
 
@@ -117,6 +107,13 @@ bool ReadBeamHDF5::readSlice(double s, vector<Particle> *slice, double *current)
 
   if (fabs(rslice-round(rslice))>1e-3){ return false; }
   int islice=static_cast<int> (round(rslice))+1;
+
+  double wei=1.;
+  if ((islice<1) || (islice> count)){
+    if (one4one){  return false; }   // one4one do nothing
+    wei=0;                      // fill slice form 1st slice but put all values to zero
+    islice=1;
+  }
 
 
   // get size of data set from slice
@@ -138,6 +135,7 @@ bool ReadBeamHDF5::readSlice(double s, vector<Particle> *slice, double *current)
   // get current   
   sprintf(name,"slice%6.6d/current",islice);
   readDataDouble(fid,name,current,1);
+  *current*=wei;
 
   sprintf(name,"slice%6.6d/gamma",islice);
   readDataDouble(fid,name,work,nsize);
@@ -154,25 +152,25 @@ bool ReadBeamHDF5::readSlice(double s, vector<Particle> *slice, double *current)
   sprintf(name,"slice%6.6d/x",islice);
   readDataDouble(fid,name,work,nsize);
   for (int i=0;i<nsize;i++){
-    slice->at(i).x=work[i];
+    slice->at(i).x=work[i]*wei;
   }
 
   sprintf(name,"slice%6.6d/y",islice);
   readDataDouble(fid,name,work,nsize);
   for (int i=0;i<nsize;i++){
-    slice->at(i).y=work[i];
+    slice->at(i).y=work[i]*wei;
   }
 
   sprintf(name,"slice%6.6d/px",islice);
   readDataDouble(fid,name,work,nsize);
   for (int i=0;i<nsize;i++){
-    slice->at(i).px=work[i];
+    slice->at(i).px=work[i]*wei;
   }
 
   sprintf(name,"slice%6.6d/py",islice);
   readDataDouble(fid,name,work,nsize);
   for (int i=0;i<nsize;i++){
-    slice->at(i).py=work[i];
+    slice->at(i).py=work[i]*wei;
   }
   
   return true;

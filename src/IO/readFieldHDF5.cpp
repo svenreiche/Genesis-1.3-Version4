@@ -18,20 +18,19 @@ void ReadFieldHDF5::close(){
 }
   
 
-bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time *time, double offset, bool dotime)
+bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time *time, int harm, bool dotime)
 {
 
 
   isOpen=false;
   // read global data
 
-  double reflen,slen,gridsize;
-  int count,ngrid;
+  double reflen;
 
 
   fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);  
   readDataDouble(fid,(char *)"refposition",&s0,1);
-  readDataDouble(fid,(char *)"gridsize",&gridsize,1);
+  readDataDouble(fid,(char *)"gridsize",&dgrid,1);
   readDataDouble(fid,(char *)"wavelength",&reflen,1);
   readDataDouble(fid,(char *)"slicespacing",&slicelen,1);
   readDataInt(fid,(char *)"slicecount",&count,1);
@@ -45,15 +44,52 @@ bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Tim
 
   double lambda=setup->getReferenceLength();                        // reference length for theta
   
-  s0=s0+offset;  // add offset from input deck
+  s0=s0;  // add offset from input deck
   slen=slicelen*count;
+
+
+
+  if (fabs((lambda-reflen)/lambda)>1e-6){
+      if (rank==0){ cout << "*** Error: Mismatch between reference length of run and of input file" << endl;}
+      return false;    
+  }
+
+
+
+  // set-up time window if not set.
+  if ((!time->isInitialized())&& (count >1)){
+      time->setSampleRate(slicelen/reflen); 
+      time->setTimeWindowStart(s0);
+      time->setTimeWindowLength(slen);
+
+      map<string,string> arg;
+      if (dotime) { arg["time"]="true"; } else { arg["time"]="false"; }
+      bool check=time->init(rank, size, &arg, setup);
+      if (!check){ return check; }
+  }
+
+
+
+  double sample=static_cast<double>(time->getSampleRate());         // check slice length
+  if (fabs(slicelen-lambda*sample)/slicelen>1e-6){
+      if (rank==0){ cout << "*** Error: Mismatch in sample rate of run and of input file" << endl;}
+      return false;
+  }
+
+
+
+
+
+
+
+
   return true;
 } 
 
 
 
-/*
-bool ReadFieldHDF5::readfield(double s, vector< complex<double> > *field){
+
+bool ReadFieldHDF5::readSlice(double s, vector<complex<double> >*field){
 
   for(int i=0;i<nwork;i++){
       field->at(i)=complex<double> (0,0);
@@ -61,7 +97,7 @@ bool ReadFieldHDF5::readfield(double s, vector< complex<double> > *field){
 
   if(!isOpen){ return false; } // skip if partfile option is not selected
   
-  double rslice=(s-s0)/slen;
+  double rslice=(s-s0)/slicelen;
   if (fabs(rslice-round(rslice))>1e-3){ return false; }
   int islice=static_cast<int> (round(rslice))+1;
 
@@ -89,5 +125,5 @@ bool ReadFieldHDF5::readfield(double s, vector< complex<double> > *field){
 
   return true;
 }
-*/
+
 

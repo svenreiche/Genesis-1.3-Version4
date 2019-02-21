@@ -15,7 +15,6 @@ void ImportBeam::usage(){
   cout << "List of keywords for IMPORTBEAM" << endl;
   cout << "&importbeam" << endl;
   cout << " string file = <empty>" << endl;
-  cout << " double offset = 0" << endl;
   cout << " bool time = true" << endl;
   cout << "&end" << endl << endl;
   return;
@@ -40,7 +39,6 @@ bool ImportBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, S
   map<string,string>::iterator end=arg->end();
 
   if (arg->find("file")!=end    ){file=arg->at("file"); arg->erase(arg->find("file"));}
-  if (arg->find("offset")!=end  ){offset=atof(arg->at("offset").c_str());  arg->erase(arg->find("offset"));}
   if (arg->find("time")!=end)    {dotime = atob(arg->at("time").c_str()); arg->erase(arg->find("time"));}
 
 
@@ -57,7 +55,7 @@ bool ImportBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, S
 
   ReadBeamHDF5 import;
 
-  bool check=import.readGlobal(rank, size, file, setup, time, offset,dotime);
+  bool check=import.readGlobal(rank, size, file, setup, time, dotime);
   if (!check) { 
     import.close();
     return check; 
@@ -71,6 +69,7 @@ bool ImportBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, S
 
   vector<double> s;
   int nslice=time->getPosition(&s);
+
   beam->init(time->getNodeNSlice(),nbins,lambda,sample*lambda,s[0],one4one);
 
 
@@ -78,7 +77,7 @@ bool ImportBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, S
   for (int j=0; j<time->getNodeNSlice(); j++){
     int i=j+time->getNodeOffset();
     double sloc=s[i];
-    import.readSlice(s[i],&beam->beam[j],&beam->current[j]);
+    import.readSlice(s[i],&beam->beam[j],&beam->current[j],one4one);
   }
   import.close();
 

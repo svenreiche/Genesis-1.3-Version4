@@ -68,9 +68,6 @@ int Sorting::sort(vector <vector <Particle> > * recdat){
 }
 
 
-
-
-
 void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments are now part of the class
 {
  

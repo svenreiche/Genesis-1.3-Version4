@@ -20,20 +20,27 @@ class ReadFieldHDF5 : public HDF5Base {
  public:
   ReadFieldHDF5();
   virtual ~ReadFieldHDF5();
-  //  bool open(char *, int *, double *, double *);
-  bool readGlobal(int, int, string, Setup *,Time *, double, bool);
+  bool readGlobal(int, int, string, Setup *,Time *, int, bool);
+  bool readSlice(double, vector<complex<double> >*);
   void close();
-
+  int getNGrid();
+  double getDGrid();
 
 
  private:
   hid_t fid;
-  double s0,slicelen;
-  int  nwork;
+  double s0,slicelen,slen,dgrid;
+  int  nwork,count,ngrid;
   double *work;
 };
 
+inline int ReadFieldHDF5::getNGrid(){
+  return ngrid;
+}
 
+inline double ReadFieldHDF5::getDGrid(){
+  return dgrid;
+}
 
 #endif
 
