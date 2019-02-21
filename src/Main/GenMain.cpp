@@ -53,7 +53,7 @@ const double ce     = 4.8032045e-11;
 
 
 const int versionmajor = 4;
-const int versionminor = 2;
+const int versionminor = 3;
 const int versionrevision = 0;
 const bool versionbeta=true;
 
