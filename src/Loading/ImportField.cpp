@@ -82,7 +82,7 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
 
 
 
-  field->init(time->getNodeNSlice(),import.getNGrid(),import.getNGrid(),lambda,sample*lambda,s[0],harm);
+  field->init(time->getNodeNSlice(),import.getNGrid(),import.getDGrid(),lambda,sample*lambda,s[0],harm);
   
   if (idx<0){
     fieldin->push_back(field);

@@ -16,6 +16,9 @@
 
 using namespace std;
 
+extern const double vacimp;
+extern const double eev;
+
 class ReadFieldHDF5 : public HDF5Base {
  public:
   ReadFieldHDF5();
@@ -29,7 +32,7 @@ class ReadFieldHDF5 : public HDF5Base {
 
  private:
   hid_t fid;
-  double s0,slicelen,slen,dgrid;
+  double s0,slicelen,slen,dgrid,scl;
   int  nwork,count,ngrid;
   double *work;
 };

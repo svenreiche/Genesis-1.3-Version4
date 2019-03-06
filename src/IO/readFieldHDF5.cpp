@@ -49,6 +49,12 @@ bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Tim
 
 
 
+  double ks=4.*asin(1)/reflen;
+  scl=dgrid*eev/ks/sqrt(vacimp);
+  scl=1./scl;
+  dgrid=0.5*dgrid*static_cast<double>(ngrid-1);
+
+
   if (fabs((lambda-reflen)/lambda)>1e-6){
       if (rank==0){ cout << "*** Error: Mismatch between reference length of run and of input file" << endl;}
       return false;    
@@ -113,13 +119,13 @@ bool ReadFieldHDF5::readSlice(double s, vector<complex<double> >*field){
   sprintf(name,"slice%6.6d/field-real",islice);
   readDataDouble(fid,name,work,nwork);
   for (int i=0;i<nwork;i++){
-    field->at(i)=work[i];
+    field->at(i)=scl*work[i];
   }
 
   sprintf(name,"slice%6.6d/field-imag",islice);
   readDataDouble(fid,name,work,nwork);
   for (int i=0;i<nwork;i++){
-    field->at(i)+=complex<double>(0,work[i]);
+    field->at(i)+=complex<double>(0,scl*work[i]);
   }
 
 
