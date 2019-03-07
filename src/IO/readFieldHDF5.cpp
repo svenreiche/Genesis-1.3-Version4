@@ -113,7 +113,7 @@ bool ReadFieldHDF5::readSlice(double s, vector<complex<double> >*field){
   }
    
 
-  char name[20];
+  char name[30];
 
 
   sprintf(name,"slice%6.6d/field-real",islice);
