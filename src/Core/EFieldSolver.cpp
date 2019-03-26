@@ -83,6 +83,7 @@ void EFieldSolver::shortRange(vector<Particle> *beam,vector<double> &ez, double 
    cmid.resize(ngrid);
    cupp.resize(ngrid);
    gam.resize(ngrid);
+   rlog.resize(ngrid);
   }
 
 
