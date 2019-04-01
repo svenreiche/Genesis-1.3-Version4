@@ -177,7 +177,7 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
       
   // step two - pairing ranks (1,2) (3,4) etc
 
-     transfer == true;
+     transfer = true;
      if (((rank % 2) == 1) && (rank == (size -1))) { transfer = false; }  // last core for an even number
      if (rank==0) { transfer = false; }                                  // as well as first core.
      

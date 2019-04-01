@@ -198,6 +198,7 @@ function [x,y]=xgensingleplot(dat,label,mode,ref)
     slab='s (m)';
     
     if isspec~=0
+        fprintf('%e %e \n',xgenstat.sref,xgenstat.ds)
         f0=1/xgenstat.sref;
         df=1/xgenstat.ds;
         E0=1240e-9*f0;
