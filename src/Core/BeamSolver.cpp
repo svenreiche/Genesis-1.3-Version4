@@ -78,7 +78,9 @@ void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undul
            idx++;
            cpart+=field->at(nfld[ifld])->field[islice].at(idx)*(1-wx)*(1-wy);
            rpart[ifld]=rtmp[ifld]*awloc*conj(cpart);
-	  }
+	  } else {
+          rpart[ifld] = 0;
+      }
 	}
 	this->RungeKutta(delz);
 
