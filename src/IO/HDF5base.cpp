@@ -69,7 +69,7 @@ void HDF5Base::writeSingleNode(hid_t gid, string dataset,vector<double> *data){
   hid_t memspace=H5Screate_simple(1,fblock,NULL);
   filespace=H5Dget_space(did);
 
-  if (s0==0){
+  if ((s0==0) && (nd > 0)){
     H5Dwrite(did,H5T_NATIVE_DOUBLE,memspace,filespace,H5P_DEFAULT,&data->at(0));
 
   }

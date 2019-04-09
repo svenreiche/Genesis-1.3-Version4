@@ -125,6 +125,9 @@ bool ReadBeamHDF5::readSlice(double s, vector<Particle> *slice, double *current,
   if (nsize>nwork){ // allocate extra work array to hold field
     if (nwork>0) {delete [] work;}
     nwork=nsize;
+    if (nwork<1){
+      nwork=1;    // catch the error that the first slice can have no particles in one4one simulations
+    }
     work=new double [nwork];
   }
 

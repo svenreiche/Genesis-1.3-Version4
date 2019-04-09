@@ -78,42 +78,45 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam){
 	work.resize(nwork);
     }
 
-    if (s0==0) {
-       for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).gamma;}
-    }
-    this->writeSingleNode(gid,"gamma"  ,&work);
-
-    if (s0==0) {
-       for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).theta;}
-    }
-    this->writeSingleNode(gid,"theta"  ,&work);
-
-    if (s0==0) {
-       for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).x;}
-    }
-    this->writeSingleNode(gid,"x"  ,&work);
-
-    if (s0==0) {
-       for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).y;}
-    }
-    this->writeSingleNode(gid,"y"  ,&work);
-
-    if (s0==0) {
-       for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).px;}
-    }
-    this->writeSingleNode(gid,"px"  ,&work);
-
-    if (s0==0) {
-       for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).py;}
-    }
-    this->writeSingleNode(gid,"py"  ,&work);
-
     if (s0==0){
       cur[0]=beam->current.at(islice);
     }
     this->writeSingleNode(gid,"current",&cur);
 
-          
+
+
+    //    if (nwork > 0 ){
+      if (s0==0) {
+	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).gamma;}
+      }
+      this->writeSingleNode(gid,"gamma"  ,&work);
+
+      if (s0==0) {
+	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).theta;}
+      }
+      this->writeSingleNode(gid,"theta"  ,&work);
+
+      if (s0==0) {
+	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).x;}
+      }
+      this->writeSingleNode(gid,"x"  ,&work);
+
+      if (s0==0) {
+	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).y;}
+      }
+      this->writeSingleNode(gid,"y"  ,&work);
+
+      if (s0==0) {
+	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).px;}
+      }
+      this->writeSingleNode(gid,"px"  ,&work);
+
+      if (s0==0) {
+	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).py;}
+      }
+      this->writeSingleNode(gid,"py"  ,&work);
+
+      //  } 
     H5Gclose(gid);
   }
 
