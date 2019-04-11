@@ -29,8 +29,8 @@ class HDF5Base{
 
   
   // function from output and wrideHDF5beam/field
-  void writeBuffer(hid_t,string,vector<double> *);
-  void writeSingleNode(hid_t,string,vector<double> *);
+  void writeBuffer(hid_t,string,string,vector<double> *);
+  void writeSingleNode(hid_t,string,string,vector<double> *);
   void writeSingleNodeString(hid_t,string, string *);
   void writeSingleNodeInt(hid_t, string,vector<int> *);
 

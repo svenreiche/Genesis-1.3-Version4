@@ -95,14 +95,14 @@ void WriteFieldHDF5::writeMain(string fileroot, Field *field){
 	work[j]=scl*field->field.at(islice).at(j).real();
       }  
     }
-    this->writeSingleNode(gid,"field-real",&work);     
+    this->writeSingleNode(gid,"field-real"," ",&work);     
 
     if (s0==0){
       for (int j=0; j<ngrid*ngrid;j++){ 
 	work[j]=scl*field->field.at(islice).at(j).imag();
       }  
     }
-    this->writeSingleNode(gid,"field-imag",&work);     
+    this->writeSingleNode(gid,"field-imag"," ",&work);     
 
 
         
@@ -124,13 +124,13 @@ void WriteFieldHDF5::writeGlobal(double reflen, double slicelen, double s0, doub
   tmp.resize(1);
 
   tmp[0]=reflen;
-  this->writeSingleNode(fid,"wavelength",&tmp);
+  this->writeSingleNode(fid,"wavelength","m",&tmp);
   tmp[0]=slicelen;
-  this->writeSingleNode(fid,"slicespacing",&tmp);
+  this->writeSingleNode(fid,"slicespacing","m",&tmp);
   tmp[0]=s0;
-  this->writeSingleNode(fid,"refposition",&tmp);
+  this->writeSingleNode(fid,"refposition","m",&tmp);
   tmp[0]=dx;
-  this->writeSingleNode(fid,"gridsize",&tmp);
+  this->writeSingleNode(fid,"gridsize","m",&tmp);
   
   vector<int> itmp;
   itmp.resize(1);

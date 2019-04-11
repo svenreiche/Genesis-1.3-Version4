@@ -84,14 +84,14 @@ void Output::writeMeta()
 
   gidsub=H5Gcreate(gid,"Version",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
   tmp[0]=versionmajor;
-  this->writeSingleNode(gidsub,"Major",&tmp);
+  this->writeSingleNode(gidsub,"Major"," ",&tmp);
   tmp[0]=versionminor;
-  this->writeSingleNode(gidsub,"Minor",&tmp);
+  this->writeSingleNode(gidsub,"Minor"," ",&tmp);
   tmp[0]=versionrevision;
-  this->writeSingleNode(gidsub,"Revision",&tmp);
+  this->writeSingleNode(gidsub,"Revision"," ",&tmp);
   tmp[0]=0;
   if (versionbeta) { tmp[0]=1;}
-  this->writeSingleNode(gidsub,"Beta",&tmp);
+  this->writeSingleNode(gidsub,"Beta"," ",&tmp);
   H5Gclose(gidsub);  
   
   time_t timer;
@@ -140,19 +140,19 @@ void Output::writeGlobal(double gamma, double lambda, double sample, double slen
   gid=H5Gcreate(fid,"Global",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
   tmp[0]=gamma;
-  this->writeSingleNode(gid,"gamma0",&tmp);
+  this->writeSingleNode(gid,"gamma0"," ",&tmp);
   tmp[0]=lambda;
-  this->writeSingleNode(gid,"lambdaref",&tmp);
+  this->writeSingleNode(gid,"lambdaref","m",&tmp);
   tmp[0]=sample;
-  this->writeSingleNode(gid,"sample",&tmp);
+  this->writeSingleNode(gid,"sample"," ",&tmp);
   tmp[0]=slen;
-  this->writeSingleNode(gid,"slen",&tmp);
+  this->writeSingleNode(gid,"slen","m",&tmp);
   tmp[0] = one4one ? 1. : 0 ;
-  this->writeSingleNode(gid,"one4one",&tmp);
+  this->writeSingleNode(gid,"one4one"," ",&tmp);
   tmp[0] = time ? 1. : 0 ;
-  this->writeSingleNode(gid,"time",&tmp);
+  this->writeSingleNode(gid,"time"," ",&tmp);
   tmp[0] = scan ? 1. : 0 ;
-  this->writeSingleNode(gid,"scan",&tmp);
+  this->writeSingleNode(gid,"scan"," ",&tmp);
 
   H5Gclose(gid);
 
@@ -169,28 +169,28 @@ void Output::writeLattice(Beam * beam,Undulator *und)
   hid_t gid;
   gid=H5Gcreate(fid,"Lattice",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
-  this->writeSingleNode(gid,"zplot",&beam->zpos);
-  this->writeSingleNode(gid,"z",&und->z);
-  this->writeSingleNode(gid,"dz",&und->dz);
-  this->writeSingleNode(gid,"aw",&und->aw);
-  this->writeSingleNode(gid,"ax",&und->ax);
-  this->writeSingleNode(gid,"ay",&und->ay);
-  this->writeSingleNode(gid,"ku",&und->ku);
-  this->writeSingleNode(gid,"kx",&und->kx);
-  this->writeSingleNode(gid,"ky",&und->ky);
-  this->writeSingleNode(gid,"qf",&und->qf);
-  this->writeSingleNode(gid,"qx",&und->qx);
-  this->writeSingleNode(gid,"qy",&und->qy);
-  this->writeSingleNode(gid,"cx",&und->cx);
-  this->writeSingleNode(gid,"cy",&und->cy);
-  this->writeSingleNode(gid,"gradx",&und->gradx);
-  this->writeSingleNode(gid,"grady",&und->grady);
-  this->writeSingleNode(gid,"slippage",&und->slip);
-  this->writeSingleNode(gid,"phaseshift",&und->phaseshift);
-  this->writeSingleNode(gid,"chic_angle",&und->chic_angle);
-  this->writeSingleNode(gid,"chic_lb",&und->chic_lb);
-  this->writeSingleNode(gid,"chic_ld",&und->chic_ld);
-  this->writeSingleNode(gid,"chic_lt",&und->chic_lt);
+  this->writeSingleNode(gid,"zplot","m",&beam->zpos);
+  this->writeSingleNode(gid,"z","m",&und->z);
+  this->writeSingleNode(gid,"dz","m",&und->dz);
+  this->writeSingleNode(gid,"aw"," ",&und->aw);
+  this->writeSingleNode(gid,"ax","m",&und->ax);
+  this->writeSingleNode(gid,"ay","m",&und->ay);
+  this->writeSingleNode(gid,"ku","1/m",&und->ku);
+  this->writeSingleNode(gid,"kx"," ",&und->kx);
+  this->writeSingleNode(gid,"ky"," ",&und->ky);
+  this->writeSingleNode(gid,"qf","1/m^2",&und->qf);
+  this->writeSingleNode(gid,"qx","m",&und->qx);
+  this->writeSingleNode(gid,"qy","m",&und->qy);
+  this->writeSingleNode(gid,"cx","rad",&und->cx);
+  this->writeSingleNode(gid,"cy","rad",&und->cy);
+  this->writeSingleNode(gid,"gradx","1/m",&und->gradx);
+  this->writeSingleNode(gid,"grady","1/m",&und->grady);
+  this->writeSingleNode(gid,"slippage"," ",&und->slip);
+  this->writeSingleNode(gid,"phaseshift","rad",&und->phaseshift);
+  this->writeSingleNode(gid,"chic_angle","degree",&und->chic_angle);
+  this->writeSingleNode(gid,"chic_lb","m",&und->chic_lb);
+  this->writeSingleNode(gid,"chic_ld","m",&und->chic_ld);
+  this->writeSingleNode(gid,"chic_lt","m",&und->chic_lt);
 
   H5Gclose(gid);
 
@@ -207,33 +207,33 @@ void Output::writeBeamBuffer(Beam *beam)
   gid=H5Gcreate(fid,"Beam",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
   // step 2 - write individual datasets
-  this->writeBuffer(gid, "energy",&beam->gavg);
-  this->writeBuffer(gid, "energyspread",&beam->gsig);
-  this->writeBuffer(gid, "xposition",&beam->xavg);
-  this->writeBuffer(gid, "yposition",&beam->yavg);
-  this->writeBuffer(gid, "pxposition",&beam->pxavg);
-  this->writeBuffer(gid, "pyposition",&beam->pyavg);
-  this->writeBuffer(gid, "xsize",&beam->xsig);
-  this->writeBuffer(gid, "ysize",&beam->ysig);
-  this->writeBuffer(gid, "bunching",&beam->bunch);
-  this->writeBuffer(gid, "bunchingphase",&beam->bphi);
-  this->writeBuffer(gid, "efield",&beam->efld);
+  this->writeBuffer(gid, "energy"," ",&beam->gavg);
+  this->writeBuffer(gid, "energyspread"," ", &beam->gsig);
+  this->writeBuffer(gid, "xposition","m",&beam->xavg);
+  this->writeBuffer(gid, "yposition","m",&beam->yavg);
+  this->writeBuffer(gid, "pxposition","rad", &beam->pxavg);
+  this->writeBuffer(gid, "pyposition","rad", &beam->pyavg);
+  this->writeBuffer(gid, "xsize","m", &beam->xsig);
+  this->writeBuffer(gid, "ysize","m", &beam->ysig);
+  this->writeBuffer(gid, "bunching"," ",&beam->bunch);
+  this->writeBuffer(gid, "bunchingphase","rad", &beam->bphi);
+  this->writeBuffer(gid, "efield","eV/m", &beam->efld);
   
-  this->writeBuffer(gid, "betax",&beam->bx);
-  this->writeBuffer(gid, "betay",&beam->by);
-  this->writeBuffer(gid, "alphax",&beam->ax);
-  this->writeBuffer(gid, "alphay",&beam->ay);
-  this->writeBuffer(gid, "emitx",&beam->ex);
-  this->writeBuffer(gid, "emity",&beam->ey);
-  this->writeBuffer(gid, "current",&beam->cu);
+  this->writeBuffer(gid, "betax","m",&beam->bx);
+  this->writeBuffer(gid, "betay","m",&beam->by);
+  this->writeBuffer(gid, "alphax","rad",&beam->ax);
+  this->writeBuffer(gid, "alphay","rad",&beam->ay);
+  this->writeBuffer(gid, "emitx","m",&beam->ex);
+  this->writeBuffer(gid, "emity","m",&beam->ey);
+  this->writeBuffer(gid, "current","A",&beam->cu);
 
   int bh=beam->getBunchingHarmonics();
   char bgroup[20];
   for (int i=1; i<bh;i++){
     sprintf(bgroup,"bunching%d",(i+1));
-    this->writeBuffer(gid, bgroup,  &beam->bh[i-1]);
+    this->writeBuffer(gid, bgroup, " ",  &beam->bh[i-1]);
     sprintf(bgroup,"bunchingphase%d",(i+1));
-    this->writeBuffer(gid, bgroup,  &beam->ph[i-1]);
+    this->writeBuffer(gid, bgroup,"rad",  &beam->ph[i-1]);
     }
 
   // step 3 - close group and done
@@ -262,29 +262,29 @@ void Output::writeFieldBuffer(Field *field)
   gid=H5Gcreate(fid,name,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
   // step 2 - write individual datasets
-  this->writeBuffer(gid, "power",&field->power);
+  this->writeBuffer(gid, "power","W",&field->power);
 
-  this->writeBuffer(gid, "xsize",&field->xsig);
-  this->writeBuffer(gid, "ysize",&field->ysig);
-  this->writeBuffer(gid, "xposition",&field->xavg);
-  this->writeBuffer(gid, "yposition",&field->yavg);
+  this->writeBuffer(gid, "xsize","m",&field->xsig);
+  this->writeBuffer(gid, "ysize","m",&field->ysig);
+  this->writeBuffer(gid, "xposition","m",&field->xavg);
+  this->writeBuffer(gid, "yposition","m",&field->yavg);
 #ifdef FFTW
-  this->writeBuffer(gid, "xdivergence",&field->txsig);
-  this->writeBuffer(gid, "ydivergence",&field->tysig);
-  this->writeBuffer(gid, "xpointing",&field->txavg);
-  this->writeBuffer(gid, "ypointing",&field->tyavg);
+  this->writeBuffer(gid, "xdivergence","rad",&field->txsig);
+  this->writeBuffer(gid, "ydivergence","rad",&field->tysig);
+  this->writeBuffer(gid, "xpointing","rad",&field->txavg);
+  this->writeBuffer(gid, "ypointing","rad",&field->tyavg);
 #endif
-  this->writeBuffer(gid, "intensity-nearfield",&field->nf_intensity);
-  this->writeBuffer(gid, "phase-nearfield",&field->nf_phi);
-  this->writeBuffer(gid, "intensity-farfield",&field->ff_intensity);
-  this->writeBuffer(gid, "phase-farfield",&field->ff_phi);
+  this->writeBuffer(gid, "intensity-nearfield","arb unit",&field->nf_intensity);
+  this->writeBuffer(gid, "phase-nearfield","rad", &field->nf_phi);
+  this->writeBuffer(gid, "intensity-farfield","arb unit",&field->ff_intensity);
+  this->writeBuffer(gid, "phase-farfield","rad",&field->ff_phi);
 
 
 
   vector<double> tmp;
   tmp.resize(1);
   tmp[0]=field->dgrid;
-  this->writeSingleNode(gid,"dgrid",&tmp);
+  this->writeSingleNode(gid,"dgrid","m",&tmp);
   
   vector<int> itmp;
   itmp.resize(1);

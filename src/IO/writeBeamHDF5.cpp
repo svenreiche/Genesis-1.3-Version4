@@ -81,7 +81,7 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam){
     if (s0==0){
       cur[0]=beam->current.at(islice);
     }
-    this->writeSingleNode(gid,"current",&cur);
+    this->writeSingleNode(gid,"current","A", &cur);
 
 
 
@@ -89,32 +89,32 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam){
       if (s0==0) {
 	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).gamma;}
       }
-      this->writeSingleNode(gid,"gamma"  ,&work);
+      this->writeSingleNode(gid,"gamma"  ," ", &work);
 
       if (s0==0) {
 	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).theta;}
       }
-      this->writeSingleNode(gid,"theta"  ,&work);
+      this->writeSingleNode(gid,"theta"  ,"rad", &work);
 
       if (s0==0) {
 	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).x;}
       }
-      this->writeSingleNode(gid,"x"  ,&work);
+      this->writeSingleNode(gid,"x"  ,"m",&work);
 
       if (s0==0) {
 	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).y;}
       }
-      this->writeSingleNode(gid,"y"  ,&work);
+      this->writeSingleNode(gid,"y"  ,"m",&work);
 
       if (s0==0) {
 	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).px;}
       }
-      this->writeSingleNode(gid,"px"  ,&work);
+      this->writeSingleNode(gid,"px"  ,"rad",&work);
 
       if (s0==0) {
 	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).py;}
       }
-      this->writeSingleNode(gid,"py"  ,&work);
+      this->writeSingleNode(gid,"py"  ,"rad",&work);
 
       //  } 
     H5Gclose(gid);
@@ -136,11 +136,11 @@ void WriteBeamHDF5::writeGlobal(int nbins,bool one4one, double reflen, double sl
   tmp.resize(1);
 
   tmp[0]=reflen;
-  this->writeSingleNode(fid,"slicelength",&tmp);
+  this->writeSingleNode(fid,"slicelength","m",&tmp);
   tmp[0]=slicelen;
-  this->writeSingleNode(fid,"slicespacing",&tmp);
+  this->writeSingleNode(fid,"slicespacing","m",&tmp);
   tmp[0]=s0;
-  this->writeSingleNode(fid,"refposition",&tmp);
+  this->writeSingleNode(fid,"refposition","m",&tmp);
   
   vector<int> itmp;
   itmp.resize(1);
