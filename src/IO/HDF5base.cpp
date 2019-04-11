@@ -257,6 +257,46 @@ int HDF5Base::getDatasetSize(hid_t fid, char *name)
 
 //------------------------
 // simple read functions
+
+
+herr_t file_info(hid_t loc_id,const char *name, const H5L_info_t *linfo, void *opdata)
+{
+  vector<string> *names;
+  names=reinterpret_cast< vector<string> * > (opdata);
+  names->push_back(name);
+  return 0;
+}
+
+bool HDF5Base::browseFile(const string &path,vector<string> *names){
+  vector<string> ele;
+  stringstream ss(path);
+  string file;
+  string group;
+  char delim='/';             // does not compile it I use double quotation marks
+  if (getline(ss,file,delim)){
+     if (!getline(ss,group)){
+       return false;
+     }
+  } else {
+    return false;
+  }
+
+
+  hid_t fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);
+  herr_t idx=H5Literate(fid,H5_INDEX_NAME,H5_ITER_NATIVE,NULL, file_info, reinterpret_cast<void *> (names));
+  H5Fclose(fid);
+
+  for (int i=0; i < names->size(); i++){ 
+    if (names->at(i).compare(group) == 0) {
+      names->erase(names->begin()+i);
+      return true;
+    }
+  }
+  return false;
+  
+ 
+}
+
 bool HDF5Base::simpleReadDouble1D(const string &path, vector<double> *data){
   vector<string> ele;
   stringstream ss(path);

@@ -85,9 +85,10 @@ class ProfileFile : public ProfileBase, StringProcessing, HDF5Base
   string init(int, map<string,string> *);
   double value(double);
   void usage();
- private:
+  vector<string> names;
   string xdataset,ydataset;   
-  bool isTime,revert;
+  bool isTime,revert,autoassign;
+ private:
   vector<double> xdat,ydat;
 };
 

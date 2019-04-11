@@ -47,6 +47,8 @@ class HDF5Base{
   int getDatasetSize(hid_t fid, char *name);
   bool checkForLink(hid_t fid, string name);
 
+
+
   void writeDouble1DExist(hsize_t datsize, double *data, hid_t,  string);
   void writeDouble1D(hsize_t reclen, hsize_t datsize, double *data, hid_t,  string);
   void writeInt1D(hsize_t reclen, hsize_t datsize, int *data, hid_t,  string);
@@ -55,9 +57,11 @@ class HDF5Base{
   void readDouble1D(hid_t fid, const char *name, double *data, hsize_t dat, hsize_t chunk);
 
   bool simpleReadDouble1D(const string &path, vector<double> *data);
+  bool browseFile(const string &path, vector<string> *);
 
 };
 
+extern "C"  herr_t file_info(hid_t loc_id,const char *name, const H5L_info_t *linfo, void *opdata); 
 
 
 #endif

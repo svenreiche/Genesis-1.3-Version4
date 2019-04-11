@@ -34,7 +34,32 @@ bool Profile::init(int rank, map<string,string> *arg,string element)
   } 
   if (element.compare("&profile_file")==0){
     p=(ProfileBase *)new ProfileFile();
+    ProfileFile *f;
     label=p->init(rank,arg);
+    f=static_cast<ProfileFile *>(p);
+    if (f->names.size()>0){
+      map<string,string> derivedArg;
+      for (int i=0; i < f->names.size(); i++){
+	derivedArg.clear();
+	derivedArg["label"]=f->names[i];
+        stringstream ss(f->xdataset);
+	string file;
+	char delim='/';             // does not compile it I use double quotation marks
+	getline(ss,file,delim);
+	string ydata=file+'/'+f->names[i];
+	derivedArg["xdata"]=f->xdataset;
+	derivedArg["ydata"]=ydata;
+	string bstr="false";
+	if (f->isTime) {bstr="true";}
+	derivedArg["isTime"]=bstr;
+	bstr="false";
+	if (f->revert) {bstr="true";};
+	derivedArg["reverse"]=bstr;
+	derivedArg["autoassign"]="false";
+	this->init(rank,&derivedArg,"&profile_file");		   
+      }
+      return true;
+    }
   } 
 
   if (label.size()<1){
@@ -251,6 +276,7 @@ string ProfileFile::init(int rank, map<string,string>*arg)
   ydataset="";
   isTime=false;
   revert=false;
+  autoassign=false;
 
   map<string,string>::iterator end=arg->end();
 
@@ -259,18 +285,31 @@ string ProfileFile::init(int rank, map<string,string>*arg)
   if (arg->find("ydata")!=end)   {ydataset = arg->at("ydata");  arg->erase(arg->find("ydata"));}
   if (arg->find("isTime")!=end)  {isTime = atob(arg->at("isTime").c_str()); arg->erase(arg->find("isTime"));}
   if (arg->find("reverse")!=end) {revert = atob(arg->at("reverse").c_str()); arg->erase(arg->find("reverse"));}
+  if (arg->find("autoassign")!=end) {autoassign = atob(arg->at("autoassign").c_str()); arg->erase(arg->find("autoassign"));}
   
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &profile_file" << endl; this->usage();}
     return "";
   }
+
+
+  bool success;
+
+  if (autoassign){
+    success=this->browseFile(xdataset,&names);
+    if (!success) {
+      if (rank==0) { cout << "*** Error: Cannot autoparse the HDF5 file for the dataset: " << xdataset  << endl;}
+    } 
+    return "";
+  }
+
   if ((label.size()<1)&&(rank==0)){
     cout << "*** Error: Label not defined in &profile_file" << endl; this->usage();
   }
 
+
   int ndata=-1;
-  bool success;
 
   success=this->simpleReadDouble1D(xdataset,&xdat);
   if (!success){
@@ -329,6 +368,7 @@ void ProfileFile::usage(){
   cout << " string ydata = <empty>" << endl;
   cout << " bool isTime  = false" << endl;
   cout << " bool reverse = false" << endl;
+  cout << " bool autoassign = false"  << endl;
   cout << "&end" << endl << endl;
   return;
   return;
