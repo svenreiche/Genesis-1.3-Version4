@@ -81,6 +81,20 @@ bool LoadField::init(int rank, int size, map<string,string> *arg, vector<Field *
     return false;
   }
 
+
+  // checking for wrong profiles
+  string wrongProf="";
+  if (prof->check(lambdaref)== false){ wrongProf=lambdaref;}
+  if (prof->check(powerref)== false) { wrongProf=powerref;}
+  if (prof->check(phaseref)== false) { wrongProf=phaseref;}
+  if (prof->check(z0ref)== false)    { wrongProf=z0ref;}
+  if (prof->check(w0ref)==false)     { wrongProf=w0ref;}
+  if (wrongProf.size() > 0){
+    if (rank==0){cout << "*** Error: Unknown profile reference in &field: " << wrongProf << endl;}
+    return false;
+  }    
+
+
   // check for existing field record;
   int idx=-1;
   Field *field;

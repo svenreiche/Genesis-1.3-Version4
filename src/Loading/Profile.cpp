@@ -71,6 +71,15 @@ bool Profile::init(int rank, map<string,string> *arg,string element)
   return true;
 }
 
+bool Profile::check(string label){
+  if (label.size() < 1) { return true; }
+  if (prof.find(label)!=prof.end()){  
+    return true;
+  }
+  return false;
+}
+
+
 double Profile::value(double s, double val, string label)
 {
   if ((label.size()<1)||(prof.find(label)==prof.end())){  

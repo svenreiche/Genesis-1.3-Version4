@@ -100,6 +100,7 @@ class Profile{
    Profile();
    ~Profile();
    bool init(int, map<string,string> *, string); 
+   bool check(string);
    double value(double,double,string);
  private:
    map<string,ProfileBase *> prof;

@@ -97,6 +97,29 @@ bool LoadBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, Set
   }
 
 
+  // checking for wrong profiles
+  string wrongProf="";
+  if (prof->check(gammaref)== false)  { wrongProf=gammaref;}
+  if (prof->check(delgamref)== false) { wrongProf=delgamref;}
+  if (prof->check(currentref)== false){ wrongProf=currentref;}
+  if (prof->check(exref)== false)     { wrongProf=exref;}
+  if (prof->check(eyref)==false)      { wrongProf=eyref;}
+  if (prof->check(betaxref)== false)  { wrongProf=betaxref;}
+  if (prof->check(betayref)== false)  { wrongProf=betayref;}
+  if (prof->check(alphaxref)== false) { wrongProf=alphaxref;}
+  if (prof->check(alphayref)== false) { wrongProf=alphayref;}
+  if (prof->check(xcenref)== false)   { wrongProf=xcenref;}
+  if (prof->check(ycenref)== false)   { wrongProf=ycenref;}
+  if (prof->check(pxcenref)== false)  { wrongProf=pxcenref;}
+  if (prof->check(pycenref)== false)  { wrongProf=pycenref;}
+  if (prof->check(bunchref)== false)  { wrongProf=bunchref;}
+  if (prof->check(bunchphaseref)== false){ wrongProf=bunchphaseref;}
+  if (prof->check(emodref)== false)   { wrongProf=emodref;}
+  if (prof->check(emodphaseref)== false){ wrongProf=emodphaseref;}
+  if (wrongProf.size() > 0){
+    if (rank==0){cout << "*** Error: Unknown profile reference in &beam: " << wrongProf << endl;}
+    return false;
+  }    
 
   if (rank==0){cout << "Generating input particle distribution..." << endl; }
 
