@@ -263,10 +263,17 @@ void Output::writeFieldBuffer(Field *field)
 
   // step 2 - write individual datasets
   this->writeBuffer(gid, "power",&field->power);
+
   this->writeBuffer(gid, "xsize",&field->xsig);
   this->writeBuffer(gid, "ysize",&field->ysig);
   this->writeBuffer(gid, "xposition",&field->xavg);
   this->writeBuffer(gid, "yposition",&field->yavg);
+#ifdef FFTW
+  this->writeBuffer(gid, "xdivergence",&field->txsig);
+  this->writeBuffer(gid, "ydivergence",&field->tysig);
+  this->writeBuffer(gid, "xpointing",&field->txavg);
+  this->writeBuffer(gid, "ypointing",&field->tyavg);
+#endif
   this->writeBuffer(gid, "intensity-nearfield",&field->nf_intensity);
   this->writeBuffer(gid, "phase-nearfield",&field->nf_phi);
   this->writeBuffer(gid, "intensity-farfield",&field->ff_intensity);

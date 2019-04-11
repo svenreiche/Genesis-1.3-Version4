@@ -1,13 +1,25 @@
 
 #include "Field.h"
-#include "genesis_fortran_common.h"
+//#include "genesis_fortran_common.h"
+
+
+#include <fstream>
+
 
 #ifdef VTRACE
 #include "vt_user.h"
 #endif
 
 
-Field::~Field(){}
+
+Field::~Field(){
+#ifdef FFTW                // release the working arrays for the FFTs
+  fftw_destroy_plan(p);
+  fftw_free(in);
+  fftw_free(out);
+#endif  
+}
+
 Field::Field(){
   harm=1;
   polarization=false;
@@ -38,7 +50,16 @@ void Field::init(int nsize, int ngrid_in, double dgrid_in, double xlambda0, doub
         field[i].resize(ngrid*ngrid); 
     } 
   } 
-   
+
+  in = new complex<double> [ngrid*ngrid];
+  out= new complex<double> [ngrid*ngrid];
+
+#ifdef FFTW
+  p  = fftw_plan_dft_2d(ngrid,ngrid,reinterpret_cast<fftw_complex*>(in),reinterpret_cast<fftw_complex*>(out),FFTW_FORWARD,FFTW_MEASURE);
+#endif
+
+
+
   xks=4.*asin(1)/xlambda;
   first=0;                                // pointer to slice which correspond to first in the time window
   dz_save=0;
@@ -61,11 +82,16 @@ void Field::initDiagnostics(int nz)
   xsig.resize(ns*nz);
   yavg.resize(ns*nz);
   ysig.resize(ns*nz);
+#ifdef FFTW
+  txavg.resize(ns*nz);
+  txsig.resize(ns*nz);
+  tyavg.resize(ns*nz);
+  tysig.resize(ns*nz);
+#endif
   nf_intensity.resize(ns*nz);
   nf_phi.resize(ns*nz);
   ff_intensity.resize(ns*nz);
   ff_phi.resize(ns*nz);
-
 }
 
 
@@ -225,6 +251,7 @@ void Field::diagnostics(bool output)
 
   double shift=-0.5*static_cast<double> (ngrid);
   complex<double> loc;
+  double loc2[2];
   int ds=field.size();
   int ioff=idx*ds;
 
@@ -236,11 +263,17 @@ void Field::diagnostics(bool output)
     double byavg=0;
     double bxsig=0;
     double bysig=0;
+    double fpower=0;
+    double fxavg=0;
+    double fyavg=0;
+    double fxsig=0;
+    double fysig=0;
     double bintensity=0;   
     double bfarfield=0;
     double bphinf=0;
     double bphiff=0;
     complex<double> ff = complex<double> (0,0);
+
 
     for (int iy=0;iy<ngrid;iy++){
       double dy=static_cast<double>(iy)+shift;
@@ -248,6 +281,7 @@ void Field::diagnostics(bool output)
         double dx=static_cast<double>(ix)+shift;
 	int i=iy*ngrid+ix;
         loc=field.at(islice).at(i);
+	in[i]=loc;   // field for the FFT
         double wei=loc.real()*loc.real()+loc.imag()*loc.imag();
         ff+=loc;
         bpower+=wei;
@@ -264,6 +298,41 @@ void Field::diagnostics(bool output)
       byavg/=bpower;
       bysig=sqrt(abs(bysig/bpower-byavg*byavg));
     }
+
+
+
+    // calculate the divergence angle
+#ifdef FFTW
+    fftw_execute(p);
+    for (int iy=0;iy<ngrid;iy++){
+      double dy=static_cast<double>(iy)+shift;
+      for (int ix=0;ix<ngrid;ix++){
+        double dx=static_cast<double>(ix)+shift;
+	int iiy=(iy+(ngrid+1)/2) % ngrid;
+	int iix=(ix+(ngrid+1)/2) % ngrid;
+	int ii=iiy*ngrid+iix;
+        loc=out[ii];
+	double wei=sqrt(loc.real()*loc.real()+loc.imag()*loc.imag());
+        fpower+=wei;
+        fxavg+=dx*wei;
+        fxsig+=dx*dx*wei;
+        fyavg+=dy*wei;
+        fysig+=dy*dy*wei;
+      }
+    }
+
+    if (fpower>0){
+	  fxavg/=fpower;
+	  fxsig=sqrt(abs(fxsig/fpower-fxavg*fxavg));
+	  fyavg/=fpower;
+	  fysig=sqrt(abs(fysig/fpower-fyavg*fyavg));
+    }
+    double scltheta=xlambda/ngrid/dgrid/sqrt(2.);
+#endif
+
+
+
+
 
     bfarfield=ff.real()*ff.real()+ff.imag()*ff.imag();
     if (bfarfield > 0){
@@ -290,6 +359,12 @@ void Field::diagnostics(bool output)
     xsig[ioff+is] =bxsig;
     yavg[ioff+is] =byavg;
     ysig[ioff+is] =bysig;
+#ifdef FFTW
+    txavg[ioff+is]=fxavg*scltheta;
+    txsig[ioff+is]=fxsig*scltheta;
+    tyavg[ioff+is]=fyavg*scltheta;
+    tysig[ioff+is]=fysig*scltheta;
+#endif
     nf_intensity[ioff+is]=bintensity;
     nf_phi[ioff+is]=bphinf;
     ff_intensity[ioff+is]=bfarfield;

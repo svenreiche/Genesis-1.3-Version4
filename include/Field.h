@@ -6,6 +6,13 @@
 #include <string>
 #include <complex>
 
+
+#ifdef FFTW
+#include <fftw3.h>
+#endif
+
+
+
 class Beam;
 
 
@@ -45,6 +52,7 @@ class Field{
 
 
    vector<double> power,xsig,xavg,ysig,yavg ;  // buffer to accumulate before writing it out
+   vector<double> txsig,txavg,tysig,tyavg ;  // buffer to accumulate before writing it out
    vector<double> nf_intensity,nf_phi,ff_intensity,ff_phi;
 
 
@@ -53,6 +61,12 @@ class Field{
    bool disabled;
    double rharm;
    double accuslip;
+
+   complex<double> *in;
+   complex<double> *out;
+#ifdef FFTW
+   fftw_plan p;
+#endif
      
    FieldSolver solver;
 };
