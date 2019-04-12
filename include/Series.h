@@ -11,12 +11,14 @@
 
 #include "mpi.h"
 #include "StringProcessing.h"
-
+#include "Sequence.h"
+#include "RandomU.h"
+#include "Inverfc.h"
 
 using namespace std;
 
 
-class SeriesBase{
+class SeriesBase: public StringProcessing{
  public:
   SeriesBase(){};
   ~SeriesBase(){};
@@ -35,6 +37,36 @@ class SeriesConst : public SeriesBase
   void usage();
  private:
   double c0;
+};
+
+
+class SeriesPower : public SeriesBase
+{
+ public:
+  SeriesPower(){};
+  ~SeriesPower(){};
+  double value();
+  string init(int, map<string,string> *);
+  void usage();
+ private:
+  double c0,dc,alpha;
+  int n0,icount;
+};
+
+
+class SeriesRandom : public SeriesBase
+{
+ public:
+  SeriesRandom(){};
+  ~SeriesRandom(){};
+  double value();
+  string init(int, map<string,string> *);
+  void usage();
+ private:
+  double c0,dc,seed;
+  bool gauss;
+  RandomU *seq;
+  Inverfc erf;
 };
 
 
