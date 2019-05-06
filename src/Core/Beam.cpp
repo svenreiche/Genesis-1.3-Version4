@@ -163,7 +163,7 @@ bool Beam::harmonicConversion(int harmonic, bool resample)
       p.x    =beam[i].at(j).x;
       p.y    =beam[i].at(j).y;
       p.px   =beam[i].at(j).px;
-      p.py   =beam[i].at(j).px;
+      p.py   =beam[i].at(j).py;
       beam[i*harmonic].push_back(p);
     }
     beam[i].clear(); 
