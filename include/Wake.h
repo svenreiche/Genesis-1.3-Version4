@@ -29,14 +29,17 @@ class Wake: public StringProcessing{
  private:   
    void usage();
    void singleWakeResistive(int);
+   void singleWakeGeometric(int);
+   void singleWakeRoughness(int);
+   void KernelRoughness(vector<complex<double> > *, complex<double>, complex<double>);
+   double TrapIntegrateRoughness(vector< complex<double> > *, complex<double> , complex<double> , double);
 
-
-   double radius, relaxation,conductivity,ztrans;
+   double radius, relaxation,conductivity,ztrans,gap,lgap,hrough,lrough,rrough;
    bool roundpipe,transient, hasWake;
 
    unsigned int ns;
    double slen,ds;
-   double *wakeres;
+   double *wakeres, *wakegeo, *wakerou;
 
 };
 

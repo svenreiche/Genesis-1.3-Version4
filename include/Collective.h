@@ -23,15 +23,15 @@ class Collective{
  public:
    Collective();
    virtual ~Collective();
-   void initWake(unsigned int, double, double *, double, bool);
+   void initWake(unsigned int, double, double *, double *, double *, double, double, bool);
    void apply(Beam *,Undulator *, double );
 
  private:
    bool transient,hasWake;
-   double ztrans;
+   double ztrans,radius;
    double ds;
    unsigned int ns;
-   double *wakeres, *current;
+   double *wakeres, *wakegeo, *wakerou, *wake, *current, *dcurrent, *curwork;
 };
 
 #endif

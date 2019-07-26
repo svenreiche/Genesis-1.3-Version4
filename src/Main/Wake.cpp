@@ -9,8 +9,10 @@ Wake::Wake()
   roundpipe=true;
   transient=false;
   ztrans=0;
-
-
+  gap=0;
+  lgap=1;
+  hrough=0;
+  lrough=1;
   ns=0;
 }
 
@@ -26,6 +28,10 @@ void Wake::usage(){
   cout << " string material  = <empty>" << endl;
   cout << " double conductivity = 0e-6" << endl;
   cout << " double relaxation  = 0e-6" << endl;
+  cout << " double gap = 0e-6" << endl;
+  cout << " double lgap  = 1.0" << endl;
+  cout << " double hrough = 0.0" << endl;
+  cout << " double lrough = 1.0" << endl;
   cout << " bool transient = false" << endl;
   cout << " double ztrans = 0" << endl;
   cout << "&end" << endl << endl;
@@ -47,6 +53,10 @@ bool Wake::init(int rank, int size, map<string,string> *arg,  Time *time, Setup 
   if (arg->find("relaxation")!=end) {relaxation = atof(arg->at("relaxation").c_str());  arg->erase(arg->find("relaxation"));}
   if (arg->find("roundpipe")!=end)    {roundpipe    = atob(arg->at("roundpipe").c_str());  arg->erase(arg->find("roundpipe"));}
   if (arg->find("material")!=end){material = arg->at("material"); arg->erase(arg->find("material"));}
+  if (arg->find("gap")!=end)  {gap = atof(arg->at("gap").c_str());  arg->erase(arg->find("gap"));}
+  if (arg->find("lgap")!=end) {lgap = atof(arg->at("lgap").c_str());  arg->erase(arg->find("lgap"));}
+  if (arg->find("hrough")!=end) {hrough = atof(arg->at("hrough").c_str());  arg->erase(arg->find("hrough"));}
+  if (arg->find("lrough")!=end) {lrough = atof(arg->at("lrough").c_str());  arg->erase(arg->find("lrough"));}
   if (arg->find("transient")!=end)    {transient    = atob(arg->at("transient").c_str());  arg->erase(arg->find("transient"));}
   if (arg->find("ztrans")!=end) {ztrans = atof(arg->at("ztrans").c_str());  arg->erase(arg->find("ztrans"));}
 
@@ -74,27 +84,155 @@ bool Wake::init(int rank, int size, map<string,string> *arg,  Time *time, Setup 
   ds=slen/static_cast<double>(nslen*nsample);
 
   // clear single particle wakes
-  ns=nslen*nsample;
+  ns=nslen*nsample;    // sample every wavelength
   wakeres = new double [ns];
-
+  wakegeo = new double [ns];
+  wakerou = new double [ns];
 
   // calculate the single particle wakes
   this->singleWakeResistive(rank);
-
+  this->singleWakeGeometric(rank);
+  this->singleWakeRoughness(rank);
 
 
   // transfer wakes into beam class
-  beam->initWake(ns,ds,wakeres,ztrans,transient);
+  beam->initWake(ns,ds,wakeres,wakegeo,wakerou, ztrans,radius,transient);
 
-  delete[] wakeres;
+  delete[] wakeres,wakegeo,wakerou;
 
   return true;
 
 }
+
+
+
+void Wake::KernelRoughness(vector< complex<double> > *K, complex<double> q1, complex<double> q2)
+{
+  int N=K->size();
+  complex<double> dq=(q2-q1)/static_cast<double>(N-1);
+  complex<double> i=complex<double> (0,1);
+
+  for (int j=0; j< N;j++){
+    complex<double> q=q1+static_cast<double>(j)*dq;
+    complex<double> S=(sqrt(2.*q+1.)-i*sqrt(2.*q-1.))*q/sqrt(4.*q*q-1.);
+    K->at(j)=(S+1.)/(1.-i*rrough*q*S)/(1.+i*rrough*q);
+  }
+  K->at(0)*=0.5;
+  K->at(N-1)*=0.5;   // for trapazoidal integration
+}
+
+
+
+double Wake::TrapIntegrateRoughness(vector< complex<double> > *K, complex<double> q1, complex<double> q2, double tau)
+{
+  int N=K->size();
+  complex<double> dq=(q2-q1)/static_cast<double>(N-1);
+  complex<double> i=complex<double> (0,1);  
+  complex<double> val=0;
+
+  for (int j=0; j< N;j++){
+    complex<double> q=q1+static_cast<double>(j)*dq;
+    val+=exp(-i*q*tau)*K->at(j);
+  }
+  val*=dq;
+  return val.real();
+}
+
+
+
+
+
+void Wake::singleWakeRoughness(int rank)
+{
+
+  if (hrough <=0){
+    for (int i=0; i< ns; i++){
+      wakerou[i]=0;
+    }
+    return;
+  }
+
+
+  double pi=2.*asin(1);
+  rrough = pi*pi*pi/lrough/lrough/lrough*hrough*hrough*radius; // aspect ratio parameter. If much smaller than one an inductive mode
+             // is expected, if unity or larger it is rather a synchronous mode.
+
+  double tau=0;  // example 
+  complex<double> q1 = complex<double> (0,0);
+  complex<double> q2 = complex<double> (0,2e-3);
+  complex<double> q3 = complex<double> (1,2e-3);
+  complex<double> q4 = complex<double> (1,0);
+  complex<double> q5 = complex<double> (100,0);
+
+  int N=128;
+  vector< complex<double> > K1,K2,K3,K4;
+  K1.resize(N);
+  K2.resize(8*N);
+  K3.resize(N);
+  K4.resize(8*N);
+
+  this->KernelRoughness(&K1,q1,q2);
+  this->KernelRoughness(&K2,q2,q3);
+  this->KernelRoughness(&K3,q3,q4);
+  this->KernelRoughness(&K4,q4,q5);
+
+
+  double res;
+  double coef=rrough/pi*4/radius/radius*1.6e-19/4/pi/8.854e-12;   
+
+  for (int i=0; i<ns; i++){
+    tau=2*pi*ds*i/lrough;
+    res =this->TrapIntegrateRoughness(&K1,q1,q2,tau);
+    res+=this->TrapIntegrateRoughness(&K2,q2,q3,tau);
+    res+=this->TrapIntegrateRoughness(&K3,q3,q4,tau);
+    res+=this->TrapIntegrateRoughness(&K4,q4,q5,tau);
+    wakerou[i]=coef*res;
+  }
+  
+  if (rank==0){
+       cout << "Roughness Wake calculated..." << endl;   
+  }
+
+ 
+}
+
+
+void Wake::singleWakeGeometric(int rank)
+{
+
+  if (gap <=0){
+    for (int i=0; i< ns; i++){
+      wakegeo[i]=0;
+    }
+    return;
+  }
+
+  double pi=2.*asin(1.);
+  double coef=-vacimp*ce/(pi*pi*radius*lgap)*2*sqrt(0.5*gap); // scaling coefficient
+  if (!roundpipe) { coef*=0.956; }     //
+  for (int i = 0;i<ns;i++){
+    wakegeo[i]=coef*sqrt(ds*i);     
+  }
+
+  if (rank==0){
+       cout << "Geometric Wake calculated..." << endl;   
+  }
+
+}
+
+
+
+
  
 void Wake::singleWakeResistive(int rank)
 {
 
+ if (conductivity <=0){
+    for (int i=0; i< ns; i++){
+      wakeres[i]=0;
+    }
+    return;
+  }
    double s0=pow(2*radius*radius/vacimp/conductivity,1./3.); // characteristic length in SI units
    double gamma=relaxation/s0;
    double coef = radius/(s0*s0);
