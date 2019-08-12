@@ -45,7 +45,6 @@ void Sorting::configure(double s0_in, double slicelen_in, double sendmin_in, dou
 
 int Sorting::sort(vector <vector <Particle> > * recdat){
 
-  //   cout << "Rank: " << rank << " s0: " << s0 << " slen: " << slen << " sendmin: " << sendmin << " sendmax: " << sendmax << " keepmin: " << keepmin << " keepmax: " << keepmax << " globaL : " << globalframe << endl;
 
   if (!dosort) {
     if (rank==0) {cout << "*** Warning: Sorting only enabled for one-2-one simulations" << endl;}
@@ -74,7 +73,7 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
   Particle p;  
 
   double invslen=1./slen;
-  cout << "Testfloor: " << floor(-0.2) << " and " << static_cast<int>(floor(-0.2)) << endl;
+  //  cout << "Testfloor: " << floor(-0.2) << " and " << static_cast<int>(floor(-0.2)) << endl;
   // note that global sorting comes first. Therefore all particles are staying in the same domain 
   
   vector<int> count,count2;
@@ -125,9 +124,9 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
 
 
 
-  for (int i=0; i<count.size(); i++){
-    cout<<"Rank: " << rank << " Slice: " << i << " received: " << count[i] << " send: "<<count2[i]<<endl;
-  } 
+  //  for (int i=0; i<count.size(); i++){
+  //  cout<<"Rank: " << rank << " Slice: " << i << " received: " << count[i] << " send: "<<count2[i]<<endl;
+  //} 
    
   return;
 }
@@ -145,7 +144,6 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
   if (rank==0) { pushbackward.clear(); }
   if (size==1) { return; } // no need to transfer if only one node is used.
   
-  cout << "Rank: " << rank << " - Forward: " << pushforward.size()/6 << " - Backward: " << pushbackward.size()/6 << endl;
 
   int maxiter=size-1;  
   int nforward=pushforward.size();
@@ -294,8 +292,9 @@ void Sorting::send(int target, vector<double> *data)
 
 void Sorting::fillPushVectors(vector< vector <Particle> >*rec)
 {
-  cout << "Rank: " << rank << " sendmin: " << sendmin << " sendmax: " << sendmax << endl;
-  cout << "Rank: " << rank << " keepmin: " << keepmin << " keepmax: " << keepmax << endl;
+  if (rank == 0) {
+    cout << "Global Sorting: Slicelength: " << slen << " - Send backwards for theta < " << sendmin << " - Send forward for theta > " << sendmax << endl; 
+  }
   //step one - fill the push vectors
   pushforward.clear();
   pushbackward.clear();
@@ -352,7 +351,11 @@ void Sorting::fillPushVectors(vector< vector <Particle> >*rec)
     }
 
   }
-  cout << "Rank: " <<rank << " Deleted: " << count << " Forward: " << pushforward.size()/6 << " Backward: " <<pushbackward.size()/6 << endl;
+  // cross check
+  int transfer=count-pushforward.size()/6-pushbackward.size()/6;
+  if (transfer !=0) {
+      cout << "*** Non-matching PArticle Transfar: Rank: " <<rank << " Deleted: " << count << " Forward: " << pushforward.size()/6 << " Backward: " <<pushbackward.size()/6 << endl;
+  }    
 }
 
 
