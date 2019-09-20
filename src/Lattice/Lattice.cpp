@@ -179,9 +179,11 @@ void Lattice::calcSlippage(double lambda, double gamma)
       //      if (lat_delay[i]>0) { cout << "Delay: " << lat_delay[i] << " Lambda: " << lambda << endl; } 
       tmp=lat_delay[i]/lambda;  // affect of chicane is always autophasing!!!
       lat_slip[i]=floor(tmp);
-      tmp=lat_ps[i]/4/asin(1.0);  // phase shifter
-      lat_slip[i]+=floor(tmp);
-      lat_phase[i]=tmp-floor(tmp);     // phase shifter goes here
+      //      if (lat_ps[i] != 0) { cout << "Phase shifter" << lat_ps[i] << endl;}
+      //      tmp=lat_ps[i]/4/asin(1.0);  // phase shifter      
+      //      lat_slip[i]+=floor(tmp);
+      //      lat_phase[i]=tmp-floor(tmp);     // phase shifter goes here
+      lat_phase[i]=-lat_ps[i];  // delay goes backwards, e.g. 360 degree delay is one wavelength backwards
     }
   }
   // correct for the end of the lattice that autophasing is applied in case for second, suceeding run
