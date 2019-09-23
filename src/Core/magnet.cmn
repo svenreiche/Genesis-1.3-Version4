@@ -1,8 +1,0 @@
-c     ------------------------------------------------------------------
-c     wiggler parameters
-c
-      real*8  aw0,xkx,xky,xku,awd,awdx,awdy,qfld,qdx,qdy,gammaref
-c
-      common /wigcom/
-     r       aw0,xkx,xky,xku,awd,awdx,awdy,qfld,qdx,qdy,gammaref
-c

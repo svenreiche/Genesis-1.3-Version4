@@ -53,8 +53,8 @@ const double ce     = 4.8032045e-11;
 
 
 const int versionmajor = 4;
-const int versionminor = 3;
-const int versionrevision = 1;
+const int versionminor = 4;
+const int versionrevision = 0;
 const bool versionbeta=true;
 
 string *meta_inputfile;
@@ -68,10 +68,10 @@ double genmain (string mainstring, string latstring, bool streaming, bool supres
         double ret=0;
     
         MPISingle=split;       
+	int rank,size;
 
-
-        int rank=MPI::COMM_WORLD.Get_rank(); // assign rank to node
-        int size=MPI::COMM_WORLD.Get_size(); // get size of cluster
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
+        MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
 	if (MPISingle){
 	  rank=0;
 	  size=1;
