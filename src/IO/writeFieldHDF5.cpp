@@ -15,10 +15,9 @@ WriteFieldHDF5::~WriteFieldHDF5()
 void WriteFieldHDF5::write(string fileroot, vector<Field *> *field){
 
   string file;
-  MPI::Status status;
 
-  size=MPI::COMM_WORLD.Get_size(); // get size of cluster
-  rank=MPI::COMM_WORLD.Get_rank(); // assign rank to node
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
+  MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
   if (MPISingle){
     size=1;
     rank=0;

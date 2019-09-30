@@ -239,13 +239,13 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   if (size==1){
     tmin=tmp;
   } else {
-     MPI::COMM_WORLD.Allreduce(&tmp,&tmin,1,MPI::DOUBLE,MPI::MIN);
+    MPI_Allreduce(&tmp,&tmin,1,MPI_DOUBLE,MPI_MIN,MPI_COMM_WORLD);
   }
   tmp=*max_element(t.begin(),t.end());
   if (size==1){
     tmax=tmp;
   } else {
-     MPI::COMM_WORLD.Allreduce(&tmp,&tmax,1,MPI::DOUBLE,MPI::MAX);
+    MPI_Allreduce(&tmp,&tmax,1,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD);
   }
 
   double ttotal=tmax-tmin;
@@ -655,26 +655,28 @@ void SDDSBeam::analyse(double ttotal,int nsize)
     xavg=a1;
     pxavg=b1;
     yavg=c1;
-    pyavg=e1;
+    pyavg=d1;
     xvar=a2;
     pxvar=b2;
-    xpx=ab;
     yvar=c2;
     pyvar=d2;
+    xpx=ab;
     ypy=cd;
   } else {
-    MPI::COMM_WORLD.Allreduce(&ncount,&nmean,1,MPI::INT,MPI::SUM);
-    MPI::COMM_WORLD.Allreduce(&e1,&gavg, 1,MPI::DOUBLE,MPI::SUM);
-    MPI::COMM_WORLD.Allreduce(&a1,&xavg, 1,MPI::DOUBLE,MPI::SUM);
-    MPI::COMM_WORLD.Allreduce(&b1,&pxavg,1,MPI::DOUBLE,MPI::SUM);
-    MPI::COMM_WORLD.Allreduce(&c1,&yavg, 1,MPI::DOUBLE,MPI::SUM);
-    MPI::COMM_WORLD.Allreduce(&d1,&pyavg,1,MPI::DOUBLE,MPI::SUM);
-    MPI::COMM_WORLD.Allreduce(&a2,&xvar, 1,MPI::DOUBLE,MPI::SUM);
-    MPI::COMM_WORLD.Allreduce(&b2,&pxvar,1,MPI::DOUBLE,MPI::SUM);
-    MPI::COMM_WORLD.Allreduce(&ab,&xpx,  1,MPI::DOUBLE,MPI::SUM);
-    MPI::COMM_WORLD.Allreduce(&c2,&yvar, 1,MPI::DOUBLE,MPI::SUM);
-    MPI::COMM_WORLD.Allreduce(&d2,&pyvar,1,MPI::DOUBLE,MPI::SUM);
-    MPI::COMM_WORLD.Allreduce(&cd,&ypy,  1,MPI::DOUBLE,MPI::SUM);
+
+    MPI_Allreduce(&ncount,&nmean,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
+    MPI_Allreduce(&e1,&gavg, 1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+    MPI_Allreduce(&a1,&xavg, 1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+    MPI_Allreduce(&b1,&pxavg,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+    MPI_Allreduce(&c1,&yavg, 1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+    MPI_Allreduce(&d1,&pyavg,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+    MPI_Allreduce(&a2,&xvar, 1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+    MPI_Allreduce(&b2,&pxvar,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+    MPI_Allreduce(&c2,&yvar, 1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+    MPI_Allreduce(&d2,&pyvar,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+    MPI_Allreduce(&ab,&xpx,  1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+    MPI_Allreduce(&cd,&ypy,  1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+
   }
 
   if (nmean>0){

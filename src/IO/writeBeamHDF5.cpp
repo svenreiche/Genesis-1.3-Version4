@@ -16,9 +16,8 @@ WriteBeamHDF5::~WriteBeamHDF5()
 
 void WriteBeamHDF5::write(string fileroot, Beam *beam){
 
-
-  size=MPI::COMM_WORLD.Get_size(); // get size of cluster
-  rank=MPI::COMM_WORLD.Get_rank(); // assign rank to node
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
+  MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
   if (MPISingle){
     size=1;
     rank=0;
@@ -70,7 +69,7 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam){
 
     int root = i /beam->beam.size();  // the current rank which sends the informationof a slice
     if (size>1){
-       MPI::COMM_WORLD.Bcast(&npart,1,MPI::INT, root);
+      MPI_Bcast(&npart,1,MPI_INT,root,MPI_COMM_WORLD);
     }
 
     if (npart != nwork){   // all cores do need to have the same length -> otherwise one4one crashes

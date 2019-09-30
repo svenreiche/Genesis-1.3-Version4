@@ -150,7 +150,9 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
   int nbackward=pushbackward.size();
   int ntotal=nforward+nbackward;
   int nreduce=0;
-  MPI::COMM_WORLD.Allreduce(&ntotal,&nreduce,1,MPI::INT,MPI::SUM);  // get the info on total number of particles shifted among nodes
+
+
+  MPI_Allreduce(&ntotal,&nreduce,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
 
   if (nreduce == 0){ return; }	
 
@@ -196,7 +198,8 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
      nbackward=pushbackward.size();
      ntotal=nforward+nbackward;
      nreduce=0;
-     MPI::COMM_WORLD.Allreduce(&ntotal,&nreduce,1,MPI::INT,MPI::SUM);
+
+     MPI_Allreduce(&ntotal,&nreduce,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
      if (nreduce == 0){  return; }
   }
   pushforward.clear();
@@ -213,11 +216,14 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
 void Sorting::send(int target, vector<double> *data)
 {
   int ndata=data->size();
-  MPI::COMM_WORLD.Send( &ndata,1,MPI::INT,target,0);
+
+  MPI_Send(&ndata,1,MPI_INT,target,0,MPI_COMM_WORLD);
+    //  MPI::COMM_WORLD.Send( &ndata,1,MPI::INT,target,0);
   if (ndata == 0) {
     return;
   }
-  MPI::COMM_WORLD.Send(&data->front(),ndata,MPI::DOUBLE,target,0);
+  MPI_Send(&data->front(),ndata,MPI_DOUBLE,target,0,MPI_COMM_WORLD);
+    // MPI::COMM_WORLD.Send(&data->front(),ndata,MPI::DOUBLE,target,0);
 }
 
 
@@ -227,17 +233,18 @@ void Sorting::send(int target, vector<double> *data)
   double shift=slen;
   if(globalframe){shift=0;}
 
-   MPI::Status status;
+   MPI_Status status;
    int ndata=0;
 
-
-   MPI::COMM_WORLD.Recv(&ndata,1,MPI::INT,source,0,status);
+   MPI_Recv(&ndata,1,MPI_INT,source,0,MPI_COMM_WORLD, &status);
+   //   MPI::COMM_WORLD.Recv(&ndata,1,MPI::INT,source,0,status);
    if (ndata==0) {  // no data received.
      return;
    }
 
    vector<double> data (ndata);
-   MPI::COMM_WORLD.Recv(&data.front(),ndata,MPI::DOUBLE,source,0,status); // geting the particles from adjacent node.
+   //   MPI::COMM_WORLD.Recv(&data.front(),ndata,MPI::DOUBLE,source,0,status); // geting the particles from adjacent node.
+   MPI_Recv(&data.front(),ndata,MPI_DOUBLE,source,0,MPI_COMM_WORLD, &status);
  
 
    //Determines whether the data needs to be pushed forward or backwards or stored in the correct slices
@@ -382,8 +389,10 @@ int Sorting::centerShift(vector <vector <Particle> > * recdat)
     tpart=part;
 
   } else {
-     MPI::COMM_WORLD.Allreduce(&shift,&tshift,1,MPI::DOUBLE,MPI::SUM);  // get the info on total number of particles shifted among nodes
-     MPI::COMM_WORLD.Allreduce(&part,&tpart,1,MPI::DOUBLE,MPI::SUM);  // get the info on total number of particles shifted among nodes
+     MPI_Allreduce(&shift,&tshift, 1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+     MPI_Allreduce(&part,&tpart, 1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+     //     MPI::COMM_WORLD.Allreduce(&shift,&tshift,1,MPI::DOUBLE,MPI::SUM);  // get the info on total number of particles shifted among nodes
+     //     MPI::COMM_WORLD.Allreduce(&part,&tpart,1,MPI::DOUBLE,MPI::SUM);  // get the info on total number of particles shifted among nodes
   }
 
   int nshift=-static_cast<int>(round(tshift/tpart));  // instead of moving more than half the particles forward, it is easier to move the field backwards. Also theta needs to be corrected

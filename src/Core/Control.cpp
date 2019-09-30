@@ -162,7 +162,6 @@ void Control::applySlippage(double slippage, Field *field)
     work=new double [nwork];
   } 
   
-  MPI::Status status;
 
   // following routine is applied if the required slippage is alrger than 80% of the sampling size
 
@@ -197,28 +196,34 @@ void Control::applySlippage(double slippage, Field *field)
 	last=(last+1) % field->field.size();  //  this actually first because it is sent backwards
       }
 
+      MPI_Status status;
       if (size>1){
         if ( (rank % 2)==0 ){                   // even nodes are sending first and then receiving field
            for (int i=0; i<nwork/2; i++){
 	     work[2*i]  =field->field[last].at(i).real();
 	     work[2*i+1]=field->field[last].at(i).imag();
 	   }
-	   MPI::COMM_WORLD.Send(work, nwork, MPI::DOUBLE, rank_next, tag);
-	   MPI::COMM_WORLD.Recv(work, nwork, MPI::DOUBLE, rank_prev, tag, status);
+	   //	   MPI::COMM_WORLD.Send(work, nwork, MPI::DOUBLE, rank_next, tag);
+	   MPI_Send(work,nwork,MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
+	   //	   MPI::COMM_WORLD.Recv(work, nwork, MPI::DOUBLE, rank_prev, tag, status);
+	   MPI_Recv(work,nwork,MPI_DOUBLE,rank_prev,tag,MPI_COMM_WORLD,&status);
 	   for (int i=0; i<nwork/2; i++){
 	     complex <double> ctemp=complex<double> (work[2*i],work[2*i+1]);
 	     field->field[last].at(i)=ctemp;
 	   }
 	} else {                               // odd nodes are receiving first and then sending
 
-	  MPI::COMM_WORLD.Recv(work, nwork, MPI::DOUBLE, rank_prev, tag, status);
+	  //	  MPI::COMM_WORLD.Recv(work, nwork, MPI::DOUBLE, rank_prev, tag, status);
+	  MPI_Recv(work,nwork,MPI_DOUBLE,rank_prev,tag,MPI_COMM_WORLD,&status);
+
 	  for (int i=0; i<nwork/2; i++){
 	    complex <double> ctemp=complex<double> (work[2*i],work[2*i+1]);
 	    work[2*i]  =field->field[last].at(i).real();
 	    work[2*i+1]=field->field[last].at(i).imag();
 	    field->field[last].at(i)=ctemp;
 	  }
-	  MPI::COMM_WORLD.Send(work, nwork, MPI::DOUBLE, rank_next, tag);
+	  MPI_Send(work,nwork,MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
+	  //	  MPI::COMM_WORLD.Send(work, nwork, MPI::DOUBLE, rank_next, tag);
 	}
       }
 

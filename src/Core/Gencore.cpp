@@ -21,8 +21,8 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
         int rank=0;
 
 	if (!MPISingle){
-           size=MPI::COMM_WORLD.Get_size(); // get size of cluster
-           rank=MPI::COMM_WORLD.Get_rank(); // assign rank to node
+	  MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
+	  MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
         }
 
 	if (rank==0) {

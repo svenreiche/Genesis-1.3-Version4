@@ -51,8 +51,10 @@ void Collective::apply(Beam *beam, Undulator *und, double delz)
     return;
   }
 
-  int rank=MPI::COMM_WORLD.Get_rank(); // assign rank to node
-  int size=MPI::COMM_WORLD.Get_size(); // get size of cluster
+  int rank,size;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
+  MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
+
   if (MPISingle){
       rank=0;
       size=1;
@@ -70,8 +72,8 @@ void Collective::apply(Beam *beam, Undulator *und, double delz)
   double *cur=new double [ncur*size+1];
   for (int i=0; i < ncur*size;i++){cur[i]=0;}
 
-  // MPI::COMM_WORLD.Allgather(&beam->current[0],ncur,MPI::DOUBLE, &curwork[0],ncur,MPI::DOUBLE);
-  MPI::COMM_WORLD.Allgather(&beam->current[0],ncur,MPI::DOUBLE, &cur[0],ncur,MPI::DOUBLE);
+  //  MPI::COMM_WORLD.Allgather(&beam->current[0],ncur,MPI::DOUBLE, &cur[0],ncur,MPI::DOUBLE);
+  MPI_Allgather(&beam->current[0],ncur,MPI_DOUBLE,&cur[0],ncur,MPI_DOUBLE,MPI_COMM_WORLD);
   ncur=ncur*size;
   cur[ncur]=0;  // needed for interpolation
 
