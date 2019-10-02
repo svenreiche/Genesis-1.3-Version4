@@ -108,6 +108,7 @@ double genmain (string mainstring, string latstring, string outstring, bool spli
 	AlterLattice *alt=new AlterLattice;
         Lattice *lattice=new Lattice;
         Profile *profile=new Profile;
+	Series  *seq    =new Series;
         Time *timewindow=new Time;
 
 
@@ -138,9 +139,23 @@ double genmain (string mainstring, string latstring, string outstring, bool spli
 	  // modifying the lattice file
 
           if (element.compare("&lattice")==0){
-            if (!alt->init(rank,size,&argument,lattice,setup)){ break;}
+            if (!alt->init(rank,size,&argument,lattice,setup,seq)){ break;}
             continue;  
           }  
+
+
+          //---------------------------------------------------
+          // adding sequence elements
+
+          if ((element.compare("&sequence_const")==0)||
+              (element.compare("&sequence_power")==0)||
+              (element.compare("&sequence_random")==0)){
+            if (!seq->init(rank,&argument,element)){ break; }
+            continue;
+	  }
+
+
+
 
           //---------------------------------------------------
           // adding profile elements

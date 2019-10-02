@@ -10,6 +10,7 @@
 
 #include "Lattice.h"
 #include "Setup.h"
+#include "Series.h"
 
 class Setup;
 class Lattice;
@@ -20,7 +21,7 @@ class AlterLattice:  public StringProcessing{
  public:
    AlterLattice();
    virtual ~AlterLattice();
-   bool init(int, int, map<string,string> *, Lattice *, Setup *);
+   bool init(int, int, map<string,string> *, Lattice *, Setup *, Series *);
  private:
    void usage();
    string element,field;
@@ -29,6 +30,7 @@ class AlterLattice:  public StringProcessing{
    bool resolve,add;
    double zmatch;
    int rank, size;
+   string valueref;
 };
 
 #endif

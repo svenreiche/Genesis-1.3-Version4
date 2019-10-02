@@ -137,7 +137,7 @@ double SeriesPower::value()
   if (icount <= n0) {
     return c0;
   }
-  return c0*(1.+pow(dc,static_cast<double>(icount-n0)*alpha));
+  return c0+dc*pow(static_cast<double>(icount-n0),alpha);
 }
 
 void SeriesPower::usage(){
@@ -189,9 +189,9 @@ double SeriesRandom::value()
 {
   
   if (gauss){
-    return c0*(1+dc*(erf.value(2*seq->getElement())));
+    return c0+dc*(erf.value(2*seq->getElement()));
   }
-  return c0*(1+dc*(2*seq->getElement()-1));
+  return c0+dc*(2*seq->getElement()-1);
 }
 
 void SeriesRandom::usage(){

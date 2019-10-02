@@ -18,6 +18,7 @@
 using namespace std;
 
 class AlterLattice;
+class Series;
 
 class Lattice{
  public:
@@ -31,7 +32,7 @@ class Lattice{
    void getMatchedOptics(double *, double *, double *, double *);
    void match(int, double, double);
 
-   bool alterElement(string,string,double,int,bool);
+   bool alterElement(string,string, double, string, Series *,int,bool);
 
  private:
 

@@ -451,7 +451,7 @@ void Lattice::unrollLattice(double delz)
 
 
 
-bool Lattice::alterElement(string element, string field, double val, int instance, bool add)
+bool Lattice::alterElement(string element, string field, double value, string valueref, Series *seq, int instance, bool add)
 {
 
   double wei = 0;
@@ -470,6 +470,7 @@ bool Lattice::alterElement(string element, string field, double val, int instanc
     if (!ele.compare(tag)){
       count++;
       if ((count == instance) || (instance == 0)){
+	    double val=seq->value(value,valueref);
             if (ele=="undu"){
 	      ID *id=(ID *)lat[i];
 	      if (field == "aw") { id->aw = val+wei * id->aw; }

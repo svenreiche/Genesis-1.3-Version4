@@ -6,6 +6,7 @@ AlterLattice::AlterLattice()
   element = "";
   field   = "";
   value   = 0;
+  valueref="";
   instance= 0;
   resolve = false;
   add     = true;
@@ -29,7 +30,7 @@ void AlterLattice::usage(){
 }
 
 
-bool AlterLattice::init(int inrank, int insize, map<string,string> *arg, Lattice *lat, Setup *setup)
+bool AlterLattice::init(int inrank, int insize, map<string,string> *arg, Lattice *lat, Setup *setup, Series *seq)
 {
 
   rank=inrank;
@@ -38,14 +39,16 @@ bool AlterLattice::init(int inrank, int insize, map<string,string> *arg, Lattice
   element = "";
   field   = "";
   value   = 0;
+  valueref="";
   instance= 0;
   resolve = false;
   add     = true;
  
   map<string,string>::iterator end=arg->end();
 
+
   if (arg->find("zmatch")!=end)  {zmatch= atof(arg->at("zmatch").c_str());  arg->erase(arg->find("zmatch"));}
-  if (arg->find("value")!=end)   {value = atof(arg->at("value").c_str());  arg->erase(arg->find("value"));}
+  if (arg->find("value")!=end)   {this->reference(arg->at("value"), &value, &valueref); arg->erase(arg->find("value"));}
   if (arg->find("element")!=end) {element= arg->at("element");  arg->erase(arg->find("element"));}
   if (arg->find("field")!=end)   {field= arg->at("field");  arg->erase(arg->find("field"));}
   if (arg->find("instance")!=end){instance= atoi(arg->at("instance").c_str());  arg->erase(arg->find("instance"));}
@@ -58,12 +61,22 @@ bool AlterLattice::init(int inrank, int insize, map<string,string> *arg, Lattice
     return false;
   }
   
+
+  string wrongSeq="";
+  if (seq->check(valueref)== false)  { wrongSeq=valueref;}
+  if (wrongSeq.size() > 0){
+    if (rank==0){cout << "*** Error: Unknown Sequence reference in &lattice: " << wrongSeq << endl;}
+    return false;
+  }    
+
+
+
   if (zmatch>0) {
     lat->match(rank, zmatch, setup->getReferenceEnergy());
   }
 
   if (element!=""){
-    bool val= lat->alterElement(element,field,value,instance,add);
+    bool val= lat->alterElement(element,field,value, valueref, seq, instance,add);
     if (!val) {
       if (rank == 0 ) {
 	cout << "*** Error: Input element and field does not match any supported elements" << endl;
