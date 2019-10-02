@@ -106,14 +106,14 @@ void Output::writeMeta()
   this->writeSingleNodeString(gid,"User", &user);
 
 
-  ifstream inFile (meta_inputfile->c_str());
+  ifstream inFile (meta_inputfile.c_str());
   stringstream buffer;
   buffer << inFile.rdbuf();//read the file
   string str=buffer.str();
   this->writeSingleNodeString(gid,"InputFile", &str);
   inFile.close();
 
-  ifstream inFile2 (meta_latfile->c_str());
+  ifstream inFile2 (meta_latfile.c_str());
   stringstream buffer2;
   buffer2 << inFile2.rdbuf();//read the file
   string str2=buffer2.str();

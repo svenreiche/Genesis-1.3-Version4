@@ -21,7 +21,7 @@ class LatticeParser : public StringProcessing {
  public:
    LatticeParser();
    virtual ~LatticeParser();
-   bool parse(string,string, int, vector<Element *> &,bool);
+   bool parse(string,string, int, vector<Element *> &);
  private:
 
    Quadrupole *parseQuad(int,int,double);

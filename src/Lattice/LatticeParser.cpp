@@ -10,17 +10,13 @@ LatticeParser::~LatticeParser()
 }
 
 
-bool LatticeParser::parse(string file, string line, int rank, vector<Element *> &lat,bool streaming)
+bool LatticeParser::parse(string file, string line, int rank, vector<Element *> &lat)
 {
 
   istringstream input;
   string instring;
   ostringstream os;
   
-  if (streaming){
-    input.str(file);
-  } else {
-
     ifstream fin(file.c_str(),ios_base::in);
 
     if (!fin){
@@ -32,8 +28,7 @@ bool LatticeParser::parse(string file, string line, int rank, vector<Element *> 
     }
     fin.close();
     input.str(os.str());
-  }
-
+ 
 
   //------------------------------------------------------
   // step one - coarse parsing of the input deck

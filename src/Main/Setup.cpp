@@ -42,10 +42,14 @@ void Setup::usage(){
   return;
 }
 
-bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstring,bool streaming)
+bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstring, string outstring)
 {
 
   rank=inrank;
+  // initialize the values for lattice and output file from the command line arguments
+  lattice=latstring;
+  rootname=outstring;
+
   map<string,string>::iterator end=arg->end();
 
   if (arg->find("rootname")!=end){rootname = arg->at("rootname"); arg->erase(arg->find("rootname"));}
@@ -67,13 +71,8 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
     if (rank==0){ cout << "*** Error: Unknown elements in &setup" << endl; this->usage();}
     return false;
   }
-
-  if (streaming) {
-    lattice="streaming";
-    lat->parse(latstring,beamline,rank,streaming);
-  }else{
-    lat->parse(lattice,beamline,rank,streaming);
-  }
+ 
+  lat->parse(lattice,beamline,rank);
   return true;
 }
 

@@ -7,7 +7,7 @@ extern bool MPISingle;
 #endif
 
 
-int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan, bool supressOutput)
+int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan)
 {
 
 
@@ -116,11 +116,8 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 	if (rank==0){
 	  cout << "Writing output file..." << endl;
 	}
-
-        if (!supressOutput) {
-   	   control->output(beam,field,und);
-        }
-
+	
+	control->output(beam,field,und);
 
 	delete control;
       

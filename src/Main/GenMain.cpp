@@ -57,14 +57,15 @@ const int versionminor = 4;
 const int versionrevision = 0;
 const bool versionbeta=true;
 
-string *meta_inputfile;
-string *meta_latfile;
+string meta_inputfile;
+string meta_latfile;
 
 bool MPISingle;  // global variable to do mpic or not
 
 
-double genmain (string mainstring, string latstring, bool streaming, bool supressOutput, bool split) {
+double genmain (string mainstring, string latstring, string outstring, bool split) {
 
+        meta_inputfile=mainstring;
         double ret=0;
     
         MPISingle=split;       
@@ -109,13 +110,8 @@ double genmain (string mainstring, string latstring, bool streaming, bool supres
         Profile *profile=new Profile;
         Time *timewindow=new Time;
 
-        if (streaming){
-    	    meta_inputfile=new string ("streaming");
-	} else {
-    	    meta_inputfile=new string (mainstring);
-	}
 
-        parser.open(mainstring,rank,streaming);
+        parser.open(mainstring,rank);
 
         while(parser.parse(&element,&argument)){
            
@@ -123,8 +119,8 @@ double genmain (string mainstring, string latstring, bool streaming, bool supres
 	  // setup & parsing the lattice file
 
           if (element.compare("&setup")==0){
-            if (!setup->init(rank,&argument,lattice,latstring,streaming)){ break;}
-	    meta_latfile=new string (setup->getLattice());
+            if (!setup->init(rank,&argument,lattice,latstring,outstring)){ break;}
+	    meta_latfile=setup->getLattice();
             continue;  
           }  
 
@@ -231,7 +227,7 @@ double genmain (string mainstring, string latstring, bool streaming, bool supres
 
 	  if (element.compare("&track")==0){
             Track *track=new Track;
-	    if (!track->init(rank,size,&argument,beam,&field,setup,lattice,alt,timewindow,supressOutput)){ break;}
+	    if (!track->init(rank,size,&argument,beam,&field,setup,lattice,alt,timewindow)){ break;}
             delete track;
             continue;  
           }  
@@ -289,14 +285,6 @@ double genmain (string mainstring, string latstring, bool streaming, bool supres
           break;
         } 
 
-
-
-	//-------------------------
-	// get some data back
-        if (supressOutput && split){
-	  ret=field[0]->power[field[0]->power.size()-1];
-	  cout << "Power: " << ret << endl;
-	}
 
 
  	if (rank==0) {

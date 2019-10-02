@@ -8,7 +8,7 @@ Parser::~Parser()
 {
 }
 
-bool Parser::open(string file, int inrank, bool streaming)
+bool Parser::open(string file, int inrank)
 {
 
   string instring;
@@ -16,20 +16,16 @@ bool Parser::open(string file, int inrank, bool streaming)
   fstream fin;
 
   rank=inrank;
-  if (!streaming){
-      fin.open(file.c_str(),ios_base::in);
-      if (!fin){
+  fin.open(file.c_str(),ios_base::in);
+  if (!fin){
          if (rank==0) {cout << "*** Error: Cannot open main input file: " << file << endl;}
          return false;
-      }
-      while(getline(fin,instring,'\n')){
-	os << instring <<endl;
-      }
-      fin.close();
-      input.str(os.str());
-  } else {
-    input.str(file);   // in the case that the input file is streamed
   }
+  while(getline(fin,instring,'\n')){
+	os << instring <<endl;
+  }
+  fin.close();
+  input.str(os.str());
   return true;
 
 }

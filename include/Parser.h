@@ -21,7 +21,7 @@ class Parser : public StringProcessing {
  public:
    Parser();
    virtual ~Parser();
-   bool open(string, int,bool);
+   bool open(string, int);
    bool parse(string *,map<string,string> *);
 
  private:

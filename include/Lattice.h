@@ -27,7 +27,7 @@ class Lattice{
 
    //   bool writeLattice(hid_t,double, double, double,AlterLattice *);
 
-   bool parse(string,string,int,bool);
+   bool parse(string,string,int);
    void getMatchedOptics(double *, double *, double *, double *);
    void match(int, double, double);
  private:

@@ -22,8 +22,8 @@ extern const int versionmajor;
 extern const int versionminor;
 extern const int versionrevision;
 extern const bool versionbeta;
-extern string *meta_inputfile;
-extern string *meta_latfile;
+extern string meta_inputfile;
+extern string meta_latfile;
 
 class Output : public HDF5Base {
  public:

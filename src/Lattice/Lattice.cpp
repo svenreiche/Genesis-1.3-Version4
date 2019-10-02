@@ -15,7 +15,7 @@ Lattice::~Lattice()
 }
 
 
-bool Lattice::parse(string filename, string beamline, int rank, bool streaming)
+bool Lattice::parse(string filename, string beamline, int rank)
 {
 
   // release old lattice
@@ -29,7 +29,7 @@ bool Lattice::parse(string filename, string beamline, int rank, bool streaming)
   matched=false;
 
   if (rank == 0) { cout << "Parsing lattice file..." << endl; }
-  bool err=parser.parse(filename,beamline,rank, lat,streaming);
+  bool err=parser.parse(filename,beamline,rank, lat);
   if (err==false) { 
     return err; 
   }

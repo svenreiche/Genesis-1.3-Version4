@@ -11,5 +11,5 @@ using namespace std;
 
 
 
-double genmain(string, string, bool, bool, bool);
+double genmain(string, string, string, bool);
 #endif
