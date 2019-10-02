@@ -3,12 +3,12 @@
 AlterLattice::AlterLattice()
 {
   zmatch=0;
-  err_aw=0;
-  err_ax=0;
-  err_ay=0;
-  err_qx=0;
-  err_qy=0;
-  nlat=1;
+  element = "";
+  field   = "";
+  value   = 0;
+  instance= 0;
+  resolve = false;
+  add     = true;
 }
 
 AlterLattice::~AlterLattice(){}
@@ -17,14 +17,14 @@ void AlterLattice::usage(){
 
   cout << "List of keywords for Lattice" << endl;
   cout << "&lattice" << endl;
-  cout << " double err_aw = 0" << endl;
-  cout << " double err_ax = 0" << endl;
-  cout << " double err_ay = 0" << endl;
-  cout << " double err_qx = 0" << endl;
-  cout << " double err_qy = 0" << endl;
   cout << " double zmatch = 0" << endl;
-  cout << " int nlat = 1" << endl;
-  cout << "&end" << endl << endl;
+  cout << " string element = <empty string>" << endl;
+  cout << " string field   = <empty string>" << endl;
+  cout << " double value   = 0 / reference"  << endl;
+  cout << " int instance   = 0 " << endl;
+  cout << " bool resolvePeriod = false" << endl;
+  cout << " bool add = true" << endl;
+   cout << "&end" << endl << endl;
   return;
 }
 
@@ -34,17 +34,23 @@ bool AlterLattice::init(int inrank, int insize, map<string,string> *arg, Lattice
 
   rank=inrank;
   size=insize;
-
+  zmatch=0;
+  element = "";
+  field   = "";
+  value   = 0;
+  instance= 0;
+  resolve = false;
+  add     = true;
  
   map<string,string>::iterator end=arg->end();
 
   if (arg->find("zmatch")!=end)  {zmatch= atof(arg->at("zmatch").c_str());  arg->erase(arg->find("zmatch"));}
-  if (arg->find("err_aw")!=end)  {err_aw= atof(arg->at("err_aw").c_str());  arg->erase(arg->find("err_aw"));}
-  if (arg->find("err_ax")!=end)  {err_aw= atof(arg->at("err_ax").c_str());  arg->erase(arg->find("err_ax"));}
-  if (arg->find("err_ay")!=end)  {err_aw= atof(arg->at("err_ay").c_str());  arg->erase(arg->find("err_ay"));}
-  if (arg->find("err_qx")!=end)  {err_aw= atof(arg->at("err_qx").c_str());  arg->erase(arg->find("err_qx"));}
-  if (arg->find("err_qy")!=end)  {err_aw= atof(arg->at("err_qy").c_str());  arg->erase(arg->find("err_qy"));}
-  if (arg->find("nlat")!=end)    {nlat  = atof(arg->at("nlat").c_str());    arg->erase(arg->find("nlat"));}
+  if (arg->find("value")!=end)   {value = atof(arg->at("value").c_str());  arg->erase(arg->find("value"));}
+  if (arg->find("element")!=end) {element= arg->at("element");  arg->erase(arg->find("element"));}
+  if (arg->find("field")!=end)   {field= arg->at("field");  arg->erase(arg->find("field"));}
+  if (arg->find("instance")!=end){instance= atoi(arg->at("instance").c_str());  arg->erase(arg->find("instance"));}
+  if (arg->find("resolvePeriod")!=end)  {resolve= atob(arg->at("resolvePeriod"));  arg->erase(arg->find("resolvePeriod"));}
+  if (arg->find("add")!=end)     {add  = atob(arg->at("add"));    arg->erase(arg->find("add"));}
 
 
   if (arg->size()!=0){
@@ -54,6 +60,16 @@ bool AlterLattice::init(int inrank, int insize, map<string,string> *arg, Lattice
   
   if (zmatch>0) {
     lat->match(rank, zmatch, setup->getReferenceEnergy());
+  }
+
+  if (element!=""){
+    bool val= lat->alterElement(element,field,value,instance,add);
+    if (!val) {
+      if (rank == 0 ) {
+	cout << "*** Error: Input element and field does not match any supported elements" << endl;
+      }
+      return false;
+    }
   }
 
   return true;

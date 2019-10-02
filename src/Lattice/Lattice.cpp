@@ -451,8 +451,63 @@ void Lattice::unrollLattice(double delz)
 
 
 
+bool Lattice::alterElement(string element, string field, double val, int instance, bool add)
+{
+
+  double wei = 0;
+  if (add) { wei=1; }
+  string tag=element.substr(0,4);
+  for (int j=0; j < 4; j++) { tag[j]=tolower(tag[j]); }
+  for (int j=0; j < field.size(); j++) { field[j]=tolower(field[j]); }
+
+  int count=0;
+
+  for (int i=0; i < lat.size(); i++){
+
+    string ele=lat[i]->type.substr(0,4);
+    for (int j=0; j < 4; j++) { ele[j]=tolower(ele[j]); }
+
+    if (!ele.compare(tag)){
+      count++;
+      if ((count == instance) || (instance == 0)){
+            if (ele=="undu"){
+	      ID *id=(ID *)lat[i];
+	      if (field == "aw") { id->aw = val+wei * id->aw; }
+	      if (field == "ax") { id->ax = val+wei * id->ax; }
+	      if (field == "ay") { id->ay = val+wei * id->ay; }
+	      if (field == "kx") { id->kx = val+wei * id->kx; }
+	      if (field == "ky") { id->ky = val+wei * id->ky; }
+	      if (field == "gradx") { id->gradx = val+wei*id->gradx; }
+	      if (field == "grady") { id->grady = val+wei*id->grady; }
+	    }
+            if (ele=="quad"){
+              Quadrupole *qd=(Quadrupole *)lat[i];
+	      if (field == "k1") { qd->k1 = val+wei*qd->k1; }
+	      if (field == "dx") { qd->dx = val+wei*qd->dx; }
+	      if (field == "dy") { qd->dy = val+wei*qd->dy; }
+	    }
+            if (ele=="corr"){
+              Corrector *co=(Corrector *)lat[i];
+	      if (field == "cx") { co->cx = val+wei*co->cx; }
+	      if (field == "cy") { co->cy = val+wei*co->cy; }
+	    }
+            if (ele=="chic"){
+              Chicane *ch=(Chicane *)lat[i];
+	      if (field == "delay") { ch->delay = val+wei*ch->delay; }
+	    }
+            if (ele=="phas"){
+              Phaseshifter *ps=(Phaseshifter *)lat[i];
+	      if (field == "phi") { ps->phi = val+wei*ps->phi; }
+	    }
 
 
+      }
+    }
+  }
+
+  return true;
+
+}
 
 
 

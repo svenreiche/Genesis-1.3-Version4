@@ -16,17 +16,19 @@ class Lattice;
 
 using namespace std;
 
-class AlterLattice{
+class AlterLattice:  public StringProcessing{
  public:
    AlterLattice();
    virtual ~AlterLattice();
    bool init(int, int, map<string,string> *, Lattice *, Setup *);
  private:
    void usage();
-   double err_aw,err_ax,err_ay,err_qx,err_qy;
+   string element,field;
+   double value;
+   int instance;
+   bool resolve,add;
    double zmatch;
-   int rank, size,nlat;
+   int rank, size;
 };
-
 
 #endif

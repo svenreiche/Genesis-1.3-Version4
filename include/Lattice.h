@@ -30,6 +30,9 @@ class Lattice{
    bool parse(string,string,int);
    void getMatchedOptics(double *, double *, double *, double *);
    void match(int, double, double);
+
+   bool alterElement(string,string,double,int,bool);
+
  private:
 
    map<double,int> layout;

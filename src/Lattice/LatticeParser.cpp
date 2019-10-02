@@ -205,8 +205,6 @@ ID *LatticeParser::parseID(int idx,int rank, double zin)
   ele->phase=0;
 
 
-  ele->helical=false;
-
   vector <string> par;
   string fld,val;
 

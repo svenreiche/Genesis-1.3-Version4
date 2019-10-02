@@ -25,8 +25,8 @@ void Setup::usage(){
 
   cout << "List of keywords for SETUP" << endl;
   cout << "&setup" << endl;
-  cout << " string rootname = <empty>" << endl;
-  cout << " string lattice = <empty>" << endl;
+  cout << " string rootname = <taken from command line>" << endl;
+  cout << " string lattice  = <taken from command line>" << endl;
   cout << " string beamline = <empty>" << endl;
   cout << " string partfile = <empty>" << endl;
   cout << " string fieldfile = <empty>" << endl;
