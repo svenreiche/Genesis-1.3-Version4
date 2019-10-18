@@ -9,7 +9,7 @@ INCLUDE=-I./include
 #
 # cpp-macros - to enable the FFTW library
 #
-DMACRO = -DFFFFTW
+DMACRO = -DFFTW
 #
 #  compilers
 #

@@ -120,9 +120,7 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
 
  
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
-  if (size>1){
-     H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
-  }
+  H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
   hid_t fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,pid);
   H5Pclose(pid);
 

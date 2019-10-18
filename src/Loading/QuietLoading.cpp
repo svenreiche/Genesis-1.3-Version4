@@ -187,7 +187,6 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
   double corx=-slice->alphax/slice->betax;
   double cory=-slice->alphay/slice->betay;
 
-
   for (int i=0; i<mpart;i++){
     beam[i].x *=sigx;
     beam[i].y *=sigy;

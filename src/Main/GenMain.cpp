@@ -63,7 +63,7 @@ string meta_latfile;
 bool MPISingle;  // global variable to do mpic or not
 
 
-double genmain (string mainstring, string latstring, string outstring, bool split) {
+double genmain (string mainstring, string latstring, string outstring, int in_seed, bool split) {
 
         meta_inputfile=mainstring;
         double ret=0;
@@ -120,7 +120,7 @@ double genmain (string mainstring, string latstring, string outstring, bool spli
 	  // setup & parsing the lattice file
 
           if (element.compare("&setup")==0){
-            if (!setup->init(rank,&argument,lattice,latstring,outstring)){ break;}
+            if (!setup->init(rank,&argument,lattice,latstring,outstring,in_seed)){ break;}
 	    meta_latfile=setup->getLattice();
             continue;  
           }  

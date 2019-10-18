@@ -269,6 +269,7 @@ void Output::writeFieldBuffer(Field *field)
   this->writeBuffer(gid, "xposition","m",&field->xavg);
   this->writeBuffer(gid, "yposition","m",&field->yavg);
 #ifdef FFTW
+  cout << "writing divergence" << endl;
   this->writeBuffer(gid, "xdivergence","rad",&field->txsig);
   this->writeBuffer(gid, "ydivergence","rad",&field->tysig);
   this->writeBuffer(gid, "xpointing","rad",&field->txavg);

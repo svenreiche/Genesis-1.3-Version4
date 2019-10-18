@@ -312,7 +312,7 @@ void Field::diagnostics(bool output)
 	int iix=(ix+(ngrid+1)/2) % ngrid;
 	int ii=iiy*ngrid+iix;
         loc=out[ii];
-	double wei=sqrt(loc.real()*loc.real()+loc.imag()*loc.imag());
+	double wei=loc.real()*loc.real()+loc.imag()*loc.imag();
         fpower+=wei;
         fxavg+=dx*wei;
         fxsig+=dx*dx*wei;
@@ -327,7 +327,7 @@ void Field::diagnostics(bool output)
 	  fyavg/=fpower;
 	  fysig=sqrt(abs(fysig/fpower-fyavg*fyavg));
     }
-    double scltheta=xlambda/ngrid/dgrid/sqrt(2.);
+    double scltheta=xlambda/ngrid/dgrid;
 #endif
 
 

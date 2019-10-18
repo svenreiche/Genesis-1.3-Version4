@@ -1,5 +1,4 @@
-
-
+#include <cstdlib>
 #include "genesis.h"
 
 // very basic wrapper for genesis. Most of the genesis stuff is moved into genmain.
@@ -20,7 +19,8 @@ int main (int argc, char *argv[]) {
       	string filename (argv[argc-1]);  // input file is always last element
 	string latname  ("");
 	string outname  ("");
-
+	int    seed;
+	
 	bool ok=true;
 
 	// parse the command line arguments
@@ -31,7 +31,7 @@ int main (int argc, char *argv[]) {
 	  }
 	} else {
 	  for (int i = 1; i < argc-1; i++){
-	    if (strstr(argv[i],"-o")){
+	    if (strstr(argv[i],"-o")){     // output file
 		if (i < argc-2){
 		  outname=argv[i+1];
 		  i++;
@@ -39,8 +39,16 @@ int main (int argc, char *argv[]) {
 		}
 	    }
 	    if (strstr(argv[i],"-l")){
-		if (i < argc-2){
+	      if (i < argc-2){         // lattice file
 		  latname=argv[i+1];
+		  i++;
+		  continue;
+		}
+	    }
+
+	    if (strstr(argv[i],"-s")){
+	      if (i < argc-2){        // seed
+		seed=atoi(argv[i+1]);
 		  i++;
 		  continue;
 		}
@@ -52,7 +60,7 @@ int main (int argc, char *argv[]) {
 	    ok=false;
 	    break;
 	  }       
-	  if (ok) {genmain(filename,latname,outname,false);}
+	  if (ok) {genmain(filename,latname,outname,seed,false);}
 	}
         MPI_Finalize(); // node turned off
 

@@ -28,8 +28,6 @@ void Setup::usage(){
   cout << " string rootname = <taken from command line>" << endl;
   cout << " string lattice  = <taken from command line>" << endl;
   cout << " string beamline = <empty>" << endl;
-  cout << " string partfile = <empty>" << endl;
-  cout << " string fieldfile = <empty>" << endl;
   cout << " double gamma0 = 5800/0.511" << endl;
   cout << " double lambda0 = 1e-10" << endl;
   cout << " double delz = 0.015" << endl;
@@ -42,22 +40,20 @@ void Setup::usage(){
   return;
 }
 
-bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstring, string outstring)
+bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstring, string outstring, int in_seed)
 {
 
   rank=inrank;
   // initialize the values for lattice and output file from the command line arguments
   lattice=latstring;
   rootname=outstring;
-
+  seed=in_seed;
   map<string,string>::iterator end=arg->end();
 
   if (arg->find("rootname")!=end){rootname = arg->at("rootname"); arg->erase(arg->find("rootname"));}
   if (arg->find("lattice")!=end) {lattice  = arg->at("lattice");  arg->erase(arg->find("lattice"));}
   if (arg->find("beamline")!=end){beamline = arg->at("beamline"); arg->erase(arg->find("beamline"));}
   if (arg->find("lattice")!=end) {lattice  = arg->at("lattice");  arg->erase(arg->find("lattice"));}
-  if (arg->find("partfile")!=end){partfile   = arg->at("partfile");  arg->erase(arg->find("partfile"));}
-  if (arg->find("fieldfile")!=end){fieldfile = arg->at("fieldfile");  arg->erase(arg->find("fieldfile"));}
   if (arg->find("gamma0")!=end)  {gamma0   = atof(arg->at("gamma0").c_str());  arg->erase(arg->find("gamma0"));}
   if (arg->find("lambda0")!=end) {lambda0  = atof(arg->at("lambda0").c_str()); arg->erase(arg->find("lambda0"));}
   if (arg->find("delz")!=end)    {delz     = atof(arg->at("delz").c_str());  arg->erase(arg->find("delz"));}
