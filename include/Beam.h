@@ -27,7 +27,7 @@ class Beam{
    void initSorting(int,int,bool,bool);
    void initEField(double,int,int,int,double);
    void initIncoherent(int, int, bool,bool);
-   void initWake(unsigned int, double, double *, double *,double *, double,double, bool);
+   void initWake(unsigned int, unsigned int, double, double *, double *, double *,double *, double,double, bool);
    bool harmonicConversion(int,bool);
    bool subharmonicConversion(int,bool);
    int sort();
@@ -68,8 +68,9 @@ inline void Beam::initEField(double rmax, int ngrid, int nz, int nphi, double la
   return;
 }
 
-inline void Beam::initWake(unsigned int ns, double ds, double *wakeres, double *wakegeo,double *wakerou, double ztrans, double radius, bool transient){
-  col.initWake(ns, ds, wakeres, wakegeo, wakerou, ztrans, radius,transient);
+inline void Beam::initWake(unsigned int ns, unsigned int nsNode, double ds, double *wakeext, double *wakeres, double *wakegeo,double *wakerou, double ztrans, double radius, bool transient){
+  //  col.initWake(ns, ds, wakeext, wakeres, wakegeo, wakerou, ztrans, radius,transient);
+  col.initWake(ns, nsNode, ds, wakeext, wakeres, wakegeo, ztrans, radius, transient);
 }
 
 

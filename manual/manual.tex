@@ -20,11 +20,11 @@
 \rule{\textwidth}{0.2cm}\\
 {\rule{0cm}{4cm}\Huge\sf\hspace{2cm}GENESIS 1.3}\\
 \vspace{1cm}
-{\rule{0cm}{2cm}\LARGE\sf\hspace{2cm}Version 4.0.2 - beta}\\
+{\rule{0cm}{2cm}\LARGE\sf\hspace{2cm}Version 4.4.0}\\
 \vspace{1cm}
 {\rule{0cm}{2cm}\LARGE\sf\hspace{2cm}User Manual}\\
 \vspace{10cm}\\
-{\sf Feb-18}\\
+{\sf Oct-19}\\
 \rule{\textwidth}{0.2cm}\\
 \vspace{5cm}
 \pagebreak
@@ -41,8 +41,8 @@ This manual covers the FEL simulation code GENESIS 1.3, Version 4. It explains h
 
 The source code can be found in a git repository
 
-{\tt 
-https://gitlab.ethz.ch/Genesis/Genesis4
+{\tt
+https://github.com/svenreiche/Genesis-1.3-Version4
 }
 
 
@@ -64,6 +64,7 @@ written in typewriter-style such as {\tt GAMMA0} or {\tt XLAMD}.
  
 
 Version 4 of the code Genesis 1.3 is written fully in C++, avoiding the hybrid compilation of the previous versions. The only required libraries are OpenMPI and HDF5 with the support of parallel file input and output. This is typically guaranteed when HDF5 has been compiled with the support of OpenMPI.  OpenMPI supports also the profiling and tracing of the code since it includes the library VampirTrace, which comes with the OpenMPI distribution.  Note that profiling will not be necessary for the normal user and that it requires a commercial program to analyze the traces sufficiently.
+If available, Genesis 1.3 supports also the library FFTW to calculate the divergence of the radiation field. This can be controlled with a macro definition in the Makefile. If the macro is not defined, all relevant code, which uses FFTW is omitted.
 
 \section{\sf The Source Code Distribution}
 
@@ -73,13 +74,13 @@ Genesis is solely distributed by source text, its free, non-commercial and falls
 {\\ tar xvf} {\it filename}{\tt .tar}
 
 where {\it filename} is the root name of the file of the source code package.
-There should be several directories installed. The most important are {\tt include} and {\tt src} to hold the include- and source-files, {\tt xgenesis} the postprocessor files for Matlab, {\tt benchmark} some sample files to run with Genesis and {\tt sdds2hdf} some utility programs to convert Elegant distribution in SDDS format into HDF5 files, which can be parsed by Genesis.
+There should be several directories installed. The most important are {\tt include} and {\tt src} to hold the include- and source-files, {\tt xgenesis} the postprocessor files for Matlab, {\tt benchmark} some sample files to run with Genesis and {\tt sdds2hdf} some utility programs to convert Elegant distribution in SDDS format into HDF5 files, which can be parsed by Genesis. The directory {\tt pygenesis} holds Python files to support the work with Genesis, similar to {\tt xgenesis} for Matlab.
 
 
 \section{\sf Compilation}
-In the root directory there is the file {\tt Makefile} which is the makefile for the compilation on Unix machines. This file can be used to help setting up the installation. In the file there is the {\tt OBJECTS} list which contains all required source code files. There are located in several directories in the subfolder {\tt src}. To find them the compiler search path has to be extended as with the {\tt VPATH} directive under unix. The compilation instruction should convert each individual source file into objects file and then link them with the HDF5 and OpenMPI libraries. Note that at some systems the required definition of the include and libraries files are wrapped in the compiler executive. E.g.~ in the given Makefile the compiler {\tt h5c++} supports directly both required libraries. If this does not exist on your system and both libraries (HDF5 and OpenMPI) are not supported by the standard search path, they have to be set explicitly with the {\tt -I}, {\tt -L}, and {\tt -l} directive for the include search path, library search path  and the library name, respectively. To enable support for VampirTrace profiling, the corresponding compiler has to be used. Genesis supports some manual profiling, such as entry and exit points of the core functions to propagate the beam and field or to write data to files. For that the Macro {\tt VTRACE} has to be set during compilation with the directive {\tt -DVTRACE}.
+In the root directory there is the file {\tt Makefile} which is the makefile for the compilation on Unix machines. This file can be used to help setting up the installation. In the file there is the {\tt OBJECTS} list which contains all required source code files. There are located in several directories in the subfolder {\tt src}. To find them the compiler search path has to be extended as with the {\tt VPATH} directive under unix. The compilation instruction should convert each individual source file into objects file and then link them with the HDF5 and OpenMPI libraries. Note that at some systems the required definition of the include and libraries files are wrapped in the compiler executive. E.g.~ in the given Makefile the compiler {\tt h5c++} supports directly both required libraries. If this does not exist on your system and both libraries (HDF5 and OpenMPI) are not supported by the standard search path, they have to be set explicitly with the {\tt -I}, {\tt -L}, and {\tt -l} directive for the include search path, library search path  and the library name, respectively. To enable support for VampirTrace profiling, the corresponding compiler has to be used. Genesis supports some manual profiling, such as entry and exit points of the core functions to propagate the beam and field or to write data to files. For that the Macro {\tt VTRACE} has to be set during compilation with the directive {\tt -DVTRACE}. Similar is the support of FFTW enabled by setting the directive {\tt -DFFTW}. It is needed if the user wants to calculate the instantaneous divergence of the radiaiton field during run time.
 
-If the make file is set-up correctly, type {\tt make} under Unix systems to compile, which should produce the executable {\tt gencore} in the local directory. If source files has been changed then the code can be compiled again. Only files, which have been edited will be recompiled and then linked with the unchanged object files. If some include files have been changed it is recommended to recompile from scratch. The command {\tt make clean} will clean up the directory by deleting all object files and the current executable. To install into your local library, which is the {\tt bin} folder in your home directory, just type {\tt make install}. You can edit the makefile to fit your system.
+If the make file is set-up correctly, type {\tt make} under Unix systems to compile, which should produce the executable {\tt gencore} in the local directory. If source files have been changed then the code can be compiled again. Only files, which have been edited will be recompiled and then linked with the unchanged object files. If some include files have been changed it is recommended to recompile from scratch. The command {\tt make clean} will clean up the directory by deleting all object files and the current executable. To install into your local library, which is the {\tt bin} folder in your home directory, just type {\tt make install}. You can edit the makefile to fit your system.
 
 On platforms, which do not support gnu compiler directly, you have to build up your compilation instruction according to the Makefile.
 
@@ -99,11 +100,11 @@ To complete the installation it is recommended to install the scripts in the dir
 
 Genesis 1.3 is a command line executable and requires a single input argument, which is the filename of the input deck:
 
-{\tt genesis4} {\it filename}
+{\tt genesis4} [-o {\it output-rootname}] [-l {\it lattice-filename}] {\it input-filename}
 
-Any further information must be provided within the input deck. Starting Genesis in this way will effectively invoke a parallel job with only one single core. To start the code with just more than one core the launching command {\tt mpirun} needs to be called, including the number of cores. In its simplest call it would be:
+The arguments for the lattice filename and the rootname for all output filenames are optional. If defined, they act as the default values in the {\tt setup} namelist and thus can be omitted there. Any further information must be provided within the input deck. Starting Genesis in this way will effectively invoke a parallel job with only one single core. To start the code with just more than one core the launching command {\tt mpirun} needs to be called, including the number of cores. In its simplest call it would be:
 
-{\tt mpirun -np \#\# genesis4} {\it filename}
+{\tt mpirun -np \#\# genesis4}  [-o {\it output-rootname}] [-l {\it lattice-filename}] {\it input-filename}
 
 where {\tt \#\#} is the number of cores to be requested.  
 
@@ -112,7 +113,7 @@ Once Genesis started the master core, which is the core with the MPI rank 0, wil
 The execution produces output files whenever a tracking command is issued or a field or particle dumped is requested. All in common is the root filename which is defined in the input deck. Normal output files have the extension {\tt .out.h5} for the first tracking or {\tt .Run\#.out.h5} for the {\#}th run (except for the first, where the addition of 'Run' is omitted). The file format is HDF5. The explicit format is described in a later chapter of this manual.   Field or particle dumps are using as well the root filename as default but under certain circumstances this behavior can be overruled. For more information see the corresponding namelist elements in the next chapter.
 
 
-For time-dependent simulations the code requires a large amount of memories to keep the entire radiation field and particle distribution in memory. This is the significant difference to previous versions where the code was able to progress through the bunch sequentially. However this excludes effects such long range fields, exchanging particles between slices, and large delaying chicanes. For an estimate of the memory demand the radiation field requires
+For time-dependent simulations the code requires a large amount of memories to keep the entire radiation field and particle distribution in memory. This is the significant difference to previous versions where the code was able to progress through the bunch sequentially. However this excludes effects such long range fields, exchanging particles between slices, and large delaying chicanes in the older versions. For an estimate of the memory demand the radiation field requires
 \begin{displaymath}
 N_b=n_s*n_g^2*16\mbox{~Bytes},
 \end{displaymath}
@@ -124,6 +125,9 @@ with $n_e$ the number of macro particles per slice.
 
 Both numbers should be added up and for safety multiplied by a factor of 2 for some overhead (aligning arrays in memory, temporary working arrays, arrays to buffer the output information etc.). This will be distributed equally over all nodes.
 Non time-dependent simulation should be small enough to run on any computer.
+
+In time-dependent runs the number of slices are equally distributed over all cores. The number of slices are even increased to guarantee symmetry, extending the time-window of the simulations. More information about that can be found in the next section. Often it is useful to calculate the number of generated slices in advance, in particular if advanced option such as subharmonic conversion are used. In the case of subharmonic conversion the slices per core should be an integer of the subharmonic number. Otherwise artefacts of numerically enhanced bunching causes wrong results.
+
 
 
 
@@ -178,11 +182,11 @@ A namelist to change some parameters within the simulation, which have been defi
 \item {\bf rootname} ({\it string, $<$ taken from SETUP $>$}): The basic string, with which all output files will start, unless the output filename is directly overwritten (see {\tt write} namelist)
 \item{\bf beamline} ({\it string, $<$ empty $>$}): The name of the beamline, which has to be defined within the lattice file. This way another beamline can be selected in the case the simulation has multiple stages
 \item {\bf delz} ({\it double, $<$ taken from SETUP $>$}): Preferred integration stepsize in meter. Note that this is not a strict value because Genesis tries to optimized the stepsize according to the elements it can resolve. E.g.~ if an undulator is 1.99 m long but the preferred stepsize is 2 cm than it uses a stepsize which is the closes to preserve the number of integration step. In this case the preferred stepsize gives 99.5 steps which is than rounded to 100 and thus resulting in an actual stepsize of 1.99 cm.  Note that outside of the undulator Genesis, which are free drifts for the radiation field, it progress the electron beam and radiation field in larger steps, namely one step per resolved element (drift, quadrupole, phase shifter).
-\item {\bf harmonic} ({\it int, 1}): If the value is not 1 than a harmonic conversion is done. This has several consequences. The reference wave length in {\tt setup} is divided by the harmonic number, the sample rate in  {\tt time} is multiplied by the harmonic number, the ponderomotive phases of all macro particles are scaled with the harmonic number, all radiation fields, which are not identical to the harmonic numbers are deleted, while an existing harmonic field is changed to be at the fundamental wavelength
+\item {\bf harmonic} ({\it int, 1}): If the value is not 1 than a harmonic conversion is done. This has several consequences. The reference wavelength in {\tt setup} is divided by the harmonic number, the sample rate in  {\tt time} is multiplied by the harmonic number, the ponderomotive phases of all macro particles are scaled with the harmonic number, all radiation fields, which are not identical to the harmonic numbers are deleted, while an existing harmonic field is changed to be at the fundamental wavelength
 
 \item {\bf subharmonic} ({\it int, 1}): If the value is not 1 than a down conversion is done. It is similar to the action of {\tt harmonics} but in the opposite directions. For the radiation field all field definitions are deleted except for the fundamental, which is converted to a harmonic. In this case the fundamental field needs to be defined before another tracking is called.
 
-\item {\bf resample} ({\it bool, false}): If this is set to true and only if one-for-one simulations are used the harmonic and subharmonic conversion can re-sample to the new wavelength. In the case of up-conversion the slices are split and the total number of slices increases. Same with the radiation field. An previously existing harmonic field, which is now becoming the fundamental, is interpolated between the existing sample points ({\it needs check whether this has been implemented}). If a new field is generated it has automatically the new number of slices. If also prevents that the sample rate is changed, but instead remains unchanged.
+\item {\bf resample} ({\it bool, false}): If this is set to true and only if one-for-one simulations are used the harmonic and subharmonic conversion can re-sample to the new wavelength. In the case of up-conversion the slices are split and the total number of slices increases. Same with the radiation field. An previously existing harmonic field, which is now becoming the fundamental, is interpolated between the existing sample points ({\it still needs to be implemented}). If a new field is generated it has automatically the new number of slices. If also prevents that the sample rate is changed by remaining unchanged.
 
 \end{itemize}
 
@@ -190,10 +194,15 @@ A namelist to change some parameters within the simulation, which have been defi
 
 \subsection{\sf lattice}
 
-This namelist is used to change the raw lattice from the lattice file, such as generating errors in the position of the elements. At the moment almost nothing has been implemented but will be implemented in the future
+This namelist is used to change the raw lattice from the lattice file, such as generating errors in the position of the elements. The namelist can be defined several times to add more than one error source to the lattice.
 
 \begin{itemize}
 \item {\bf zmatch} ({\it double, 0)} If the position within the undulator in meter is non-zero than Genesis tries to calculate the matched optics function for a periodic solution. In the case that it cannot find a solution than it will report it. Found solution will also be the default values for a succeeding beam generation, so that no explicit optical functions need to be defined any longer. If the lattice is highly non-periodic it is recommended to find the matching condition with an external program such as MAdX.
+\item {\bf element} ({\it string, $<$ empty $>$}): Name of the element type, which will be changed, e.g. {\tt Undulator} if undulator modules are altered. Only the first 4 letters need to be defined. If there is no match, e.g. due to a type, nothing will be changed. It acts rather as a filter than a mandatory element. Elements of the type MARKER are not supported to be changed.
+\item {\bf  field} ({\it string, $<$ empty $>$)}: attribute name for a given element. The names are the same as in the definition of the lattice file. The field acts as a filter again. With non-matching events nothing will be changed.
+\item {\bf value} ({\it doubl, 0, or sequence label}): The new value. If a reference to a sequence is used, values can be different depending on how many elements are changed. For a double the value would be the same for all elements affected.
+\item {\bf instance} ({\it integer, 0}): The instances of affected elements. If a positive value is given, than only that element is change, where its occurence matches the number. E.g. for a value of 3 only the third element is selected. For a value of 0 all elements are changed. The ability to change more thanone but less than all is currently not supported.
+\item {\bf add} ({\it bool, true}): If the value is true the changes are added to the existing value. For a value of false the old values are overwritten.
 \end{itemize}
 
 \subsection{\sf time}
@@ -348,6 +357,24 @@ This enables the effect of spontaneous radiation outside of the frequency band o
 \item {\bf seed} ({\it int, 1234}): Seed for random number generator to model the quantum fluctuation of hard photons.
 \item {\bf doLoss} ({\it bool, false}): If set to true, electrons will loose energy due to the emission of spontaneous radiation within the undulator
 \item {\bf doSpread} ({\it bool, false}): If set to true, the energy spread will increase due to the fluctuation in the emission of hard photons of the spontaneous radiation.
+\end{itemize}
+
+
+\subsection {\sf wake}
+Genesis supports the calculation of three types of wakefields by specifying the typical input parameters (e.g.~ gap length for the geometric wakefield). It first solves the single particle wake and then convolutes with the current distribution. Therefore it follows the change in the wakepotential if a chirped beams undergoes a compression in a chicane. In addition an external loss factor can be supplied, which can also refer to a profile. In this case it is treated as the full wake and subtracted from the particle energy directly.
+\begin{itemize}
+\item {\bf loss} ({\it double, 0 or profile label}): Loss in eV/m. This is a global loss function (in particular if a profile is defined). It s function values $V(s)$ remains unchanged even if the current profile changes
+\item {\bf radius} ({\it  double, 2.5e-3}): Radius of the aperture if it is a round chanber or half the distance in the case of two parallel plates.
+\item {\bf roundpipe} ({\it bool, true}): Flag to indicate the shape of the transverse cross-section of the aperture. If set to true a round aperture is assumed, otherwise the model has two parallel plates.
+\item {\bf conductivity} ({\it double, 0}): Conductivity of the vacuum material for the resistive wall wakefield function
+\item {\bf relaxation} ({\it double, 0}): Relaxation distance (aka the mean free path of the electron in the vacuum material) for the resistive wall wakefields
+\item {\bf material} ({\it string, $<$ empty $>$}): String literal to define conductivity and relaxation distance for either copper or aluminum by using the two character label 'CU' or 'AL' repectively. This overwrites also any explicit definition of the conductivity and relaxation value.
+\item {\bf gap} ({\it double, 0}): Length in mm of a longitudinal gap in the aperture, exciting geometric wakes.
+\item {\bf lgap} ({\it double, 1.0}): Effective length over which a single gap is applied. E.g. if there is a periodicity of 4.5 m at which there is always the same gap in the aperture for the geometrice wakes, then this value should be put to 4.5 m.
+\item {\bf hrough} ({\it double, 0}): Amplitude in meters of a sinusoidal corrugation, modelling the effect of surface roughness wakes.
+\item {\bf lrough} ({\it double, 1)}: period lengthin meters of the sinusoidal corrugation of the surface roughness model.
+\item {\bf transient} ({\it bool, false}): If set to true, Genesis includes the catch-up length of the origin of the wakefield to the particle effects. E.g. particles do not see immediatly the wake from those closer ahead of them than those further away. The catch-up distance is the distance in the undulator added to the starting position {\tt ztrans}. If set to false the steady-state model is used, effectively setting {\tt ztrans} to infinity. Enabling transient calculation will update the wakefield at each integration step, which can slow down the calculations.
+\item {\bf ztrans} ({\it double, 0}): Reference location of the first source of the wake fields. A positive value means that the condition for wakes (e.g. a small aperture in the vacuum chamber) has already started and there has been already some length to establish the wakes. For a value of zero the surce is right at the undulator start, while a negative value prevents any wake, till the interation position has passed that point.
 \end{itemize}
 
 

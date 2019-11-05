@@ -23,15 +23,25 @@ class Collective{
  public:
    Collective();
    virtual ~Collective();
-   void initWake(unsigned int, double, double *, double *, double *, double, double, bool);
+   //   void initWake(unsigned int, double, double *, double *, double *, double, double, bool);
+   void initWake(unsigned int, unsigned int, double, double *, double *, double *, double, double, bool);
    void apply(Beam *,Undulator *, double );
+   void update(Beam *, double);
+   void forceUpdate();
 
  private:
-   bool transient,hasWake;
+   bool transient,hasWake,needsUpdate;
    double ztrans,radius;
-   double ds;
+   double ds,dscur;
    unsigned int ns;
-   double *wakeres, *wakegeo, *wakerou, *wake, *current, *dcurrent, *curwork;
+   int size,rank,ncur;
+   double *wakeext, *wakeint, *wakeres, *wakegeo, *wakerou, *wake, *current, *dcurrent, *cur;
+   int *count;
 };
 
+
+inline void Collective::forceUpdate()
+{
+  needsUpdate=true;
+}
 #endif

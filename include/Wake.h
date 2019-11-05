@@ -11,6 +11,7 @@
 #include "Setup.h"
 #include "Time.h"
 #include "Particle.h"
+#include "Profile.h"
 
 class Beam;
 
@@ -23,7 +24,7 @@ class Wake: public StringProcessing{
  public:
    Wake();
    virtual ~Wake();
-   bool init(int,int,map<string,string> *, Time *, Setup *, Beam *);
+   bool init(int,int,map<string,string> *, Time *, Setup *, Beam *, Profile *);
 
 
  private:   
@@ -35,11 +36,14 @@ class Wake: public StringProcessing{
    double TrapIntegrateRoughness(vector< complex<double> > *, complex<double> , complex<double> , double);
 
    double radius, relaxation,conductivity,ztrans,gap,lgap,hrough,lrough,rrough;
+   double loss;
+   string lossref;
    bool roundpipe,transient, hasWake;
 
    unsigned int ns;
    double slen,ds;
-   double *wakeres, *wakegeo, *wakerou;
+   double *wakeres, *wakegeo, *wakerou, *wakeext, *wakeint;
+
 
 };
 

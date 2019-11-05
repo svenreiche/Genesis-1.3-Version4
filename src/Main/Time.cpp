@@ -70,6 +70,8 @@ void Time::finishInit(Setup *setup)
   if ((nslice % size)!=0) {ns_node++;}
   nslice=ns_node*size;
   noff_node=ns_node*rank;
+
+
   // needs to adjust the time window for harmonic conversions
   slen=ds*nslice;
   

@@ -9,6 +9,9 @@
 Collective::Collective()
 {
   hasWake=false;
+  transient=false;
+  ztrans=0;
+  radius=1.0;
 }
 
 Collective::~Collective()
@@ -16,150 +19,78 @@ Collective::~Collective()
 }
 
 
-void Collective::initWake(unsigned int ns_in, double ds_in, double *wakeres_in, double *wakegeo_in, double *wakerou_in, double ztrans_in, double radius_in, bool trans_in){
-  ztrans=ztrans_in;
-  transient=trans_in;
-  radius=radius_in;
-  ns=ns_in;
-  ds=ds_in;
-  wake    =new double[ns];
-  wakeres =new double[ns];    // holds the pre-calculated single wake potential
-  wakegeo =new double[ns];    // holds the pre-calculated single wake potential
-  wakerou =new double[ns];    // holds the pre-calculated single wake potential
-  current =new double[ns];
-  dcurrent=new double[ns];    // is the differential in the current
-  curwork =new double[ns+1];
-  
-  for (int i=0; i<ns;i++){
-    wakeres[i]=wakeres_in[i];
-    wakegeo[i]=wakegeo_in[i];
-    wakerou[i]=wakerou_in[i];
-  }
-  wakeres[0]*=0.5;  // self-loading theorem
-  wakegeo[0]*=0.5;  // self-loading theorem
-  wakerou[0]*=0.5;  // self-loading theorem
-
-  hasWake=true;
-  return;
-}
+void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in, double *wakeext_in, double *wakeres_in, double *wakegeo_in, double ztrans_in, double radius_in, bool transient_in)
+{ 
 
 
-
-void Collective::apply(Beam *beam, Undulator *und, double delz)
-{  
-  if (!hasWake){
-    return;
-  }
-
-  int rank,size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
-  MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
+  MPI_Comm_size(MPI_COMM_WORLD, &size); // assign ranksize to node
 
   if (MPISingle){
       rank=0;
       size=1;
   }
+
   
-  if (rank==0){
-    cout << "applying wakes" << endl;
-  }
-   
-  // get full current profile
-  int ncur=beam->current.size();
-  double dscur=beam->slicelength;
-  cout << "Rank: " << rank << " ncur:" << ncur << endl;
-
-  double *cur=new double [ncur*size+1];
-  for (int i=0; i < ncur*size;i++){cur[i]=0;}
-
-  //  MPI::COMM_WORLD.Allgather(&beam->current[0],ncur,MPI::DOUBLE, &cur[0],ncur,MPI::DOUBLE);
-  MPI_Allgather(&beam->current[0],ncur,MPI_DOUBLE,&cur[0],ncur,MPI_DOUBLE,MPI_COMM_WORLD);
-  ncur=ncur*size;
-  cur[ncur]=0;  // needed for interpolation
-
-  double sam=dscur/ds;
-  if (rank == 0) { cout << "Test: " << sam << endl;}
+  ns=ns_in;  // full number of slices with highest resolution
+  ds=ds_in;
+  ncur=size*nsNode;   // number of slices in simulations (should be ns/sample)
+  dscur=ds*ns/ncur;
+  ztrans=ztrans_in;
+  radius=radius_in;
+  transient=transient_in;
 
 
+  // cout << "ns: " << ns << " ds: " << ds << " ncur: " << ncur << " dscur: " << dscur<< endl;
 
-  // interpolate current profile to high resolution and initialize the totak wake function
-   
-  for (int is=0; is <ns ; is++){
-    double s=ds*static_cast<double> (is);
-    unsigned int idx=static_cast<int> (floor(s/dscur));
-    double wei=1-(s-idx*dscur)/dscur;  
-    current[is]=wei*cur[idx]+(1-wei)*cur[idx+1];
-    current[is]*=ds/ce;   // convert current to number of electrons
-    dcurrent[is]=-(cur[idx+1]-cur[idx])/ce/sam;
-    wake[is]=0;
+  wakeext = new double[nsNode];  // global wake, explicityle defined in input deck (e.g. constant energy loss)
+  wakeint = new double[nsNode];  // wake, internally calculated when updating the wake potential (e.g. sorting)
+  cur     = new double[ncur+1];    // array to hold current profile with simulation resolution.
+  count   = new int [nsNode];
+
+
+  wake    = new double[ns];
+  wakegeo = new double[ns];
+  wakeres = new double[ns];
+  current = new double[ns];
+  dcurrent= new double[ns];
+
+  // fill the wakes or single particle wakes
+  for (int i=0; i <nsNode; i++){
+    wakeext[i]=wakeext_in[i];
+    wakeint[i]=0;
   }
 
-  if (rank==0) { cout << "Current is interpolated" << endl ;}
-  
 
-  // calculate the startng position for transient
-  int icut=0;
-  double z=und->getz()+ztrans;  // effective length from first source point
-  double delta=0.5*radius*radius;
-  if (z <=0) {      // if value is negative no wakefields are calculated
-    icut=ns;
-  } else {
-    icut=static_cast<int>(floor(delta/z/ds));
+  for (int i=0; i <ns; i++){
+    wakegeo[i]=wakegeo_in[i];
+    wakeres[i]=wakeres_in[i];
   }
-  if (!transient){
-    icut=0;
-  }
+  wakegeo[0]*=0.5;  // self-loading theorem
+  wakeres[0]*=0.5;  // self-loading theorem
+
+  hasWake=true;
+  needsUpdate=true;
+  return;
+}
+
+
  
-   if (rank==0) { cout << "Transient cutoff done" << endl ;}
 
+void Collective::apply(Beam *beam, Undulator *und, double delz)
+{
 
-  // do the convolution
-  for (int is=0; is< ns; is++){  // loop the evaluation point from back to front
-    for (int i=icut; i < ns-is; i++){  // loob from evaluation point till the head of the bunch
-      wake[is]+=current[is+i]*(wakeres[i]+wakerou[i]);
-      wake[is]+=dcurrent[is+i]*wakegeo[i];
-    }
-  }
- 
-  if (rank==0) { cout << "Convolution calculated" << endl ;}
-
-
-
-  ncur=beam->current.size();
-  int ioff = rank*ncur;
-
-
-  double sc0=dscur*(ioff);     // s positions of the timewindow slice for a given rank.
-  double sc1=dscur*(ncur+ioff);
-  int *count=new int [ncur];
-
-  for (int ic = 0; ic <ncur; ic++){
-    count[ic]=0;
-    beam->eloss[ic]=0;
+  if (!hasWake){
+    return;
   }
 
-  if (rank==0) { cout << "Loss vector initialized" << endl ;}
+  if (needsUpdate || transient) { this->update(beam, und->getz()); }
 
 
-  for (int is=0;is < ns; is++){
-    double s=is*ds;
-    if ((s >= sc0) and (s < sc1)){
-      int idx = floor((s-sc0)/dscur);
-      count[idx]++;
-      beam->eloss[idx]+=wake[is];
-    }
-  }
-  if (rank==0) { cout << "Loss calculated" << endl ;}
+  // apply wakes
 
-  
-  // save in beam->eloss for output file
-
-  for (int ic = 0; ic <ncur; ic++){
-    if (count[ic]>0) {
-      beam->eloss[ic]/=static_cast<double>(count[ic]);
-    } else {
-      beam->eloss[ic]=0;
-    }
+  for (int ic = 0; ic <beam->current.size(); ic++){
+    beam->eloss[ic]=wakeext[ic]+wakeint[ic];
     double dg=beam->eloss[ic]*delz/511000;    // actuall beam loss per integration step
     int npart=beam->beam.at(ic).size();
     for (int ip=0; ip<npart; ip++){
@@ -167,10 +98,105 @@ void Collective::apply(Beam *beam, Undulator *und, double delz)
     }
   }
 
-  if (rank==0) { cout << "Loss applied" << endl ;}
-
-  delete[] cur;
-  delete[] count;
   return;
 
+
+
 }
+
+
+
+void Collective::update(Beam *beam, double zpos)
+{  
+
+  // ---------------------------
+  // step 1 - gather current profile from all nodes
+
+  int nsNode=beam->current.size();
+  MPI_Allgather(&beam->current[0],nsNode,MPI_DOUBLE,cur,nsNode,MPI_DOUBLE,MPI_COMM_WORLD);
+  cur[ncur]=0;   // used for interpolation
+
+
+ 
+  //-------------------------------------------------
+  // step 2 - interpolate current profile to high resolution and initialize the total wake function
+   
+  for (int is=0; is <ns ; is++){
+    double s=ds*static_cast<double> (is);
+    unsigned int idx=static_cast<int> (floor(s/dscur));
+    double wei=1-(s-idx*dscur)/dscur;  
+    current[is]=wei*cur[idx]+(1-wei)*cur[idx+1];
+    current[is]*=ds/ce;   // convert current to number of electrons
+    dcurrent[is]=-(cur[idx+1]-cur[idx])*ds/ce/dscur;
+    wake[is]=0;
+  }
+ 
+  //----------------------------------------   
+  // step 3 - calculate the startng position for transient
+
+  int icut=0;
+  double z=zpos+ztrans;  // effective length from first source point
+  double delta=0.5*radius*radius;
+  if (z <=0) {      // if value is negative no wakefields are calculated
+      icut=ns;
+  } else {
+      icut=static_cast<int>(floor(delta/z/ds));
+  }
+  if (!transient){
+     icut=0;
+  }
+ 
+
+  //--------------------------------------------
+  // step 4 - initialize the loss vector for the given time-window slice of the given node
+
+
+  for (int ic = 0; ic <nsNode; ic++){
+    count[ic]=0;
+    wakeint[ic]=0;
+  }
+
+
+  double sc0=dscur*(nsNode*rank);     // s positions of the timewindow slice for a given rank.
+  double sc1=dscur*(nsNode*(rank+1));
+  int is0=static_cast<int>(round(sc0/ds));
+  int is1=static_cast<int>(round(sc1/ds));
+
+  for (int is=is0; is< is1; is++){  // loop the evaluation point from back to front
+    double s=is*ds;
+    double wakeloc=0;
+    for (int i=icut; i < ns-is; i++){  // loob from evaluation point till the head of the bunch
+      wakeloc+=current[is+i]*wakeres[i];
+      wakeloc+=dcurrent[is+i]*wakegeo[i];
+    }
+    int idx = floor((s-sc0)/dscur);
+    count[idx]++;
+    wakeint[idx]+=wakeloc;
+  }
+
+  for (int ic = 0; ic <nsNode; ic++){
+    if (count[ic] > 0) {
+      wakeint[ic]/=static_cast<double>(count[ic]);
+    } else {
+      wakeint[ic]=0;
+    }
+  }
+
+  needsUpdate=false;
+  return;
+   
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

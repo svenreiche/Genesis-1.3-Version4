@@ -212,7 +212,7 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
 
 	  if (element.compare("&wake")==0){
 	    Wake *wake = new Wake;
-            if (!wake->init(rank,size,&argument,timewindow, setup, beam)){ break;}
+            if (!wake->init(rank,size,&argument,timewindow, setup, beam,profile)){ break;}
 	    delete wake;
 	    continue;  
           }  

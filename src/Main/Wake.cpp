@@ -3,6 +3,8 @@
 
 Wake::Wake()
 {
+  loss = 0;
+  lossref="";
   radius=2.5e-3;
   conductivity=0;
   relaxation=0;
@@ -23,6 +25,7 @@ void Wake::usage(){
 
   cout << "List of keywords for Wake" << endl;
   cout << "&wake" << endl;
+  cout << " string loss =  0 / reference" << endl;
   cout << " double radius = 2.5e-3" << endl;
   cout << " bool   roundpipe   = true" << endl;
   cout << " string material  = <empty>" << endl;
@@ -40,14 +43,14 @@ void Wake::usage(){
 
 // input parameter
 
-bool Wake::init(int rank, int size, map<string,string> *arg,  Time *time, Setup *setup, Beam *beam)
+bool Wake::init(int rank, int size, map<string,string> *arg,  Time *time, Setup *setup, Beam *beam, Profile *prof)
 {
 
   string material="";
   map<string,string>::iterator end=arg->end();
   map<string,string>::iterator iter=arg->begin();
   
-
+  if (arg->find("loss")!=end    ){this->reference(arg->at("loss"),&loss,&lossref); arg->erase(arg->find("loss"));}
   if (arg->find("radius")!=end) {radius = atof(arg->at("radius").c_str());  arg->erase(arg->find("radius"));}
   if (arg->find("conductivity")!=end) {conductivity= atof(arg->at("conductivity").c_str());  arg->erase(arg->find("conductivity"));}
   if (arg->find("relaxation")!=end) {relaxation = atof(arg->at("relaxation").c_str());  arg->erase(arg->find("relaxation"));}
@@ -65,7 +68,36 @@ bool Wake::init(int rank, int size, map<string,string> *arg,  Time *time, Setup 
     if (rank==0){ cout << "*** Error: Unknown elements in &wake" << endl; this->usage();}
     return false;
   }
+
+  // check for external wake function
   
+ string wrongProf="";
+  if (prof->check(lossref)== false)  { wrongProf=lossref;}
+  if (wrongProf.size() > 0){
+    if (rank==0){cout << "*** Error: Unknown profile reference in &wake: " << wrongProf << endl;}
+    return false;
+  }    
+
+  if (rank==0){cout << "Generating wakefield potentials..." << endl; }
+
+  vector<double> s;
+  ns=time->getPosition(&s);  // total number of slices and vector with the s-position
+  int nsNode=time->getNodeNSlice();
+  
+  ns=ns*time->getSampleRate();
+  ds=(s[1]-s[0])/time->getSampleRate();
+
+  wakeres = new double [ns];
+  wakegeo = new double [ns];
+  wakerou = new double [ns];
+  wakeext = new double [nsNode];
+
+  for (int j=0; j<nsNode; j++){
+    int i=j+time->getNodeOffset();
+    wakeext[j]=prof->value(s[i],loss,lossref);  // external wake
+  }
+
+
   if ((material=="CU") || (material=="Cu") || (material=="cu")){
     conductivity=5.813e7;
     relaxation=8.1e-6;
@@ -76,29 +108,18 @@ bool Wake::init(int rank, int size, map<string,string> *arg,  Time *time, Setup 
     relaxation=2.4e-6;
   }
 
-  // getting the time parameter from the time window definition
-  unsigned int nslen=time->getNodeNSlice()*size;
-  unsigned int nsample=time->getSampleRate();
-
-  slen=time->getTimeWindowLength();
-  ds=slen/static_cast<double>(nslen*nsample);
-
-  // clear single particle wakes
-  ns=nslen*nsample;    // sample every wavelength
-  wakeres = new double [ns];
-  wakegeo = new double [ns];
-  wakerou = new double [ns];
-
   // calculate the single particle wakes
   this->singleWakeResistive(rank);
   this->singleWakeGeometric(rank);
-  this->singleWakeRoughness(rank);
+  //  this->singleWakeRoughness(rank);
 
 
   // transfer wakes into beam class
-  beam->initWake(ns,ds,wakeres,wakegeo,wakerou, ztrans,radius,transient);
+  beam->initWake(ns,nsNode, ds,wakeext,wakeres,wakegeo,wakerou,ztrans,radius,transient);
 
-  delete[] wakeres,wakegeo,wakerou;
+  delete[] wakeres,wakegeo,wakerou,wakeext;
+
+  
 
   return true;
 
@@ -200,10 +221,12 @@ void Wake::singleWakeRoughness(int rank)
 void Wake::singleWakeGeometric(int rank)
 {
 
-  if (gap <=0){
-    for (int i=0; i< ns; i++){
+
+  for (int i=0; i< ns; i++){
       wakegeo[i]=0;
-    }
+  }
+
+  if (gap <=0){
     return;
   }
 
@@ -213,7 +236,7 @@ void Wake::singleWakeGeometric(int rank)
   for (int i = 0;i<ns;i++){
     wakegeo[i]=coef*sqrt(ds*i);     
   }
-
+   
   if (rank==0){
        cout << "Geometric Wake calculated..." << endl;   
   }
@@ -227,12 +250,14 @@ void Wake::singleWakeGeometric(int rank)
 void Wake::singleWakeResistive(int rank)
 {
 
- if (conductivity <=0){
-    for (int i=0; i< ns; i++){
+   for (int i=0; i< ns; i++){
       wakeres[i]=0;
-    }
-    return;
-  }
+   }
+
+   if (conductivity <=0){
+      return;
+   }
+
    double s0=pow(2*radius*radius/vacimp/conductivity,1./3.); // characteristic length in SI units
    double gamma=relaxation/s0;
    double coef = radius/(s0*s0);
@@ -293,33 +318,11 @@ void Wake::singleWakeResistive(int rank)
       }
    }
    coef=-kappamax/nk/s0*3e8/pi*(vacimp*ce/4/pi); // to scale to SI units
+   coef*=0.5;  // emperical adjustment of amplitude, needs checking!!!!!
+
    for (int i = 0; i < ns; i++){
      wakeres[i]*=coef;
    }
-
-
-  /*
-   ofstream myfile;
-
-   myfile.open ("Zre.txt");
-   for (int i = 0; i < nk ; i++){
-	myfile << Zre[i] << endl;
-   }
-   myfile.close();   
-
-   myfile.open ("Zim.txt");
-   for (int i = 0; i < nk ; i++){
-	myfile << Zim[i] << endl;
-   }
-   myfile.close(); 
-
-   myfile.open ("wake.txt");
-   for (int i = 0; i < ns ; i++){
-	myfile << wakeres[i] << endl;
-   }
-   myfile.close();
-   */
-
 
 
    if (rank==0){

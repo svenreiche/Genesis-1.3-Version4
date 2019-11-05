@@ -92,6 +92,7 @@ int Beam::sort()
       int np=beam.at(i).size();
       current.at(i)=static_cast<double>(np)*ce/slicelength;
     }
+    col.forceUpdate();
   }  
   return shift;
 }
