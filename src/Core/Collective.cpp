@@ -19,7 +19,7 @@ Collective::~Collective()
 }
 
 
-void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in, double *wakeext_in, double *wakeres_in, double *wakegeo_in, double ztrans_in, double radius_in, bool transient_in)
+void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in, double *wakeext_in, double *wakeres_in, double *wakegeo_in, double * wakerou_in, double ztrans_in, double radius_in, bool transient_in)
 { 
 
 
@@ -40,8 +40,7 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
   radius=radius_in;
   transient=transient_in;
 
-
-  // cout << "ns: " << ns << " ds: " << ds << " ncur: " << ncur << " dscur: " << dscur<< endl;
+ 
 
   wakeext = new double[nsNode];  // global wake, explicityle defined in input deck (e.g. constant energy loss)
   wakeint = new double[nsNode];  // wake, internally calculated when updating the wake potential (e.g. sorting)
@@ -52,6 +51,7 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
   wake    = new double[ns];
   wakegeo = new double[ns];
   wakeres = new double[ns];
+  wakerou = new double[ns];
   current = new double[ns];
   dcurrent= new double[ns];
 
@@ -65,9 +65,11 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
   for (int i=0; i <ns; i++){
     wakegeo[i]=wakegeo_in[i];
     wakeres[i]=wakeres_in[i];
+    wakerou[i]=wakerou_in[i];
   }
   wakegeo[0]*=0.5;  // self-loading theorem
   wakeres[0]*=0.5;  // self-loading theorem
+  wakerou[0]*=0.5;
 
   hasWake=true;
   needsUpdate=true;
@@ -109,6 +111,7 @@ void Collective::apply(Beam *beam, Undulator *und, double delz)
 void Collective::update(Beam *beam, double zpos)
 {  
 
+  
   // ---------------------------
   // step 1 - gather current profile from all nodes
 
@@ -157,6 +160,7 @@ void Collective::update(Beam *beam, double zpos)
   }
 
 
+
   double sc0=dscur*(nsNode*rank);     // s positions of the timewindow slice for a given rank.
   double sc1=dscur*(nsNode*(rank+1));
   int is0=static_cast<int>(round(sc0/ds));
@@ -166,7 +170,7 @@ void Collective::update(Beam *beam, double zpos)
     double s=is*ds;
     double wakeloc=0;
     for (int i=icut; i < ns-is; i++){  // loob from evaluation point till the head of the bunch
-      wakeloc+=current[is+i]*wakeres[i];
+      wakeloc+=current[is+i]*(wakeres[i]+wakerou[i]);
       wakeloc+=dcurrent[is+i]*wakegeo[i];
     }
     int idx = floor((s-sc0)/dscur);

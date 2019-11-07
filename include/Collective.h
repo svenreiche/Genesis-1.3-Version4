@@ -24,7 +24,7 @@ class Collective{
    Collective();
    virtual ~Collective();
    //   void initWake(unsigned int, double, double *, double *, double *, double, double, bool);
-   void initWake(unsigned int, unsigned int, double, double *, double *, double *, double, double, bool);
+   void initWake(unsigned int, unsigned int, double, double *, double *, double *, double *, double, double, bool);
    void apply(Beam *,Undulator *, double );
    void update(Beam *, double);
    void forceUpdate();

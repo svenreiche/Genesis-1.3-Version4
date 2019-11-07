@@ -69,8 +69,7 @@ inline void Beam::initEField(double rmax, int ngrid, int nz, int nphi, double la
 }
 
 inline void Beam::initWake(unsigned int ns, unsigned int nsNode, double ds, double *wakeext, double *wakeres, double *wakegeo,double *wakerou, double ztrans, double radius, bool transient){
-  //  col.initWake(ns, ds, wakeext, wakeres, wakegeo, wakerou, ztrans, radius,transient);
-  col.initWake(ns, nsNode, ds, wakeext, wakeres, wakegeo, ztrans, radius, transient);
+  col.initWake(ns, nsNode, ds, wakeext, wakeres, wakegeo, wakerou, ztrans, radius, transient);
 }
 
 

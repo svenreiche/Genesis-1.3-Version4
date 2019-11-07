@@ -111,7 +111,7 @@ bool Wake::init(int rank, int size, map<string,string> *arg,  Time *time, Setup 
   // calculate the single particle wakes
   this->singleWakeResistive(rank);
   this->singleWakeGeometric(rank);
-  //  this->singleWakeRoughness(rank);
+  this->singleWakeRoughness(rank);
 
 
   // transfer wakes into beam class
