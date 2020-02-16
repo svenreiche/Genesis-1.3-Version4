@@ -10,6 +10,8 @@
 #include <fstream>
 #include <streambuf>
 
+#include "build_info.h"
+
 extern bool MPISingle;
 
 Output::Output(){
@@ -92,6 +94,8 @@ void Output::writeMeta()
   tmp[0]=0;
   if (versionbeta) { tmp[0]=1;}
   this->writeSingleNode(gidsub,"Beta"," ",&tmp);
+  string s_bi(build_info());
+  this->writeSingleNodeString(gidsub,"Build_Info", &s_bi);
   H5Gclose(gidsub);  
   
   time_t timer;
