@@ -42,6 +42,7 @@
 #include "writeFieldHDF5.h"
 #include "Collective.h"
 #include "Wake.h"
+#include "build_info.h"
 
 #include <sstream>
 
@@ -85,7 +86,8 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
           cout << "---------------------------------------------" << endl;
           cout << "GENESIS - Version " <<  versionmajor <<"."<< versionminor << "." << versionrevision ;
 	  if (versionbeta) {cout << " (beta)";}
-	  cout << " has started..." << endl;			
+	  cout << " has started..." << endl;
+          cout << "compile info: " << build_info() << endl;			
 	  cout << "Starting Time: " << ctime(&timer)<< endl;
           cout << "MPI-Comm Size: " << size << " nodes" << endl << endl;
         }

@@ -1,3 +1,5 @@
 *.o
 gencore
 lib
+
+build_info.c
