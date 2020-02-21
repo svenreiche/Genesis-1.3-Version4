@@ -4,7 +4,7 @@ LoadBeam::LoadBeam()
 {
   gamma=5800/0.511; gammaref="";
   delgam=0; delgamref="";
-  current=0; currentref="";
+  current=1000; currentref="";
   ex=0.3e-6; exref="";
   ey=0.3e-6; eyref="";
   betax=15; betaxref="";

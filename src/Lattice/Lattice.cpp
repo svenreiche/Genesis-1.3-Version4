@@ -93,7 +93,7 @@ bool Lattice::generateLattice(double delz, double lambda, double gamma, AlterLat
       und->grady[i]=lat_grady[i];
       und->qf[i]=lat_qf[i]; 
       und->qx[i]=lat_qx[i];
-      und->qy[i]=lat_qx[i];
+      und->qy[i]=lat_qy[i];
       und->cx[i]=lat_cx[i];
       und->cy[i]=lat_cy[i];
 
