@@ -24,7 +24,7 @@
 \vspace{1cm}
 {\rule{0cm}{2cm}\LARGE\sf\hspace{2cm}User Manual}\\
 \vspace{10cm}\\
-{\sf Oct-19}\\
+{\sf Mar-20}\\
 \rule{\textwidth}{0.2cm}\\
 \vspace{5cm}
 \pagebreak
@@ -338,9 +338,24 @@ Note that this namelist will be expanded in the future, to enable tilts and matc
 
 
 \subsection{\sf importbeam}
-Not yet working. Needs fixing
+The modules controls the import of a Genesis 1.3 particle file to replace the internal generation of the particle distribution (note that the module {\tt beam} should not be called). The routine defines also the parameter for a time-dependent run if the {\tt time} namelist hasn't been defined yet. 
+\begin{itemize}
+\item{\bf file} ({\it string, $<$ empty $>$}): File name of a hdf5 complient datafile to contain the slice-wise particle distribution. It has to follow the internal Genesis 1.3 syntax.
+\item{\bf time} ({\it bool, true}): If the time window hasn't be defined it allows to run Genesis with the imported distribution in scan mode, when set to {\tt false}. This would disable all slippage and long-range collective effects in the simulation
+\end{itemize}
+
+ 
 \subsection{\sf importfield}
-Not yet working Needs fixing.
+The modules controls the import of a Genesis 1.3 field file to replace the internal generation of the field distribution (note that the module {\tt field} should only be called afterwards with the {\tt accumulate} option enabled). The routine defines also the parameter for a time-dependent run if the {\tt time} namelist hasn't been defined yet. 
+\begin{itemize}
+\item{\bf file} ({\it string, $<$ empty $>$}): File name of a hdf5 complient datafile to contain the slice-wise particle distribution. It has to follow the internal Genesis 1.3 syntax.
+\item{\bf harmonic} ({\it  int, 1}) defines the harmonic for the given Genesis run.
+\item{\bf time} ({\it bool, true}): If the time window hasn't be defined it allows to run Genesis with the imported distribution in scan mode, when set to {\tt false}. This would disable all slippage and long-range collective effects in the simulation
+\end{itemize}
+
+ 
+
+
 
 \subsection {\sf efield}
 This namelist controls the short range space charge on a length scale of the resonant wavelength or shorter. The calculation is done on a radial azimuthal grid, centered to the centroid position of the electron slice
@@ -443,7 +458,7 @@ Labels are used to identify elements and are referred to in the line element. Mo
 \subsection {\sf Quadrupole}
 \begin{itemize}
 \item {\bf l}: Length of the quadrupole in meter. Default value is 0 m.
-\item {\bf k1}: Normalized focusing strength in 1/m. Default  value is 0
+\item {\bf k1}: Normalized focusing strength in 1/m$^2$. Default  value is 0
 \item {\bf dx}: Offset in x in meter. Default is zero.
 \item {\bf dy}: Offset in y in meter. Default is zero.
 \end{itemize}

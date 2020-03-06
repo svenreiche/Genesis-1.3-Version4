@@ -1,4 +1,5 @@
 #include "LoadField.h"
+#include <cmath>
 
 LoadField::LoadField()
 {
@@ -122,6 +123,10 @@ bool LoadField::init(int rank, int size, map<string,string> *arg, vector<Field *
     cout << "input radiation field for HARM = " << harm <<  " ..." << endl; 
   }
 
+
+  // check for detuning
+  double dlam=-(lambda-setup->getReferenceLength())/setup->getReferenceLength()/setup->getReferenceLength()*4*asin(1);
+
   vector<double> s;
   int nslice=time->getPosition(&s);
 
@@ -140,7 +145,7 @@ bool LoadField::init(int rank, int size, map<string,string> *arg, vector<Field *
     int i=j+time->getNodeOffset();
     slice.lambda=prof->value(s[i],lambda,lambdaref);
     slice.power=prof->value(s[i],power,powerref);
-    slice.phase=prof->value(s[i],phase,phaseref);
+    slice.phase=prof->value(s[i],fmod(phase+s[i]*dlam, 4*asin(1.)),phaseref);
     slice.z0=prof->value(s[i],z0,z0ref);
     slice.w0=prof->value(s[i],w0,w0ref);
     slice.xcen=xcen;
