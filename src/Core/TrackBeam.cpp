@@ -31,7 +31,7 @@ void TrackBeam::track(double delz, Beam *beam,Undulator *und,bool lastStep=true)
   double qy=-qquad+qnaty;
 
   double xoff= qquad*dqx+qnatx*dax;
-  double yoff=-qquad*dqx+qnatx*dax;
+  double yoff=-qquad*dqy+qnaty*day;
   // cout << "qnaty: " << qnaty/gamma0 << " Gamma0: " << gamma0 << endl;
 
   if (lastStep){
