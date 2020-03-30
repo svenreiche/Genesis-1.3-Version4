@@ -140,6 +140,7 @@ bool LatticeParser::parse(string file, string line, int rank, vector<Element *> 
 
   sequence.clear();
   zref.clear();
+  zoff.clear();
   refele=-1;
   
   if ((idx>-1) && (type[idx].compare("line")==0)) {
@@ -159,11 +160,12 @@ bool LatticeParser::parse(string file, string line, int rank, vector<Element *> 
   
   for (int i=0;i<sequence.size();i++){
     if (zref[i]<0){
-      z=0;
+      z=0+zoff[i];
     } else {
-      z=lat[zref[i]]->z+lat[zref[i]]->l;
+      z=lat[zref[i]]->z+lat[zref[i]]->l+zoff[i];
     } 
     idx=this->findIndex(&label,sequence[i]);
+    cout << "Element: " << sequence[i] << " Type: " << type[idx] << " Pos:" << z << " Offset: " << zoff[i] << endl; 
     if (type[idx].compare("quad")==0){ error=false; lat.push_back(this->parseQuad(idx,rank,z));}
     if (type[idx].compare("undu")==0){ error=false; lat.push_back(this->parseID(idx,rank,z)); }
     if (type[idx].compare("drif")==0){ error=false; lat.push_back(this->parseDrift(idx,rank,z));}
@@ -186,6 +188,7 @@ ID *LatticeParser::parseID(int idx,int rank, double zin)
   
   ele->type="Undulator";
   ele->z=zin;
+  ele->zoff=0;
   ele->aw=0;
   ele->lambdau=0;
   ele->nwig=0;
@@ -251,6 +254,7 @@ Corrector *LatticeParser::parseCorrector(int idx,int rank, double zin)
 
   ele->type="Corrector";
   ele->z=zin;
+  ele->zoff=0;
   ele->l=0;
   ele->cx=0;
   ele->cy=0;
@@ -285,6 +289,7 @@ Chicane *LatticeParser::parseChicane(int idx,int rank, double zin)
 
   ele->type="Chicane";
   ele->z=zin;
+  ele->zoff=0;
   ele->l=0;
   ele->delay=0;
   ele->lb=0;
@@ -320,6 +325,7 @@ Marker *LatticeParser::parseMarker(int idx,int rank, double zin)
 
   ele->type="Marker";
   ele->z=zin;
+  ele->zoff=0;
   ele->l=0;
   ele->action=0;
   vector <string> par;
@@ -357,6 +363,7 @@ Drift *LatticeParser::parseDrift(int idx,int rank, double zin)
 
   ele->type="Drift";
   ele->z=zin;
+  ele->zoff=0;
   ele->l=0;
   vector <string> par;
   string fld,val;
@@ -387,6 +394,7 @@ Quadrupole *LatticeParser::parseQuad(int idx,int rank, double zin)
 
   ele->type="Quadrupole";
   ele->z=zin;
+  ele->zoff=0;
   ele->l=0;
   ele->k1=0;
   ele->dx=0;
@@ -422,6 +430,7 @@ Phaseshifter *LatticeParser::parsePhaseshifter(int idx,int rank, double zin)
 
   ele->type="Phaseshifter";
   ele->z=zin;
+  ele->zoff=0;
   ele->l=0;
   ele->phi=0;
 
@@ -501,11 +510,49 @@ bool LatticeParser::unroll(int idx, int recursion,int rank){
   vector<string> line;
   this->chop(argument[idx],&line);
 
+  int refelesave=refele;  // safe the index to the last element. Is initialized to -1 at start
+
+  for (int i=0; i<line.size();i++){
+    int count = checkMultiplier(&line[i]);  // check for multiplier
+    double off;
+    bool resetpos = checkResetPosition(&line[i], &off);
+    int ix=this->findIndex(&label,line[i]);
+
+    if (ix <0){
+      if (rank==0) {cout << "*** Error: Undefined element in beamline: " << line[i] << endl;}
+      return false;
+    }
+    if (type[ix].compare("line")==0){
+      for (int j=0; j < count ; j++){
+	bool error=this->unroll(ix,recursion-1,rank);
+	if (error==false) { return error; }
+      }
+    } else {
+      for (int j=0; j < count ; j++){
+        sequence.push_back(line[i]); 
+	if (resetpos) {
+	  cout << "Absolute Reference: " << line[i] << " offset: "<< off << " reference: " << refelesave << endl;
+	  zref.push_back(refelesave);
+	  zoff.push_back(off);
+	} else {
+	  zref.push_back(refele);
+	  zoff.push_back(0.);
+	}
+        refele++;	
+      }
+    }
+  }
+
+  line.clear();
+  return true;
+
+  /*
+
   int refelesave=refele;
 
   for (int i=0; i<line.size();i++){
 
-    int count = checkMultiplier(&line[i]);
+    int count = checkMultiplier(&line[i]);  // check if a line has a multiplier
     bool resetpos = checkResetPosition(&line[i]);
     int ix=this->findIndex(&label,line[i]);
     if (ix <0){
@@ -522,13 +569,13 @@ bool LatticeParser::unroll(int idx, int recursion,int rank){
         zref.push_back(refele);
         refele++;
         if (resetpos) { refele--; }
-
       }
     }
   }
 
   line.clear();
   return true;
+*/
 
 }
 
@@ -547,13 +594,18 @@ int LatticeParser::checkMultiplier(string *element){
   }
 }
 
-bool LatticeParser::checkResetPosition(string *element){
+bool LatticeParser::checkResetPosition(string *element,double *off){
+   
+  *off=0;
   size_t pos=element->find_first_of("@");
   if (pos==string::npos){
     return false;
   }
+  string num=element->substr(pos+1);
   element->erase(pos);
+  this->trim(num);
   this->trim(*element);
+  *off=atof(num.c_str());
   return true; 
 } 
 

@@ -36,9 +36,10 @@ class LatticeParser : public StringProcessing {
    bool unroll(int, int,int);
    bool resolve(int, int,int);
    int checkMultiplier(string *);
-   bool checkResetPosition(string *);
+   bool checkResetPosition(string *,double *);
    vector<string> label,type,argument,sequence;
    vector<int> zref;
+   vector<double> zoff;
    int refele;
 };
 

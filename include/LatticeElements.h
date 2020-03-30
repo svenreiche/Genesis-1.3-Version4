@@ -13,7 +13,7 @@ class Element
  public:
   Element(){};
   ~Element(){};
-  double z,l;
+  double z,l,zoff;
   string type;
      //enum LatticeElement type;
 };
