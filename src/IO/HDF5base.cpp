@@ -42,7 +42,7 @@ void HDF5Base::writeBuffer(hid_t gid, string dataset, string unit, vector<double
 
   // step 2 - file space
   hsize_t count[2]={dz,ds};
-  hsize_t offset[2] = {0,s0};   // offset of record entry
+  hsize_t offset[2] = {0,static_cast<hsize_t>(s0)};   // offset of record entry
   hid_t memspace=H5Screate_simple(2,count,NULL);
 
 
@@ -73,7 +73,7 @@ void HDF5Base::writeSingleNode(hid_t gid, string dataset,string unit, vector<dou
 
   int nd = data->size();
 
-  hsize_t fblock[1]={nd};
+  hsize_t fblock[1]={static_cast<hsize_t>(nd)};
   hid_t filespace=H5Screate_simple(1,fblock,NULL);
   hid_t did=H5Dcreate(gid,dataset.c_str(),H5T_NATIVE_DOUBLE,filespace,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);   
   H5Sclose(filespace);
@@ -113,7 +113,7 @@ void HDF5Base::writeSingleNodeInt(hid_t gid, string dataset,vector<int> *data){
 
   int nd = data->size();
 
-  hsize_t fblock[1]={nd};
+  hsize_t fblock[1]={static_cast<hsize_t>(nd)};
   hid_t filespace=H5Screate_simple(1,fblock,NULL);
   hid_t did=H5Dcreate(gid,dataset.c_str(),H5T_NATIVE_INT,filespace,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);   
   H5Sclose(filespace);

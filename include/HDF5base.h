@@ -23,8 +23,8 @@ class HDF5Base{
  protected:
   bool isOpen;
   int nwork;
-  double *work; 
-  int s0;  // flag for single Node to be written
+  double *work;
+  int s0;
   hsize_t ds; // size in s for 2D array inwrite buffer
 
   
