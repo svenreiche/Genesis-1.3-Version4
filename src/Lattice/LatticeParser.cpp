@@ -531,7 +531,6 @@ bool LatticeParser::unroll(int idx, int recursion,int rank){
       for (int j=0; j < count ; j++){
         sequence.push_back(line[i]); 
 	if (resetpos) {
-	  cout << "Absolute Reference: " << line[i] << " offset: "<< off << " reference: " << refelesave << endl;
 	  zref.push_back(refelesave);
 	  zoff.push_back(off);
 	} else {
