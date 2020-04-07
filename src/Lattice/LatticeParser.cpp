@@ -165,7 +165,7 @@ bool LatticeParser::parse(string file, string line, int rank, vector<Element *> 
       z=lat[zref[i]]->z+lat[zref[i]]->l+zoff[i];
     } 
     idx=this->findIndex(&label,sequence[i]);
-    cout << "Element: " << sequence[i] << " Type: " << type[idx] << " Pos:" << z << " Offset: " << zoff[i] << endl; 
+    //    cout << "Element: " << sequence[i] << " Type: " << type[idx] << " Pos:" << z << " Offset: " << zoff[i] << endl; 
     if (type[idx].compare("quad")==0){ error=false; lat.push_back(this->parseQuad(idx,rank,z));}
     if (type[idx].compare("undu")==0){ error=false; lat.push_back(this->parseID(idx,rank,z)); }
     if (type[idx].compare("drif")==0){ error=false; lat.push_back(this->parseDrift(idx,rank,z));}
