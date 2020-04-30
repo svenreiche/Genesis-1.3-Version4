@@ -292,7 +292,7 @@ This namelist initiate the generation of the field distribution. It differs in o
 \begin{itemize}
 \item {\bf lambda} ({\it double, lambda0}): Central frequency of the radiation mode. The default value is the reference wavelength from the {\tt setup} namelist.
 \item {\bf power} ({\it double, 0 or profile label}): Radiation power in Watts
-\item {\bf phase} ({\it double, 0 or profile label}): radiation phase in rads. Not that a linear profile results in a shift in the radiation wavelength, which is also the method if for the variable {\tt lambda} a different value than the reference wavelength is used. In case of conflicts the profile for the phase definition has priority.
+\item {\bf phase} ({\it double, 0 or profile label}): radiation phase in rads. Note that a linear profile results in a shift in the radiation wavelength, which is also the method if for the variable {\tt lambda} a different value than the reference wavelength is used. In case of conflicts the profile for the phase definition has priority.
 \item {\bf waist\_pos} ({\it double, 0 or profile label}): Position where the focal point is located relative to the undulator entrance. Negative values place it before, resulting in a diverging radiation field.
 \item {\bf waist\_size} ({\it double, 100e-9 or profile label}): Waist size according to the definition of $w_0$ according to Siegman's 'Laser' handbook
 \item {\bf xcenter} ({\it double, 0}): Center position in x in meter of the Gauss-Hermite mode
