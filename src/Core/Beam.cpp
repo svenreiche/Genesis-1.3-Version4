@@ -383,8 +383,8 @@ void Beam::diagnosticsStart()
     ey[is]=sqrt(fabs((y2-y1*y1)*(py2-py1*py1)-(ypy-y1*py1)*(ypy-y1*py1)));
     bx[is]=(x2-x1*x1)/ex[is]*g1;
     by[is]=(y2-y1*y1)/ey[is]*g1;
-    ax[is]=-(xpx-x1*px1)*g1/ex[is];
-    ay[is]=-(ypy-y1*py1)*g1/ey[is];
+    ax[is]=-(xpx-x1*px1)/ex[is];
+    ay[is]=-(ypy-y1*py1)/ey[is];
      
     gx=(1+ax[is]*ax[is])/bx[is];
     gy=(1+ay[is]*ay[is])/by[is];
