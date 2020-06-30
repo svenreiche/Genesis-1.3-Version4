@@ -9,7 +9,7 @@ INCLUDE=-I./include
 #
 # cpp-macros - to enable the FFTW library
 #
-DMACRO = -DAAFFTW
+DMACRO = -DAAAFFTW
 #
 #  compilers
 #
@@ -22,7 +22,7 @@ CCOMPILER = h5pcc
 FLAGS = -O2
 # FLAGS = -g
 #
-#  executable name 
+#  executable name
 #
 EXECUTABLE = gencore
 #
@@ -74,14 +74,3 @@ install:
 
 beta:
 	cp ./$(EXECUTABLE) ~/bin/$(EXECUTABLE).beta
-
-
-
-
-
-
-
-
-
-
-
