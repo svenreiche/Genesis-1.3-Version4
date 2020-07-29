@@ -87,7 +87,6 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
 
   rank=inrank;
   size=insize;
-  accushift=0;
 
   stringstream sroot(file);
   root=sroot.str();
@@ -149,11 +148,12 @@ void Control::applySlippage(double slippage, Field *field)
   VT_TRACER("Slippage");
 #endif  
 
+ 
   if (timerun==false) { return; }
 
  
   // update accumulated slippage
-  accushift+=slippage;
+  field->accuslip+=slippage;
 
   // allocate working space
 
@@ -166,13 +166,13 @@ void Control::applySlippage(double slippage, Field *field)
   // following routine is applied if the required slippage is alrger than 80% of the sampling size
 
   int direction=1;
+  
 
-
-  while(abs(accushift)>(sample*0.8)){
+  while(abs(field->accuslip)>(sample*0.8)){
       // check for anormal direction of slippage (backwards slippage)
-      if (accushift<0) {direction=-1;} 
+      if (field->accuslip<0) {direction=-1;} 
 
-      accushift-=sample*direction; 
+      field->accuslip-=sample*direction; 
 
       // get adjacent node before and after in chain
       int rank_next=rank+1;

@@ -30,7 +30,6 @@ class Control : public HDF5Base{
    bool timerun,scanrun,one4one;
    int nslice,ntotal,noffset;
    int rank, size;
-   double accushift;
    double sample,reflen,slen;
    int nzout;
    int nwork;

@@ -49,6 +49,7 @@ class Field{
    int harm;
    bool polarization;
    double slicelength,s0;
+   double accuslip;
 
 
    vector<double> power,xsig,xavg,ysig,yavg ;  // buffer to accumulate before writing it out
@@ -60,7 +61,6 @@ class Field{
    int idx;
    bool disabled;
    double rharm;
-   double accuslip;
 
    complex<double> *in;
    complex<double> *out;
