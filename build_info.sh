@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # C. Lechner, DESY, 2020-Feb-16
 #
