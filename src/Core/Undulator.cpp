@@ -218,9 +218,10 @@ double Undulator::fc(int h)
       h1 = h0+1;
       return coup*(bessj.value(h0,xi)-bessj.value(h1,xi))*pow(-1.,h0);
     } else {
-      h0=(h-2)/2;
-      h1 = h0+2;
-      return coup*0.5*(bessj.value(h0,xi)-bessj.value(h1,xi))*pow(-1.,h0);
+      //      h0=(h-2)/2;
+      //      h1 = h0+2;
+      //      return coup*0.5*(bessj.value(h0,xi)-bessj.value(h1,xi))*pow(-1.,h0); // this needs polarization enebaled - not implemented yet
+      return 0;
     }
   }
 }
