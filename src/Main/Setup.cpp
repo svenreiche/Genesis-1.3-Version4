@@ -67,7 +67,12 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
     if (rank==0){ cout << "*** Error: Unknown elements in &setup" << endl; this->usage();}
     return false;
   }
- 
+
+
+  if (one4one) {
+    nbins = 1;
+  }
+
   lat->parse(lattice,beamline,rank);
   return true;
 }
