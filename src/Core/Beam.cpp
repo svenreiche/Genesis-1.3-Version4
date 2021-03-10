@@ -49,6 +49,7 @@ void Beam::initDiagnostics(int nz)
   bunch.resize(nz*ns); 
   bphi.resize(nz*ns);
   efld.resize(nz*ns);
+  partcount.resize(nz*ns);
 
   bx.resize(ns);
   by.resize(ns);
@@ -307,6 +308,7 @@ void Beam::diagnostics(bool output, double z)
     bunch[ioff+is]=bbavg;
     bphi[ioff+is]=bbphi;
     efld[ioff+is]=eloss[is];  
+    partcount[ioff+is]=nsize;
 
     for (int ih=1; ih<bharm;ih++){   // calculate the harmonics of the bunching
       br=0;

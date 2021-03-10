@@ -222,6 +222,8 @@ void Output::writeBeamBuffer(Beam *beam)
   this->writeBuffer(gid, "bunching"," ",&beam->bunch);
   this->writeBuffer(gid, "bunchingphase","rad", &beam->bphi);
   this->writeBuffer(gid, "efield","eV/m", &beam->efld);
+  this->writeBufferULL(gid, "npart_in_slice"," ", &beam->partcount); // HDF5 warnings pop up in function writeBufferULL if unit=""
+
   
   this->writeBuffer(gid, "betax","m",&beam->bx);
   this->writeBuffer(gid, "betay","m",&beam->by);

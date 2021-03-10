@@ -47,6 +47,7 @@ class Beam{
    // output buffer
    vector<double> zpos,gavg,gsig,xavg,xsig,yavg,ysig,pxavg,pyavg,bunch,bphi,efld;
    vector<double> bx,by,ax,ay,ex,ey,cu;
+   vector<unsigned long long> partcount;
    vector< vector<double> > bh,ph;  // harmonic bunching and bunching phase
    
  private:
