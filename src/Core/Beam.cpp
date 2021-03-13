@@ -17,6 +17,7 @@ void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, d
   slicelength=slicelen_in;  // reflength times samplerate.
   s0=s0_in;
   one4one=one4one_in;
+  do_global_stat=false;
 
   current.resize(nsize);
   eloss.resize(nsize);
@@ -335,38 +336,40 @@ void Beam::diagnostics(bool output, double z)
   }
 
 #ifdef DO_BEAMSTATISTICS
-  MPI_Allreduce(&locaccu_bgavg, &glblaccu_bgavg, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-  MPI_Allreduce(&locaccu_N,     &glblaccu_N,     1, MPI_UNSIGNED_LONG_LONG, MPI_SUM, MPI_COMM_WORLD);
+  if(do_global_stat) {
+    MPI_Allreduce(&locaccu_bgavg, &glblaccu_bgavg, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&locaccu_N,     &glblaccu_N,     1, MPI_UNSIGNED_LONG_LONG, MPI_SUM, MPI_COMM_WORLD);
 
-  /*
-   * 2nd pass of two-pass algorithm to obtain the variance of 'gamma' over the entire beam.
-   * This algorithm is expected to exhibit reduced numerical instability issues.
-   * 'Gamma' is the only phase space coordinate having a relatively large mean plus a small stddev.
-   */
-  double gmean = glblaccu_bgavg/glblaccu_N;
-  for (unsigned int is=0; is<ds; is++){
-    double gtmp=0;
-    unsigned int nsize=beam.at(is).size();
-    for (unsigned int i=0; i<nsize; i++){
-      gtmp = beam.at(is).at(i).gamma;
-      locaccu_gvar += (gtmp-gmean)*(gtmp-gmean);
+    /*
+     * 2nd pass of two-pass algorithm to obtain the variance of 'gamma' over the entire beam.
+     * This algorithm is expected to exhibit reduced numerical instability issues.
+     * 'Gamma' is the only phase space coordinate having a relatively large mean plus a small stddev.
+     */
+    double gmean = glblaccu_bgavg/glblaccu_N;
+    for (unsigned int is=0; is<ds; is++){
+      double gtmp=0;
+      unsigned int nsize=beam.at(is).size();
+      for (unsigned int i=0; i<nsize; i++){
+        gtmp = beam.at(is).at(i).gamma;
+        locaccu_gvar += (gtmp-gmean)*(gtmp-gmean);
+      }
     }
-  }
-  MPI_Allreduce(&locaccu_gvar, &glblaccu_gvar, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-  double gvar = glblaccu_gvar/glblaccu_N;
-  double gstd = sqrt(gvar);
+    MPI_Allreduce(&locaccu_gvar, &glblaccu_gvar, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    double gvar = glblaccu_gvar/glblaccu_N;
+    double gstd = sqrt(gvar);
 
 #if 0
-  int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  if(rank==0) {
-    printf("*** Ntot=%llu glblaccu_bgavg=%.12e glblaccu_gvar=%.12e gmean=%.12e gstd=%.12e ***\n",
-      glblaccu_N, glblaccu_bgavg, glblaccu_gvar, gmean, gstd);
-  }
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if(rank==0) {
+      printf("*** Ntot=%llu glblaccu_bgavg=%.12e glblaccu_gvar=%.12e gmean=%.12e gstd=%.12e ***\n",
+        glblaccu_N, glblaccu_bgavg, glblaccu_gvar, gmean, gstd);
+    }
 #endif
 
-  tot_gmean[idx] = gmean;
-  tot_gstd[idx]  = gstd;
+    tot_gmean[idx] = gmean;
+    tot_gstd[idx]  = gstd;
+  }
 #endif
 
   idx++;

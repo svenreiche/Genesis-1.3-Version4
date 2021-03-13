@@ -240,11 +240,12 @@ void Output::writeBeamBuffer(Beam *beam)
     this->writeBuffer(gid, bgroup,"rad",  &beam->ph[i-1]);
     }
 
-
-  gidsub=H5Gcreate(gid,"Global",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
-  this->writeSingleNode(gidsub,"energy"," ", &beam->tot_gmean);
-  this->writeSingleNode(gidsub,"energyspread"," ", &beam->tot_gstd);
-  H5Gclose(gidsub);  
+  if(beam->get_global_stat()) {
+    gidsub=H5Gcreate(gid,"Global",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+    this->writeSingleNode(gidsub,"energy"," ", &beam->tot_gmean);
+    this->writeSingleNode(gidsub,"energyspread"," ", &beam->tot_gstd);
+    H5Gclose(gidsub);  
+  }
   
 
   // step 3 - close group and done

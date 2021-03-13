@@ -36,6 +36,8 @@ class Beam{
 
    void setBunchingHarmonicOutput(int harm_in);
    int getBunchingHarmonics();
+   void set_global_stat(bool);
+   bool get_global_stat(void);
 
    vector< vector<Particle> > beam;
    vector<double> current,eloss;
@@ -59,6 +61,7 @@ class Beam{
    Sorting sorting;
    int idx;
    int bharm;
+   bool do_global_stat;
 };
 
 inline void Beam::initIncoherent(int base, int rank, bool spread, bool loss){
@@ -84,6 +87,15 @@ inline void Beam::setBunchingHarmonicOutput(int harm_in)
 inline int Beam::getBunchingHarmonics()
 {
   return bharm;
+}
+
+inline void Beam::set_global_stat(bool in)
+{
+  do_global_stat=in;
+}
+inline bool Beam::get_global_stat(void)
+{
+  return(do_global_stat);
 }
 
 #endif

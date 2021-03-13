@@ -297,7 +297,7 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
           // error because the element typ is not defined
 
           if (rank==0){
-            cout << "*** Error: Unknow element in input file: " << element << endl; 
+            cout << "*** Error: Unknown element in input file: " << element << endl; 
 	  }
           break;
         } 
