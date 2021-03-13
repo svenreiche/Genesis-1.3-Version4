@@ -203,11 +203,9 @@ void Output::writeLattice(Beam * beam,Undulator *und)
 
 void Output::writeBeamBuffer(Beam *beam)
 {
-
-
+  hid_t gid, gidsub;
 
   // step 1 - create the group
-  hid_t gid;
   gid=H5Gcreate(fid,"Beam",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
   // step 2 - write individual datasets
@@ -242,8 +240,14 @@ void Output::writeBeamBuffer(Beam *beam)
     this->writeBuffer(gid, bgroup,"rad",  &beam->ph[i-1]);
     }
 
-  // step 3 - close group and done
 
+  gidsub=H5Gcreate(gid,"Global",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  this->writeSingleNode(gidsub,"energy"," ", &beam->tot_gmean);
+  this->writeSingleNode(gidsub,"energyspread"," ", &beam->tot_gstd);
+  H5Gclose(gidsub);  
+  
+
+  // step 3 - close group and done
   H5Gclose(gid);
 
   return;

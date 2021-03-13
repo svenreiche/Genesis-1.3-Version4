@@ -49,6 +49,8 @@ class Beam{
    vector<double> bx,by,ax,ay,ex,ey,cu;
    vector<unsigned long long> partcount;
    vector< vector<double> > bh,ph;  // harmonic bunching and bunching phase
+
+   vector<double> tot_gmean, tot_gstd;
    
  private:
    BeamSolver solver;

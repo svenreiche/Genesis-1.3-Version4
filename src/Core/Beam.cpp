@@ -70,6 +70,8 @@ void Beam::initDiagnostics(int nz)
     }
   }
 
+  tot_gmean.resize(nz);
+  tot_gstd.resize(nz);
 }
 
 // initialize the sorting routine
@@ -233,12 +235,16 @@ bool Beam::subharmonicConversion(int harmonic, bool resample)
   return true;
 }
 
-
-
+#define DO_BEAMSTATISTICS
 void Beam::diagnostics(bool output, double z)
 {
+#ifdef DO_BEAMSTATISTICS
+  double locaccu_bgavg=0, glblaccu_bgavg=0;
+  double locaccu_gvar=0,  glblaccu_gvar=0;
+  unsigned long long locaccu_N=0, glblaccu_N=0;
+#endif
+
   if (!output) { return; }
-  
 
   zpos[idx]=z;
 
@@ -278,6 +284,11 @@ void Beam::diagnostics(bool output, double z)
       br+=cos(btmp);
       bi+=sin(btmp);
     }
+
+#ifdef DO_BEAMSTATISTICS
+    locaccu_bgavg += bgavg;
+    locaccu_N     += nsize;
+#endif
 
     double scl=1;
     if (nsize>0){
@@ -322,6 +333,42 @@ void Beam::diagnostics(bool output, double z)
       ph[ih-1][ioff+is]=atan2(bi,br);
     }
   }
+
+#ifdef DO_BEAMSTATISTICS
+  MPI_Allreduce(&locaccu_bgavg, &glblaccu_bgavg, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Allreduce(&locaccu_N,     &glblaccu_N,     1, MPI_UNSIGNED_LONG_LONG, MPI_SUM, MPI_COMM_WORLD);
+
+  /*
+   * 2nd pass of two-pass algorithm to obtain the variance of 'gamma' over the entire beam.
+   * This algorithm is expected to exhibit reduced numerical instability issues.
+   * 'Gamma' is the only phase space coordinate having a relatively large mean plus a small stddev.
+   */
+  double gmean = glblaccu_bgavg/glblaccu_N;
+  for (unsigned int is=0; is<ds; is++){
+    double gtmp=0;
+    unsigned int nsize=beam.at(is).size();
+    for (unsigned int i=0; i<nsize; i++){
+      gtmp = beam.at(is).at(i).gamma;
+      locaccu_gvar += (gtmp-gmean)*(gtmp-gmean);
+    }
+  }
+  MPI_Allreduce(&locaccu_gvar, &glblaccu_gvar, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  double gvar = glblaccu_gvar/glblaccu_N;
+  double gstd = sqrt(gvar);
+
+#if 0
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  if(rank==0) {
+    printf("*** Ntot=%llu glblaccu_bgavg=%.12e glblaccu_gvar=%.12e gmean=%.12e gstd=%.12e ***\n",
+      glblaccu_N, glblaccu_bgavg, glblaccu_gvar, gmean, gstd);
+  }
+#endif
+
+  tot_gmean[idx] = gmean;
+  tot_gstd[idx]  = gstd;
+#endif
+
   idx++;
 }
 
