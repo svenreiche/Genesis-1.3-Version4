@@ -130,6 +130,7 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
 
 	} else {
 	    if (rank==0) {cout << "Deleting non-matching radiation harmonic: " << field->at(i)->getHarm() << " in harmonic conversion" << endl;}
+	    delete field->at(i);
 	    field->erase(field->begin()+i);
 	    i--; // reseting the count
         }

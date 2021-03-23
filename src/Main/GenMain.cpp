@@ -300,8 +300,14 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
             cout << "*** Error: Unknow element in input file: " << element << endl; 
 	  }
           break;
-        } 
+        }
 
+
+
+
+        // release memory allocated for fields
+        for(int i=0; i<field.size(); i++)
+          delete field[i];
 
 
  	if (rank==0) {
