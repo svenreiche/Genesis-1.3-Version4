@@ -303,7 +303,14 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
         }
 
 
-
+        /*** clean up ***/
+        delete timewindow;
+        delete seq;
+        delete profile;
+        delete lattice;
+        delete alt;
+        delete setup;
+        delete beam;
 
         // release memory allocated for fields
         for(int i=0; i<field.size(); i++)
