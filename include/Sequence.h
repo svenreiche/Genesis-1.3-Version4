@@ -11,6 +11,7 @@
 class Sequence
 {
 public:
+	virtual ~Sequence() {};
 	virtual double getElement() = 0;
 	virtual void set(unsigned int) = 0;
 };
