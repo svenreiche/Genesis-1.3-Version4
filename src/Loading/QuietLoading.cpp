@@ -52,8 +52,9 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
 
 
   // resets Hammersley sequence but does nothing for random sequence; 
-  Sequence *seed = (Sequence *) new RandomU(islice);
+  Sequence *seed = new RandomU(islice);
   int iseed=static_cast<int>(round(seed->getElement()*1e9));
+  delete seed;
 
   // initialize the sequence to new values to avoid that all core shave the same distribution
   st->set(iseed);

@@ -13,11 +13,13 @@
 Control::Control()
 {
   nwork=0;
+  work=NULL;
 }
 
 
 Control::~Control()
 {
+  delete[] work;
 }
 
 
@@ -156,8 +158,8 @@ void Control::applySlippage(double slippage, Field *field)
   field->accuslip+=slippage;
 
   // allocate working space
-
   if(nwork<field->ngrid*field->ngrid*2){
+    delete[] work;
     nwork=field->ngrid*field->ngrid*2;
     work=new double [nwork];
   } 

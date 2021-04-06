@@ -13,11 +13,12 @@
 
 
 Field::~Field(){
-#ifdef FFTW                // release the working arrays for the FFTs
+#ifdef FFTW                // release the FFTW plan
   fftw_destroy_plan(p);
-  fftw_free(in);
-  fftw_free(out);
-#endif  
+#endif
+
+  delete[] in;
+  delete[] out;
 }
 
 Field::Field(){

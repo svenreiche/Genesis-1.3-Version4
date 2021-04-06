@@ -12,7 +12,7 @@ class Element
 {
  public:
   Element(){};
-  ~Element(){};
+  virtual ~Element(){};
   double z,l,zoff;
   string type;
      //enum LatticeElement type;

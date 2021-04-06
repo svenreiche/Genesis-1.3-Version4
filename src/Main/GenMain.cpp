@@ -300,8 +300,21 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
             cout << "*** Error: Unknown element in input file: " << element << endl; 
 	  }
           break;
-        } 
+        }
 
+
+        /*** clean up ***/
+        delete timewindow;
+        delete seq;
+        delete profile;
+        delete lattice;
+        delete alt;
+        delete setup;
+        delete beam;
+
+        // release memory allocated for fields
+        for(int i=0; i<field.size(); i++)
+          delete field[i];
 
 
  	if (rank==0) {
