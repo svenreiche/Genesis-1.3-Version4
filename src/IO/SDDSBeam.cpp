@@ -46,8 +46,8 @@ void SDDSBeam::usage(){
   cout << " double alphax  = 0 / matched" << endl;
   cout << " double betay  = 15 / matched" << endl;
   cout << " double alphay  = 0 / matched" << endl;
-  cout << " double match_start = 0 " << endl;
-  cout << " double match_end = 1 " << endl;
+  cout << " double eval_start = 0 " << endl;
+  cout << " double eval_end = 1 " << endl;
   cout << " int align = 0 " << endl;
   cout << " double align_start = 0 " << endl;
   cout << " double align_end = 1 " << endl;
@@ -89,8 +89,8 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   if (arg->find("file")!=end)       {file   = arg->at("file"); arg->erase(arg->find("file"));}
   if (arg->find("charge")!=end)     {charge = atof(arg->at("charge").c_str());     arg->erase(arg->find("charge"));}
   if (arg->find("slicewidth")!=end) {ds     = atof(arg->at("slicewidth").c_str()); arg->erase(arg->find("slicewidth"));}
-  if (arg->find("match_start")!=end)    {matchs0    = atof(arg->at("match_start").c_str());    arg->erase(arg->find("match_start"));}
-  if (arg->find("match_end")!=end)      {matchs1    = atof(arg->at("match_end").c_str());      arg->erase(arg->find("match_end"));}
+  if (arg->find("eval_start")!=end)    {matchs0    = atof(arg->at("eval_start").c_str());    arg->erase(arg->find("eval_start"));}
+  if (arg->find("eval_end")!=end)      {matchs1    = atof(arg->at("eval_end").c_str());      arg->erase(arg->find("eval_end"));}
   if (arg->find("align_start")!=end)    {aligns0    = atof(arg->at("align_start").c_str());    arg->erase(arg->find("align_start"));}
   if (arg->find("align_end")!=end)      {aligns1    = atof(arg->at("align_end").c_str());      arg->erase(arg->find("align_end"));}
   if (arg->find("betax")!=end)    {betax = atof(arg->at("betax").c_str()); arg->erase(arg->find("betax"));}
@@ -114,7 +114,6 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
     return false;
   }
 
-  
 
   if (rank==0) { cout << "Importing distribution file... " << endl;}
 

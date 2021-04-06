@@ -168,6 +168,12 @@ function [x,y]=xgensingleplot(dat,label,mode,ref)
 
     isspec=0;
     if (~isempty(strfind(label,'spectrum')))
+        iharm=1;
+        id=extractBetween(label,7,7);
+        if isempty(strfind(id{1},'/'))
+            iharm=str2double(id);
+        end
+            %        fprintf('%s',id)
         isspec=1;
     end
     
@@ -201,7 +207,7 @@ function [x,y]=xgensingleplot(dat,label,mode,ref)
         fprintf('%e %e \n',xgenstat.sref,xgenstat.ds)
         f0=1/xgenstat.sref;
         df=1/xgenstat.ds;
-        E0=1240e-9*f0;
+        E0=1240e-9*f0*iharm;
         dE=1240e-9*df;
         s=(1:ns)*dE/ns-0.5*dE+E0;
         slab='E_{ph} (eV)';

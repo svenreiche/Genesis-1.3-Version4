@@ -43,7 +43,7 @@ class SDDSBeam: public StringProcessing, HDF5Base{
    int rank,size;
    double betax,betay,alphax,alphay,charge;
    double xcen,ycen,pxcen,pycen,gamma;
-   double ds,matchs0,matchs1,aligns0,aligns1;
+   double ds,matchs0,matchs1,aligns0,aligns1,centers0,centers1;
    bool center,match,settime;
    int align;
    string file;
