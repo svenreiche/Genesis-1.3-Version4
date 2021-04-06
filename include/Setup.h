@@ -30,6 +30,7 @@ class Setup: public StringProcessing{
    void   setStepLength(double);
    bool   getOne4One();
    bool   getShotNoise();
+   bool   getBeamGlobalStat();
    int    getNpart();
    int    getNbins();
    int    getSeed();
@@ -45,6 +46,7 @@ class Setup: public StringProcessing{
    string rootname,lattice,beamline,partfile,fieldfile;
    double gamma0,lambda0,delz;
    bool one4one,shotnoise;
+   bool beam_global_stat;
    int seed, rank,npart,nbins,runcount;
 };
 
@@ -54,6 +56,7 @@ inline void   Setup::setReferenceLength(double lam){ lambda0=lam; return; }
 inline double Setup::getReferenceEnergy(){ return gamma0; }
 inline bool   Setup::getOne4One(){return one4one;}
 inline bool   Setup::getShotNoise(){return shotnoise;}
+inline bool   Setup::getBeamGlobalStat(){return beam_global_stat;}
 inline int    Setup::getNpart(){return npart;}
 inline int    Setup::getNbins(){return nbins;}
 inline int    Setup::getSeed(){return seed;}

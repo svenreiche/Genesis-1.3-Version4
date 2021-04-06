@@ -75,8 +75,9 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   und->updateMarker(dumpFieldStep,dumpBeamStep,sort_step,zstop);
 
   beam->setBunchingHarmonicOutput(bunchharm);
-  // call to gencore to do the actual tracking.  
+  beam->set_global_stat(setup->getBeamGlobalStat());
 
+  // call to gencore to do the actual tracking.  
   Gencore core;
   core.run(file.c_str(),beam,field,und,isTime,isScan);
 

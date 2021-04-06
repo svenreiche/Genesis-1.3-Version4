@@ -16,7 +16,9 @@ Setup::Setup()
   lambda0=1e-10;
   delz=0.015; 
   seed=123456789;
-  runcount = 0 ;  // count of runs in conjunction of calls of altersetup 
+  beam_global_stat=false;
+
+  runcount = 0 ;  // count of runs in conjunction of calls of altersetup
 }
 
 Setup::~Setup(){}
@@ -36,6 +38,7 @@ void Setup::usage(){
   cout << " int nbins = 4" << endl;
   cout << " bool one4one = false" << endl;
   cout << " bool shotnoise = true" << endl;
+  cout << " bool beam_global_stat = false" << endl;
   cout << "&end" << endl << endl;
   return;
 }
@@ -62,6 +65,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
   if (arg->find("npart")!=end)    {npart  = atoi(arg->at("npart").c_str());  arg->erase(arg->find("npart"));}
   if (arg->find("nbins")!=end)    {nbins  = atoi(arg->at("nbins").c_str());  arg->erase(arg->find("nbins"));}
   if (arg->find("shotnoise")!=end){shotnoise  = atob(arg->at("shotnoise"));  arg->erase(arg->find("shotnoise"));}
+  if (arg->find("beam_global_stat")!=end) {beam_global_stat = atob(arg->at("beam_global_stat"));  arg->erase(arg->find("beam_global_stat"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &setup" << endl; this->usage();}
@@ -69,8 +73,19 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
   }
 
 
-  if (one4one) {
+  if (one4one)
+  {
     nbins = 1;
+  }
+  else
+  {
+    // global beam statistics only reasonable for one4one mode
+    if(beam_global_stat) {
+      if(rank==0) {
+        cout << "one4one=0 => forcing beam_global_stat off" << endl;
+      }
+      beam_global_stat=false;
+    }
   }
 
   lat->parse(lattice,beamline,rank);

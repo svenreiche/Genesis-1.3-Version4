@@ -67,6 +67,62 @@ void HDF5Base::writeBuffer(hid_t gid, string dataset, string unit, vector<double
   H5Dclose(did);
 
 }
+void HDF5Base::writeBufferULL(hid_t gid, string dataset, string unit, vector<unsigned long long> *data){
+
+
+  // step 1 - calculate the file space and create dataset
+  int size=1;
+  if (!MPISingle){
+     MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
+  }
+
+  hsize_t dz=data->size()/ds;
+
+  hsize_t fblock[2]={dz,size*ds};
+
+  hid_t filespace=H5Screate_simple(2,fblock,NULL);
+  hid_t did=H5Dcreate(gid,dataset.c_str(),H5T_NATIVE_ULLONG,filespace,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);   
+  H5Sclose(filespace);
+
+  // write attribute
+  hid_t aid = H5Screate(H5S_SCALAR);
+  hid_t atype = H5Tcopy(H5T_C_S1);
+  H5Tset_size(atype, unit.size());
+  H5Tset_strpad(atype,H5T_STR_NULLTERM);
+  hid_t attr = H5Acreate2(did,"unit",atype,aid,H5P_DEFAULT,H5P_DEFAULT);
+  H5Awrite(attr,atype,unit.c_str());
+  H5Sclose(aid);
+  H5Tclose(atype);
+  H5Aclose(attr);
+
+
+  // step 2 - file space
+  hsize_t count[2]={dz,ds};
+  hsize_t offset[2] = {0,static_cast<hsize_t>(s0)};   // offset of record entry
+  hid_t memspace=H5Screate_simple(2,count,NULL);
+
+
+  // step 3 - set up hyperslab for file transfer.
+  filespace=H5Dget_space(did);
+  H5Sselect_hyperslab(filespace,H5S_SELECT_SET,offset,NULL,count,NULL);
+
+
+
+  // step 4 - set up transfer and write
+  hid_t pid =  H5Pcreate(H5P_DATASET_XFER);
+  if (!MPISingle){
+     H5Pset_dxpl_mpio(pid,H5FD_MPIO_COLLECTIVE);    
+  }
+  H5Dwrite(did,H5T_NATIVE_ULLONG,memspace,filespace,pid,&data->at(0));
+
+  
+  // close all HDF5 stuff 
+  H5Sclose(memspace);
+  H5Sclose(filespace);
+  H5Pclose(pid);
+  H5Dclose(did);
+
+}
 
 void HDF5Base::writeSingleNode(hid_t gid, string dataset,string unit, vector<double> *data){
 

@@ -36,6 +36,8 @@ class Beam{
 
    void setBunchingHarmonicOutput(int harm_in);
    int getBunchingHarmonics();
+   void set_global_stat(bool);
+   bool get_global_stat(void);
 
    vector< vector<Particle> > beam;
    vector<double> current,eloss;
@@ -47,7 +49,10 @@ class Beam{
    // output buffer
    vector<double> zpos,gavg,gsig,xavg,xsig,yavg,ysig,pxavg,pyavg,bunch,bphi,efld;
    vector<double> bx,by,ax,ay,ex,ey,cu;
+   vector<unsigned long long> partcount;
    vector< vector<double> > bh,ph;  // harmonic bunching and bunching phase
+
+   vector<double> tot_gmean, tot_gstd;
    
  private:
    BeamSolver solver;
@@ -56,6 +61,7 @@ class Beam{
    Sorting sorting;
    int idx;
    int bharm;
+   bool do_global_stat;
 };
 
 inline void Beam::initIncoherent(int base, int rank, bool spread, bool loss){
@@ -81,6 +87,15 @@ inline void Beam::setBunchingHarmonicOutput(int harm_in)
 inline int Beam::getBunchingHarmonics()
 {
   return bharm;
+}
+
+inline void Beam::set_global_stat(bool in)
+{
+  do_global_stat=in;
+}
+inline bool Beam::get_global_stat(void)
+{
+  return(do_global_stat);
 }
 
 #endif
