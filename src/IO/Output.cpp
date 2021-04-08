@@ -75,9 +75,6 @@ void Output::open(string file, int s0_in, int ds_in)
 
 void Output::writeMeta()
 {
-
-
-
   hid_t gid,gidsub;
   vector<double> tmp;
   tmp.resize(1);
@@ -103,12 +100,19 @@ void Output::writeMeta()
   string tim (ctime(&timer));
   this->writeSingleNodeString(gid,"TimeStamp", &tim);
 
+  int mpisize;
+  MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
+  tmp[0] = mpisize;
+  this->writeSingleNode(gid,"mpisize", " ", &tmp);
 
   struct passwd *pws;
-  pws = getpwuid(getuid());
-  string user (pws->pw_name);
+  string user = "username lookup failed";
+  if (NULL != (pws=getpwuid(getuid()))) // 'getpwuid' system call returns nullptr in case lookup was unsuccessful...
+    user = pws->pw_name;
   this->writeSingleNodeString(gid,"User", &user);
 
+
+  /*** copy input files into .out.h5 file ***/
 
   ifstream inFile (meta_inputfile.c_str());
   stringstream buffer;
@@ -127,8 +131,6 @@ void Output::writeMeta()
 
 
   H5Gclose(gid);
-
-
 }
 
 void Output::writeGlobal(double gamma, double lambda, double sample, double slen, bool one4one, bool time, bool scan)
