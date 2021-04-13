@@ -22,7 +22,7 @@ private:
 	int getnano(mytime_t *);
 
 	static bool report_cmp(const std::pair<std::string, mytime_t> &p1, const std::pair<std::string, mytime_t> &p2);
-	void report_core(FILE *);
+	void report_core(FILE *, bool);
 
 	mytime_t t0_; // point of reference, i.e. when this class was constructed
 	std::map<std::string, mytime_t> times_;
