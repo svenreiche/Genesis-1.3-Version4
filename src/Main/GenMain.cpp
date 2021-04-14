@@ -298,9 +298,9 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
 
 
           if (element.compare("&profile")==0){
-            prof_do_report = true; /* using &profile namelists => report times at end */
+            prof_do_report = true; /* user had &profile namelists => report times at end */
             if (!prof.init(rank, size, &argument)) {break;}
-            /* not deleting class because it is the container for the time measurements ...*/
+            /* not deleting class instance because it is the container for the time measurements ...*/
             continue;
           }
 
@@ -308,13 +308,13 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
           //-----------------------------------------------------
           // error because the element typ is not defined
 
-          if ((rank==0) && prof_do_report) {
+          if (rank==0) {
             cout << "*** Error: Unknown element in input file: " << element << endl; 
 	  }
           break;
         }
 
-        if(rank==0)
+        if((rank==0) && prof_do_report)
         {
           cout << "*** Reporting profiling time stamps (all times in seconds since the UNIX epoch, taken on system clock of rank=0)" << endl;
           prof.report();
