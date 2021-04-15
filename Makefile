@@ -47,7 +47,7 @@ genesisexecutable:	$(OBJECTS)
 
 ### rules for build info
 build_info.o: build_info.c
-	$(CCOMPILER) $(FLAGS) -c $<
+	$(CCOMPILER) $(FLAGS) $(INCLUDE) -c $<
 build_info.c: FORCE
 	rm -f build_info.c
 	./build_info.sh
