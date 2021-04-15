@@ -33,7 +33,7 @@ OBJECTS = Sorting.o BesselJ.o Inverfc.o Hammerslay.o RandomU.o GaussHermite.o St
 .PHONY: genesis genesisexecutable clean install beta
 
 genesis:	$(OBJECTS) build_info.o
-	ar -cvq libgenesis13.a $(OBJECTS)
+	ar -cvq libgenesis13.a $(OBJECTS) build_info.o
 	mv libgenesis13.a ./lib
 	$(CCOMPILER) src/Main/mainwrap.cpp build_info.o -o $(EXECUTABLE) $(INCLUDE) $(LIB) -lgenesis13 -Llib
 
