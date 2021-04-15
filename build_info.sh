@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # C. Lechner, DESY, 2020-Feb-16
 #
@@ -12,6 +12,7 @@ rm -f $F
 
 
 echo -n > $F
+echo "#include \"build_info.h\"" >> $F
 echo "const char *build_info(void) { " >> $F
 echo -n "const char *msg = \"" >> $F
 echo -n "compiled by " >> $F
