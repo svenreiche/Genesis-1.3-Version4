@@ -35,7 +35,7 @@ OBJECTS = Sorting.o BesselJ.o Inverfc.o Hammerslay.o RandomU.o GaussHermite.o St
 genesis:	$(OBJECTS) build_info.o
 	ar -cvq libgenesis13.a $(OBJECTS) build_info.o
 	mv libgenesis13.a ./lib
-	$(CCOMPILER) src/Main/mainwrap.cpp build_info.o -o $(EXECUTABLE) $(INCLUDE) $(LIB) -lgenesis13 -Llib
+	$(CCOMPILER) src/Main/mainwrap.cpp -o $(EXECUTABLE) $(INCLUDE) -lgenesis13 -Llib $(LIB)
 
 genesisexecutable:	$(OBJECTS)
 	$(CCOMPILER)  -o $(EXECUTABLE) $(OBJECTS) $(LIB)
