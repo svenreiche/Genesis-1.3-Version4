@@ -20,6 +20,7 @@ private:
 
 	bool atob(std::string);
 	int getnano(mytime_t *);
+	int nano2str(char *buf, const int buflen, mytime_t t);
 
 	static bool report_cmp(const std::pair<std::string, mytime_t> &p1, const std::pair<std::string, mytime_t> &p2);
 	void report_core(FILE *, bool);

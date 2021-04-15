@@ -2,6 +2,9 @@
  * Profiling namelist element for GENESIS4.
  *
  * Christoph Lechner, European XFEL GmbH, 13-Apr-2021
+ *
+ * For standalone testing, compile with -DSTANDALONE, for example:
+ *    mpic++ -Wall -DSTANDALONE Prof.cpp
  */
 #include <algorithm>
 #include <iostream>
@@ -13,21 +16,13 @@
 #include "mpi.h"
 #include "Prof.h"
 
-using std::map;
-using std::pair;
-using std::setw;
-using std::sort;
-using std::string;
-using std::vector;
-using std::cout;
-using std::endl;
+using namespace std;
 
 Prof::Prof()
 {
 	mytime_t t;
 
 	getnano(&t);
-
 	t0_          = t;
 	times_["t0"] = t;
 }
@@ -58,6 +53,23 @@ int Prof::getnano(mytime_t *outnano)
 	return(0);
 }
 
+/*
+ * Conversion of nanosecond values to string based on integer arithmetics
+ * => avoid rounding errors as the numbers are very large
+ */
+int Prof::nano2str(char *buf, const int buflen, mytime_t nano)
+{
+	const long long nano2sec = 1000000000;
+	const long long nano2usec = 1000000;
+	long long sec;
+	long usec;
+
+	sec  = nano / nano2sec;
+	usec = (nano % nano2sec) / 1000;	// microseconds is sufficient precision
+	usec = labs(usec);			// if given negative time (for instance deltat), show negative sign only before decimal point
+	return(snprintf(buf, buflen, "%lld.%06ld", sec, usec));
+}
+
 void Prof::usage(void)
 {
 	
@@ -85,16 +97,20 @@ void Prof::report_core(FILE *fout, bool pretty)
 	vector<string> col_t3;
 	size_t max_len_col3;
 
-	/* sort data in map according to time */
+	/* sort data in map according to time (and add current time) */
+	pair<string,mytime_t> tmp_p;
+	tmp_p.first = string("Current time");
+	if(getnano(&tmp_p.second)==0)
+		v.push_back(tmp_p);
+#if 0
 	for(map<string,mytime_t>::const_iterator it = times_.begin();
 	    it != times_.end();
 	    ++it)
 	{
-		pair<string,mytime_t> p;
-		p.first = it->first;
-		p.second = it->second;
-		v.push_back(p);
+		v.push_back(*it);
 	}
+#endif
+	copy(times_.begin(), times_.end(), back_inserter(v));
 	sort(v.begin(), v.end(), report_cmp);
 
 	if(pretty==false)
@@ -131,18 +147,21 @@ void Prof::report_core(FILE *fout, bool pretty)
 		max_len_label = (len_this > max_len_label) ? len_this : max_len_label;
 		col_labels.push_back(v[i].first);
 
-		snprintf(buf, buflen, "%.6f", v[i].second/1e9);
+		// snprintf(buf, buflen, "%.6f", v[i].second/1e9);
+		nano2str(buf, buflen, v[i].second);
 		tmpstr = buf;
 		max_len_col1 = (tmpstr.length() > max_len_col1) ? tmpstr.length() : max_len_col1;
 		col_t1.push_back(tmpstr);
 
-		snprintf(buf, buflen, "%.6f", (v[i].second-t0_)/1e9);
+		// snprintf(buf, buflen, "%.6f", (v[i].second-t0_)/1e9);
+		nano2str(buf, buflen, v[i].second-t0_);
 		tmpstr = buf;
 		max_len_col2 = (tmpstr.length() > max_len_col2) ? tmpstr.length() : max_len_col2;
 		col_t2.push_back(tmpstr);
 
 		if(i>0) {
-			snprintf(buf, buflen, "%.6f", (v[i].second-v[i-1].second)/1e9);
+			// snprintf(buf, buflen, "%.6f", (v[i].second-v[i-1].second)/1e9);
+			nano2str(buf, buflen, v[i].second-v[i-1].second);
 			tmpstr = buf;
 		} else {
 			/* no deltat in first row */
@@ -242,3 +261,19 @@ bool Prof::init(int mpirank, int mpisize, map<string,string> *arg)
 
 	return true;
 }
+
+#ifdef STANDALONE
+int main(void)
+{
+	Prof p;
+	map<string,string> arg;
+
+	/* emulates call from GenMain loop */
+	arg["label"] = "Hallo";
+	p.init(0,0,&arg);
+
+	p.report();
+
+	return(0);
+}
+#endif
