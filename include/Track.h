@@ -8,8 +8,8 @@
 #include <map>
 #include <stdlib.h>
 
-#include "hdf5.h"
-#include "mpi.h"
+#include <hdf5.h>
+#include <mpi.h>
 
 #include "Setup.h"
 #include "Lattice.h"
