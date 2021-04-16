@@ -87,7 +87,7 @@ bool Prof::report_cmp(const std::pair<std::string, mytime_t> &p1, const std::pai
 }
 void Prof::report_core(FILE *fout, bool pretty)
 {
-	vector<pair<string,mytime_t>> v;
+	vector< pair<string,mytime_t> > v;
 	vector<string> col_labels;
 	size_t max_len_label;
 	vector<string> col_t1;
