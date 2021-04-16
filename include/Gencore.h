@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <cstring>
 
-#include "mpi.h"
+#include <mpi.h>
 
 // genesis headerfiles & classes
 

@@ -10,7 +10,7 @@
 #define __GENESIS_READBEAMHDF5__
 
 
-#include "hdf5.h"
+#include <hdf5.h>
 #include "HDF5base.h"
 #include "Particle.h"
 #include "Setup.h"

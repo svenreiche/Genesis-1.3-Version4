@@ -11,7 +11,7 @@
 #include <cctype>
 
 #include "Particle.h"
-#include "mpi.h"
+#include <mpi.h>
 
 using namespace std;
 

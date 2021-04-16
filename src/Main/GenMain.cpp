@@ -11,7 +11,7 @@
 #include <fenv.h>
 #include <signal.h>
 
-#include "mpi.h"
+#include <mpi.h>
 
 
 

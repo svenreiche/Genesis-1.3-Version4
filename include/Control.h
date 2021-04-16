@@ -7,7 +7,7 @@
 #include <math.h>
 #include <string>
 
-#include "mpi.h"
+#include <mpi.h>
 #include "Field.h"
 #include "Beam.h"
 #include "Undulator.h"

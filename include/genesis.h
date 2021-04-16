@@ -5,7 +5,7 @@
 #include <string>
 
 
-#include "mpi.h"
+#include <mpi.h>
 
 using namespace std;
 
