@@ -4,7 +4,7 @@
  * Christoph Lechner, European XFEL GmbH, 13-Apr-2021
  *
  * For standalone testing, compile with -DSTANDALONE, for example:
- *    mpic++ -Wall -DSTANDALONE Prof.cpp
+ *    g++ -Wall -DSTANDALONE -Iinclude/ -o proftest src/Main/Prof.cpp
  */
 #include <algorithm>
 #include <iostream>
@@ -13,7 +13,12 @@
 #include <string>
 #include <vector>
 #include <time.h>
-#include "mpi.h"
+#ifndef STANDALONE
+ #include <mpi.h>
+#endif
+#ifdef STANDALONE
+ #include <unistd.h> // for 'sleep'
+#endif
 #include "Prof.h"
 
 using namespace std;
@@ -28,7 +33,18 @@ Prof::Prof()
 }
 Prof::~Prof() {}
 
-/* copy of StringProcessing::atob (not including this class because of "using namespace std" in header file, avoiding this may be considered good practice) */
+void Prof::usage(void)
+{
+	cout << "List of keywords for PROFILE" << endl;
+	cout << "&profile" << endl;
+	cout << " barrier = false" << endl;
+	cout << " label = <empty>" << endl;
+	cout << " writetofile = <empty>" << endl;
+	cout << "&end" << endl << endl;
+}
+
+
+/* copy of StringProcessing::atob, it is the only function from this class that is needed here */
 bool Prof::atob(string in){
 	bool ret=false;
 	if ((in.compare("1")==0)||(in.compare("true")==0)||(in.compare("t")==0)) { ret=true; }
@@ -37,6 +53,7 @@ bool Prof::atob(string in){
 
 int Prof::getnano(mytime_t *outnano)
 {
+	const long long nano2sec = 1000000000;
 	mytime_t nano;
 	struct timespec ts;
 
@@ -46,7 +63,7 @@ int Prof::getnano(mytime_t *outnano)
 	}
 
 	nano  = ts.tv_sec;
-	nano *= 1e9;
+	nano *= nano2sec;
 	nano += ts.tv_nsec;
 
 	*outnano = nano;
@@ -60,7 +77,6 @@ int Prof::getnano(mytime_t *outnano)
 int Prof::nano2str(char *buf, const int buflen, mytime_t nano)
 {
 	const long long nano2sec = 1000000000;
-	const long long nano2usec = 1000000;
 	long long sec;
 	long usec;
 
@@ -68,11 +84,6 @@ int Prof::nano2str(char *buf, const int buflen, mytime_t nano)
 	usec = (nano % nano2sec) / 1000;	// microseconds is sufficient precision
 	usec = labs(usec);			// if given negative time (for instance deltat), show negative sign only before decimal point
 	return(snprintf(buf, buflen, "%lld.%06ld", sec, usec));
-}
-
-void Prof::usage(void)
-{
-	
 }
 
 bool Prof::report_cmp(const std::pair<std::string, mytime_t> &p1, const std::pair<std::string, mytime_t> &p2)
@@ -117,12 +128,22 @@ void Prof::report_core(FILE *fout, bool pretty)
 	{
 		for(int i=0; i<v.size(); i++)
 		{
-			double deltat=0.;
+			const int buflen=1000;
+			char buf_t[buflen], buf_since_t0[buflen], buf_dt[buflen];
+			mytime_t this_time, deltat;
+
+			this_time = v[i].second;
+			deltat=0;
 			if(i>0) {
-				deltat = v[i].second-v[i-1].second;
+				deltat = this_time-v[i-1].second;
 			}
-			fprintf(fout, "%s,%.6f,%.6f,%.6f\n",
-				v[i].first.c_str(), v[i].second/1e9, (v[i].second-t0_)/1e9, deltat/1e9);
+
+			nano2str(buf_t,        buflen, this_time);
+			nano2str(buf_since_t0, buflen, this_time-t0_);
+			nano2str(buf_dt,       buflen, deltat);
+
+			fprintf(fout, "\"%s\",%s,%s,%s\n",
+				v[i].first.c_str(), buf_t, buf_since_t0, buf_dt);
 		}
 		return;
 	}
@@ -140,28 +161,27 @@ void Prof::report_core(FILE *fout, bool pretty)
 	{
 		const int buflen=1000;
 		char buf[buflen];
-		size_t len_this;
+		size_t len_this_label;
+		mytime_t this_time;
 		string tmpstr;
 
-		len_this = v[i].first.length();
-		max_len_label = (len_this > max_len_label) ? len_this : max_len_label;
+		this_time = v[i].second;
+		len_this_label = v[i].first.length();
+		max_len_label = (len_this_label > max_len_label) ? len_this_label : max_len_label;
 		col_labels.push_back(v[i].first);
 
-		// snprintf(buf, buflen, "%.6f", v[i].second/1e9);
-		nano2str(buf, buflen, v[i].second);
+		nano2str(buf, buflen, this_time);
 		tmpstr = buf;
 		max_len_col1 = (tmpstr.length() > max_len_col1) ? tmpstr.length() : max_len_col1;
 		col_t1.push_back(tmpstr);
 
-		// snprintf(buf, buflen, "%.6f", (v[i].second-t0_)/1e9);
-		nano2str(buf, buflen, v[i].second-t0_);
+		nano2str(buf, buflen, this_time-t0_);
 		tmpstr = buf;
 		max_len_col2 = (tmpstr.length() > max_len_col2) ? tmpstr.length() : max_len_col2;
 		col_t2.push_back(tmpstr);
 
 		if(i>0) {
-			// snprintf(buf, buflen, "%.6f", (v[i].second-v[i-1].second)/1e9);
-			nano2str(buf, buflen, v[i].second-v[i-1].second);
+			nano2str(buf, buflen, this_time-v[i-1].second);
 			tmpstr = buf;
 		} else {
 			/* no deltat in first row */
@@ -235,7 +255,11 @@ bool Prof::init(int mpirank, int mpisize, map<string,string> *arg)
 
 	if(do_barrier)
 	{
+#ifndef STANDALONE
 		MPI_Barrier(MPI_COMM_WORLD);
+#else
+		cout << "binary for standalone testing: MPI_Barrier disabled" << endl;
+#endif
 	}
 
 	if(do_record)
@@ -268,11 +292,24 @@ int main(void)
 	Prof p;
 	map<string,string> arg;
 
-	/* emulates call from GenMain loop */
+	/* emulate calls from GenMain loop, records current time */
 	arg["label"] = "Hallo";
 	p.init(0,0,&arg);
 
+	sleep(1);
+
+	arg.clear();
+	arg["label"] = "after sleep(1)";
+	p.init(0,0,&arg);
+
+
+
 	p.report();
+
+	/* test file report functionality */
+	arg.clear();
+	arg["writetofile"] = "profdemoout.txt";
+	p.init(0,0,&arg);
 
 	return(0);
 }
