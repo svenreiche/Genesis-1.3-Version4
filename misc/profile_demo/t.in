@@ -1,0 +1,93 @@
+# demo for &profile feature
+# C. Lechner, EuXFEL, 2021-04-17
+&setup
+   rootname = o_test
+   lattice = t.lat
+   beamline = BL
+   gamma0 = 10000
+   lambda0 = 1e-9
+   delz = 0.04
+   seed = 123456789
+   npart = 8192
+   nbins = 4
+   one4one = 1
+   shotnoise = 1
+# beam_global_stat since git commit 619f8c6 (Apr 6, 2021)
+#   beam_global_stat = 1
+&end
+
+&time
+   slen = 3e-06
+   sample = 1
+   time = 1
+&end
+
+&field
+   power = 0.0
+   waist_size = 1e-04
+   dgrid = 0.0005
+   ngrid = 201
+   harm = 1
+&end
+
+&profile_gauss
+   label = current
+   c0 = 1000
+   s0 = 1.0e-6
+   sig = 0.25e-6
+&end
+
+&beam
+   gamma = 10000
+   delgam = 1
+   current = @current
+   ex = 0.4e-6
+   ey = 0.4e-6
+   betax = 10
+   betay = 10
+   alphax = 0
+   alphay = 0
+&end
+
+&sponrad
+   seed = 123123
+   doLoss = 0
+   doSpread = 1
+&end
+
+&track
+   zstop = 1000
+   output_step = 1
+   field_dump_step = 0
+   beam_dump_step = 0
+# enable this to see how sorting impacts tracking time
+#   sort_step = 1
+&end
+
+&profile
+   barrier = true
+   label = after_track
+&end
+
+&sort
+&end
+
+&profile
+   barrier = true
+   label = after_sort
+&end
+
+&write
+   field = o_test
+   beam = o_test
+&end
+
+&profile
+   barrier = true
+   label = after_write
+&end
+
+# let's write the timing data to file
+&profile
+   writetofile = timing_report.txt
+&end
