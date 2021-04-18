@@ -267,6 +267,13 @@ bool Prof::init(int mpirank, int mpisize, map<string,string> *arg)
 		mytime_t t;
 
 		getnano(&t);
+
+		/* drop warning if label is already in use (and replace it) */
+		map<string,mytime_t>::iterator it = times_.find(id_label);
+		if (it != times_.end()) {
+			cout << "warning: going to re-set already defined timing label \"" << id_label << "\"" << endl;
+		}
+
 		times_[id_label] = t;
 	}
 
@@ -292,8 +299,13 @@ int main(void)
 	Prof p;
 	map<string,string> arg;
 
-	/* emulate calls from GenMain loop, records current time */
+	/*** emulate calls from GenMain loop that record the current time ***/
 	arg["label"] = "Hallo";
+	p.init(0,0,&arg);
+
+	/* let's try again with already existing label */
+	cout << "trying to re-use label, should give warning (but does it anyway)" << endl;
+	arg["label"] = "Hallo"; // calling member 'init' clears argument map of known arguments
 	p.init(0,0,&arg);
 
 	sleep(1);
