@@ -16,7 +16,7 @@
 #include "Time.h"
 #include "Lattice.h"
 #include "Sorting.h"
-#include "hdf5.h"
+#include <hdf5.h>
 #include "Particle.h"
 #include "RandomU.h"
 #include "ShotNoise.h"

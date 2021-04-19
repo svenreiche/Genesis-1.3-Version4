@@ -7,7 +7,7 @@
 #include <complex>
 #include <math.h>
 
-#include "mpi.h"
+#include <mpi.h>
 #include "Particle.h"
 #include "Undulator.h"
 

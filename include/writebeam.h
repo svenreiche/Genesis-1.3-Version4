@@ -9,7 +9,7 @@
 #ifndef __GEN_WRITEBEAMHDF5__
 #define __GEN_WRITEBEAMHDF5__
 
-#include "hdf5.h"
+#include <hdf5.h>
 #include "HDF5base.h"
 
 

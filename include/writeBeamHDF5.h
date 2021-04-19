@@ -9,8 +9,8 @@
 #ifndef __GEN_WRITEBEAMHDF5__
 #define __GEN_WRITEBEAMHDF5__
 
-#include "mpi.h"
-#include "hdf5.h"
+#include <mpi.h>
+#include <hdf5.h>
 #include "HDF5base.h"
 #include "Beam.h"
 

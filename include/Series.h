@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <stdlib.h>
 
-#include "mpi.h"
+#include <mpi.h>
 #include "StringProcessing.h"
 #include "Sequence.h"
 #include "RandomU.h"
