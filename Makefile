@@ -3,13 +3,13 @@
 #
 # libraries
 #
-LIB= -lm -lstdc++ -lmpi_cxx -lfftw3
+LIB= -lm -lstdc++ -lmpi_cxx -lfftw3 
 #
 INCLUDE=-I./include
 #
 # cpp-macros - to enable the FFTW library
 #
-DMACRO = -DAAAFFTW
+DMACRO = -DFFTW
 #
 #  compilers
 #
