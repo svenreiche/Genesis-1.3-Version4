@@ -40,6 +40,7 @@ class Field{
    void setStepsize(double);
    void disable(double);
    bool isEnabled();
+   bool get_global_stat();
    int getHarm();
    double getRHarm();
 
@@ -55,12 +56,15 @@ class Field{
    vector<double> power,xsig,xavg,ysig,yavg ;  // buffer to accumulate before writing it out
    vector<double> txsig,txavg,tysig,tyavg ;  // buffer to accumulate before writing it out
    vector<double> nf_intensity,nf_phi,ff_intensity,ff_phi;
+   // global variables   - energy is proportional to the mean power
+   vector<double> energy,gl_xsig,gl_xavg,gl_ysig,gl_yavg,gl_nf_intensity,gl_ff_intensity;  
 
 
  private:
    int idx;
    bool disabled;
    double rharm;
+   bool out_global;
 
    complex<double> *in;
    complex<double> *out;
@@ -71,6 +75,10 @@ class Field{
    FieldSolver solver;
 };
 
+inline bool Field::get_global_stat()
+{
+  return out_global;
+}
 
 inline void Field::disable(double conv)
 {

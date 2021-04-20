@@ -263,7 +263,7 @@ void Output::writeFieldBuffer(Field *field)
 
 
   // step 1 - create the group
-  hid_t gid;
+  hid_t gid, gidsub;
   char name[10];
 
   int harm=field->harm;
@@ -293,7 +293,19 @@ void Output::writeFieldBuffer(Field *field)
   this->writeBuffer(gid, "intensity-farfield","arb unit",&field->ff_intensity);
   this->writeBuffer(gid, "phase-farfield","rad",&field->ff_phi);
 
-
+  
+  if(field->get_global_stat()) {
+    gidsub=H5Gcreate(gid,"Global",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+    this->writeSingleNode(gidsub,"energy"," ", &field->energy);
+    this->writeSingleNode(gidsub,"xsize","m", &field->gl_xsig);
+    this->writeSingleNode(gidsub,"ysize","m", &field->gl_ysig);
+    this->writeSingleNode(gidsub,"xposition","m", &field->gl_xavg);
+    this->writeSingleNode(gidsub,"yposition","m", &field->gl_yavg);
+    this->writeSingleNode(gidsub,"intensity-nearfield","arb unit", &field->gl_nf_intensity);
+    this->writeSingleNode(gidsub,"intensity-farfield","arb unit ", &field->gl_ff_intensity);
+    H5Gclose(gidsub);  
+  }
+  
 
   vector<double> tmp;
   tmp.resize(1);
