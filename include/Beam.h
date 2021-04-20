@@ -52,7 +52,7 @@ class Beam{
    vector<unsigned long long> partcount;
    vector< vector<double> > bh,ph;  // harmonic bunching and bunching phase
 
-   vector<double> tot_gmean, tot_gstd;
+   vector<double> tot_gmean, tot_gstd;  // global values, averaging over the entire beam 
    
  private:
    BeamSolver solver;
