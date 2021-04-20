@@ -6,11 +6,6 @@
 #include <fstream>
 
 
-#ifdef VTRACE
-#include "vt_user.h"
-#endif
-
-
 
 Field::~Field(){
 #ifdef FFTW                // release the FFTW plan
@@ -126,10 +121,6 @@ bool Field::getLLGridpoint(double x, double y, double *wx, double *wy, int *idx)
 void Field::track(double delz, Beam *beam, Undulator *und)
 {
   
-#ifdef VTRACE
-  VT_TRACER("Field_Tracking");
-#endif  
-
 
   solver.getDiag(delz,dgrid,xks,ngrid);  // check whether step size has changed and recalculate aux arrays
   solver.advance(delz,this,beam,und);

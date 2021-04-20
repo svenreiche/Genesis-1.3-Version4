@@ -2,10 +2,6 @@
 
 extern bool MPISingle;
 
-#ifdef VTRACE
-#include "vt_user.h"
-#endif
-
 
 int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan)
 {
@@ -14,9 +10,6 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
         //-------------------------------------------------------
         // init MPI and get size etc.
         //
-#ifdef VTRACE
-  VT_TRACER("Core");
-#endif  
         int size=1;
         int rank=0;
 

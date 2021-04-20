@@ -9,13 +9,12 @@ INCLUDE=-I./include
 #
 # cpp-macros - to enable the FFTW library
 #
-DMACRO = -DFFTW
+DMACRO = -DFFTW 
 #
 #  compilers
 #
 VPATH = src/Core src/IO src/Lattice src/Util src/Main src/Loading
 CCOMPILER = h5pcc
-#CCOMPILER = vtcxx -vt:cxx h5pcc -vt:inst manual -DVTRACE
 #
 #  flags
 #

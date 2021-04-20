@@ -2,9 +2,6 @@
 #include "Field.h"
 #include "Sorting.h"
 
-#ifdef VTRACE
-#include "vt_user.h"
-#endif
 
 Beam::~Beam(){}
 Beam::Beam(){}
@@ -104,11 +101,6 @@ int Beam::sort()
 
 void Beam::track(double delz,vector<Field *> *field, Undulator *und){
 
-#ifdef VTRACE
-  VT_TRACER("Beam_Tracking");
-#endif  
-
-  
   for (int i=0; i<field->size();i++){
     field->at(i)->setStepsize(delz);
   }

@@ -4,9 +4,6 @@
 #include "writeBeamHDF5.h"
 
 
-#ifdef VTRACE
-#include "vt_user.h"
-#endif
 
 
 
@@ -146,9 +143,6 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
 void Control::applySlippage(double slippage, Field *field)
 {
 
-#ifdef VTRACE
-  VT_TRACER("Slippage");
-#endif  
 
  
   if (timerun==false) { return; }
