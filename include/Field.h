@@ -41,6 +41,7 @@ class Field{
    void disable(double);
    bool isEnabled();
    bool get_global_stat();
+   void set_global_stat(bool);
    int getHarm();
    double getRHarm();
 
@@ -78,6 +79,11 @@ class Field{
 inline bool Field::get_global_stat()
 {
   return out_global;
+}
+
+inline void Field::set_global_stat(bool in)
+{
+  out_global=in;
 }
 
 inline void Field::disable(double conv)

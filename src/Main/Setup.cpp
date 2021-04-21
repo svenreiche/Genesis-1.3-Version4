@@ -17,6 +17,7 @@ Setup::Setup()
   delz=0.015; 
   seed=123456789;
   beam_global_stat=false;
+  field_global_stat=false;
 
   runcount = 0 ;  // count of runs in conjunction of calls of altersetup
 }
@@ -39,6 +40,7 @@ void Setup::usage(){
   cout << " bool one4one = false" << endl;
   cout << " bool shotnoise = true" << endl;
   cout << " bool beam_global_stat = false" << endl;
+  cout << " bool field_global_stat = false" << endl;
   cout << "&end" << endl << endl;
   return;
 }
@@ -65,7 +67,8 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
   if (arg->find("npart")!=end)    {npart  = atoi(arg->at("npart").c_str());  arg->erase(arg->find("npart"));}
   if (arg->find("nbins")!=end)    {nbins  = atoi(arg->at("nbins").c_str());  arg->erase(arg->find("nbins"));}
   if (arg->find("shotnoise")!=end){shotnoise  = atob(arg->at("shotnoise"));  arg->erase(arg->find("shotnoise"));}
-  if (arg->find("beam_global_stat")!=end) {beam_global_stat = atob(arg->at("beam_global_stat"));  arg->erase(arg->find("beam_global_stat"));}
+  if (arg->find("beam_global_stat")!=end)  {beam_global_stat  = atob(arg->at("beam_global_stat"));   arg->erase(arg->find("beam_global_stat"));}
+  if (arg->find("field_global_stat")!=end) {field_global_stat = atob(arg->at("field_global_stat"));  arg->erase(arg->find("field_global_stat"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &setup" << endl; this->usage();}
