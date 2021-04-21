@@ -58,8 +58,10 @@ class Field{
    vector<double> txsig,txavg,tysig,tyavg ;  // buffer to accumulate before writing it out
    vector<double> nf_intensity,nf_phi,ff_intensity,ff_phi;
    // global variables   - energy is proportional to the mean power
-   vector<double> energy,gl_xsig,gl_xavg,gl_ysig,gl_yavg,gl_nf_intensity,gl_ff_intensity;  
-
+   vector<double> energy,gl_xsig,gl_xavg,gl_ysig,gl_yavg,gl_nf_intensity,gl_ff_intensity;
+#ifdef FFTW
+   vector<double> gl_txsig, gl_txavg, gl_tysig, gl_tyavg;  
+#endif
 
  private:
    int idx;

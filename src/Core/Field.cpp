@@ -97,6 +97,12 @@ void Field::initDiagnostics(int nz)
     gl_yavg.resize(nz);
     gl_nf_intensity.resize(nz);
     gl_ff_intensity.resize(nz);
+#ifdef FFTW
+    gl_txsig.resize(nz);
+    gl_txavg.resize(nz);
+    gl_tysig.resize(nz);
+    gl_tyavg.resize(nz);
+#endif
   }
 
 }
@@ -265,9 +271,17 @@ void Field::diagnostics(bool output)
   double acc_y2=0;
   double acc_nf=0;
   double acc_ff=0;
+#ifdef FFTW
+  double acc_tpower=0;
+  double acc_tx=0;
+  double acc_tx2=0;
+  double acc_ty=0;
+  double acc_ty2=0;
+#endif
 
   double ks=4.*asin(1)/xlambda;
   double scl=dgrid*eev/ks;
+  double scltheta=xlambda/ngrid/dgrid;
 
   for (int is=0; is < ds; is++){
     int islice= (is+first) % ds ;   // include the rotation due to slippage
@@ -306,22 +320,23 @@ void Field::diagnostics(bool output)
       }
     }
 
+
     if (out_global){
       acc_power+=bpower;
-      acc_x +=bxavg*bpower;
-      acc_x2+=bxsig*bpower;   // bxsig and bysig are in this part still variances
-      acc_y +=bxavg*bpower;
-      acc_y2+=bxsig*bpower;
+      acc_x +=bxavg;
+      acc_x2+=bxsig;  
+      acc_y +=byavg;
+      acc_y2+=bysig;
     }
     
     if (bpower>0){
       bxavg/=bpower;
-      bxsig=sqrt(abs(bxsig/bpower-bxavg*bxavg));
+      bxsig/=bpower;
       byavg/=bpower;
-      bysig=sqrt(abs(bysig/bpower-byavg*byavg));
+      bysig/=bpower;
     }
-
-
+    bxsig=sqrt(abs(bxsig-bxavg*bxavg));
+    bysig=sqrt(abs(bysig-byavg*byavg));
 
 
     // calculate the divergence angle
@@ -344,13 +359,26 @@ void Field::diagnostics(bool output)
       }
     }
 
+    if (out_global){
+      acc_tpower+=fpower;
+      acc_tx +=fxavg;
+      acc_tx2+=fxsig;   // bxsig and bysig are in this part still variances
+      acc_ty +=fyavg;
+      acc_ty2+=fysig;
+    }
+ 
+
     if (fpower>0){
 	  fxavg/=fpower;
-	  fxsig=sqrt(abs(fxsig/fpower-fxavg*fxavg));
+	  fxsig/=fpower;
 	  fyavg/=fpower;
-	  fysig=sqrt(abs(fysig/fpower-fyavg*fyavg));
+	  fysig/=fpower;
     }
-    double scltheta=xlambda/ngrid/dgrid;
+
+    fxsig=sqrt(abs(fxsig-fxavg*fxavg));
+    fysig=sqrt(abs(fysig-fyavg*fyavg));
+    
+
 #endif
 
 
@@ -418,16 +446,49 @@ void Field::diagnostics(bool output)
 	acc_nf=temp;
 	MPI_Allreduce(&acc_ff, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 	acc_ff=temp;
+#ifdef FFTW
+	MPI_Allreduce(&acc_tpower, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_tpower=temp;
+	MPI_Allreduce(&acc_tx, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_tx=temp;
+	MPI_Allreduce(&acc_tx2, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_tx2=temp;
+	MPI_Allreduce(&acc_ty, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_ty=temp;
+	MPI_Allreduce(&acc_ty2, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_ty2=temp;
+#endif
       }
 
-      energy[idx]=acc_power*scl*scl/vacimp*slicelength*harm*xlambda/3e8;  // energy 
+      energy[idx]=acc_power*scl*scl/vacimp*slicelength/3e8;  // energy 
       if (acc_power == 0){
 	acc_power=1.;
       }
       gl_xavg[idx]=acc_x/acc_power;
-      gl_xsig[idx]=sqrt(abs(acc_x2/acc_power-acc_x*acc_x));
+      gl_xsig[idx]=acc_x2/acc_power;
       gl_yavg[idx]=acc_y/acc_power;
-      gl_ysig[idx]=sqrt(abs(acc_y2/acc_power-acc_y*acc_y));
+      gl_ysig[idx]=acc_y2/acc_power;
+      gl_xsig[idx]=sqrt(abs(gl_xsig[idx]-gl_xavg[idx]*gl_xavg[idx]));
+      gl_ysig[idx]=sqrt(abs(gl_ysig[idx]-gl_yavg[idx]*gl_yavg[idx]));
+      gl_xavg[idx]*=dgrid;
+      gl_xsig[idx]*=dgrid;
+      gl_yavg[idx]*=dgrid;
+      gl_ysig[idx]*=dgrid;
+#ifdef FFTW
+      if (acc_tpower == 0){
+	acc_tpower=1.;
+      }
+      gl_txavg[idx]=acc_tx/acc_tpower;
+      gl_txsig[idx]=acc_tx2/acc_tpower;
+      gl_tyavg[idx]=acc_ty/acc_tpower;
+      gl_tysig[idx]=acc_ty2/acc_tpower;
+      gl_txsig[idx]=sqrt(abs(gl_txsig[idx]-gl_txavg[idx]*gl_txavg[idx]));
+      gl_tysig[idx]=sqrt(abs(gl_tysig[idx]-gl_tyavg[idx]*gl_tyavg[idx]));
+      gl_txavg[idx]*=scltheta;
+      gl_txsig[idx]*=scltheta;
+      gl_tyavg[idx]*=scltheta;
+      gl_tysig[idx]*=scltheta;
+#endif
       double norm=1./double(size*field.size());
       gl_nf_intensity[idx]=acc_nf*norm*eev*eev/ks/ks/vacimp;
       gl_ff_intensity[idx]=acc_ff*norm;

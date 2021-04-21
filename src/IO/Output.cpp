@@ -133,7 +133,7 @@ void Output::writeMeta()
   H5Gclose(gid);
 }
 
-void Output::writeGlobal(double gamma, double lambda, double sample, double slen, bool one4one, bool time, bool scan)
+void Output::writeGlobal(double gamma, double lambda, double sample, double slen, bool one4one, bool time, bool scan, int ntotal)
 {
 
 
@@ -160,8 +160,23 @@ void Output::writeGlobal(double gamma, double lambda, double sample, double slen
   tmp[0] = scan ? 1. : 0 ;
   this->writeSingleNode(gid,"scan"," ",&tmp);
 
-  H5Gclose(gid);
+  tmp.resize(ntotal);
+  for (int i=0; i<ntotal; i++){
+    tmp[i]=static_cast<double>(i)*sample*lambda;
+  }
+  this->writeSingleNode(gid,"s","m",&tmp);
 
+  double e0=1023.842e-9/lambda;
+  double df=e0/sample/static_cast<double>(ntotal);
+  if (ntotal ==1) {
+      df=0;
+  }
+  e0 = e0-0.5*df*ntotal;
+  for (int i=0; i<ntotal; i++){
+    tmp[i]=e0+static_cast<double>(i)*df;
+  }
+  this->writeSingleNode(gid,"frequency","eV",&tmp);
+  H5Gclose(gid);
 }
 
 
@@ -282,7 +297,6 @@ void Output::writeFieldBuffer(Field *field)
   this->writeBuffer(gid, "xposition","m",&field->xavg);
   this->writeBuffer(gid, "yposition","m",&field->yavg);
 #ifdef FFTW
-  cout << "writing divergence" << endl;
   this->writeBuffer(gid, "xdivergence","rad",&field->txsig);
   this->writeBuffer(gid, "ydivergence","rad",&field->tysig);
   this->writeBuffer(gid, "xpointing","rad",&field->txavg);
@@ -303,6 +317,12 @@ void Output::writeFieldBuffer(Field *field)
     this->writeSingleNode(gidsub,"yposition","m", &field->gl_yavg);
     this->writeSingleNode(gidsub,"intensity-nearfield","arb unit", &field->gl_nf_intensity);
     this->writeSingleNode(gidsub,"intensity-farfield","arb unit ", &field->gl_ff_intensity);
+#ifdef FFTW
+    this->writeSingleNode(gidsub,"xdivergence","rad", &field->gl_txsig);
+    this->writeSingleNode(gidsub,"ydivergence","rad", &field->gl_tysig);
+    this->writeSingleNode(gidsub,"xpointing","rad", &field->gl_txavg);
+    this->writeSingleNode(gidsub,"ypointing","rad", &field->gl_tyavg);
+#endif
     H5Gclose(gidsub);  
   }
   

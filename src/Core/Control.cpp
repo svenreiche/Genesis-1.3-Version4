@@ -61,7 +61,7 @@ void Control::output(Beam *beam, vector<Field*> *field, Undulator *und)
   string file=root.append(".out.h5");
   out->open(file,noffset,nslice);
   
-  out->writeGlobal(und->getGammaRef(),reflen,sample,slen,one4one,timerun,scanrun);
+  out->writeGlobal(und->getGammaRef(),reflen,sample,slen,one4one,timerun,scanrun,ntotal);
   out->writeLattice(beam,und);
 
 
