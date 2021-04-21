@@ -81,6 +81,8 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
 
 
         time_t timer;
+	clock_t clockstart = clock();
+	clock_t clocknow;
 	if (rank==0){
           time(&timer);
           cout << "---------------------------------------------" << endl;
@@ -117,6 +119,13 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
         parser.open(mainstring,rank);
 
         while(parser.parse(&element,&argument)){
+	  //----------------------------------------------
+	  // message of current time stamp
+	  clocknow=clock();
+	  double elapsed_Sec=double(clocknow-clockstart)/CLOCKS_PER_SEC;
+	  if (rank==0) {
+	      cout << "Processing Namelist: " << element << " (Seconds since start: " << elapsed_Sec << ")" << endl;
+	  }
            
           //----------------------------------------------
 	  // setup & parsing the lattice file
@@ -318,9 +327,13 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
 
 
  	if (rank==0) {
+	  clocknow=clock();
+	  double elapsed_Sec=double(clocknow-clockstart)/CLOCKS_PER_SEC;
+
           time(&timer);
           cout << endl<< "Program is terminating..." << endl;
 	  cout << "Ending Time: " << ctime(&timer);
+	  cout << "Total Wall Clock Time: " << elapsed_Sec << " seconds" << endl;
           cout << "-------------------------------------" << endl;
 
         }

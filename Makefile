@@ -25,6 +25,11 @@ FLAGS = -O2
 #
 EXECUTABLE = gencore
 #
+# profiling
+#
+#SCOREP = /cluster/home/sreiche/profiling/scorep/bin/scorep
+#SCORDEF = -DSCOREP
+#
 # targets
 #
 OBJECTS = Sorting.o BesselJ.o Inverfc.o Hammerslay.o RandomU.o GaussHermite.o StringProcessing.o Track.o Setup.o AlterSetup.o Time.o Wake.o Parser.o Dump.o SponRad.o EField.o LoadBeam.o ImportBeam.o LoadField.o ImportField.o Profile.o Series.o ShotNoise.o QuietLoading.o Optics.o Lattice.o LatticeElements.o LatticeParser.o AlterLattice.o Gencore.o TrackBeam.o Control.o Field.o FieldSolver.o EFieldSolver.o Incoherent.o Collective.o Beam.o BeamSolver.o Undulator.o HDF5base.o readBeamHDF5.o writeBeamHDF5.o readFieldHDF5.o writeFieldHDF5.o SDDSBeam.o Output.o  GenMain.o
@@ -34,19 +39,19 @@ OBJECTS = Sorting.o BesselJ.o Inverfc.o Hammerslay.o RandomU.o GaussHermite.o St
 genesis:	$(OBJECTS) build_info.o
 	ar -cvq libgenesis13.a $(OBJECTS) build_info.o
 	mv libgenesis13.a ./lib
-	$(CCOMPILER) src/Main/mainwrap.cpp -o $(EXECUTABLE) $(INCLUDE) -lgenesis13 -Llib $(LIB)
+	$(SCOREP) $(CCOMPILER) src/Main/mainwrap.cpp -o $(EXECUTABLE) $(INCLUDE) -lgenesis13 -Llib $(LIB)
 
 genesisexecutable:	$(OBJECTS)
-	$(CCOMPILER)  -o $(EXECUTABLE) $(OBJECTS) $(LIB)
+	$(SCOREP) $(CCOMPILER)  -o $(EXECUTABLE) $(OBJECTS) $(LIB)
 
 
 
 .cpp.o:
-	$(CCOMPILER) $(FLAGS) -c $(DMACRO) $(INCLUDE) $<
+	$(SCOREP) $(CCOMPILER) $(FLAGS) -c $(DMACRO) $(SCORDEF) $(INCLUDE) $<
 
 ### rules for build info
 build_info.o: build_info.c
-	$(CCOMPILER) $(FLAGS) $(INCLUDE) -c $<
+	$(SCOREP) $(CCOMPILER) $(FLAGS) $(INCLUDE) -c $<
 build_info.c: FORCE
 	rm -f build_info.c
 	./build_info.sh

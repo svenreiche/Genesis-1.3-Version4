@@ -428,8 +428,9 @@ void Field::diagnostics(bool output)
       gl_xsig[idx]=sqrt(abs(acc_x2/acc_power-acc_x*acc_x));
       gl_yavg[idx]=acc_y/acc_power;
       gl_ysig[idx]=sqrt(abs(acc_y2/acc_power-acc_y*acc_y));
-      gl_nf_intensity[idx]=acc_nf;
-      gl_ff_intensity[idx]=acc_ff;
+      double norm=1./double(size*field.size());
+      gl_nf_intensity[idx]=acc_nf*norm*eev*eev/ks/ks/vacimp;
+      gl_ff_intensity[idx]=acc_ff*norm;
   }
   
   idx++;
