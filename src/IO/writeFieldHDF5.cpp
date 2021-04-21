@@ -107,21 +107,15 @@ void WriteFieldHDF5::writeMain(string fileroot, Field *field){
 
 
   /*** Compute intensity projections ***/
+  const double factor_xy=1.;
+  const double factor_xz=1., factor_yz=1.; // xz and yz projections have identical scaling factor
   vector<double> local_int_xy(ngrid*ngrid);
   vector<double> glbl_int_xy(ngrid*ngrid);
   vector<double> int_xz(ngrid*field->field.size());
   vector<double> int_yz(ngrid*field->field.size());
 
-#if 0
-  for (int i=0; i<ntotal; i++)
-  {
-    if (!((i>=smin) && (i<smax))) {
-      continue;
-    }
-#else
   for (int i=smin; i<smax; i++)
   {
-#endif
     int islice= (i+field->first) % field->field.size() ;   // include the rotation due to slippage
 
     complex<double> loc;
@@ -134,12 +128,13 @@ void WriteFieldHDF5::writeMain(string fileroot, Field *field){
         loc=field->field.at(islice).at(idx_fld);
         wei=loc.real()*loc.real()+loc.imag()*loc.imag();
 
-        local_int_xy[idx_fld] += wei; // int_xy data has same dimension as field of slice => can use identical indexing scheme
+        // int_xy data has same dimension as field of slice => can use identical indexing scheme
+        local_int_xy[idx_fld] += factor_xy*wei;
 
         idx_xz = field->field.size()*ix + (i-smin);
         idx_yz = field->field.size()*iy + (i-smin);
-        int_xz[idx_xz] += wei;
-        int_yz[idx_yz] += wei;
+        int_xz[idx_xz] += factor_xz*wei;
+        int_yz[idx_yz] += factor_yz*wei;
       }
     }
   }
