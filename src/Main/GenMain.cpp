@@ -42,6 +42,7 @@
 #include "writeFieldHDF5.h"
 #include "Collective.h"
 #include "Wake.h"
+#include "VersionInfo.h"
 #include "build_info.h"
 
 #include <sstream>
@@ -51,12 +52,6 @@ using namespace std;
 const double vacimp = 376.73;
 const double eev    = 510999.06; 
 const double ce     = 4.8032045e-11;
-
-
-const int versionmajor = 4;
-const int versionminor = 4;
-const int versionrevision = 0;
-const bool versionbeta=true;
 
 string meta_inputfile;
 string meta_latfile;
@@ -82,10 +77,11 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
 
         time_t timer;
 	if (rank==0){
+          VersionInfo vi;
           time(&timer);
           cout << "---------------------------------------------" << endl;
-          cout << "GENESIS - Version " <<  versionmajor <<"."<< versionminor << "." << versionrevision ;
-	  if (versionbeta) {cout << " (beta)";}
+          cout << "GENESIS - Version " <<  vi.Major() <<"."<< vi.Minor() << "." << vi.Rev() ;
+	  if (vi.isBeta()) {cout << " (beta)";}
 	  cout << " has started..." << endl;
           cout << "compile info: " << build_info() << endl;			
 	  cout << "Starting Time: " << ctime(&timer)<< endl;

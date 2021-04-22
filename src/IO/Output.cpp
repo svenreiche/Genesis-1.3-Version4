@@ -10,6 +10,7 @@
 #include <fstream>
 #include <streambuf>
 
+#include "VersionInfo.h"
 #include "build_info.h"
 
 extern bool MPISingle;
@@ -75,6 +76,7 @@ void Output::open(string file, int s0_in, int ds_in)
 
 void Output::writeMeta()
 {
+  VersionInfo vi;
   hid_t gid,gidsub;
   vector<double> tmp;
   tmp.resize(1);
@@ -82,14 +84,14 @@ void Output::writeMeta()
   gid=H5Gcreate(fid,"Meta",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
   gidsub=H5Gcreate(gid,"Version",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
-  tmp[0]=versionmajor;
+  tmp[0]=vi.Major();
   this->writeSingleNode(gidsub,"Major"," ",&tmp);
-  tmp[0]=versionminor;
+  tmp[0]=vi.Minor();
   this->writeSingleNode(gidsub,"Minor"," ",&tmp);
-  tmp[0]=versionrevision;
+  tmp[0]=vi.Rev();
   this->writeSingleNode(gidsub,"Revision"," ",&tmp);
   tmp[0]=0;
-  if (versionbeta) { tmp[0]=1;}
+  if (vi.isBeta()) { tmp[0]=1;}
   this->writeSingleNode(gidsub,"Beta"," ",&tmp);
   string s_bi(build_info());
   this->writeSingleNodeString(gidsub,"Build_Info", &s_bi);

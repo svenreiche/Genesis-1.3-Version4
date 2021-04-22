@@ -4,6 +4,9 @@
 #include <cstring>
 #include <iostream>
 
+#include "build_info.h"
+#include "VersionInfo.h"
+
 using namespace std;
 
 // very basic wrapper for genesis. Most of the genesis stuff is moved into genmain.
@@ -32,6 +35,13 @@ int main (int argc, char *argv[]) {
 
 	if (argc == 1){
 	  if (rank == 0){
+            VersionInfo vi;
+            cout << "---------------------------------------------" << endl;
+            cout << "GENESIS - Version " <<  vi.Major() <<"."<< vi.Minor() << "." << vi.Rev() ;
+            if (vi.isBeta()) {cout << " (beta)";}
+            cout << " has started..." << endl;
+            cout << "compile info: " << build_info() << endl;
+
 	    cout << "*** Error: No input file specified - Execution of Genesis will end" << endl;
 	  }
 	} else {
