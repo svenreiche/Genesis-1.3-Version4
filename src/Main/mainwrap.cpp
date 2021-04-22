@@ -24,7 +24,7 @@ int main (int argc, char *argv[]) {
       	string filename (argv[argc-1]);  // input file is always last element
 	string latname  ("");
 	string outname  ("");
-	int    seed;
+	int    seed = 123456789;
 	
 	bool ok=true;
 
