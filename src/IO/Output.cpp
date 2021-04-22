@@ -11,7 +11,6 @@
 #include <streambuf>
 
 #include "VersionInfo.h"
-#include "build_info.h"
 
 extern bool MPISingle;
 
@@ -93,7 +92,7 @@ void Output::writeMeta()
   tmp[0]=0;
   if (vi.isBeta()) { tmp[0]=1;}
   this->writeSingleNode(gidsub,"Beta"," ",&tmp);
-  string s_bi(build_info());
+  string s_bi(vi.BuildInfo());
   this->writeSingleNodeString(gidsub,"Build_Info", &s_bi);
   H5Gclose(gidsub);  
   

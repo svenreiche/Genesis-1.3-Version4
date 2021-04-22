@@ -10,6 +10,7 @@ public:
 	int Minor(void);
 	int Rev(void);
 	bool isBeta(void);
+	const char *BuildInfo(void);
 };
 
 #endif

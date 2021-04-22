@@ -1,4 +1,5 @@
 #include "VersionInfo.h"
+#include "build_info.h"
 
 VersionInfo::VersionInfo()  {};
 VersionInfo::~VersionInfo() {};
@@ -17,4 +18,8 @@ int VersionInfo::Rev(void) {
 
 bool VersionInfo::isBeta(void) {
 	return(true);
+}
+
+const char * VersionInfo::BuildInfo(void) {
+	return(build_info());
 }

@@ -43,7 +43,6 @@
 #include "Collective.h"
 #include "Wake.h"
 #include "VersionInfo.h"
-#include "build_info.h"
 
 #include <sstream>
 
@@ -83,7 +82,7 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
           cout << "GENESIS - Version " <<  vi.Major() <<"."<< vi.Minor() << "." << vi.Rev() ;
 	  if (vi.isBeta()) {cout << " (beta)";}
 	  cout << " has started..." << endl;
-          cout << "compile info: " << build_info() << endl;			
+          cout << "compile info: " << vi.BuildInfo() << endl;			
 	  cout << "Starting Time: " << ctime(&timer)<< endl;
           cout << "MPI-Comm Size: " << size << " nodes" << endl << endl;
         }

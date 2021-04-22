@@ -4,7 +4,6 @@
 #include <cstring>
 #include <iostream>
 
-#include "build_info.h"
 #include "VersionInfo.h"
 
 using namespace std;
@@ -40,7 +39,7 @@ int main (int argc, char *argv[]) {
             cout << "GENESIS - Version " <<  vi.Major() <<"."<< vi.Minor() << "." << vi.Rev() ;
             if (vi.isBeta()) {cout << " (beta)";}
             cout << " has started..." << endl;
-            cout << "compile info: " << build_info() << endl;
+            cout << "compile info: " << vi.BuildInfo() << endl;
 
 	    cout << "*** Error: No input file specified - Execution of Genesis will end" << endl;
 	  }
