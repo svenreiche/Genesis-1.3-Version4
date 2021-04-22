@@ -92,6 +92,10 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
       field->at(i)->set_global_stat(setup->getFieldGlobalStat());
     }
   } 
+  for (int i=0; i<field->size();i++){
+    field->at(i)->setOutput(setup->outputFFT(),setup->outputSpatial(),setup->outputIntensity());
+  }
+
 
   // call to gencore to do the actual tracking.  
   Gencore core;

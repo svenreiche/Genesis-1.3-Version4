@@ -42,8 +42,13 @@ class Field{
    bool isEnabled();
    bool get_global_stat();
    void set_global_stat(bool);
+   void setOutput(bool,bool,bool);
+   bool outputFFT();
+   bool outputSpatial();
+   bool outputIntensity();
    int getHarm();
    double getRHarm();
+
 
    vector< vector< complex<double> > > field;
    double xlambda,dgrid,xks,gridmax,dz_save;
@@ -67,7 +72,7 @@ class Field{
    int idx;
    bool disabled;
    double rharm;
-   bool out_global;
+   bool out_global, doFFT,doSpatial, doIntensity;
 
    complex<double> *in;
    complex<double> *out;
@@ -78,14 +83,16 @@ class Field{
    FieldSolver solver;
 };
 
-inline bool Field::get_global_stat()
-{
-  return out_global;
-}
 
-inline void Field::set_global_stat(bool in)
-{
-  out_global=in;
+inline bool Field::outputFFT(){ return doFFT;}
+inline bool Field::outputSpatial(){ return doSpatial;}
+inline bool Field::outputIntensity(){ return doIntensity;}
+inline bool Field::get_global_stat(){return out_global;}
+inline void Field::set_global_stat(bool in) {out_global=in;}
+inline void Field::setOutput(bool nofft_in, bool noSpatial_in, bool noInten_in) {
+  doFFT = !nofft_in;
+  doSpatial = !noSpatial_in;
+  doIntensity = !noInten_in;
 }
 
 inline void Field::disable(double conv)
@@ -94,7 +101,7 @@ inline void Field::disable(double conv)
     rharm=harm;         // assign current double harmonic with the given harmonic
   }
   rharm=rharm*conv;     // convert to new harmonic, might be even a non-integer.
-  disabled=true;         // disbable it.
+  disabled=true;         // disable it.
 
 }
 
@@ -108,9 +115,6 @@ inline double Field::getRHarm()
 {
   return rharm;
 }
-
-
-
 
 inline int Field::getHarm()
 {

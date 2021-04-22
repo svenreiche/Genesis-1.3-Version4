@@ -47,7 +47,7 @@ void Beam::initDiagnostics(int nz)
   bunch.resize(nz*ns); 
   bphi.resize(nz*ns);
   efld.resize(nz*ns);
-  partcount.resize(nz*ns);
+  //  partcount.resize(nz*ns);
 
   bx.resize(ns);
   by.resize(ns);
@@ -67,9 +67,14 @@ void Beam::initDiagnostics(int nz)
       ph[i].resize(nz*ns);
     }
   }
-
-  tot_gmean.resize(nz);
-  tot_gstd.resize(nz);
+   
+  tgavg.resize(nz);
+  tgsig.resize(nz);
+  txavg.resize(nz);
+  txsig.resize(nz);
+  tyavg.resize(nz);
+  tysig.resize(nz);
+  tbun.resize(nz);
 }
 
 // initialize the sorting routine
@@ -228,16 +233,21 @@ bool Beam::subharmonicConversion(int harmonic, bool resample)
   return true;
 }
 
-#define DO_BEAMSTATISTICS
+
 void Beam::diagnostics(bool output, double z)
 {
-#ifdef DO_BEAMSTATISTICS
-  double locaccu_bgavg=0, glblaccu_bgavg=0;
-  double locaccu_gvar=0,  glblaccu_gvar=0;
-  unsigned long long locaccu_N=0, glblaccu_N=0;
-#endif
 
   if (!output) { return; }
+
+  double acc_cur,acc_g,acc_g2,acc_x,acc_x2,acc_y,acc_y2;
+  complex<double> acc_b=(0,0);
+  acc_cur=0;
+  acc_g=0;
+  acc_g2=0;
+  acc_x=0;
+  acc_x2=0;
+  acc_y=0;
+  acc_y2=0;
 
   zpos[idx]=z;
 
@@ -277,16 +287,13 @@ void Beam::diagnostics(bool output, double z)
       br+=cos(btmp);
       bi+=sin(btmp);
     }
-
-#ifdef DO_BEAMSTATISTICS
-    locaccu_bgavg += bgavg;
-    locaccu_N     += nsize;
-#endif
+    
 
     double scl=1;
     if (nsize>0){
       scl=1./static_cast<double>(nsize);
     }
+
     bgavg*=scl;
     bxavg*=scl;
     byavg*=scl;
@@ -295,6 +302,17 @@ void Beam::diagnostics(bool output, double z)
     bysig*=scl;
     bpxavg*=scl;
     bpyavg*=scl;
+ 
+    if (do_global_stat){
+      acc_cur+=current[is];
+      acc_g+= bgavg*current[is];
+      acc_g2+=bgsig*current[is];
+      acc_x+= bxavg*current[is];
+      acc_x2+=bxsig*current[is];
+      acc_y+= byavg*current[is];
+      acc_y2+=bysig*current[is];
+    }
+
     bbavg=sqrt(bi*bi+br*br)*scl;
     bbphi=atan2(bi,br);
     bgsig=sqrt(fabs(bgsig-bgavg*bgavg));
@@ -312,7 +330,7 @@ void Beam::diagnostics(bool output, double z)
     bunch[ioff+is]=bbavg;
     bphi[ioff+is]=bbphi;
     efld[ioff+is]=eloss[is];  
-    partcount[ioff+is]=nsize;
+    //    partcount[ioff+is]=nsize;
 
     for (int ih=1; ih<bharm;ih++){   // calculate the harmonics of the bunching
       br=0;
@@ -327,42 +345,47 @@ void Beam::diagnostics(bool output, double z)
     }
   }
 
-#ifdef DO_BEAMSTATISTICS
+
+  // accumulate all data fromt eh cores
+  double temp=0;
+  int size;      
   if(do_global_stat) {
-    MPI_Allreduce(&locaccu_bgavg, &glblaccu_bgavg, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(&locaccu_N,     &glblaccu_N,     1, MPI_UNSIGNED_LONG_LONG, MPI_SUM, MPI_COMM_WORLD);
-
-    /*
-     * 2nd pass of two-pass algorithm to obtain the variance of 'gamma' over the entire beam.
-     * This algorithm is expected to exhibit reduced numerical instability issues.
-     * 'Gamma' is the only phase space coordinate having a relatively large mean plus a small stddev.
-     */
-    double gmean = glblaccu_bgavg/glblaccu_N;
-    for (unsigned int is=0; is<ds; is++){
-      double gtmp=0;
-      unsigned int nsize=beam.at(is).size();
-      for (unsigned int i=0; i<nsize; i++){
-        gtmp = beam.at(is).at(i).gamma;
-        locaccu_gvar += (gtmp-gmean)*(gtmp-gmean);
+      MPI_Comm_size(MPI_COMM_WORLD, &size);
+      if (size>1){
+	MPI_Allreduce(&acc_cur, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_cur=temp;
+	MPI_Allreduce(&acc_g, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_g=temp;
+	MPI_Allreduce(&acc_g2, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_g2=temp;
+	MPI_Allreduce(&acc_x, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_x=temp;
+	MPI_Allreduce(&acc_x2, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_x2=temp;
+	MPI_Allreduce(&acc_y, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_y=temp;
+	MPI_Allreduce(&acc_y2, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_y2=temp;
       }
-    }
-    MPI_Allreduce(&locaccu_gvar, &glblaccu_gvar, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    double gvar = glblaccu_gvar/glblaccu_N;
-    double gstd = sqrt(gvar);
-
-#if 0
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    if(rank==0) {
-      printf("*** Ntot=%llu glblaccu_bgavg=%.12e glblaccu_gvar=%.12e gmean=%.12e gstd=%.12e ***\n",
-        glblaccu_N, glblaccu_bgavg, glblaccu_gvar, gmean, gstd);
-    }
-#endif
-
-    tot_gmean[idx] = gmean;
-    tot_gstd[idx]  = gstd;
+      if (acc_cur==0){
+         acc_cur=1.; 
+      }
+      acc_g/= acc_cur;
+      acc_g2/=acc_cur;
+      acc_x/= acc_cur;
+      acc_x2/=acc_cur;
+      acc_y/= acc_cur;
+      acc_y2/=acc_cur;
+      acc_g2=sqrt(abs(acc_g2-acc_g*acc_g));
+      acc_x2=sqrt(abs(acc_x2-acc_x*acc_x));
+      acc_y2=sqrt(abs(acc_y2-acc_y*acc_y));
+      tgavg[idx]=acc_g;
+      tgsig[idx]=acc_g2;
+      txavg[idx]=acc_x;
+      txsig[idx]=acc_x2;
+      tyavg[idx]=acc_y;
+      tysig[idx]=acc_y2;
   }
-#endif
 
   idx++;
 }

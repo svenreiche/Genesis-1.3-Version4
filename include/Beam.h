@@ -49,10 +49,11 @@ class Beam{
    // output buffer
    vector<double> zpos,gavg,gsig,xavg,xsig,yavg,ysig,pxavg,pyavg,bunch,bphi,efld;
    vector<double> bx,by,ax,ay,ex,ey,cu;
-   vector<unsigned long long> partcount;
+   //   vector<unsigned long long> partcount;
    vector< vector<double> > bh,ph;  // harmonic bunching and bunching phase
 
-   vector<double> tot_gmean, tot_gstd;  // global values, averaging over the entire beam 
+   //global values
+   vector<double> tgavg, tgsig, txavg,txsig,tyavg, tysig,tbun;  // global values, averaging over the entire beam 
    
  private:
    BeamSolver solver;

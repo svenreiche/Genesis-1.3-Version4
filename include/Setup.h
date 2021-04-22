@@ -32,6 +32,9 @@ class Setup: public StringProcessing{
    bool   getShotNoise();
    bool   getBeamGlobalStat();
    bool   getFieldGlobalStat();
+   bool   outputFFT();
+   bool   outputSpatial();
+   bool   outputIntensity();
    int    getNpart();
    int    getNbins();
    int    getSeed();
@@ -48,6 +51,7 @@ class Setup: public StringProcessing{
    double gamma0,lambda0,delz;
    bool one4one,shotnoise;
    bool beam_global_stat, field_global_stat;
+   bool  exclude_spatial_output, exclude_fft_output, exclude_intensity_output, exclude_energy_output, exclude_aux_output, exclude_current_output;
    int seed, rank,npart,nbins,runcount;
 };
 
@@ -66,5 +70,7 @@ inline double Setup::getStepLength(){return delz;}
 inline void   Setup::setStepLength(double din){delz=din;return;}
 inline void   Setup::incrementCount(){runcount++; return;}
 inline void   Setup::setRootName(string *newname){rootname=*newname; runcount=0; return;}
-
+inline bool   Setup::outputFFT(){ return exclude_fft_output;}
+inline bool   Setup::outputSpatial(){ return exclude_spatial_output;}
+inline bool   Setup::outputIntensity(){ return exclude_intensity_output;}
 #endif
