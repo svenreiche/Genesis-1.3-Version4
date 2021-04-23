@@ -35,6 +35,9 @@ class Setup: public StringProcessing{
    bool   outputFFT();
    bool   outputSpatial();
    bool   outputIntensity();
+   bool   outputCurrent();
+   bool   outputEnergy();
+   bool   outputAux();
    int    getNpart();
    int    getNbins();
    int    getSeed();
@@ -73,4 +76,7 @@ inline void   Setup::setRootName(string *newname){rootname=*newname; runcount=0;
 inline bool   Setup::outputFFT(){ return exclude_fft_output;}
 inline bool   Setup::outputSpatial(){ return exclude_spatial_output;}
 inline bool   Setup::outputIntensity(){ return exclude_intensity_output;}
+inline bool   Setup::outputEnergy(){ return exclude_energy_output;}
+inline bool   Setup::outputCurrent(){ return exclude_current_output;}
+inline bool   Setup::outputAux(){ return exclude_aux_output;}
 #endif

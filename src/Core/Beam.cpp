@@ -4,7 +4,13 @@
 
 
 Beam::~Beam(){}
-Beam::Beam(){}
+Beam::Beam(){
+  do_global_stat=false;
+  doCurrent=false;
+  doSpatial=true;
+  doEnergy=true;
+  doAux=true;
+}
 
 void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, double s0_in, bool one4one_in )
 {  
@@ -36,18 +42,35 @@ void Beam::initDiagnostics(int nz)
   idx=0;
   int ns=current.size();
   zpos.resize(nz);
-  xavg.resize(nz*ns);
-  xsig.resize(nz*ns);
-  yavg.resize(nz*ns);
-  ysig.resize(nz*ns);
-  gavg.resize(nz*ns);
-  gsig.resize(nz*ns);
-  pxavg.resize(nz*ns);
-  pyavg.resize(nz*ns);
+  if (doSpatial){
+    xavg.resize(nz*ns);
+    xsig.resize(nz*ns);
+    yavg.resize(nz*ns);
+    ysig.resize(nz*ns);
+    pxavg.resize(nz*ns);
+    pyavg.resize(nz*ns);
+  } else {
+    xavg.resize(0);
+    xsig.resize(0);
+    yavg.resize(0);
+    ysig.resize(0);
+    pxavg.resize(0);
+    pyavg.resize(0);
+  }
+  if (doEnergy) {
+    gavg.resize(nz*ns);
+    gsig.resize(nz*ns);
+  } else {
+    gavg.resize(0);
+    gsig.resize(0);
+  }
   bunch.resize(nz*ns); 
   bphi.resize(nz*ns);
-  efld.resize(nz*ns);
-  //  partcount.resize(nz*ns);
+  if (doAux){
+    efld.resize(nz*ns);
+  } else {
+    efld.resize(0);
+  }
 
   bx.resize(ns);
   by.resize(ns);
@@ -55,7 +78,11 @@ void Beam::initDiagnostics(int nz)
   ay.resize(ns);
   ex.resize(ns);
   ey.resize(ns);
-  cu.resize(ns);
+  if (doCurrent) {
+    cu.resize(ns*nz);
+  } else {
+    cu.resize(ns);
+  }
   
   bh.clear();
   ph.clear();
@@ -67,13 +94,24 @@ void Beam::initDiagnostics(int nz)
       ph[i].resize(nz*ns);
     }
   }
-   
-  tgavg.resize(nz);
-  tgsig.resize(nz);
-  txavg.resize(nz);
-  txsig.resize(nz);
-  tyavg.resize(nz);
-  tysig.resize(nz);
+  if (doEnergy){ 
+    tgavg.resize(nz);
+    tgsig.resize(nz);
+  } else {
+    tgavg.resize(0);
+    tgsig.resize(0);
+  }
+  if (doSpatial){
+    txavg.resize(nz);
+    txsig.resize(nz);
+    tyavg.resize(nz);
+    tysig.resize(nz);
+  } else {
+    txavg.resize(0);
+    txsig.resize(0);
+    tyavg.resize(0);
+    tysig.resize(0);
+  }
   tbun.resize(nz);
 }
 
@@ -318,18 +356,27 @@ void Beam::diagnostics(bool output, double z)
     bgsig=sqrt(fabs(bgsig-bgavg*bgavg));
     bxsig=sqrt(fabs(bxsig-bxavg*bxavg));
     bysig=sqrt(fabs(bysig-byavg*byavg));
-    
-    gavg[ioff+is]=bgavg;
-    gsig[ioff+is]=bgsig;
-    xavg[ioff+is]=bxavg;
-    xsig[ioff+is]=bxsig;
-    yavg[ioff+is]=byavg;
-    ysig[ioff+is]=bysig;
-    pxavg[ioff+is]=bpxavg;
-    pyavg[ioff+is]=bpyavg;
+
+    if (doCurrent){
+      cu[ioff+is]=current[is];
+    }
+    if (doEnergy){
+      gavg[ioff+is]=bgavg;
+      gsig[ioff+is]=bgsig;
+    }
+    if (doSpatial){
+      xavg[ioff+is]=bxavg;
+      xsig[ioff+is]=bxsig;
+      yavg[ioff+is]=byavg;
+      ysig[ioff+is]=bysig;
+      pxavg[ioff+is]=bpxavg;
+      pyavg[ioff+is]=bpyavg;
+    }
     bunch[ioff+is]=bbavg;
     bphi[ioff+is]=bbphi;
-    efld[ioff+is]=eloss[is];  
+    if (doAux){
+       efld[ioff+is]=eloss[is];  
+    }
     //    partcount[ioff+is]=nsize;
 
     for (int ih=1; ih<bharm;ih++){   // calculate the harmonics of the bunching
@@ -379,12 +426,16 @@ void Beam::diagnostics(bool output, double z)
       acc_g2=sqrt(abs(acc_g2-acc_g*acc_g));
       acc_x2=sqrt(abs(acc_x2-acc_x*acc_x));
       acc_y2=sqrt(abs(acc_y2-acc_y*acc_y));
-      tgavg[idx]=acc_g;
-      tgsig[idx]=acc_g2;
-      txavg[idx]=acc_x;
-      txsig[idx]=acc_x2;
-      tyavg[idx]=acc_y;
-      tysig[idx]=acc_y2;
+      if (doEnergy){
+        tgavg[idx]=acc_g;
+	tgsig[idx]=acc_g2;
+      }
+      if (doSpatial){
+        txavg[idx]=acc_x;
+        txsig[idx]=acc_x2;
+        tyavg[idx]=acc_y;
+        tysig[idx]=acc_y2;
+     }
   }
 
   idx++;
@@ -400,7 +451,9 @@ void Beam::diagnosticsStart()
 
 
   for (int is=0; is<ds;is++){
-    cu[is]=current[is];
+    if (!doCurrent){
+      cu[is]=current[is];
+    }
     x1=0;
     x2=0;
     px1=0;

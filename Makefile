@@ -27,8 +27,8 @@ EXECUTABLE = gencore
 #
 # profiling
 #
-SCOREP = /cluster/home/sreiche/profiling/scorep/bin/scorep
-SCORDEF = -DSCOREP
+#SCOREP = /cluster/home/sreiche/profiling/scorep/bin/scorep
+#SCORDEF = -DSCOREP
 #
 # targets
 #

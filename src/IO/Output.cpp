@@ -226,19 +226,23 @@ void Output::writeBeamBuffer(Beam *beam)
   gid=H5Gcreate(fid,"Beam",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
   // step 2 - write individual datasets
-  this->writeBuffer(gid, "energy"," ",&beam->gavg);
-  this->writeBuffer(gid, "energyspread"," ", &beam->gsig);
-  this->writeBuffer(gid, "xposition","m",&beam->xavg);
-  this->writeBuffer(gid, "yposition","m",&beam->yavg);
-  this->writeBuffer(gid, "pxposition","rad", &beam->pxavg);
-  this->writeBuffer(gid, "pyposition","rad", &beam->pyavg);
-  this->writeBuffer(gid, "xsize","m", &beam->xsig);
-  this->writeBuffer(gid, "ysize","m", &beam->ysig);
+  if (beam->outputEnergy()){
+    this->writeBuffer(gid, "energy"," ",&beam->gavg);
+    this->writeBuffer(gid, "energyspread"," ", &beam->gsig);
+  }
+  if (beam->outputSpatial()){
+    this->writeBuffer(gid, "xposition","m",&beam->xavg);
+    this->writeBuffer(gid, "yposition","m",&beam->yavg);
+    this->writeBuffer(gid, "pxposition","rad", &beam->pxavg);
+    this->writeBuffer(gid, "pyposition","rad", &beam->pyavg);
+    this->writeBuffer(gid, "xsize","m", &beam->xsig);
+    this->writeBuffer(gid, "ysize","m", &beam->ysig);
+  }
   this->writeBuffer(gid, "bunching"," ",&beam->bunch);
   this->writeBuffer(gid, "bunchingphase","rad", &beam->bphi);
-  this->writeBuffer(gid, "efield","eV/m", &beam->efld);
-  //  this->writeBufferULL(gid, "npart_in_slice"," ", &beam->partcount); // HDF5 warnings pop up in function writeBufferULL if unit=""
-
+  if (beam->outputAux()){
+    this->writeBuffer(gid, "efield","eV/m", &beam->efld);
+  }
   
   this->writeBuffer(gid, "betax","m",&beam->bx);
   this->writeBuffer(gid, "betay","m",&beam->by);
@@ -259,12 +263,16 @@ void Output::writeBeamBuffer(Beam *beam)
 
   if(beam->get_global_stat()) {
     gidsub=H5Gcreate(gid,"Global",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
-    this->writeSingleNode(gidsub,"energy"," ", &beam->tgavg);
-    this->writeSingleNode(gidsub,"energyspread"," ", &beam->tgsig);
-    this->writeSingleNode(gidsub,"xposition","m", &beam->txavg);
-    this->writeSingleNode(gidsub,"xsize","m", &beam->txsig);
-    this->writeSingleNode(gidsub,"yposition","m", &beam->tyavg);
-    this->writeSingleNode(gidsub,"ysize","m", &beam->tysig);
+    if (beam->outputEnergy()){
+      this->writeSingleNode(gidsub,"energy"," ", &beam->tgavg);
+      this->writeSingleNode(gidsub,"energyspread"," ", &beam->tgsig);
+    }
+    if (beam->outputSpatial()){
+      this->writeSingleNode(gidsub,"xposition","m", &beam->txavg);
+      this->writeSingleNode(gidsub,"xsize","m", &beam->txsig);
+      this->writeSingleNode(gidsub,"yposition","m", &beam->tyavg);
+      this->writeSingleNode(gidsub,"ysize","m", &beam->tysig);
+    }
     H5Gclose(gidsub);  
   }
   
