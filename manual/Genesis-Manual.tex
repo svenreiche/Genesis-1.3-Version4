@@ -20,7 +20,7 @@
 \rule{\textwidth}{0.2cm}\\
 {\rule{0cm}{4cm}\Huge\sf\hspace{2cm}GENESIS 1.3}\\
 \vspace{1cm}
-{\rule{0cm}{2cm}\LARGE\sf\hspace{2cm}Version 4.4.0}\\
+{\rule{0cm}{2cm}\LARGE\sf\hspace{2cm}Version 4.5.0}\\
 \vspace{1cm}
 {\rule{0cm}{2cm}\LARGE\sf\hspace{2cm}User Manual}\\
 \vspace{10cm}\\
@@ -74,11 +74,17 @@ Genesis is solely distributed by source text, its free, non-commercial and falls
 {\\ tar xvf} {\it filename}{\tt .tar}
 
 where {\it filename} is the root name of the file of the source code package.
+However, it is recommended to pull the source code directly from the GIT repository. The link is:
+
+{\tt https://github.com/svenreiche/Genesis-1.3-Version4 }
+
+
+
 There should be several directories installed. The most important are {\tt include} and {\tt src} to hold the include- and source-files, {\tt xgenesis} the postprocessor files for Matlab, {\tt benchmark} some sample files to run with Genesis and {\tt sdds2hdf} some utility programs to convert Elegant distribution in SDDS format into HDF5 files, which can be parsed by Genesis. The directory {\tt pygenesis} holds Python files to support the work with Genesis, similar to {\tt xgenesis} for Matlab.
 
 
 \section{\sf Compilation}
-In the root directory there is the file {\tt Makefile} which is the makefile for the compilation on Unix machines. This file can be used to help setting up the installation. In the file there is the {\tt OBJECTS} list which contains all required source code files. There are located in several directories in the subfolder {\tt src}. To find them the compiler search path has to be extended as with the {\tt VPATH} directive under unix. The compilation instruction should convert each individual source file into objects file and then link them with the HDF5 and OpenMPI libraries. Note that at some systems the required definition of the include and libraries files are wrapped in the compiler executive. E.g.~ in the given Makefile the compiler {\tt h5c++} supports directly both required libraries. If this does not exist on your system and both libraries (HDF5 and OpenMPI) are not supported by the standard search path, they have to be set explicitly with the {\tt -I}, {\tt -L}, and {\tt -l} directive for the include search path, library search path  and the library name, respectively. To enable support for VampirTrace profiling, the corresponding compiler has to be used. Genesis supports some manual profiling, such as entry and exit points of the core functions to propagate the beam and field or to write data to files. For that the Macro {\tt VTRACE} has to be set during compilation with the directive {\tt -DVTRACE}. Similar is the support of FFTW enabled by setting the directive {\tt -DFFTW}. It is needed if the user wants to calculate the instantaneous divergence of the radiaiton field during run time.
+In the root directory there is the file {\tt Makefile} which is the makefile for the compilation on Unix machines. This file can be used to help setting up the installation. In the file there is the {\tt OBJECTS} list which contains all required source code files. There are located in several directories in the subfolder {\tt src}. To find them the compiler search path has to be extended as with the {\tt VPATH} directive under unix. The compilation instruction should convert each individual source file into objects file and then link them with the HDF5 and OpenMPI libraries. Note that at some systems the required definition of the include and libraries files are wrapped in the compiler executive. E.g.~ in the given Makefile the compiler {\tt h5c++} supports directly both required libraries. If this does not exist on your system and both libraries (HDF5 and OpenMPI) are not supported by the standard search path, they have to be set explicitly with the {\tt -I}, {\tt -L}, and {\tt -l} directive for the include search path, library search path  and the library name, respectively. Genesis 1.3 is supports the library FFTW enabled by setting the directive {\tt -DFFTW}. It is needed if the user wants to calculate the instantaneous divergence of the radiation field during run time.
 
 If the make file is set-up correctly, type {\tt make} under Unix systems to compile, which should produce the executable {\tt gencore} in the local directory. If source files have been changed then the code can be compiled again. Only files, which have been edited will be recompiled and then linked with the unchanged object files. If some include files have been changed it is recommended to recompile from scratch. The command {\tt make clean} will clean up the directory by deleting all object files and the current executable. To install into your local library, which is the {\tt bin} folder in your home directory, just type {\tt make install}. You can edit the makefile to fit your system.
 
@@ -170,6 +176,28 @@ The namelist {\tt setup} is a mandatory namelist and should be the first in the 
 \item {\bf one4one} ({\it bool, false}): Flag to enable or disable simulation to resolve each electron in the simulation. This is mandatory for certain features, such as sorting or slicing of particle distributions. If set to {\tt true} other parameters such as {\tt npart} and {\tt nbins} are obsolete and do not need to be defined. It is recommended to estimate the number of electrons, which are generated in the simulations, because this can easily required memory beyond what is available on the computer.
 
 \item {\bf shotnoise} ({\it bool, true}): Flag to enable the calculation of shotnoise per each slice during generation of the electron distribution. It is recommended to set the value to {\tt false} for steady-state or scan simulations.
+
+\item {\bf beam\_global\_stat} ({\it bool, false}): Flag to enable extra output of beam parameters of the entire bunch, such as energy, energy spread etc. The data are placed in the HDF5 group "Global" within the group "Beam" of the output file
+
+\item {\bf field\_global\_stat} ({\it bool, false}): Flag for the field output, similar to {\tt beam\_global\_stat}.
+
+\item {\bf exclude\_spatial\_output} ({\it bool, false}): Flag to suppress the datasets in the output file for the x- and y-position and size (both Beam and Field) and px- and py-position (Beam only). This might be useful to reduce the file size of the output file, if these datasets are not needed for the post-processing
+ 
+\item {\bf exclude\_fft\_output} ({\it bool, false}): Flag to suppress the datasets in the output file for the field divergence and pointing. Since it also disable the FFT calculation of the 2D wavefronts it speeds up the execution time slightly. If the code has been compiled without the support of the FFTW library this parametr has no effect.
+
+\item {\bf exclude\_intensity\_output} ({\it bool, false}): Flag to suppress the datasets for the near and farfield intensity and phase for the radiaiton field. If excluded the output file size becomes smaller but no post-processing calculation of the spectra is possible.
+
+\item {\bf exclude\_energy\_output} ({\it bool, false}): Flag to suppress the datasets in the output file for the mean energy and energy spread of the electron beam.
+
+\item {\bf exclude\_aux\_output} ({\it bool, false}): Flag to suppress the auxiliary datasets in the output file. In the moment it is the long-range longitudinal electric field as seen by the electrons.
+
+
+\item {\bf exclude\_aux\_output} ({\it bool, true}): Flag to reduce the size of the current dataset for the electron beam. Under most circumstances the current profile is constant and only the initial current profile is written out. However, simulation with {\tt one4one} set to true and sorting events the current profile might change. Example are ESASE/HGHG schemes. By setting the flag to false the current profile is written out at each output step similar to radiation power and bunching profile
+
+
+
+
+
 
 \end{itemize}
 

@@ -73,9 +73,31 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   lat->generateLattice(setup->getStepLength(),setup->getReferenceLength(),setup->getReferenceEnergy(),alt, und);  
   und->updateOutput(zstop,output_step);
   und->updateMarker(dumpFieldStep,dumpBeamStep,sort_step,zstop);
-
   beam->setBunchingHarmonicOutput(bunchharm);
-  beam->set_global_stat(setup->getBeamGlobalStat());
+
+  // controling the output
+
+  bool ssrun=true;    
+  if ((size > 1) or (beam->beam.size()>1)){
+    ssrun=false;              // no steady-state run if there is more than one core or more than one slice
+  }
+  if (ssrun){    // disable global output when there is only one slice calculated 
+    beam->set_global_stat(false);
+    for (int i=0; i<field->size();i++){
+      field->at(i)->set_global_stat(false);
+    }
+  } else {
+    beam->set_global_stat(setup->getBeamGlobalStat());
+    for (int i=0; i<field->size();i++){
+      field->at(i)->set_global_stat(setup->getFieldGlobalStat());
+    }
+  } 
+  for (int i=0; i<field->size();i++){
+    field->at(i)->setOutput(setup->outputFFT(),setup->outputSpatial(),setup->outputIntensity());
+  }
+  beam->setOutput(setup->outputCurrent(),setup->outputEnergy(),setup->outputSpatial(),setup->outputAux());
+
+
 
   // call to gencore to do the actual tracking.  
   Gencore core;

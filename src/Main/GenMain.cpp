@@ -16,7 +16,7 @@
 
 
 // genesis headerfiles & classes
-
+#include "CodeTracing.h"
 
 #include "Beam.h"
 #include "Field.h"
@@ -54,8 +54,8 @@ const double ce     = 4.8032045e-11;
 
 
 const int versionmajor = 4;
-const int versionminor = 4;
-const int versionrevision = 0;
+const int versionminor = 5;
+const int versionrevision = 1;
 const bool versionbeta=true;
 
 string meta_inputfile;
@@ -63,6 +63,9 @@ string meta_latfile;
 
 bool MPISingle;  // global variable to do mpic or not
 
+vector<string> event;
+vector<double> evtime;
+double evt0;
 
 double genmain (string mainstring, string latstring, string outstring, int in_seed, bool split) {
 
@@ -81,6 +84,12 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
 
 
         time_t timer;
+	clock_t clocknow;
+	clock_t clockstart = clock();
+	evt0 = double(clockstart);
+	event.push_back("start");
+	evtime.push_back(0);
+
 	if (rank==0){
           time(&timer);
           cout << "---------------------------------------------" << endl;
@@ -117,7 +126,12 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
         parser.open(mainstring,rank);
 
         while(parser.parse(&element,&argument)){
-           
+	  //----------------------------------------------
+	  // log event
+	  clocknow=clock();
+	  event.push_back(element);
+	  evtime.push_back(double(clocknow-clockstart));
+
           //----------------------------------------------
 	  // setup & parsing the lattice file
 
@@ -317,15 +331,32 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
           delete field[i];
 
 
+	clocknow=clock();
+	event.push_back("end");
+	evtime.push_back(double(clocknow-clockstart));
+
+
  	if (rank==0) {
+	  double elapsed_Sec=double(clocknow-clockstart)/CLOCKS_PER_SEC;
+
           time(&timer);
           cout << endl<< "Program is terminating..." << endl;
 	  cout << "Ending Time: " << ctime(&timer);
+	  cout << "Total Wall Clock Time: " << elapsed_Sec << " seconds" << endl;
           cout << "-------------------------------------" << endl;
 
+
+	  /* tracing report
+	  cout << "Tracing Summary" << endl;
+	  cout << "==========================" << endl;
+	  cout << setw(10) << "Event" << setw(8) << "dT (s)" << endl;
+	  cout << "--------------------------" << endl;
+	  for (int i=0; i<evtime.size(); i++){
+	    cout << setw(10) << event[i] << setw(8) << evtime[i]/CLOCKS_PER_SEC << " " << endl;
+	  }
+	  cout << "--------------------------" << endl;
+	  */
         }
-
-
 
         return ret;
 
