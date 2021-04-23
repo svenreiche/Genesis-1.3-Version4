@@ -20,6 +20,10 @@ Field::Field(){
   harm=1;
   polarization=false;
   disabled=false;
+  out_global=true;
+  doFFT=true;
+  doSpatial=true;
+  doIntensity=true;
 }
 
 
@@ -54,8 +58,6 @@ void Field::init(int nsize, int ngrid_in, double dgrid_in, double xlambda0, doub
   p  = fftw_plan_dft_2d(ngrid,ngrid,reinterpret_cast<fftw_complex*>(in),reinterpret_cast<fftw_complex*>(out),FFTW_FORWARD,FFTW_MEASURE);
 #endif
 
-
-
   xks=4.*asin(1)/xlambda;
   first=0;                                // pointer to slice which correspond to first in the time window
   dz_save=0;
@@ -74,20 +76,59 @@ void Field::initDiagnostics(int nz)
 
 
   power.resize(ns*nz);
-  xavg.resize(ns*nz);
-  xsig.resize(ns*nz);
-  yavg.resize(ns*nz);
-  ysig.resize(ns*nz);
+  if (doSpatial){
+    xavg.resize(ns*nz);
+    xsig.resize(ns*nz);
+    yavg.resize(ns*nz);
+    ysig.resize(ns*nz);
+  }
 #ifdef FFTW
-  txavg.resize(ns*nz);
-  txsig.resize(ns*nz);
-  tyavg.resize(ns*nz);
-  tysig.resize(ns*nz);
+  if (doFFT){  // output of FFT is requested
+    txavg.resize(ns*nz);
+    txsig.resize(ns*nz);
+    tyavg.resize(ns*nz);
+    tysig.resize(ns*nz);
+  } else {
+    txavg.resize(0);
+    txsig.resize(0);
+    tyavg.resize(0);
+    tysig.resize(0);
+  }
 #endif
   nf_intensity.resize(ns*nz);
   nf_phi.resize(ns*nz);
   ff_intensity.resize(ns*nz);
   ff_phi.resize(ns*nz);
+  if (out_global){
+    energy.resize(nz);
+    if (doSpatial){
+      gl_xsig.resize(nz);
+      gl_xavg.resize(nz);
+      gl_ysig.resize(nz);
+      gl_yavg.resize(nz);
+    } else {
+      gl_xsig.resize(0);
+      gl_xavg.resize(0);
+      gl_ysig.resize(0);
+      gl_yavg.resize(0);
+    }
+    gl_nf_intensity.resize(nz);
+    gl_ff_intensity.resize(nz);
+#ifdef FFTW
+    if (doFFT){
+      gl_txsig.resize(nz);
+      gl_txavg.resize(nz);
+      gl_tysig.resize(nz);
+      gl_tyavg.resize(nz);
+    } else {
+      gl_txsig.resize(0);
+      gl_txavg.resize(0);
+      gl_tysig.resize(0);
+      gl_tyavg.resize(0);
+    }
+#endif
+  }
+
 }
 
 
@@ -247,6 +288,25 @@ void Field::diagnostics(bool output)
   int ds=field.size();
   int ioff=idx*ds;
 
+  double acc_power=0;
+  double acc_x=0;
+  double acc_x2=0;
+  double acc_y=0;
+  double acc_y2=0;
+  double acc_nf=0;
+  double acc_ff=0;
+#ifdef FFTW
+  double acc_tpower=0;
+  double acc_tx=0;
+  double acc_tx2=0;
+  double acc_ty=0;
+  double acc_ty2=0;
+#endif
+
+  double ks=4.*asin(1)/xlambda;
+  double scl=dgrid*eev/ks;
+  double scltheta=xlambda/ngrid/dgrid;
+
   for (int is=0; is < ds; is++){
     int islice= (is+first) % ds ;   // include the rotation due to slippage
  
@@ -283,43 +343,67 @@ void Field::diagnostics(bool output)
         bysig+=dy*dy*wei;
       }
     }
+
+
+    if (out_global){
+      acc_power+=bpower;
+      acc_x +=bxavg;
+      acc_x2+=bxsig;  
+      acc_y +=byavg;
+      acc_y2+=bysig;
+    }
     
     if (bpower>0){
       bxavg/=bpower;
-      bxsig=sqrt(abs(bxsig/bpower-bxavg*bxavg));
+      bxsig/=bpower;
       byavg/=bpower;
-      bysig=sqrt(abs(bysig/bpower-byavg*byavg));
+      bysig/=bpower;
     }
-
+    bxsig=sqrt(abs(bxsig-bxavg*bxavg));
+    bysig=sqrt(abs(bysig-byavg*byavg));
 
 
     // calculate the divergence angle
 #ifdef FFTW
-    fftw_execute(p);
-    for (int iy=0;iy<ngrid;iy++){
-      double dy=static_cast<double>(iy)+shift;
-      for (int ix=0;ix<ngrid;ix++){
-        double dx=static_cast<double>(ix)+shift;
-	int iiy=(iy+(ngrid+1)/2) % ngrid;
-	int iix=(ix+(ngrid+1)/2) % ngrid;
-	int ii=iiy*ngrid+iix;
-        loc=out[ii];
-	double wei=loc.real()*loc.real()+loc.imag()*loc.imag();
-        fpower+=wei;
-        fxavg+=dx*wei;
-        fxsig+=dx*dx*wei;
-        fyavg+=dy*wei;
-        fysig+=dy*dy*wei;
+    if (doFFT){
+      fftw_execute(p);
+      for (int iy=0;iy<ngrid;iy++){
+	double dy=static_cast<double>(iy)+shift;
+	for (int ix=0;ix<ngrid;ix++){
+	  double dx=static_cast<double>(ix)+shift;
+	  int iiy=(iy+(ngrid+1)/2) % ngrid;
+	  int iix=(ix+(ngrid+1)/2) % ngrid;
+	  int ii=iiy*ngrid+iix;
+	  loc=out[ii];
+	  double wei=loc.real()*loc.real()+loc.imag()*loc.imag();
+	  fpower+=wei;
+	  fxavg+=dx*wei;
+	  fxsig+=dx*dx*wei;
+	  fyavg+=dy*wei;
+	  fysig+=dy*dy*wei;
+	}
       }
+
+      if (out_global){
+	acc_tpower+=fpower;
+	acc_tx +=fxavg;
+	acc_tx2+=fxsig;   // bxsig and bysig are in this part still variances
+	acc_ty +=fyavg;
+	acc_ty2+=fysig;
+      }
+ 
+
+      if (fpower>0){
+	  fxavg/=fpower;
+	  fxsig/=fpower;
+	  fyavg/=fpower;
+	  fysig/=fpower;
+      }
+
+      fxsig=sqrt(abs(fxsig-fxavg*fxavg));
+      fysig=sqrt(abs(fysig-fyavg*fyavg));
     }
 
-    if (fpower>0){
-	  fxavg/=fpower;
-	  fxsig=sqrt(abs(fxsig/fpower-fxavg*fxavg));
-	  fyavg/=fpower;
-	  fysig=sqrt(abs(fysig/fpower-fyavg*fyavg));
-    }
-    double scltheta=xlambda/ngrid/dgrid;
 #endif
 
 
@@ -336,9 +420,12 @@ void Field::diagnostics(bool output)
     if (bintensity > 0) {
       bphinf=atan2(loc.imag(),loc.real()); 
     }
+    if (out_global){
+      acc_ff+=bfarfield;
+      acc_nf+=bintensity;
+    }
 
-    double ks=4.*asin(1)/xlambda;
-    double scl=dgrid*eev/ks;
+
     bpower*=scl*scl/vacimp; // scale to W
     bxavg*=dgrid;
     bxsig*=dgrid;
@@ -347,21 +434,99 @@ void Field::diagnostics(bool output)
     bintensity*=eev*eev/ks/ks/vacimp;  // scale to W/m^2
 
     power[ioff+is]=bpower;
-    xavg[ioff+is] =bxavg;
-    xsig[ioff+is] =bxsig;
-    yavg[ioff+is] =byavg;
-    ysig[ioff+is] =bysig;
+    if (doSpatial) {
+      xavg[ioff+is] =bxavg;
+      xsig[ioff+is] =bxsig;
+      yavg[ioff+is] =byavg;
+      ysig[ioff+is] =bysig;
+    }
 #ifdef FFTW
-    txavg[ioff+is]=fxavg*scltheta;
-    txsig[ioff+is]=fxsig*scltheta;
-    tyavg[ioff+is]=fyavg*scltheta;
-    tysig[ioff+is]=fysig*scltheta;
+    if (doFFT){
+      txavg[ioff+is]=fxavg*scltheta;
+      txsig[ioff+is]=fxsig*scltheta;
+      tyavg[ioff+is]=fyavg*scltheta;
+      tysig[ioff+is]=fysig*scltheta;
+    }
 #endif
     nf_intensity[ioff+is]=bintensity;
     nf_phi[ioff+is]=bphinf;
     ff_intensity[ioff+is]=bfarfield;
     ff_phi[ioff+is]=bphiff;
 
+  } 
+  
+  // accumulate all data fromt eh cores
+  double temp=0;
+  int size;      
+  if(out_global) {
+      MPI_Comm_size(MPI_COMM_WORLD, &size);
+      if (size>1){
+	MPI_Allreduce(&acc_power, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_power=temp;
+	MPI_Allreduce(&acc_x, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_x=temp;
+	MPI_Allreduce(&acc_x2, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_x2=temp;
+	MPI_Allreduce(&acc_y, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_y=temp;
+	MPI_Allreduce(&acc_y2, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_y2=temp;
+	MPI_Allreduce(&acc_nf, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_nf=temp;
+	MPI_Allreduce(&acc_ff, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	acc_ff=temp;
+#ifdef FFTW
+	if (doFFT){
+	  MPI_Allreduce(&acc_tpower, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	  acc_tpower=temp;
+	  MPI_Allreduce(&acc_tx, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	  acc_tx=temp;
+	  MPI_Allreduce(&acc_tx2, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	  acc_tx2=temp;
+	  MPI_Allreduce(&acc_ty, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	  acc_ty=temp;
+	  MPI_Allreduce(&acc_ty2, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+	  acc_ty2=temp;
+	}
+#endif
+      }
+
+      energy[idx]=acc_power*scl*scl/vacimp*slicelength/3e8;  // energy 
+      if (acc_power == 0){
+	acc_power=1.;
+      }
+      if (doSpatial){
+        gl_xavg[idx]=acc_x/acc_power;
+        gl_xsig[idx]=acc_x2/acc_power;
+        gl_yavg[idx]=acc_y/acc_power;
+        gl_ysig[idx]=acc_y2/acc_power;
+        gl_xsig[idx]=sqrt(abs(gl_xsig[idx]-gl_xavg[idx]*gl_xavg[idx]));
+        gl_ysig[idx]=sqrt(abs(gl_ysig[idx]-gl_yavg[idx]*gl_yavg[idx]));
+        gl_xavg[idx]*=dgrid;
+        gl_xsig[idx]*=dgrid;
+        gl_yavg[idx]*=dgrid;
+        gl_ysig[idx]*=dgrid;
+      }
+#ifdef FFTW
+      if (doFFT){
+	if (acc_tpower == 0){
+	  acc_tpower=1.;
+	}
+	gl_txavg[idx]=acc_tx/acc_tpower;
+	gl_txsig[idx]=acc_tx2/acc_tpower;
+	gl_tyavg[idx]=acc_ty/acc_tpower;
+	gl_tysig[idx]=acc_ty2/acc_tpower;
+	gl_txsig[idx]=sqrt(abs(gl_txsig[idx]-gl_txavg[idx]*gl_txavg[idx]));
+	gl_tysig[idx]=sqrt(abs(gl_tysig[idx]-gl_tyavg[idx]*gl_tyavg[idx]));
+	gl_txavg[idx]*=scltheta;
+	gl_txsig[idx]*=scltheta;
+	gl_tyavg[idx]*=scltheta;
+	gl_tysig[idx]*=scltheta;
+      }
+#endif
+      double norm=1./double(size*field.size());
+      gl_nf_intensity[idx]=acc_nf*norm*eev*eev/ks/ks/vacimp;
+      gl_ff_intensity[idx]=acc_ff*norm;
   }
   
   idx++;

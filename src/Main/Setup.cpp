@@ -17,6 +17,13 @@ Setup::Setup()
   delz=0.015; 
   seed=123456789;
   beam_global_stat=false;
+  field_global_stat=false;
+  exclude_spatial_output=false;
+  exclude_fft_output=false;
+  exclude_intensity_output=false;
+  exclude_energy_output=false;
+  exclude_aux_output=false;
+  exclude_current_output=true;
 
   runcount = 0 ;  // count of runs in conjunction of calls of altersetup
 }
@@ -39,6 +46,13 @@ void Setup::usage(){
   cout << " bool one4one = false" << endl;
   cout << " bool shotnoise = true" << endl;
   cout << " bool beam_global_stat = false" << endl;
+  cout << " bool field_global_stat = false" << endl;
+  cout << " bool exclude_spatial_output = false" << endl;
+  cout << " bool exclude_fft_output = false" << endl;
+  cout << " bool exclude_intensity_output = false" << endl;
+  cout << " bool exclude_energy_output = false" << endl;
+  cout << " bool exclude_aux_output = false" << endl;
+  cout << " bool exclude_current_output = true" << endl;
   cout << "&end" << endl << endl;
   return;
 }
@@ -65,7 +79,14 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
   if (arg->find("npart")!=end)    {npart  = atoi(arg->at("npart").c_str());  arg->erase(arg->find("npart"));}
   if (arg->find("nbins")!=end)    {nbins  = atoi(arg->at("nbins").c_str());  arg->erase(arg->find("nbins"));}
   if (arg->find("shotnoise")!=end){shotnoise  = atob(arg->at("shotnoise"));  arg->erase(arg->find("shotnoise"));}
-  if (arg->find("beam_global_stat")!=end) {beam_global_stat = atob(arg->at("beam_global_stat"));  arg->erase(arg->find("beam_global_stat"));}
+  if (arg->find("beam_global_stat")!=end)  {beam_global_stat  = atob(arg->at("beam_global_stat"));   arg->erase(arg->find("beam_global_stat"));}
+  if (arg->find("field_global_stat")!=end) {field_global_stat = atob(arg->at("field_global_stat"));  arg->erase(arg->find("field_global_stat"));}
+  if (arg->find("exclude_spatial_output")!=end)   {exclude_spatial_output  = atob(arg->at("exclude_spatial_output"));   arg->erase(arg->find("exclude_spatial_output"));}
+  if (arg->find("exclude_fft_output")!=end)       {exclude_fft_output      = atob(arg->at("exclude_fft_output"));       arg->erase(arg->find("exclude_fft_output"));}
+  if (arg->find("exclude_intensity_output")!=end) {exclude_intensity_output= atob(arg->at("exclude_intensity_output")); arg->erase(arg->find("exclude_intensity_output"));}
+  if (arg->find("exclude_energy_output")!=end)    {exclude_energy_output   = atob(arg->at("exclude_energy_output"));    arg->erase(arg->find("exclude_energy_output"));}
+  if (arg->find("exclude_aux_output")!=end)       {exclude_aux_output      = atob(arg->at("exclude_aux_output"));       arg->erase(arg->find("exclude_aux_output"));}
+  if (arg->find("exclude_current_output")!=end)   {exclude_current_output  = atob(arg->at("exclude_current_output"));   arg->erase(arg->find("exclude_current_output"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &setup" << endl; this->usage();}
@@ -76,16 +97,6 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
   if (one4one)
   {
     nbins = 1;
-  }
-  else
-  {
-    // global beam statistics only reasonable for one4one mode
-    if(beam_global_stat) {
-      if(rank==0) {
-        cout << "one4one=0 => forcing beam_global_stat off" << endl;
-      }
-      beam_global_stat=false;
-    }
   }
 
   lat->parse(lattice,beamline,rank);
