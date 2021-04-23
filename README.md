@@ -7,19 +7,19 @@
   - [setup](#setup)
   - [altersetup](#altersetup)
   - [lattice](#lattice)
-  - time
-  - profiles
-  - beam
-  - field
-  - importdistribution
-  - importbeam
-  - importfield
-  - efield
-  - sponrad.
-  - wake
-  - sort
-  - write
-  - track
+  - [time](#time)
+  - [profiles](#profiles)
+  - [beam](#beam)
+  - [field](#field)
+  - [importdistribution](#importditribution)
+  - [importbeam](#importbeam)
+  - [importfield](#importfield)
+  - [efield](#efield)
+  - [sponrad](#sponrad)
+  - [wake](#wake)
+  - [sort](#sort)
+  - [write](#write)
+  - [track](#track)
   
 - The Lattice File
   - Undulator
@@ -312,250 +312,220 @@ one error source to the lattice.
 - `add` (*bool, true*): If the value is true the changes are added to the existing value. For
     a value of false the old values are overwritten.
 
-## time
+<a name="time">*time*</a>
 
 This namelist defines the time window/range for simulation with more than just one slice.
-For reference the complementary axis to the undulator axis, which is normally the position
-in the time frame, is expressed in a position s. Normally everything is aligned to the
-origins= 0, in particular when external distributions are imported. Note that for parallel
-execution the number of slices per core should be the same for an efficient writing of the
+For reference the complementary axis of the undulator axis, which is normally the position
+in the time frame, is expressed in a position `s`. Normally everything is aligned to the
+origins = 0, in particular when external distributions are imported. Note that for parallel
+execution the number of slices per core must be the same for an efficient writing of the
 output files. Therefore Genesis extends the time-window to symmetrize the number of slices
-per core by extending it towards larger values ofs. As an example withXLAMDS=1e-6and
-a lengthSLEN=20e-6a call of Genesis with 24 cores would generate a time-window of 24
+per core by extending it towards larger values of `s`. As an example with `XLAMDS=1e-6` and
+a length `SLEN=20e-6` a call of Genesis with 24 cores would generate a time-window of 24
 microns because each core would have one slice, while 15 cores would expand it to 30 microns
 with 2 slices per core each.
 
-this module defines also scans in either field or beam parameters if the corresponding flag
+This module defines also scans in either field or beam parameters if the corresponding flag
 is set. Technically it generates the beam and field as for time-dependence but disables
 slippage during simulations. That way the radiation field is kept in the same slice, acting as
 steady-state simulations.
 
-- s0(double, 0): Starting point of the time-window in meters.
-- slen(double, 0): Length of the time window in meters. Note that for parallel jobs this
+- `s0` (*double, 0*): Starting point of the time-window in meters.
+- `slen` (*double, 0*): Length of the time window in meters. Note that for parallel jobs this
     might be adjusted towards larger values.
-- sample (int, 1)): Sample rate in units of the reference wavelength from thesetup
-    namelist, so that the number of slices is given bySLEN / LAMBDA0/SAMPLEafterSLEN
+- `sample` (*int, 1*): Sample rate in units of the reference wavelength from thesetup
+    namelist, so that the number of slices is given by `SLEN / LAMBDA0 /SAMPLE` after `SLEN`
     has been adjusted to fit the cluster size.
-
-
-16 GENESIS 1.3 – Manual
-
-- time (bool, true): Flag to indicate time-dependent run. Note that time-dependent
+- `time` (*bool, true*): Flag to indicate time-dependent run. Note that time-dependent
     simulations are enabled already by using this namelist. This flag has the functionality
     to differentiate between time-dependent run and scans, which disable the slippage in
-    the tracking. To restrict the simulation to steady-state thetimenamelist has to be
+    the tracking. To restrict the simulation to steady-state the `time` namelist has to be
     omitted from the input deck.
 
-## profiles
+<a name="profiles">*profiles*</a>
 
 Profiles are defining a dependence on the position in the time frame, which then can be used
 to defined the behavior of various parameters such as slice emittance, energy spread etc. All
 profiles are in common that they have to have a label with which they are referred to in
 other namelists. To indicate the reference to a profile and thus allows to distinguish Genesis
 between normal numbers the label name must have the additional character ’@’ in front.
-E.g. if the name of the label isenergythen in the beam name list it is referred to bygamma
-= @energy.
+E.g. if the name of the label is `energy` then in the beam name list it is referred to by `gamma
+= @energy`.
 
-profileconst
+*profile_const*
 
-- label(string, < empty >): Name of the profile, which is used to refer to it in later
+- `label` (*string, < empty >*): Name of the profile, which is used to refer to it in later
     calls of namelists
-- c0(double, 0): constant value to be used.
+- `c0` (*double, 0*): constant value to be used.
 
-profilegauss
+*profile_gauss*
 
-- label(string, < empty >): Name of the profile, which is used to refer to it in later
+- `label`(*string, < empty >*): Name of the profile, which is used to refer to it in later
     calls of namelists
-- c0(double, 0): Maximum function value of the Gaussian distribution
-- s0(double, 0): Center point of the Gaussian distribution
-- sig(double, 0): Standard deviation of the Gaussian distribution
+- `c0` (*double, 0*): Maximum function value of the Gaussian distribution
+- `s0` (*double, 0*): Center point of the Gaussian distribution
+- `sig` (*double, 0*): Standard deviation of the Gaussian distribution
 
-profilestep
+*profile_step*
 
-- label(string, < empty >): Name of the profile, which is used to refer to it in later
+- `label` (*string, < empty >*): Name of the profile, which is used to refer to it in later
     calls of namelists
-- c0(double, 0): Constant term
-- sstart(double, 0): Starting point of the step function
-- send(double, 0): Ending point of the step function
+- `c0` (*double, 0*): Constant term
+- `s_start` (*double, 0*): Starting point of the step function
+- `s_end` (*double, 0*): Ending point of the step function
 
+*profile_polynom*
 
-The Main Input File 17
-
-profilepolynom
-
-- label(string, < empty >): Name of the profile, which is used to refer to it in later
+- `label` (*string, < empty >*): Name of the profile, which is used to refer to it in later
     calls of namelists
-- c0(double, 0): Constant term
-- c1(double, 0): Term proportional tos
-- c2(double, 0): Term proportional tos^2
-- c3(double, 0): Term proportional tos^3
-- c4(double, 0): Term proportional tos^4
+- `c0`(*double, 0*): Constant term
+- `c1`(*double, 0*): Term proportional to s
+- `c2`(*double, 0*): Term proportional to s^2
+- `c3`(*double, 0*): Term proportional to s^3
+- `c4`(*double, 0*): Term proportional to s^4
 
-profilefile
+*profile_file*
 
-- label(string, < empty >): Name of the profile, which is used to refer to it in later
+- `label`(*string, < empty >*): Name of the profile, which is used to refer to it in later
     calls of namelists
-- xdatal(string, < empty >): Points to a dataset in an HDF5 file to define thes-
-    position for the look-up table. The format isfilename/group1/.../groupn/datasetname,
+- `xdata` (*string, < empty >*): Points to a dataset in an HDF5 file to define thes-
+    position for the look-up table. The format is `filename/group1/.../groupn/datasetname`,
     where the naming of groups is not required if the dataset is at root level of the HDF
     file
-- ydata (string, < empty >): Same as y data but for the function values of the
+- `ydata` (*string, < empty >*): Same as y data but for the function values of the
     look-up table.
-- isTime(bool, false): If true thes-position is a time variable and therefore multiplied
-    with the speed of lightcto get the position in meters.
-- reverse(bool, false): if true the order in the look-up table is reverse. This is sometimes
+- `isTime` (*bool, false*): If true the `s`-position is a time variable and therefore multiplied
+    with the speed of light `c` to get the position in meters.
+- `reverse`(*bool, false*): if true the order in the look-up table is reverse. This is sometimes
     needed because time and spatial coordinates differ sometimes by a minus sign.
 
-## beam
+<a name="beam">*beam*</a>
 
 This namelist initiates the generation of the particle distribution to be kept in memory. Any
 time-dependence has to be defined before calling this namelist.
 
-- gamma(double, gamma0 or profile label): Mean energy in units of the electron rest
-    mass. If default value is given by the reference energy from thesetupnamelist.
-- delgam(double, 0 or profile label): RMS energy spread in units of the electron rest
+- `gamma` (*double, gamma0 or profile label*): Mean energy in units of the electron rest
+    mass. If default value is given by the reference energy from the `setup`-namelist.
+- `delgam` (*double, 0 or profile label*): RMS energy spread in units of the electron rest
     mass.
-- current(double, 1000 or profile label): Current in Amperes.
-
-
-18 GENESIS 1.3 – Manual
-
-- ex(double, 0.3e-6 or profile label): Normalized emittance in x in units of meters
-- ey(double, 0.3e-6 or profile label): Normalized emittance in y in units of meters
-- betax (double, 15 or matched value or profile label): Initial beta-function in x in
+- `current` (*double, 1000 or profile label*): Current in Amperes.
+- `ex` (*double, 0.3e-6 or profile label*): Normalized emittance in x in units of meters
+- `ey` (*double, 0.3e-6 or profile label*): Normalized emittance in y in units of meters
+- `betax` (*double, 15 or matched value or profile label*): Initial beta-function in x in
     meters. If the matched command has been invoked before the default values are set to
     the results.
-- betay (double, 15 or matched value or profile label): Initial beta-function in y in
+- `betay` (*double, 15 or matched value or profile label*): Initial beta-function in y in
     meters. If the matched command has been invoked before the default values are set to
     the results.
-- alphax(double, 0 or matched value or profile label): Initial alpha-function in x. If the
+- `alphax` (*double, 0 or matched value or profile label*): Initial alpha-function in x. If the
     matched command has been invoked before the default values are set to the results.
-- alphay(double, 0 or matched value or profile label): Initial alpha-function in y. If the
+- `alphay` (*double, 0 or matched value or profile label*): Initial alpha-function in y. If the
     matched command has been invoked before the default values are set to the results.
-- xcenter(double, 0 or profile label): Initial centroid position in x in meter.
-- ycenter(double, 0 or profile label): Initial centroid position in y in meter.
-- pxcenter(double, 0 or profile label): Initial centroid momentum in x in units ofγβx.
-- pycenter(double, 0 or profile label): Initial centroid momentum in y in units ofγβy.
-- xcenter(double, 0 or profile label): Initial centroid position in x in meter.
-- bunch(double, 0 or profile label): Initial bunching value
-- bunchphase(double, 0 or profile label): Initial phase of the bunching
-- emod(double, 0 or profile label): Initial energy modulation in units of the electron
-    rest mass
-- emodphase(double, 0 or profile label): Initial phase of the energy modulation
+- `xcenter` (*double, 0 or profile label*): Initial centroid position in x in meter.
+- `ycenter` (*double, 0 or profile label*): Initial centroid position in y in meter.
+- `pxcenter` (*double, 0 or profile label*): Initial centroid momentum in x in units ofγβx.
+- `pycenter` (*double, 0 or profile label*): Initial centroid momentum in y in units ofγβy.
+- `bunch` (*double, 0 or profile label*): Initial bunching value
+- `bunchphase` (*double, 0 or profile label*): Initial phase of the bunching
+- `emod` (*double, 0 or profile label*): Initial energy modulation in units of the electron
+    rest mass. This modulation is on the scale of the reference wavelength
+- `emodphase` (*double, 0 or profile label*): Initial phase of the energy modulation
 
-## field
+<a name="field">*field*</a>
 
 This namelist initiate the generation of the field distribution. It differs in one point from the
-generation of the beam. It can be called multiple times. If the variableaccumulateis set
+generation of the beam. It can be called multiple times. If the variable `accumulate` is set
 to true, it does not delete the previous distribution but adds up the wavefronts. That way
 higher mode content in either spatial and time direction can be created.
 
-- lambda (double, lambda0): Central frequency of the radiation mode. The default
-    value is the reference wavelength from thesetupnamelist.
-- power(double, 0 or profile label): Radiation power in Watts
-
-
-The Main Input File 19
-
-- phase(double, 0 or profile label): radiation phase in rads. Note that a linear profile
+- `lambda` (*double, lambda0*): Central frequency of the radiation mode. The default
+    value is the reference wavelength from the `setup`-namelist.
+- `power` (*double, 0 or profile label*): Radiation power in Watts
+- `phase` (*double, 0 or profile label*): radiation phase in rads. Note that a linear profile
     results in a shift in the radiation wavelength, which is also the method if for the variable
-    lambdaa different value than the reference wavelength is used. In case of conflicts the
+    `lambda` a different value than the reference wavelength is used. In case of conflicts the
     profile for the phase definition has priority.
-- waistpos(double, 0 or profile label): Position where the focal point is located relative
+- `waist_pos` (*double, 0 or profile label*): Position where the focal point is located relative
     to the undulator entrance. Negative values place it before, resulting in a diverging
     radiation field.
-- waistsize(double, 100e-9 or profile label): Waist size according to the definition of
-    w 0 according to Siegman’s ’Laser’ handbook
-- xcenter(double, 0): Center position in x in meter of the Gauss-Hermite mode
-- ycenter(double, 0): Center position in y in meter of the Gauss-Hermite mode
-- xangle(double, 0): Injection angle in x in rad of the Gauss-Hermite mode
-- yangle(double, 0): Injection angle in y in rad of the Gauss-Hermite mode
-- dgrid(double, 1e-3 or by existing field): Grid extension from the center to one edge.
+- `waist_size` (*double, 100e-9 or profile label*): Waist size according to the definition of
+    w_0 according to Siegman’s ’Laser’ handbook
+- `xcenter` (*double, 0*): Center position in x in meter of the Gauss-Hermite mode
+- `ycenter` (*double, 0*): Center position in y in meter of the Gauss-Hermite mode
+- `xangle` (*double, 0*): Injection angle in x in rad of the Gauss-Hermite mode
+- `yangle` (*double, 0*): Injection angle in y in rad of the Gauss-Hermite mode
+- `dgrid` (*double, 1e-3 or by existing field*): Grid extension from the center to one edge.
     The whole grid is twice as large with 0 as the center position
-- ngrid(int, 151 or by existing field): Number of grid points in one dimension. This
+- `ngrid` (*int, 151 or by existing field*): Number of grid points in one dimension. This
     value should be odd to enforce a grid point directly on axis. Otherwise the convergence
     in the simulations could be worse.
-- harm(int, 1): Harmonic number of the radiation field with respect to the reference
+- `harm` (*int, 1*): Harmonic number of the radiation field with respect to the reference
     wavelength.
-- nx(int, 0): Mode number in x of the Gauss-Hermite mode
-- ny(int, 0): Mode number in y of the Gauss-Hermite mode
-- accumulate(bool, false): If set the generated field is added to an existing field instead
+- `nx` (*int, 0*): Mode number in x of the Gauss-Hermite mode
+- `ny` (*int, 0*): Mode number in y of the Gauss-Hermite mode
+- `accumulate` (*bool, false*): If set the generated field is added to an existing field instead
     of overwriting it.
 
-## importdistribution
+<a name="importdistribution">*importdistribution*</a>
 
 This namelist controls the import of an external distribution which are generated from
-Elegant. This can be directly in SDDS format or converted to HDF5 format, which is done
-automatically by Genesis if the SDDS file format is indicated. However it is recommended
-to do the conversion manually before the start of genesis. The distribution has to provide all
+Elegant. The file has to be in HDF5 format. In the distribution is a shell script to convert an Elegant sdds-output file
+into the HDF5 format. The distribution has to provide all
 6 dimensions while the charge is supplied in this namelist. When imported the longitudinal
-position is changed so that the last particles is ats= 0 micron.
-
+position is changed so that the last particles is at s= 0 micron.
 Note that this namelist will be expanded in the future, to enable tilts and match/center to
 a core part of the beam
 
-
-20 GENESIS 1.3 – Manual
-
-- file(string,<empty>): The file name of the distribution, including possible relative
+- `file` (*string,< empty >*): The file name of the distribution, including possible relative
     directories.
-- sdds(bool, false): If set to true, the file is converted first to an HDF5 file by the shell
-    scriptsdds2hdf5-dist.sh. A new file is generated with the additional extension.h
-    and then used for the parsing.
-- charge (double, 0): Total charge of the distribution to calculate the current and
+- `charge` (*double, 0*): Total charge of the distribution to calculate the current and
     individual charge per macro particle.
-- slicewidth(double, 0.01): the fraction in length of the distribution which is used for
+- `slicewidth` (*double, 0.01*): the fraction in length of the distribution which is used for
     reconstruction. E.g if the length is 10 micron and slic ewidth 0.02 then the reconstruc-
-    tion at the positions= 4 micron is using the particle in the distribution, which are
+    tion at the positions= 4 micron is using those particles in the distribution, which are
     located in the slice from 3.9 microns to 4.1 microns.
-- output(bool, false). If set to true an output file is generated with the extension’.ana.h5’
-    which contains the slice parameters of the particle distribution after the import and
-    conversion has finished. Note that this option is obsolete because the same output is
-    also included in the main output. Therefore this feature will be disabled soon.
-- center(bool, false): If set to true the particle distribution is recentered in transverse
+- `center` (*bool, false*): If set to true the particle distribution is recentered in transverse
     position, momenta and energy.
-- gamma0(double, gamma0 from setup): If centering is enabled, new center in energy
+- `gamma0` (*double, gamma0 from setup*): If centering is enabled, new center in energy
     in units of electron rest mass.
-- x0(double, 0): If centering is enabled, new center in x in meter.
-- y0(double, 0): If centering is enabled, new center in y in meter.
-- px0(double, 0): If centering is enabled, new mean momentum in x inγβx.
-- py0(double, 0): If centering is enabled, new mean momentum in y inγβy.
-- match(bool, false): If set to true the particle distribution is matched to new optical
+- `x0` (*double, 0*): If centering is enabled, new center in x in meter.
+- `y0` (*double, 0*): If centering is enabled, new center in y in meter.
+- `px0` (*double, 0*): If centering is enabled, new mean momentum in x in γβx.
+- `py0` (*double, 0*): If centering is enabled, new mean momentum in y in γβy.
+- `match` (*bool, false*): If set to true the particle distribution is matched to new optical
     function values.
-- betax(double, 15 or matched value): If matching is enabled, new beta function in x
+- `betax` (*double, 15 or matched value*): If matching is enabled, new beta function in x
     in meter.
-- betay(double, 15 or matched value): If matching is enabled, new beta function in y
+- `betay` (*double, 15 or matched value*): If matching is enabled, new beta function in y
     in meter.
-- alphax(double, 0 or matched value): If matching is enabled, new alpha function in x.
-- alphay(double, 0 or matched value): If matching is enabled, new alpha function in y.
+- `alphax`(*double, 0 or matched value*): If matching is enabled, new alpha function in x.
+- `alphay`(*double, 0 or matched value*): If matching is enabled, new alpha function in y.
 
 
-The Main Input File 21
-
-## importbeam
+<a name="importbeam">*importbeam*</a>
 
 The modules controls the import of a Genesis 1.3 particle file to replace the internal gen-
-eration of the particle distribution (note that the modulebeamshould not be called). The
-routine defines also the parameter for a time-dependent run if thetimenamelist hasn’t been
+eration of the particle distribution (note that the module `beam` should not be called). The
+routine defines also the parameter for a time-dependent run if the `time`-namelist hasn’t been
 defined yet.
 
-- file(string,<empty>): File name of a hdf5 complient datafile to contain the slice-wise
+- `file` (*string,<empty>*): File name of a hdf5 complient datafile to contain the slice-wise
     particle distribution. It has to follow the internal Genesis 1.3 syntax.
-- time(bool, true): If the time window hasn’t be defined it allows to run Genesis with
+- `time` (*bool, true*): If the time window hasn’t be defined it allows to run Genesis with
     the imported distribution in scan mode, when set tofalse. This would disable all
     slippage and long-range collective effects in the simulation
 
-## importfield
+<a name="importfield">*importfield*</a>
 
 The modules controls the import of a Genesis 1.3 field file to replace the internal generation of
-the field distribution (note that the modulefieldshould only be called afterwards with the
-accumulateoption enabled). The routine defines also the parameter for a time-dependent
-run if thetimenamelist hasn’t been defined yet.
+the field distribution (note that the module `field` should only be called afterwards with the
+`accumulate`-option enabled). The routine defines also the parameter for a time-dependent
+run if the `time`-namelist hasn’t been defined yet.
 
-- file(string,<empty>): File name of a hdf5 complient datafile to contain the slice-wise
+- `file` (*string,<empty>*): File name of a hdf5 complient datafile to contain the slice-wise
     particle distribution. It has to follow the internal Genesis 1.3 syntax.
-- harmonic(int, 1) defines the harmonic for the given Genesis run.
-- time(bool, true): If the time window hasn’t be defined it allows to run Genesis with
+- `harmonic` (*int, 1*) defines the harmonic for the given Genesis run.
+- `time` (*bool, true*): If the time window hasn’t be defined it allows to run Genesis with
     the imported distribution in scan mode, when set tofalse. This would disable all
     slippage and long-range collective effects in the simulation
 
