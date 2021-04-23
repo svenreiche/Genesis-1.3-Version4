@@ -9,11 +9,11 @@ int VersionInfo::Major(void) {
 }
 
 int VersionInfo::Minor(void) {
-	return(4);
+	return(5);
 }
 
 int VersionInfo::Rev(void) {
-	return(0);
+	return(1);
 }
 
 bool VersionInfo::isBeta(void) {

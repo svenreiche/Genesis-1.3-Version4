@@ -99,8 +99,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
     nbins = 1;
   }
 
-  lat->parse(lattice,beamline,rank);
-  return true;
+  return lat->parse(lattice,beamline,rank);
 }
 
 

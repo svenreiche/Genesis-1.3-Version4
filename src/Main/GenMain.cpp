@@ -16,7 +16,7 @@
 
 
 // genesis headerfiles & classes
-#include "CodeTracing.h"
+//#include "CodeTracing.h"
 
 #include "Beam.h"
 #include "Field.h"
@@ -57,9 +57,9 @@ string meta_latfile;
 
 bool MPISingle;  // global variable to do mpic or not
 
-vector<string> event;
-vector<double> evtime;
-double evt0;
+//vector<string> event;
+//vector<double> evtime;
+//double evt0;
 
 double genmain (string mainstring, string latstring, string outstring, int in_seed, bool split) {
 
@@ -80,9 +80,9 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
         time_t timer;
 	clock_t clocknow;
 	clock_t clockstart = clock();
-	evt0 = double(clockstart);
-	event.push_back("start");
-	evtime.push_back(0);
+	//	evt0 = double(clockstart);
+	//	event.push_back("start");
+	//	evtime.push_back(0);
 
 	if (rank==0){
           VersionInfo vi;
@@ -123,9 +123,9 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
         while(parser.parse(&element,&argument)){
 	  //----------------------------------------------
 	  // log event
-	  clocknow=clock();
-	  event.push_back(element);
-	  evtime.push_back(double(clocknow-clockstart));
+	  //	  clocknow=clock();
+	  //	  event.push_back(element);
+	  //	  evtime.push_back(double(clocknow-clockstart));
 
           //----------------------------------------------
 	  // setup & parsing the lattice file
@@ -326,12 +326,13 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
           delete field[i];
 
 
-	clocknow=clock();
-	event.push_back("end");
-	evtime.push_back(double(clocknow-clockstart));
+	//	event.push_back("end");
+	//	evtime.push_back(double(clocknow-clockstart));
 
+	clocknow=clock();
 
  	if (rank==0) {
+
 	  double elapsed_Sec=double(clocknow-clockstart)/CLOCKS_PER_SEC;
 
           time(&timer);
