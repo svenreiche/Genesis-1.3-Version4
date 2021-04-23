@@ -11,7 +11,7 @@
   - [profiles](#profiles)
   - [beam](#beam)
   - [field](#field)
-  - [importdistribution](#importditribution)
+  - [importdistribution](#importdistribution)
   - [importbeam](#importbeam)
   - [importfield](#importfield)
   - [efield](#efield)
@@ -529,35 +529,33 @@ run if the `time`-namelist hasn’t been defined yet.
     the imported distribution in scan mode, when set tofalse. This would disable all
     slippage and long-range collective effects in the simulation
 
-## efield
+
+<a name="efield">*efield*</a>
 
 This namelist controls the short range space charge on a length scale of the resonant wave-
-length or shorter. The calculation is done on a radial azimuthal grid, centered to the centroid
+length or shorter. The calculation is done on a radial-azimuthal grid, centered to the centroid
 position of the electron slice
 
-- rmax(double, 0): Scaling factor to define the grid size, which is given by the product
-    ofrmaxand the maximum offset of the macro particles from its centroid
-- nz(int, 0): Number of longitudinal Fourier component of the space charge field. Note
+- `rmax` (*double, 0*): Scaling factor to define the grid size, which is given by the product
+    of `rmax` and the maximum offset of the macro particles from its centroid
+- `nz` (*int, 0*): Number of longitudinal Fourier component of the space charge field. Note
     that this should be not in conflict with the beamlet size.
-- nphi(int, 0): Number of azimuthal modes in the calculation of the space charge field.
-- ngrid(int, 100): Number of grid points of the radial grid.
+- `nphi` (*int, 0*): Number of azimuthal modes in the calculation of the space charge field.
+- `ngrid` (*int, 100*): Number of grid points of the radial grid.
 
-
-22 GENESIS 1.3 – Manual
-
-## sponrad.
+<a name="sponrad">*sponrad*</a>
 
 This enables the effect of spontaneous radiation outside of the frequency band of the FEL
 simulation.
 
-- seed(int, 1234): Seed for random number generator to model the quantum fluctuation
+- `seed` (*int, 1234*): Seed for random number generator to model the quantum fluctuation
     of hard photons.
-- doLoss(bool, false): If set to true, electrons will loose energy due to the emission of
+- `doLoss` (*bool, false*): If set to true, electrons will loose energy due to the emission of
     spontaneous radiation within the undulator
-- doSpread (bool, false): If set to true, the energy spread will increase due to the
+- `doSpread` (*bool, false*): If set to true, the energy spread will increase due to the
     fluctuation in the emission of hard photons of the spontaneous radiation.
 
-## wake
+<a name="wake">*wake*</a>
 
 Genesis supports the calculation of three types of wakefields by specifying the typical input
 parameters (e.g. gap length for the geometric wakefield). It first solves the single particle
@@ -566,84 +564,80 @@ the wakepotential if a chirped beams undergoes a compression in a chicane. In ad
 external loss factor can be supplied, which can also refer to a profile. In this case it is treated
 as the full wake and subtracted from the particle energy directly.
 
-- loss (double, 0 or profile label): Loss in eV/m. This is a global loss function (in
-    particular if a profile is defined). It s function valuesV(s) remains unchanged even if
+*Note that this functionality hasn't been fully tested yet or optimized for rapid calculation*
+
+- `loss` (*double, 0 or profile label*): Loss in eV/m. This is a global loss function (in
+    particular if a profile is defined). Its function values V(s) remains unchanged even if
     the current profile changes
-- radius(double, 2.5e-3): Radius of the aperture if it is a round chanber or half the
+- `radius` (*double, 2.5e-3*): Radius of the aperture if it is a round chanber or half the
     distance in the case of two parallel plates.
-- roundpipe(bool, true): Flag to indicate the shape of the transverse cross-section of
+- `roundpipe` (*bool, true*): Flag to indicate the shape of the transverse cross-section of
     the aperture. If set to true a round aperture is assumed, otherwise the model has two
     parallel plates.
-- conductivity(double, 0): Conductivity of the vacuum material for the resistive wall
+- `conductivity` (*double, 0*): Conductivity of the vacuum material for the resistive wall
     wakefield function
-- relaxation(double, 0): Relaxation distance (aka the mean free path of the electron
+- `relaxation` (*double, 0*): Relaxation distance (aka the mean free path of the electron
     in the vacuum material) for the resistive wall wakefields
-- material(string,< empty >): String literal to define conductivity and relaxation
+- `material` (*string, < empty >*): String literal to define conductivity and relaxation
     distance for either copper or aluminum by using the two character label ’CU’ or ’AL’
     repectively. This overwrites also any explicit definition of the conductivity and relax-
     ation value.
-
-
-The Main Input File 23
-
-- gap(double, 0): Length in mm of a longitudinal gap in the aperture, exciting geometric
+- `gap` (*double, 0*): Length in mm of a longitudinal gap in the aperture, exciting geometric
     wakes.
-- lgap(double, 1.0): Effective length over which a single gap is applied. E.g. if there is
+- `lgap` (*double, 1.0*): Effective length over which a single gap is applied. E.g. if there is
     a periodicity of 4.5 m at which there is always the same gap in the aperture for the
     geometrice wakes, then this value should be put to 4.5 m.
-- hrough(double, 0): Amplitude in meters of a sinusoidal corrugation, modelling the
+- `hrough` (*double, 0*): Amplitude in meters of a sinusoidal corrugation, modeling the
     effect of surface roughness wakes.
-- lrough(double, 1): period lengthin meters of the sinusoidal corrugation of the surface
+- `lrough` (*double, 1*): period lengthin meters of the sinusoidal corrugation of the surface
     roughness model.
-- transient(bool, false): If set to true, Genesis includes the catch-up length of the origin
+- `transient` (*bool, false*): If set to true, Genesis includes the catch-up length of the origin
     of the wakefield to the particle effects. E.g. particles do not see immediatly the wake
     from those closer ahead of them than those further away. The catch-up distance is the
-    distance in the undulator added to the starting position ztrans. If set to false the
-    steady-state model is used, effectively settingztransto infinity. Enabling transient
+    distance in the undulator added to the starting position `ztrans`. If set to false the
+    steady-state model is used, effectively setting `ztrans` to infinity. Enabling transient
     calculation will update the wakefield at each integration step, which can slow down
     the calculations.
-- ztrans(double, 0): Reference location of the first source of the wake fields. A positive
+- `ztrans` (*double, 0*): Reference location of the first source of the wake fields. A positive
     value means that the condition for wakes (e.g. a small aperture in the vacuum chamber)
     has already started and there has been already some length to establish the wakes. For
-    a value of zero the surce is right at the undulator start, while a negative value prevents
+    a value of zero the source is right at the undulator start, while a negative value prevents
     any wake, till the interation position has passed that point.
 
-## sort
+<a name="sort">*sort*</a>
 
 An empty namelist with no variables. It initiates the sorting and redistribution of particles
 only if one-for-one simulation is enabled. Note that harmonic conversion will automatically
 invokes sorting and therefore does not need to be called explicitly.
 
-## write
+<a name="write">*write*</a>
 
 With this name list the field or particle distributions are dumped.
 
-- field(string,<empty>): if a filename is defined, Genesis writes out the field distri-
-    bution of all harmonics. The harmonics are indicated by the suffic’.h#.’where # is
-    the harmonic number. The filename gets the extension.fld.h5’automatically
-- beam(string,<empty >): if a filename is defined, Genesis writes out the particle
+- `field` (*string,< empty >*): if a filename is defined, Genesis writes out the field distri-
+    bution of all harmonics. The harmonics are indicated by the suffix ’.hxxx.’ where xxx is
+    the harmonic number. The filename gets the extension.fld.h5 automatically
+- `beam` (*string,< empty >*): if a filename is defined, Genesis writes out the particle
     distribution. The filename gets the extension.par.h5automatically
 
 
-24 GENESIS 1.3 – Manual
-
-## track
+<a name="track">*track*</a>
 
 This namelist initiate the actually tracking through the undulator and then writing out the
-results.Normally all parameter should be defined before or defined in the lattice but the
+results.N ormally all parameter should be defined before or defined in the lattice but the
 namelist allows some ’last minute’ change of the behavior of the code
 
-- zstop(double, 1e9): Ifzstopis shorter than the lattice length the tracking stops at
+- `zstop` (*double, 1e9*): If `zstop` is shorter than the lattice length the tracking stops at
     the specified position
-- outputstep(int, 1): Defines the number of integration steps before the particle and
+- `output_step` (*int, 1*): Defines the number of integration steps before the particle and
     field distribution is analyzed for output.
-- fielddumpstep(int, 0): Defines the number of integration steps before a field dump
+- `field_dump_step` (*int, 0*): Defines the number of integration steps before a field dump
     is written. Be careful because for time-dependent simulation it can generate many large
     output files.
-- beamdumpstep(int, 0): Defines the number of integration steps before a particle
+- `beam_dump_step` (*int, 0*): Defines the number of integration steps before a particle
     dump is written. Be careful because for time-dependent simulation it can generate
     many large output files.
-- sortstep(int,0): Defines the number of steps of integration before the particle dis-
+-  `sort_step` (*int,0*): Defines the number of steps of integration before the particle dis-
     tribution is sorted. Works only for one-4-one simulations.
 
 
