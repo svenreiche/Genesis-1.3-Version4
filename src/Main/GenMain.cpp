@@ -13,8 +13,9 @@
 
 #include <mpi.h>
 
-
-
+#ifdef SCOREP
+    #include <scorep/SCOREP_User.h>
+#endif
 // genesis headerfiles & classes
 
 
@@ -66,6 +67,10 @@ bool MPISingle;  // global variable to do mpic or not
 
 double genmain (string mainstring, string latstring, string outstring, int in_seed, bool split) {
 
+  //	SCOREP_USER_REGION_DEFINE( main_handle)
+  //	SCOREP_USER_REGION_BEGIN( main_handle, element.c_str(),SCOREP_USER_REGION_TYPE_LOOP)
+
+  
         meta_inputfile=mainstring;
         double ret=0;
     
@@ -79,7 +84,7 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
 	  size=1;
         }
 
-
+	
         time_t timer;
 	if (rank==0){
           time(&timer);
@@ -117,7 +122,7 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
         parser.open(mainstring,rank);
 
         while(parser.parse(&element,&argument)){
-           
+
           //----------------------------------------------
 	  // setup & parsing the lattice file
 
@@ -300,6 +305,9 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
             cout << "*** Error: Unknown element in input file: " << element << endl; 
 	  }
           break;
+	  
+	  //   	  SCOREP_USER_REGION_END( main_handle)
+
         }
 
 

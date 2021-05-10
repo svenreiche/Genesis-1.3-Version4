@@ -3,26 +3,30 @@
 #
 # libraries
 #
-LIB= -lm -lstdc++ -lmpi_cxx -lfftw3
+LIB= -lm -lstdc++ -lmpi_cxx -lfftw3 
 #
 INCLUDE=-I./include
 #
 # cpp-macros - to enable the FFTW library
 #
-DMACRO = -DAAAFFTW
+DMACRO = -DAAAFFTW -DVTRACEEEEE
+#
+# profiling   - comment out the three definitions
+#
+#SCOREP = /opt/scorep/bin/scorep
+#SCOREDEF = -DSCOREP
 #
 #  compilers
 #
 VPATH = src/Core src/IO src/Lattice src/Util src/Main src/Loading
 CCOMPILER = h5pcc
-#CCOMPILER = vtcxx -vt:cxx h5pcc -vt:inst manual -DVTRACE
 #
 #  flags
 #
 FLAGS = -O2
-# FLAGS = -g -O0
 #
-#  executable name
+#  executable namels
+
 #
 EXECUTABLE = gencore
 #
@@ -32,10 +36,10 @@ OBJECTS = Sorting.o BesselJ.o Inverfc.o Hammerslay.o RandomU.o GaussHermite.o St
 
 .PHONY: genesis genesisexecutable clean install beta
 
-genesis:	$(OBJECTS) build_info.o
+genesis:	$(SCOREP) $(OBJECTS) build_info.o
 	ar -cvq libgenesis13.a $(OBJECTS) build_info.o
 	mv libgenesis13.a ./lib
-	$(CCOMPILER) src/Main/mainwrap.cpp -o $(EXECUTABLE) $(INCLUDE) -lgenesis13 -Llib $(LIB)
+	$(SCOREP) $(CCOMPILER) src/Main/mainwrap.cpp -o $(EXECUTABLE) $(INCLUDE) -lgenesis13 -Llib $(LIB)
 
 genesisexecutable:	$(OBJECTS)
 	$(CCOMPILER)  -o $(EXECUTABLE) $(OBJECTS) $(LIB)
@@ -43,7 +47,7 @@ genesisexecutable:	$(OBJECTS)
 
 
 .cpp.o:
-	$(CCOMPILER) $(FLAGS) -c $(DMACRO) $(INCLUDE) $<
+	$(SCOREP) $(CCOMPILER) $(FLAGS) -c $(DMACRO) $(SCOREDEF) $(INCLUDE) $<
 
 ### rules for build info
 build_info.o: build_info.c

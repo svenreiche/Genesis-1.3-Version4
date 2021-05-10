@@ -1,22 +1,23 @@
 #include "Gencore.h"
 
+#include "Profiling.h"
+
 extern bool MPISingle;
 
-#ifdef VTRACE
-#include "vt_user.h"
-#endif
+
 
 
 int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan)
 {
 
-
+  #ifdef SCOREP
+    SCOREP_USER_REGION_DEFINE(my_region_handle)
+    SCOREP_USER_REGION_BEGIN( my_region_handle, "GENCORE::RUN",SCOREP_USER_REGION_TYPE_FUNCTION)
+  #endif
+ 
         //-------------------------------------------------------
         // init MPI and get size etc.
         //
-#ifdef VTRACE
-  VT_TRACER("Core");
-#endif  
         int size=1;
         int rank=0;
 
@@ -127,5 +128,8 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 
 
         return 0;
-
+ #ifdef SCOREP
+    SCOREP_USER_REGION_END(my_region_handle)
+  #endif    
+ 
 }

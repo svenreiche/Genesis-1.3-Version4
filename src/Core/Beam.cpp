@@ -2,9 +2,8 @@
 #include "Field.h"
 #include "Sorting.h"
 
-#ifdef VTRACE
-#include "vt_user.h"
-#endif
+#include "Profiling.h"
+
 
 Beam::~Beam(){}
 Beam::Beam(){}
@@ -104,11 +103,12 @@ int Beam::sort()
 
 void Beam::track(double delz,vector<Field *> *field, Undulator *und){
 
-#ifdef VTRACE
-  VT_TRACER("Beam_Tracking");
-#endif  
 
-  
+  #ifdef SCOREP
+    SCOREP_USER_REGION_DEFINE(my_region_handle)
+    SCOREP_USER_REGION_BEGIN( my_region_handle, "BEAM::TRACK",SCOREP_USER_REGION_TYPE_FUNCTION)
+  #endif
+      
   for (int i=0; i<field->size();i++){
     field->at(i)->setStepsize(delz);
   }
@@ -123,6 +123,9 @@ void Beam::track(double delz,vector<Field *> *field, Undulator *und){
   solver.applyR56(this,und,reflength);    // apply the longitudinalphase shift due to R56 if a chicane is selected.
 
   solver.track(delz*0.5,this,und,true);      // apply corrector settings and track second half for transverse coordinate
+  #ifdef SCOREP
+    SCOREP_USER_REGION_END(my_region_handle)
+  #endif    
   return;
 
 
@@ -239,6 +242,12 @@ bool Beam::subharmonicConversion(int harmonic, bool resample)
 #define DO_BEAMSTATISTICS
 void Beam::diagnostics(bool output, double z)
 {
+
+  #ifdef SCOREP
+    SCOREP_USER_REGION_DEFINE(my_region_handle)
+    SCOREP_USER_REGION_BEGIN( my_region_handle, "BEAM::DIAGNOSTICS",SCOREP_USER_REGION_TYPE_FUNCTION)
+  #endif
+  
 #ifdef DO_BEAMSTATISTICS
   double locaccu_bgavg=0, glblaccu_bgavg=0;
   double locaccu_gvar=0,  glblaccu_gvar=0;
@@ -373,6 +382,9 @@ void Beam::diagnostics(bool output, double z)
 #endif
 
   idx++;
+  #ifdef SCOREP
+    SCOREP_USER_REGION_END(my_region_handle)
+  #endif    
 }
 
 

@@ -4,11 +4,10 @@
 
 
 #include <fstream>
+#include "Profiling.h"
 
 
-#ifdef VTRACE
-#include "vt_user.h"
-#endif
+
 
 
 
@@ -126,13 +125,19 @@ bool Field::getLLGridpoint(double x, double y, double *wx, double *wy, int *idx)
 void Field::track(double delz, Beam *beam, Undulator *und)
 {
   
-#ifdef VTRACE
-  VT_TRACER("Field_Tracking");
-#endif  
+  #ifdef SCOREP
+    SCOREP_USER_REGION_DEFINE(my_region_handle)
+    SCOREP_USER_REGION_BEGIN( my_region_handle, "FIELD::TRACK",SCOREP_USER_REGION_TYPE_FUNCTION)
+  #endif
 
 
   solver.getDiag(delz,dgrid,xks,ngrid);  // check whether step size has changed and recalculate aux arrays
   solver.advance(delz,this,beam,und);
+
+  #ifdef SCOREP
+    SCOREP_USER_REGION_END(my_region_handle)
+  #endif    
+
   return;
 
 }
@@ -247,7 +252,12 @@ bool Field::harmonicConversion(int harm_in, bool resample)
 
 void Field::diagnostics(bool output)
 {
+  #ifdef SCOREP
+    SCOREP_USER_REGION_DEFINE(my_region_handle)
+    SCOREP_USER_REGION_BEGIN( my_region_handle, "FIELD::DIAGNOSTICS",SCOREP_USER_REGION_TYPE_FUNCTION)
+  #endif
 
+  
   if (!output) { return; }
 
   double shift=-0.5*static_cast<double> (ngrid);
@@ -374,5 +384,8 @@ void Field::diagnostics(bool output)
   }
   
   idx++;
-  
+  #ifdef SCOREP
+    SCOREP_USER_REGION_END(my_region_handle)
+  #endif    
+
 }
