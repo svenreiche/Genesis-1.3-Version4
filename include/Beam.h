@@ -32,12 +32,16 @@ class Beam{
    bool subharmonicConversion(int,bool);
    int sort();
    void track(double, vector<Field *> *, Undulator *);
-
+   void setOutput(bool,bool,bool,bool);
 
    void setBunchingHarmonicOutput(int harm_in);
    int getBunchingHarmonics();
    void set_global_stat(bool);
    bool get_global_stat(void);
+   bool outputCurrent();
+   bool outputAux();
+   bool outputEnergy();
+   bool outputSpatial();
 
    vector< vector<Particle> > beam;
    vector<double> current,eloss;
@@ -49,10 +53,11 @@ class Beam{
    // output buffer
    vector<double> zpos,gavg,gsig,xavg,xsig,yavg,ysig,pxavg,pyavg,bunch,bphi,efld;
    vector<double> bx,by,ax,ay,ex,ey,cu;
-   vector<unsigned long long> partcount;
+   //   vector<unsigned long long> partcount;
    vector< vector<double> > bh,ph;  // harmonic bunching and bunching phase
 
-   vector<double> tot_gmean, tot_gstd;
+   //global values
+   vector<double> tgavg, tgsig, txavg,txsig,tyavg, tysig,tbun;  // global values, averaging over the entire beam 
    
  private:
    BeamSolver solver;
@@ -62,7 +67,13 @@ class Beam{
    int idx;
    int bharm;
    bool do_global_stat;
+   bool doCurrent, doSpatial, doEnergy, doAux;
 };
+
+inline bool Beam::outputCurrent(){ return doCurrent;}
+inline bool Beam::outputSpatial(){ return doSpatial;}
+inline bool Beam::outputEnergy(){ return doEnergy;}
+inline bool Beam::outputAux(){ return doAux;}
 
 inline void Beam::initIncoherent(int base, int rank, bool spread, bool loss){
   incoherent.init(base,rank,spread,loss);
@@ -79,23 +90,14 @@ inline void Beam::initWake(unsigned int ns, unsigned int nsNode, double ds, doub
 }
 
 
-inline void Beam::setBunchingHarmonicOutput(int harm_in)
-{
-  bharm=harm_in;
+inline void Beam::setBunchingHarmonicOutput(int harm_in){bharm=harm_in;}
+inline int Beam::getBunchingHarmonics(){return bharm;}
+inline void Beam::set_global_stat(bool in){do_global_stat=in;}
+inline bool Beam::get_global_stat(void){return(do_global_stat);}
+inline void Beam::setOutput(bool noCurrent_in, bool noEnergy_in, bool noSpatial_in, bool noAux_in) {
+  doCurrent = !noCurrent_in;
+  doSpatial = !noSpatial_in;
+  doEnergy = !noEnergy_in;
+  doAux = !noAux_in;
 }
-
-inline int Beam::getBunchingHarmonics()
-{
-  return bharm;
-}
-
-inline void Beam::set_global_stat(bool in)
-{
-  do_global_stat=in;
-}
-inline bool Beam::get_global_stat(void)
-{
-  return(do_global_stat);
-}
-
 #endif

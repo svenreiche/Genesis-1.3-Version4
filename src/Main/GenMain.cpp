@@ -13,11 +13,10 @@
 
 #include <mpi.h>
 
-#ifdef SCOREP
-    #include <scorep/SCOREP_User.h>
-#endif
-// genesis headerfiles & classes
 
+
+// genesis headerfiles & classes
+//#include "CodeTracing.h"
 
 #include "Beam.h"
 #include "Field.h"
@@ -43,7 +42,7 @@
 #include "writeFieldHDF5.h"
 #include "Collective.h"
 #include "Wake.h"
-#include "build_info.h"
+#include "VersionInfo.h"
 
 #include <sstream>
 
@@ -53,24 +52,17 @@ const double vacimp = 376.73;
 const double eev    = 510999.06; 
 const double ce     = 4.8032045e-11;
 
-
-const int versionmajor = 4;
-const int versionminor = 4;
-const int versionrevision = 0;
-const bool versionbeta=true;
-
 string meta_inputfile;
 string meta_latfile;
 
 bool MPISingle;  // global variable to do mpic or not
 
+//vector<string> event;
+//vector<double> evtime;
+//double evt0;
 
 double genmain (string mainstring, string latstring, string outstring, int in_seed, bool split) {
 
-  //	SCOREP_USER_REGION_DEFINE( main_handle)
-  //	SCOREP_USER_REGION_BEGIN( main_handle, element.c_str(),SCOREP_USER_REGION_TYPE_LOOP)
-
-  
         meta_inputfile=mainstring;
         double ret=0;
     
@@ -84,15 +76,22 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
 	  size=1;
         }
 
-	
+
         time_t timer;
+	clock_t clocknow;
+	clock_t clockstart = clock();
+	//	evt0 = double(clockstart);
+	//	event.push_back("start");
+	//	evtime.push_back(0);
+
 	if (rank==0){
+          VersionInfo vi;
           time(&timer);
           cout << "---------------------------------------------" << endl;
-          cout << "GENESIS - Version " <<  versionmajor <<"."<< versionminor << "." << versionrevision ;
-	  if (versionbeta) {cout << " (beta)";}
+          cout << "GENESIS - Version " <<  vi.Major() <<"."<< vi.Minor() << "." << vi.Rev() ;
+	  if (vi.isBeta()) {cout << " (beta)";}
 	  cout << " has started..." << endl;
-          cout << "compile info: " << build_info() << endl;			
+          cout << "compile info: " << vi.BuildInfo() << endl;			
 	  cout << "Starting Time: " << ctime(&timer)<< endl;
           cout << "MPI-Comm Size: " << size << " nodes" << endl << endl;
         }
@@ -122,6 +121,11 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
         parser.open(mainstring,rank);
 
         while(parser.parse(&element,&argument)){
+	  //----------------------------------------------
+	  // log event
+	  //	  clocknow=clock();
+	  //	  event.push_back(element);
+	  //	  evtime.push_back(double(clocknow-clockstart));
 
           //----------------------------------------------
 	  // setup & parsing the lattice file
@@ -305,9 +309,6 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
             cout << "*** Error: Unknown element in input file: " << element << endl; 
 	  }
           break;
-	  
-	  //   	  SCOREP_USER_REGION_END( main_handle)
-
         }
 
 
@@ -325,15 +326,33 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
           delete field[i];
 
 
+	//	event.push_back("end");
+	//	evtime.push_back(double(clocknow-clockstart));
+
+	clocknow=clock();
+
  	if (rank==0) {
+
+	  double elapsed_Sec=double(clocknow-clockstart)/CLOCKS_PER_SEC;
+
           time(&timer);
           cout << endl<< "Program is terminating..." << endl;
 	  cout << "Ending Time: " << ctime(&timer);
+	  cout << "Total Wall Clock Time: " << elapsed_Sec << " seconds" << endl;
           cout << "-------------------------------------" << endl;
 
+
+	  /* tracing report
+	  cout << "Tracing Summary" << endl;
+	  cout << "==========================" << endl;
+	  cout << setw(10) << "Event" << setw(8) << "dT (s)" << endl;
+	  cout << "--------------------------" << endl;
+	  for (int i=0; i<evtime.size(); i++){
+	    cout << setw(10) << event[i] << setw(8) << evtime[i]/CLOCKS_PER_SEC << " " << endl;
+	  }
+	  cout << "--------------------------" << endl;
+	  */
         }
-
-
 
         return ret;
 

@@ -5,8 +5,8 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-
 #include <hdf5.h>
+
 #include "HDF5base.h"
 #include "Particle.h"
 #include "Beam.h"
@@ -18,10 +18,6 @@ using namespace std;
 extern const double vacimp;
 extern const double eev;
 
-extern const int versionmajor;
-extern const int versionminor;
-extern const int versionrevision;
-extern const bool versionbeta;
 extern string meta_inputfile;
 extern string meta_latfile;
 
@@ -34,7 +30,7 @@ class Output : public HDF5Base {
    void writeFieldBuffer(Field *);
    void writeBeamBuffer(Beam *);
    void writeLattice(Beam *, Undulator *);
-   void writeGlobal(double,double,double,double,bool,bool,bool);
+   void writeGlobal(double,double,double,double,bool,bool,bool,int);
    void writeMeta();
 
  private:

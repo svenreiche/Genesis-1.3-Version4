@@ -10,7 +10,7 @@
 #include <fstream>
 #include <streambuf>
 
-#include "build_info.h"
+#include "VersionInfo.h"
 
 extern bool MPISingle;
 
@@ -75,6 +75,7 @@ void Output::open(string file, int s0_in, int ds_in)
 
 void Output::writeMeta()
 {
+  VersionInfo vi;
   hid_t gid,gidsub;
   vector<double> tmp;
   tmp.resize(1);
@@ -82,16 +83,16 @@ void Output::writeMeta()
   gid=H5Gcreate(fid,"Meta",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
   gidsub=H5Gcreate(gid,"Version",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
-  tmp[0]=versionmajor;
+  tmp[0]=vi.Major();
   this->writeSingleNode(gidsub,"Major"," ",&tmp);
-  tmp[0]=versionminor;
+  tmp[0]=vi.Minor();
   this->writeSingleNode(gidsub,"Minor"," ",&tmp);
-  tmp[0]=versionrevision;
+  tmp[0]=vi.Rev();
   this->writeSingleNode(gidsub,"Revision"," ",&tmp);
   tmp[0]=0;
-  if (versionbeta) { tmp[0]=1;}
+  if (vi.isBeta()) { tmp[0]=1;}
   this->writeSingleNode(gidsub,"Beta"," ",&tmp);
-  string s_bi(build_info());
+  string s_bi(vi.BuildInfo());
   this->writeSingleNodeString(gidsub,"Build_Info", &s_bi);
   H5Gclose(gidsub);  
   
@@ -133,7 +134,7 @@ void Output::writeMeta()
   H5Gclose(gid);
 }
 
-void Output::writeGlobal(double gamma, double lambda, double sample, double slen, bool one4one, bool time, bool scan)
+void Output::writeGlobal(double gamma, double lambda, double sample, double slen, bool one4one, bool time, bool scan, int ntotal)
 {
 
 
@@ -160,8 +161,23 @@ void Output::writeGlobal(double gamma, double lambda, double sample, double slen
   tmp[0] = scan ? 1. : 0 ;
   this->writeSingleNode(gid,"scan"," ",&tmp);
 
-  H5Gclose(gid);
+  tmp.resize(ntotal);
+  for (int i=0; i<ntotal; i++){
+    tmp[i]=static_cast<double>(i)*sample*lambda;
+  }
+  this->writeSingleNode(gid,"s","m",&tmp);
 
+  double e0=1023.842e-9/lambda;
+  double df=e0/sample/static_cast<double>(ntotal);
+  if (ntotal ==1) {
+      df=0;
+  }
+  e0 = e0-0.5*df*ntotal;
+  for (int i=0; i<ntotal; i++){
+    tmp[i]=e0+static_cast<double>(i)*df;
+  }
+  this->writeSingleNode(gid,"frequency","eV",&tmp);
+  H5Gclose(gid);
 }
 
 
@@ -211,19 +227,23 @@ void Output::writeBeamBuffer(Beam *beam)
   gid=H5Gcreate(fid,"Beam",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
   // step 2 - write individual datasets
-  this->writeBuffer(gid, "energy"," ",&beam->gavg);
-  this->writeBuffer(gid, "energyspread"," ", &beam->gsig);
-  this->writeBuffer(gid, "xposition","m",&beam->xavg);
-  this->writeBuffer(gid, "yposition","m",&beam->yavg);
-  this->writeBuffer(gid, "pxposition","rad", &beam->pxavg);
-  this->writeBuffer(gid, "pyposition","rad", &beam->pyavg);
-  this->writeBuffer(gid, "xsize","m", &beam->xsig);
-  this->writeBuffer(gid, "ysize","m", &beam->ysig);
+  if (beam->outputEnergy()){
+    this->writeBuffer(gid, "energy"," ",&beam->gavg);
+    this->writeBuffer(gid, "energyspread"," ", &beam->gsig);
+  }
+  if (beam->outputSpatial()){
+    this->writeBuffer(gid, "xposition","m",&beam->xavg);
+    this->writeBuffer(gid, "yposition","m",&beam->yavg);
+    this->writeBuffer(gid, "pxposition","rad", &beam->pxavg);
+    this->writeBuffer(gid, "pyposition","rad", &beam->pyavg);
+    this->writeBuffer(gid, "xsize","m", &beam->xsig);
+    this->writeBuffer(gid, "ysize","m", &beam->ysig);
+  }
   this->writeBuffer(gid, "bunching"," ",&beam->bunch);
   this->writeBuffer(gid, "bunchingphase","rad", &beam->bphi);
-  this->writeBuffer(gid, "efield","eV/m", &beam->efld);
-  this->writeBufferULL(gid, "npart_in_slice"," ", &beam->partcount); // HDF5 warnings pop up in function writeBufferULL if unit=""
-
+  if (beam->outputAux()){
+    this->writeBuffer(gid, "efield","eV/m", &beam->efld);
+  }
   
   this->writeBuffer(gid, "betax","m",&beam->bx);
   this->writeBuffer(gid, "betay","m",&beam->by);
@@ -244,8 +264,16 @@ void Output::writeBeamBuffer(Beam *beam)
 
   if(beam->get_global_stat()) {
     gidsub=H5Gcreate(gid,"Global",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
-    this->writeSingleNode(gidsub,"energy"," ", &beam->tot_gmean);
-    this->writeSingleNode(gidsub,"energyspread"," ", &beam->tot_gstd);
+    if (beam->outputEnergy()){
+      this->writeSingleNode(gidsub,"energy"," ", &beam->tgavg);
+      this->writeSingleNode(gidsub,"energyspread"," ", &beam->tgsig);
+    }
+    if (beam->outputSpatial()){
+      this->writeSingleNode(gidsub,"xposition","m", &beam->txavg);
+      this->writeSingleNode(gidsub,"xsize","m", &beam->txsig);
+      this->writeSingleNode(gidsub,"yposition","m", &beam->tyavg);
+      this->writeSingleNode(gidsub,"ysize","m", &beam->tysig);
+    }
     H5Gclose(gidsub);  
   }
   
@@ -263,7 +291,7 @@ void Output::writeFieldBuffer(Field *field)
 
 
   // step 1 - create the group
-  hid_t gid;
+  hid_t gid, gidsub;
   char name[10];
 
   int harm=field->harm;
@@ -276,24 +304,51 @@ void Output::writeFieldBuffer(Field *field)
 
   // step 2 - write individual datasets
   this->writeBuffer(gid, "power","W",&field->power);
-
-  this->writeBuffer(gid, "xsize","m",&field->xsig);
-  this->writeBuffer(gid, "ysize","m",&field->ysig);
-  this->writeBuffer(gid, "xposition","m",&field->xavg);
-  this->writeBuffer(gid, "yposition","m",&field->yavg);
+  if (field->outputSpatial()){
+    this->writeBuffer(gid, "xsize","m",&field->xsig);
+    this->writeBuffer(gid, "ysize","m",&field->ysig);
+    this->writeBuffer(gid, "xposition","m",&field->xavg);
+    this->writeBuffer(gid, "yposition","m",&field->yavg);
+    }
 #ifdef FFTW
-  cout << "writing divergence" << endl;
-  this->writeBuffer(gid, "xdivergence","rad",&field->txsig);
-  this->writeBuffer(gid, "ydivergence","rad",&field->tysig);
-  this->writeBuffer(gid, "xpointing","rad",&field->txavg);
-  this->writeBuffer(gid, "ypointing","rad",&field->tyavg);
+  if (field->outputFFT()){
+    this->writeBuffer(gid, "xdivergence","rad",&field->txsig);
+    this->writeBuffer(gid, "ydivergence","rad",&field->tysig);
+    this->writeBuffer(gid, "xpointing","rad",&field->txavg);
+    this->writeBuffer(gid, "ypointing","rad",&field->tyavg);
+  }
 #endif
-  this->writeBuffer(gid, "intensity-nearfield","arb unit",&field->nf_intensity);
-  this->writeBuffer(gid, "phase-nearfield","rad", &field->nf_phi);
-  this->writeBuffer(gid, "intensity-farfield","arb unit",&field->ff_intensity);
-  this->writeBuffer(gid, "phase-farfield","rad",&field->ff_phi);
-
-
+  if (field->outputIntensity()){
+    this->writeBuffer(gid, "intensity-nearfield","arb unit",&field->nf_intensity);
+    this->writeBuffer(gid, "phase-nearfield","rad", &field->nf_phi);
+    this->writeBuffer(gid, "intensity-farfield","arb unit",&field->ff_intensity);
+    this->writeBuffer(gid, "phase-farfield","rad",&field->ff_phi);
+  }
+  
+  if(field->get_global_stat()) {
+    gidsub=H5Gcreate(gid,"Global",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+    this->writeSingleNode(gidsub,"energy"," ", &field->energy);
+    if (field->outputSpatial()){ 
+      this->writeSingleNode(gidsub,"xsize","m", &field->gl_xsig);
+      this->writeSingleNode(gidsub,"ysize","m", &field->gl_ysig);
+      this->writeSingleNode(gidsub,"xposition","m", &field->gl_xavg);
+      this->writeSingleNode(gidsub,"yposition","m", &field->gl_yavg);
+    }
+    if (field->outputIntensity()){
+      this->writeSingleNode(gidsub,"intensity-nearfield","arb unit", &field->gl_nf_intensity);
+      this->writeSingleNode(gidsub,"intensity-farfield","arb unit ", &field->gl_ff_intensity);
+    }
+#ifdef FFTW
+    if (field->outputFFT()){
+      this->writeSingleNode(gidsub,"xdivergence","rad", &field->gl_txsig);
+      this->writeSingleNode(gidsub,"ydivergence","rad", &field->gl_tysig);
+      this->writeSingleNode(gidsub,"xpointing","rad", &field->gl_txavg);
+      this->writeSingleNode(gidsub,"ypointing","rad", &field->gl_tyavg);
+    }
+#endif
+    H5Gclose(gidsub);  
+  }
+  
 
   vector<double> tmp;
   tmp.resize(1);

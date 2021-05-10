@@ -40,8 +40,15 @@ class Field{
    void setStepsize(double);
    void disable(double);
    bool isEnabled();
+   bool get_global_stat();
+   void set_global_stat(bool);
+   void setOutput(bool,bool,bool);
+   bool outputFFT();
+   bool outputSpatial();
+   bool outputIntensity();
    int getHarm();
    double getRHarm();
+
 
    vector< vector< complex<double> > > field;
    double xlambda,dgrid,xks,gridmax,dz_save;
@@ -55,12 +62,17 @@ class Field{
    vector<double> power,xsig,xavg,ysig,yavg ;  // buffer to accumulate before writing it out
    vector<double> txsig,txavg,tysig,tyavg ;  // buffer to accumulate before writing it out
    vector<double> nf_intensity,nf_phi,ff_intensity,ff_phi;
-
+   // global variables   - energy is proportional to the mean power
+   vector<double> energy,gl_xsig,gl_xavg,gl_ysig,gl_yavg,gl_nf_intensity,gl_ff_intensity;
+#ifdef FFTW
+   vector<double> gl_txsig, gl_txavg, gl_tysig, gl_tyavg;  
+#endif
 
  private:
    int idx;
    bool disabled;
    double rharm;
+   bool out_global, doFFT,doSpatial, doIntensity;
 
    complex<double> *in;
    complex<double> *out;
@@ -72,13 +84,24 @@ class Field{
 };
 
 
+inline bool Field::outputFFT(){ return doFFT;}
+inline bool Field::outputSpatial(){ return doSpatial;}
+inline bool Field::outputIntensity(){ return doIntensity;}
+inline bool Field::get_global_stat(){return out_global;}
+inline void Field::set_global_stat(bool in) {out_global=in;}
+inline void Field::setOutput(bool nofft_in, bool noSpatial_in, bool noInten_in) {
+  doFFT = !nofft_in;
+  doSpatial = !noSpatial_in;
+  doIntensity = !noInten_in;
+}
+
 inline void Field::disable(double conv)
 {
   if (disabled==false){  // check whether it hasn't been disabled before
     rharm=harm;         // assign current double harmonic with the given harmonic
   }
   rharm=rharm*conv;     // convert to new harmonic, might be even a non-integer.
-  disabled=true;         // disbable it.
+  disabled=true;         // disable it.
 
 }
 
@@ -92,9 +115,6 @@ inline double Field::getRHarm()
 {
   return rharm;
 }
-
-
-
 
 inline int Field::getHarm()
 {

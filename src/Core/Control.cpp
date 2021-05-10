@@ -4,9 +4,6 @@
 #include "writeBeamHDF5.h"
 
 
-#ifdef VTRACE
-#include "vt_user.h"
-#endif
 
 
 
@@ -64,7 +61,7 @@ void Control::output(Beam *beam, vector<Field*> *field, Undulator *und)
   string file=root.append(".out.h5");
   out->open(file,noffset,nslice);
   
-  out->writeGlobal(und->getGammaRef(),reflen,sample,slen,one4one,timerun,scanrun);
+  out->writeGlobal(und->getGammaRef(),reflen,sample,slen,one4one,timerun,scanrun,ntotal);
   out->writeLattice(beam,und);
 
 
@@ -146,9 +143,6 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
 void Control::applySlippage(double slippage, Field *field)
 {
 
-#ifdef VTRACE
-  VT_TRACER("Slippage");
-#endif  
 
  
   if (timerun==false) { return; }
