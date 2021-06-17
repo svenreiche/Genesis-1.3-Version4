@@ -142,19 +142,21 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
 
 void Control::applySlippage(double slippage, Field *field)
 {
-
-
- 
   if (timerun==false) { return; }
 
  
   // update accumulated slippage
   field->accuslip+=slippage;
 
-  // allocate working space
-  if(nwork<field->ngrid*field->ngrid*2){
+
+  // number of grid points in field supplied by caller
+  unsigned long ncells = field->ngrid*field->ngrid;
+
+  // if needed, allocate working space for MPI data transfer
+  // NOTE: the size of the buffer is determined by the largest field seen so far (relevant when there are multiple fields of different number of grid points)
+  if(nwork < 2*ncells){
     delete[] work;
-    nwork=field->ngrid*field->ngrid*2;
+    nwork = 2*ncells; // 1 complex number <=> 2 doubles
     work=new double [nwork];
   } 
   
@@ -195,43 +197,41 @@ void Control::applySlippage(double slippage, Field *field)
       MPI_Status status;
       if (size>1){
         if ( (rank % 2)==0 ){                   // even nodes are sending first and then receiving field
-           for (int i=0; i<nwork/2; i++){
+           for (int i=0; i<ncells; i++){
 	     work[2*i]  =field->field[last].at(i).real();
 	     work[2*i+1]=field->field[last].at(i).imag();
 	   }
-	   //	   MPI::COMM_WORLD.Send(work, nwork, MPI::DOUBLE, rank_next, tag);
-	   MPI_Send(work,nwork,MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
-	   //	   MPI::COMM_WORLD.Recv(work, nwork, MPI::DOUBLE, rank_prev, tag, status);
-	   MPI_Recv(work,nwork,MPI_DOUBLE,rank_prev,tag,MPI_COMM_WORLD,&status);
-	   for (int i=0; i<nwork/2; i++){
+	   MPI_Send(work,2*ncells, /* <= number of used DOUBLES */
+               MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
+	   MPI_Recv(work,2*ncells, MPI_DOUBLE,rank_prev,tag,MPI_COMM_WORLD,&status);
+	   for (int i=0; i<ncells; i++){
 	     complex <double> ctemp=complex<double> (work[2*i],work[2*i+1]);
 	     field->field[last].at(i)=ctemp;
 	   }
 	} else {                               // odd nodes are receiving first and then sending
 
-	  //	  MPI::COMM_WORLD.Recv(work, nwork, MPI::DOUBLE, rank_prev, tag, status);
-	  MPI_Recv(work,nwork,MPI_DOUBLE,rank_prev,tag,MPI_COMM_WORLD,&status);
+	  MPI_Recv(work,2*ncells, /* <= number of used DOUBLES */
+              MPI_DOUBLE,rank_prev,tag,MPI_COMM_WORLD,&status);
 
-	  for (int i=0; i<nwork/2; i++){
+	  for (int i=0; i<ncells; i++){
 	    complex <double> ctemp=complex<double> (work[2*i],work[2*i+1]);
 	    work[2*i]  =field->field[last].at(i).real();
 	    work[2*i+1]=field->field[last].at(i).imag();
 	    field->field[last].at(i)=ctemp;
 	  }
-	  MPI_Send(work,nwork,MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
-	  //	  MPI::COMM_WORLD.Send(work, nwork, MPI::DOUBLE, rank_next, tag);
+	  MPI_Send(work,2*ncells,MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
 	}
       }
 
-      // first node has emptz field slipped into the time window
+      // first node has empty field slipped into the time window
       if ((rank==0) && (direction >0)){
-        for (int i=0; i<nwork/2;i++){
+        for (int i=0; i<ncells; i++){
 	  field->field[last].at(i)=complex<double> (0,0);
         }
       }
 
       if ((rank==(size-1)) && (direction <0)){
-        for (int i=0; i<nwork/2;i++){
+        for (int i=0; i<ncells; i++){
 	  field->field[last].at(i)=complex<double> (0,0);
         }
       }
@@ -243,5 +243,4 @@ void Control::applySlippage(double slippage, Field *field)
 	field->first=(last+1) % field->field.size();
       }
   }
-
 }
