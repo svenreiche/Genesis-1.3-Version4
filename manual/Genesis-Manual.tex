@@ -192,7 +192,7 @@ The namelist {\tt setup} is a mandatory namelist and should be the first in the 
 \item {\bf exclude\_aux\_output} ({\it bool, false}): Flag to suppress the auxiliary datasets in the output file. In the moment it is the long-range longitudinal electric field as seen by the electrons.
 
 
-\item {\bf exclude\_aux\_output} ({\it bool, true}): Flag to reduce the size of the current dataset for the electron beam. Under most circumstances the current profile is constant and only the initial current profile is written out. However, simulation with {\tt one4one} set to true and sorting events the current profile might change. Example are ESASE/HGHG schemes. By setting the flag to false the current profile is written out at each output step similar to radiation power and bunching profile
+\item {\bf exclude\_current\_output} ({\it bool, true}): Flag to reduce the size of the current dataset for the electron beam. Under most circumstances the current profile is constant and only the initial current profile is written out. However, in simulations with {\tt one4one} set to true and sorting events the current profile might change. Example are ESASE/HGHG schemes. By setting the flag to false the current profile is written out at each output step similar to radiation power and bunching profile.
 
 
 
