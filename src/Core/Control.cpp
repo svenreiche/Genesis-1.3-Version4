@@ -150,7 +150,7 @@ void Control::applySlippage(double slippage, Field *field)
 
 
   // number of grid points in field supplied by caller
-  unsigned long ncells = field->ngrid*field->ngrid;
+  long long ncells = field->ngrid*field->ngrid;
 
   // if needed, allocate working space for MPI data transfer
   // NOTE: the size of the buffer is determined by the largest field seen so far (relevant when there are multiple fields of different number of grid points)
@@ -201,7 +201,7 @@ void Control::applySlippage(double slippage, Field *field)
 	     work[2*i]  =field->field[last].at(i).real();
 	     work[2*i+1]=field->field[last].at(i).imag();
 	   }
-	   MPI_Send(work,2*ncells, /* <= number of used DOUBLES */
+	   MPI_Send(work,2*ncells, /* <= number of DOUBLES */
                MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
 	   MPI_Recv(work,2*ncells, MPI_DOUBLE,rank_prev,tag,MPI_COMM_WORLD,&status);
 	   for (int i=0; i<ncells; i++){
@@ -210,7 +210,7 @@ void Control::applySlippage(double slippage, Field *field)
 	   }
 	} else {                               // odd nodes are receiving first and then sending
 
-	  MPI_Recv(work,2*ncells, /* <= number of used DOUBLES */
+	  MPI_Recv(work,2*ncells, /* <= number of DOUBLES */
               MPI_DOUBLE,rank_prev,tag,MPI_COMM_WORLD,&status);
 
 	  for (int i=0; i<ncells; i++){
