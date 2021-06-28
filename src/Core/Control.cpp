@@ -66,7 +66,7 @@ void Control::output(Beam *beam, vector<Field*> *field, Undulator *und)
 
 
 
-  for (int i=0; i<field->size();i++){
+  for (unsigned int i=0; i<field->size();i++){
         out->writeFieldBuffer(field->at(i));
   }
 
@@ -130,7 +130,7 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
   beam->initDiagnostics(und->outlength());
   beam->diagnostics(true,0);
   beam->diagnosticsStart();
-  for (int i=0; i<field->size();i++){
+  for (unsigned int i=0; i<field->size();i++){
       field->at(i)->initDiagnostics(und->outlength());
       field->at(i)->diagnostics(true);  // initial values
   }	
