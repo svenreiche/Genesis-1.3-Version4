@@ -284,7 +284,7 @@ Profiles are defining a dependence on the position in the time frame, which then
 \subsubsection{\sf profile\_file}
 \begin{itemize}
 \item{\bf label} ({\tt string, $<$ empty $>$}): Name of the profile, which is used to refer to it in later calls of namelists
-\item{\bf xdatal} ({\tt string, $<$ empty $>$}): Points to a dataset in an HDF5 file to define the $s$-position for the look-up table. The format is {\it filename/group1/.../groupn/datasetname}, where the naming of groups is not required if the dataset is at root level of the HDF5 file 
+\item{\bf xdata} ({\tt string, $<$ empty $>$}): Points to a dataset in an HDF5 file to define the $s$-position for the look-up table. The format is {\it filename/group1/.../groupn/datasetname}, where the naming of groups is not required if the dataset is at root level of the HDF5 file 
 \item{\bf ydata} ({\tt string, $<$ empty $>$}): Same as y data but for the function values of the look-up table.
 \item{\bf isTime} ({\it bool, false}): If true the $s$-position is a time variable and therefore multiplied with the speed of light $c$ to get the position in meters.
 \item{\bf reverse} ({\it bool, false}): if true the order in the look-up table is reverse. This is sometimes needed because time and spatial coordinates differ sometimes by a minus sign.
