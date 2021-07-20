@@ -1,4 +1,5 @@
 #include <sstream>
+#include <climits>
 #include "Control.h"
 #include "writeFieldHDF5.h"
 #include "writeBeamHDF5.h"
@@ -192,6 +193,16 @@ void Control::applySlippage(double slippage, Field *field)
       // get first slice for inverse direction
       if (direction<0){
 	last=(last+1) % field->field.size();  //  this actually first because it is sent backwards
+      }
+
+      // Prevent transfer sizes resulting in overflow (MPI_send argument 'count' has data type 'int').
+      // For typical transverse grid sizes, this is not a relevant limitation.
+      // (All MPI processes have identical transverse field parameters.)
+      if(2*ncells > INT_MAX) {
+        if(rank==0) {
+          cout << "Large field mesh size results in request for MPI transfer size exceeding INT_MAX, exiting." << endl;
+        }
+        MPI_Abort(MPI_COMM_WORLD,1);
       }
 
       MPI_Status status;
