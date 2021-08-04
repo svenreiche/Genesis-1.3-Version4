@@ -93,7 +93,11 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
     }
   } 
   for (int i=0; i<field->size();i++){
-    field->at(i)->setOutput(setup->outputFFT(),setup->outputSpatial(),setup->outputIntensity());
+    field->at(i)->setOutput(
+       setup->outputFFT(),
+       setup->outputSpatial(),
+       setup->outputIntensity(),
+       setup->outputFieldDump());
   }
   beam->setOutput(setup->outputCurrent(),setup->outputEnergy(),setup->outputSpatial(),setup->outputAux());
 
