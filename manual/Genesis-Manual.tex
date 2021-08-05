@@ -183,7 +183,7 @@ The namelist {\tt setup} is a mandatory namelist and should be the first in the 
 
 \item {\bf exclude\_spatial\_output} ({\it bool, false}): Flag to suppress the datasets in the output file for the x- and y-position and size (both Beam and Field) and px- and py-position (Beam only). This might be useful to reduce the file size of the output file, if these datasets are not needed for the post-processing
  
-\item {\bf exclude\_fft\_output} ({\it bool, false}): Flag to suppress the datasets in the output file for the field divergence and pointing. Since it also disable the FFT calculation of the 2D wavefronts it speeds up the execution time slightly. If the code has been compiled without the support of the FFTW library this parametr has no effect.
+\item {\bf exclude\_fft\_output} ({\it bool, false}): Flag to suppress the datasets in the output file for the field divergence and pointing. Since it also disable the FFT calculation of the 2D wavefronts it speeds up the execution time slightly. If the code has been compiled without the support of the FFTW library this parameter has no effect.
 
 \item {\bf exclude\_intensity\_output} ({\it bool, false}): Flag to suppress the datasets for the near and farfield intensity and phase for the radiaiton field. If excluded the output file size becomes smaller but no post-processing calculation of the spectra is possible.
 
@@ -194,7 +194,7 @@ The namelist {\tt setup} is a mandatory namelist and should be the first in the 
 
 \item {\bf exclude\_current\_output} ({\it bool, true}): Flag to reduce the size of the current dataset for the electron beam. Under most circumstances the current profile is constant and only the initial current profile is written out. However, in simulations with {\tt one4one} set to true and sorting events the current profile might change. Example are ESASE/HGHG schemes. By setting the flag to false the current profile is written out at each output step similar to radiation power and bunching profile.
 
-
+\item {\bf exclude\_field\_dump} ({\it bool, false}): Flag to suppress writing of electric field distributions to the generated {\tt .fld.h5} files. If {\tt true}, electric field data is not stored, while all other objects, such as intensity projections, are still written to the {\tt .fld.h5} files.
 
 
 
