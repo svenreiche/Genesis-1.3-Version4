@@ -358,7 +358,7 @@ string ProfileFile::init(int rank, map<string,string>*arg)
 double ProfileFile::value(double z)
 {
   if (z<xdat[0]){ return ydat[0]; }
-  if (z>xdat[xdat.size()-1]){ return ydat[xdat.size()-1]; }
+  if (z>=xdat[xdat.size()-1]){ return ydat[xdat.size()-1]; }
 
   int idx=0;
   while(z>=xdat.at(idx)){
