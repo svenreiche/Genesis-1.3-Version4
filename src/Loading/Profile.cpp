@@ -359,13 +359,15 @@ double ProfileFile::value(double z)
 {
   if (z<xdat[0]){ return ydat[0]; }
   if (z>xdat[xdat.size()-1]){ return ydat[xdat.size()-1]; }
+
   int idx=0;
-  while(z>=xdat[idx]){
+  while(z>=xdat.at(idx)){
     idx++;
   }
   idx--;
-  double wei=(z-xdat[idx])/(xdat[idx+1]-xdat[idx]);
-  double val=ydat[idx]*(1-wei)+wei*ydat[idx+1];
+
+  double wei=(z-xdat.at(idx))/(xdat.at(idx+1)-xdat.at(idx));
+  double val=ydat.at(idx)*(1-wei)+wei*ydat.at(idx+1);
   return val;
 }
 
@@ -379,6 +381,5 @@ void ProfileFile::usage(){
   cout << " bool reverse = false" << endl;
   cout << " bool autoassign = false"  << endl;
   cout << "&end" << endl << endl;
-  return;
   return;
 }
