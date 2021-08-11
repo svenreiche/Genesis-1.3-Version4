@@ -21,9 +21,12 @@ Field::Field(){
   polarization=false;
   disabled=false;
   out_global=true;
+
+  /* controlled by calls to Field::setOutput */
   doFFT=true;
   doSpatial=true;
   doIntensity=true;
+  doDumpField=true;
 }
 
 

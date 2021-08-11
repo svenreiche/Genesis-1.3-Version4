@@ -16,14 +16,18 @@ Setup::Setup()
   lambda0=1e-10;
   delz=0.015; 
   seed=123456789;
+
+
   beam_global_stat=false;
   field_global_stat=false;
+
   exclude_spatial_output=false;
   exclude_fft_output=false;
   exclude_intensity_output=false;
   exclude_energy_output=false;
   exclude_aux_output=false;
   exclude_current_output=true;
+  exclude_field_dump=false;
 
   runcount = 0 ;  // count of runs in conjunction of calls of altersetup
 }
@@ -53,6 +57,7 @@ void Setup::usage(){
   cout << " bool exclude_energy_output = false" << endl;
   cout << " bool exclude_aux_output = false" << endl;
   cout << " bool exclude_current_output = true" << endl;
+  cout << " bool exclude_field_dump = false" << endl;
   cout << "&end" << endl << endl;
   return;
 }
@@ -87,6 +92,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
   if (arg->find("exclude_energy_output")!=end)    {exclude_energy_output   = atob(arg->at("exclude_energy_output"));    arg->erase(arg->find("exclude_energy_output"));}
   if (arg->find("exclude_aux_output")!=end)       {exclude_aux_output      = atob(arg->at("exclude_aux_output"));       arg->erase(arg->find("exclude_aux_output"));}
   if (arg->find("exclude_current_output")!=end)   {exclude_current_output  = atob(arg->at("exclude_current_output"));   arg->erase(arg->find("exclude_current_output"));}
+  if (arg->find("exclude_field_dump")!=end)   {exclude_field_dump  = atob(arg->at("exclude_field_dump"));   arg->erase(arg->find("exclude_field_dump"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &setup" << endl; this->usage();}

@@ -42,10 +42,11 @@ class Field{
    bool isEnabled();
    bool get_global_stat();
    void set_global_stat(bool);
-   void setOutput(bool,bool,bool);
+   void setOutput(bool,bool,bool,bool);
    bool outputFFT();
    bool outputSpatial();
    bool outputIntensity();
+   bool dumpFieldEnabled();
    int getHarm();
    double getRHarm();
 
@@ -73,6 +74,7 @@ class Field{
    bool disabled;
    double rharm;
    bool out_global, doFFT,doSpatial, doIntensity;
+   bool doDumpField; // controls write of field grid to .dfl files (can be OFF, if intensity projects are sufficient)
 
    complex<double> *in;
    complex<double> *out;
@@ -87,12 +89,14 @@ class Field{
 inline bool Field::outputFFT(){ return doFFT;}
 inline bool Field::outputSpatial(){ return doSpatial;}
 inline bool Field::outputIntensity(){ return doIntensity;}
+inline bool Field::dumpFieldEnabled(){ return doDumpField;}
 inline bool Field::get_global_stat(){return out_global;}
 inline void Field::set_global_stat(bool in) {out_global=in;}
-inline void Field::setOutput(bool nofft_in, bool noSpatial_in, bool noInten_in) {
+inline void Field::setOutput(bool nofft_in, bool noSpatial_in, bool noInten_in, bool noDumpField_in) {
   doFFT = !nofft_in;
   doSpatial = !noSpatial_in;
   doIntensity = !noInten_in;
+  doDumpField = !noDumpField_in;
 }
 
 inline void Field::disable(double conv)
