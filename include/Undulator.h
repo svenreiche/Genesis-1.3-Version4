@@ -30,7 +30,11 @@ class Undulator: public HDF5Base{
    int getMarker();
 
    void updateMarker(int, int, int, double);
+   void markUndExits(void);
    void updateOutput(double,int);
+
+
+   void reportLattice(void);
 
 
 
