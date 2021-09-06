@@ -39,7 +39,9 @@ bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und)
     dump.write(basename,field);
 
     /* register field dump => it will be reported in list of dumps generated during current "&track" command */
-    und->fielddumps_filename.push_back(basename);
+    string fn;
+    fn = basename + ".fld.h5"; /* file extension as added in WriteFieldHDF5::write (TODO: need to implement proper handling of harmonic field dumping) */
+    und->fielddumps_filename.push_back(fn);
     und->fielddumps_intstep.push_back(istepz);
   }
   
@@ -48,7 +50,9 @@ bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und)
     dump.write(basename,beam);
 
     /* register beam dump => it will be reported in list of dumps generated during current "&track" command */
-    und->beamdumps_filename.push_back(basename);
+    string fn;
+    fn = basename + ".par.h5"; /* file extension as added in WriteBeamHDF5::write */
+    und->beamdumps_filename.push_back(fn);
     und->beamdumps_intstep.push_back(istepz);
   }
   
