@@ -61,6 +61,11 @@ class Undulator: public HDF5Base{
    vector<double> paw,pkx,pky,pgradx,pgrady,pphase; // perpendicular undulator parameters
    vector<int> helical,marker;
 
+   vector<string> fielddumps_filename;
+   vector<int>    fielddumps_intstep;
+   vector<string> beamdumps_filename;
+   vector<int>    beamdumps_intstep;
+
 
  private: 
 

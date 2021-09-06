@@ -23,23 +23,33 @@ Control::~Control()
 
 bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und)
 {
-
   bool sort=false;
-
   int marker=und->getMarker();
-  // possible file names
-  int istepz=und->getStep();
+
+  // possible file names contain number of current integration step
   stringstream sroot;
+  string basename;
+  int istepz=und->getStep();
   sroot << "." << istepz;
+  basename=root+sroot.str();
+
 
   if ((marker & 1) != 0){
     WriteFieldHDF5 dump;
-    dump.write(root+sroot.str(),field);
+    dump.write(basename,field);
+
+    /* register field dump => it will be reported in list of dumps generated during current "&track" command */
+    und->fielddumps_filename.push_back(basename);
+    und->fielddumps_intstep.push_back(istepz);
   }
   
   if ((marker & 2) != 0){
     WriteBeamHDF5 dump;
-    dump.write(root+sroot.str(),beam);
+    dump.write(basename,beam);
+
+    /* register beam dump => it will be reported in list of dumps generated during current "&track" command */
+    und->beamdumps_filename.push_back(basename);
+    und->beamdumps_intstep.push_back(istepz);
   }
   
   if ((marker & 4) != 0){

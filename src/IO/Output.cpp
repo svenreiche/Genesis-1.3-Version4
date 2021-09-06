@@ -214,9 +214,41 @@ void Output::writeLattice(Beam * beam,Undulator *und)
   this->writeSingleNode(gid,"chic_ld","m",&und->chic_ld);
   this->writeSingleNode(gid,"chic_lt","m",&und->chic_lt);
 
+
+  hid_t gid_dr;
+  size_t k;
+  gid_dr=H5Gcreate(gid,"fielddumps",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  for(k=0; k<und->fielddumps_filename.size(); k++)
+  {
+    stringstream objname;
+    vector<double> tmp(1);
+
+    objname << "filename" << (k+1);
+    this->writeSingleNodeString(gid_dr,objname.str(), &und->fielddumps_filename.at(k));
+    objname.str("");
+    objname << "intstep" << (k+1);
+    tmp[0] = und->fielddumps_intstep.at(k);
+    this->writeSingleNode(gid_dr,objname.str(), " ", &tmp);
+  }
+  H5Gclose(gid_dr);
+
+  gid_dr=H5Gcreate(gid,"beamdumps",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  for(k=0; k<und->beamdumps_filename.size(); k++)
+  {
+    stringstream objname;
+    vector<double> tmp(1);
+
+    objname << "filename" << (k+1);
+    this->writeSingleNodeString(gid_dr,objname.str(), &und->beamdumps_filename.at(k));
+    objname.str("intstep");
+    objname << (k+1);
+    tmp[0] = und->beamdumps_intstep.at(k);
+    this->writeSingleNode(gid_dr,objname.str(), " ", &tmp);
+  }
+  H5Gclose(gid_dr);
+
+
   H5Gclose(gid);
-
-
 }
 
 void Output::writeBeamBuffer(Beam *beam)
