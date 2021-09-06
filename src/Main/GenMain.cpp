@@ -301,6 +301,17 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
           }  
 
 
+          //----------------------------------------------------
+          // stop execution of input file here (useful for debugging)
+
+          if (element.compare("&stop")==0) {
+            if (rank==0) {
+              cout << endl << "*** &stop element: User requested end of simulation ***" << endl;
+            }
+            break;
+          }
+
+
 
           //-----------------------------------------------------
           // error because the element typ is not defined

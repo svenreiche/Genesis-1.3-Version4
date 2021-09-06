@@ -33,8 +33,6 @@ void Undulator::updateOutput(double zstop_in,int nzout)
   return;
 }
 
-
-
 void Undulator::updateMarker(int nfld, int npar, int nsort, double zstop)
 {
   for (int i=0; i<marker.size();i++){
@@ -56,9 +54,53 @@ void Undulator::updateMarker(int nfld, int npar, int nsort, double zstop)
     if (z[i]>zstop) {  // stop calculation
       marker[i]|=8;
     }
-  }  
+  }
   return;
-} 
+}
+
+
+void Undulator::markUndExits(void)
+{
+  int nz=marker.size();
+  for (int i=0;i<nz;i++){
+    // Field dumps at the exit of the undulator (one dump for each undulator
+    // in your expanded lattice)?
+    // NOTE: Setting flag for next integration step (the first one with aw==0),
+    // as the field is dumped before any other work done for this step
+    if (i>0) {
+      if ((aw[i-1]!=0) && (aw[i]==0)) {
+        marker[i] |= 1; /* request field dump */
+      }
+    }
+  }
+}
+
+void Undulator::reportLattice(void)
+{
+  ofstream fo;
+  int nz=aw.size();
+
+  fo.open("latreport.txt");
+  fo << "i,z,aw,qf,marker,marker_decoded" << endl;
+  for (int i=0;i<nz;i++)
+  {
+    int m  = marker[i];
+    string decoded;
+
+    decoded = "";
+    if(m&1)
+      decoded+="F"; // Field dump
+    if(m&2)
+      decoded+="P"; // Particle dump
+    if(m&4)
+      decoded+="S"; // Sort
+    if(m&8)
+      decoded+="X"; // eXit
+
+    fo << i << "," << z[i] << "," << aw[i] << "," << qf[i] << "," << marker[i] << "," << decoded << endl;
+  }
+  fo.close();
+}
 
 
 /*

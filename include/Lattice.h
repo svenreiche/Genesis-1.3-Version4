@@ -12,6 +12,7 @@
 
 #include "LatticeParser.h"
 #include "Optics.h"
+#include "Setup.h"
 #include "AlterLattice.h"
 #include "Undulator.h"
 
@@ -24,7 +25,7 @@ class Lattice{
  public:
    Lattice();
    virtual ~Lattice();
-   bool generateLattice(double, double, double,AlterLattice *, Undulator *);
+   bool generateLattice(Setup *, AlterLattice *, Undulator *);
 
    //   bool writeLattice(hid_t,double, double, double,AlterLattice *);
 
@@ -33,6 +34,8 @@ class Lattice{
    void match(int, double, double);
 
    bool alterElement(string,string, double, string, Series *,int,bool);
+
+   void report(void);
 
  private:
 
