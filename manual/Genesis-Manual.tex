@@ -438,7 +438,8 @@ This namelist initiate the actually tracking through the undulator and then writ
 \item {\bf output\_step} ({\it int, 1}): Defines the number of integration steps before the particle and field distribution is analyzed for output.
 \item {\bf field\_dump\_step} ({\it int, 0}): Defines the number of integration steps before a field dump is written. Be careful because for time-dependent simulation it can generate many large output files.
 \item {\bf beam\_dump\_step} ({\it int, 0}): Defines the number of integration steps before a particle dump is written. Be careful because for time-dependent simulation it can generate many large output files.
-\item {\bf sort\_step} ({\it int,0}): Defines the number of steps of integration before the particle distribution is sorted. Works only for one-4-one simulations.
+\item {\bf field\_dump\_at\_undexit} ({\it bool, false}): If true, a field dump is written at the exit of every {\tt undulator} element in the tracked beamline segment. If {\bf zstop} is within an {\tt undulator} element, no file is written for this final undulator.
+\item {\bf sort\_step} ({\it int, 0}): Defines the number of steps of integration before the particle distribution is sorted. Works only for one-4-one simulations.
 
 \end{itemize}
 
