@@ -58,18 +58,20 @@ void Undulator::updateMarker(int nfld, int npar, int nsort, double zstop)
   return;
 }
 
-
+// Field dumps at the exit of the undulator (one dump for each undulator
+// in the expanded lattice)?
 void Undulator::markUndExits(void)
 {
   int nz=marker.size();
-  for (int i=0;i<nz;i++){
-    // Field dumps at the exit of the undulator (one dump for each undulator
-    // in your expanded lattice)?
+  for (int i=0;i<nz;i++)
+  {
     // NOTE: Setting flag for next integration step (the first one with aw==0),
     // as the field is dumped before any other work done for this step
-    if (i>0) {
-      if ((aw[i-1]!=0) && (aw[i]==0)) {
-        marker[i] |= 1; /* request field dump */
+
+    // !!!        vvvvvvvvvvvvv=== NOTE: as of git commit 1a9d191 (2021-08-11): vector 'aw' is one element shorter than 'marker' !!!
+    if ( (i>0) && (i<aw.size()) ) {
+      if ((aw.at(i-1)!=0) && (aw.at(i)==0)) {
+        marker.at(i) |= 1; /* request field dump */
       }
     }
   }
