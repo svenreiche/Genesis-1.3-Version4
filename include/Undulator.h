@@ -34,7 +34,7 @@ class Undulator: public HDF5Base{
    void updateOutput(double,int);
 
 
-   void reportLattice(void);
+   void reportLattice(string);
 
 
 

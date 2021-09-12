@@ -68,7 +68,7 @@ void Undulator::markUndExits(void)
     // NOTE: Setting flag for next integration step (the first one with aw==0),
     // as the field is dumped before any other work done for this step
 
-    // !!!        vvvvvvvvvvvvv=== NOTE: as of git commit 1a9d191 (2021-08-11): vector 'aw' is one element shorter than 'marker' !!!
+    // !!!        vvvvvvvvvvvvv=== NOTE: as of git commit 1a9d191 (2021-08-11): vector 'aw' is one element shorter than 'marker', see Lattice::generateLattice !!!
     if ( (i>0) && (i<aw.size()) ) {
       if ((aw.at(i-1)!=0) && (aw.at(i)==0)) {
         marker.at(i) |= 1; /* request field dump */
@@ -77,12 +77,12 @@ void Undulator::markUndExits(void)
   }
 }
 
-void Undulator::reportLattice(void)
+void Undulator::reportLattice(string fn_report)
 {
   ofstream fo;
-  int nz=aw.size();
+  int nz=aw.size(); /* aw is one element shorter than marker (as of git commit 1a9d191), see Lattice::generateLattice */
 
-  fo.open("latreport.txt");
+  fo.open(fn_report);
   fo << "i,z,aw,qf,marker,marker_decoded" << endl;
   for (int i=0;i<nz;i++)
   {
