@@ -33,10 +33,10 @@ void Output::close(){
        hid_t *objects = (hid_t *) calloc(norphans, sizeof(hid_t));
        H5Fget_obj_ids(fid, H5F_OBJ_ALL, -1, objects);
        for (i=0; i<norphans; i++) {
-           H5Oget_info(objects[i], &info);
+	 //           H5Oget_info(objects[i], &info);
            H5Iget_name(objects[i], name, 64);
-	   cout << "Slice " <<s0/ds << " : " << i+1 << " of " << norphans << " things still open: " << objects[i] << " with name " << name << " of type " << info.type << endl; 
-	   //           printf("%d of %zd things still open: %d with name %s of type %d", i, norphans, objects[i], name, info.type);
+	   cout << "Slice " <<s0/ds << " : " << i+1 << " of " << norphans << " things still open: " << objects[i] << " with name " << name << endl; 
+	   // took out the H5O call since it changes with the new hdf5 release
        }
    }
 
