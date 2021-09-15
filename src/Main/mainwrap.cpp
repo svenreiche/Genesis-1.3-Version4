@@ -76,6 +76,7 @@ int main (int argc, char *argv[]) {
 	  }       
 	  if (ok) {genmain(filename,latname,outname,seed,false);}
 	}
+	MPI_Barrier(MPI_COMM_WORLD);
         MPI_Finalize(); // node turned off
 
         return 0;
