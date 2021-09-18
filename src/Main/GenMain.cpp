@@ -174,8 +174,9 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
           if ((element.compare("&profile_const")==0)||
               (element.compare("&profile_gauss")==0)||
               (element.compare("&profile_file")==0)||
+              (element.compare("&profile_file_multi")==0) ||
               (element.compare("&profile_polynom")==0)||
-              (element.compare("&profile_step")==0)){            
+              (element.compare("&profile_step")==0)){
             if (!profile->init(rank,&argument,element)){ break; }
             continue;
 	  }
