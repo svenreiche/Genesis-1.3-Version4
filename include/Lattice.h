@@ -35,7 +35,7 @@ class Lattice{
 
    bool alterElement(string,string, double, string, Series *,int,bool);
 
-   void report(void);
+   void report(string);
 
  private:
 

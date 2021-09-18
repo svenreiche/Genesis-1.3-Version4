@@ -22,10 +22,13 @@ void Track::usage(){
   cout << " double slen  = <taken from TIME module>" << endl;
   cout << " int output_step  = 1" << endl;
   cout << " int field_dump_step  = 0" << endl;
+  cout << " bool field_dump_at_undexit = false" << endl;
   cout << " int beam_dump_step  = 0" << endl;
   cout << " int sort_step = 0" << endl;
   cout << " int bunchharm = 1" << endl;
   cout << "&end" << endl << endl;
+  /* currently undocumented debugging option: dbg_report_lattice */
+
   return;
 }
 
@@ -115,8 +118,18 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   }
   beam->setOutput(setup->outputCurrent(),setup->outputEnergy(),setup->outputSpatial(),setup->outputAux());
 
-  if(dbg_report_lattice && (rank==0))
-    und->reportLattice();
+  if(dbg_report_lattice && (rank==0)) {
+    stringstream ss;
+    int rc = setup->getCount();
+
+    /* generate report filename (same logic as in Setup::getRootName) */
+    ss << "latreport_u"; // "_u" indicates lattice report from Undulator class (also Lattice class can write lattice report)
+    if(rc>0) {
+      ss << ".Run" << (rc+1);
+    }
+    ss << ".txt";
+    und->reportLattice(ss.str());
+  }
 
   // call to gencore to do the actual tracking.  
   Gencore core;
