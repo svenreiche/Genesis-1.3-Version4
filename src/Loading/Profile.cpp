@@ -65,7 +65,7 @@ bool Profile::init(int rank, map<string,string> *arg,string element)
     ProfileFileMulti p;
     p.setup(rank, arg, &prof);
 
-    /* no need to continue as ProfileFileMulti registers all profiles for later use */
+    /* no need to continue as ProfileFileMulti registered all profiles */
     return(true);
   }
 
@@ -87,7 +87,7 @@ bool Profile::check(string label){
   return false;
 }
 
-
+/* This function is called to evaluate the Profile named 'label' at position 's' (central entrance point) */
 double Profile::value(double s, double val, string label)
 {
   if ((label.size()<1)||(prof.find(label)==prof.end())){  
@@ -280,7 +280,6 @@ void ProfileGauss::usage(){
   cout << " double sig= 1" << endl;
   cout << "&end" << endl << endl;
   return;
-  return;
 }
 
 
@@ -341,6 +340,34 @@ string ProfileFile::init(int rank, map<string,string>*arg)
     if (rank==0){
       cout << "*** Error: Cannot read the HDF5 dataset: " << ydataset << endl;
     }
+    return "";
+  }
+
+  /* check that
+   * . x is monotonically increasing (needed for reversal and interpolation algorithms)
+   * . x/y data are of identical dimension (needed for interpolation algorithm)
+   */
+  bool is_mono=true;
+  bool ok=true;
+  for(unsigned j=1; j<xdat.size(); j++) {
+    if(xdat[j-1]>=xdat[j]) {
+      is_mono=false;
+      break;
+    }
+  }
+  if(!is_mono) {
+    ok=false;
+    if(rank==0) {
+      cout << "*** Error: &profile_file requires 'xdata' to be monotonically increasing (HDF5 object " << xdataset << ")" << endl;
+    }
+  }
+  if(xdat.size() != ydat.size()) {
+    ok=false;
+    if(rank==0) {
+      cout << "*** Error: &profile_file requires identical dimension of 'xdata' and 'ydata'" << endl;
+    }
+  }
+  if(!ok) {
     return "";
   }
 
@@ -466,8 +493,10 @@ bool ProfileFileMulti::setup(int rank, map<string,string> *arg, map<string, Prof
 	readDataDouble(fid, (char *) xobj.c_str(), &xdata.at(0), nx);
 	bool is_mono=true;
 	for(unsigned j=1; j<nx; j++) {
-		if(xdata[j-1]>=xdata[j])
+		if(xdata[j-1]>=xdata[j]) {
 			is_mono=false;
+			break;
+		}
 	}
 	if(!is_mono) {
 		ok=false;
