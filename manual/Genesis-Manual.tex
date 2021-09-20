@@ -289,6 +289,27 @@ Profiles are defining a dependence on the position in the time frame, which then
 \item{\bf isTime} ({\it bool, false}): If true the $s$-position is a time variable and therefore multiplied with the speed of light $c$ to get the position in meters.
 \item{\bf reverse} ({\it bool, false}): if true the order in the look-up table is reverse. This is sometimes needed because time and spatial coordinates differ sometimes by a minus sign.
 \end{itemize}
+\subsubsection{\sf profile\_file\_multi}
+\begin{itemize}
+\item{\bf file} ({\tt string, $<$ empty $>$}): HDF5 file containing the datasets specified by {\bf xdata} and {\bf ydata}.
+\item{\bf xdata} ({\tt string, $<$ empty $>$}): Points to the dataset in the HDF5 file containing the $s$-position for the look-up tables.
+\item{\bf ydata} ({\tt string, $<$ empty $>$}): Comma-separated list of datasets in the HDF5 file containing the values of the parameters.
+\item{\bf label\_prefix} ({\tt string, $<$ empty $>$}): Prefix of automatically derived labels (see also the following example).
+\item{\bf isTime} ({\it bool, false}): If true the $s$-position is a time variable and therefore multiplied with the speed of light $c$ to get the position in meters.
+\end{itemize}
+The parameters {\bf file}, {\bf xdata}, {\bf ydata}, and {\bf label\_prefix} are required. The following example assumes that {\tt beam.h5} contains objects {\tt /s}, {\tt /gamma}, {\tt /delgam}, and {\tt /current} (that all have to be of identical size):
+\begin{verbatim}
+&profile_file_multi
+   file = beam.h5
+   xdata = s
+   ydata = gamma, delgam, current
+   label_prefix = prof
+&end
+\end{verbatim}
+The profiles {\tt prof.gamma}, {\tt prof.delgam}, and {\tt prof.current} are generated.
+
+
+
 
 \subsection{\sf beam}
 This namelist initiates the generation of the particle distribution to be kept in memory. Any time-dependence has to be defined before calling this namelist.
