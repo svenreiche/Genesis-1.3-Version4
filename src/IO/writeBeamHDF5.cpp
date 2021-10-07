@@ -3,6 +3,8 @@
 
 extern bool MPISingle;
 
+#define SLICESELECT_DUMP    1
+#define SLICESELECT_IGNORE  0
 
 // constructor destructor
 WriteBeamHDF5::WriteBeamHDF5()
@@ -14,8 +16,8 @@ WriteBeamHDF5::~WriteBeamHDF5()
 }
 
 
-void WriteBeamHDF5::write(string fileroot, Beam *beam){
-
+void WriteBeamHDF5::write(string fileroot, Beam *beam)
+{
   MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
   MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
   if (MPISingle){
@@ -42,26 +44,29 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam){
   this->writeGlobal(beam->nbins,beam->one4one,beam->reflength,beam->slicelength,beam->s0,ntotal);
 
 
-  // write slices
-
-  // loop through slices
-  
-  int smin=rank*beam->beam.size();
-  int smax=smin+beam->beam.size();
-
+  /* write slices: loop through slices */
   vector<double> work,cur;
   cur.resize(1);
   int nwork=0;
   int npart=0;
+ 
+  int smin=rank*beam->beam.size();
+  int smax=smin+beam->beam.size();
 
-  for (int i=0; i<(ntotal);i++){
-    s0=-1;
+  for (int i=0; i<(ntotal);i++)
+  {
+    int dodump = write_sliceselector(i+1);
+    if(dodump!=SLICESELECT_DUMP)
+      continue;
+
     char name[16];
     sprintf(name,"slice%6.6d",i+1);
     hid_t gid=H5Gcreate(fid,name,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
     int islice= i % beam->beam.size() ;   // count inside the given slice range
 
+    // control which MPI rank writes its local particle data to the file
+    s0=-1;
     if ((i>=smin) && (i<smax)){
       s0=0;    // select the slice which is writing
       npart=beam->beam.at(islice).size();
@@ -154,7 +159,14 @@ void WriteBeamHDF5::writeGlobal(int nbins,bool one4one, double reflen, double sl
   return;
 }
 
+// filter function for selective dumping of slices
+int WriteBeamHDF5::write_sliceselector(int idslice)
+{
+  int slice_min = 12000;
+  int slice_max = 12100;
 
+  if((slice_min<=idslice) && (idslice<=slice_max))
+    return(SLICESELECT_DUMP);
 
-
-
+  return(SLICESELECT_IGNORE);
+}
