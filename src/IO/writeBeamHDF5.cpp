@@ -40,11 +40,10 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam)
   int ntotal=size*beam->beam.size();
 
   // write global data
-
   this->writeGlobal(beam->nbins,beam->one4one,beam->reflength,beam->slicelength,beam->s0,ntotal);
 
 
-  /* write slices: loop through slices */
+  /* write beam: loop through slices */
   vector<double> work,cur;
   cur.resize(1);
   int nwork=0;
@@ -55,9 +54,13 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam)
 
   for (int i=0; i<(ntotal);i++)
   {
-    int dodump = write_sliceselector(i+1);
-    if(dodump!=SLICESELECT_DUMP)
-      continue;
+    // if requested: selection of interesting slices
+    if(beam->get_WriteFilter_active()) {
+      int dodump = write_sliceselector(beam, i+1);
+      if(dodump!=SLICESELECT_DUMP)
+        continue;
+    }
+
 
     char name[16];
     sprintf(name,"slice%6.6d",i+1);
@@ -160,13 +163,24 @@ void WriteBeamHDF5::writeGlobal(int nbins,bool one4one, double reflen, double sl
 }
 
 // filter function for selective dumping of slices
-int WriteBeamHDF5::write_sliceselector(int idslice)
+int WriteBeamHDF5::write_sliceselector(Beam *beam, int idslice)
 {
-  int slice_min = 12000;
-  int slice_max = 12100;
+  // note that slice count in this function begins with 1 (= as in HDF5 file containing beam dump)
+  int slice_total = size*beam->beam.size(); // total slice number (all processes)
+  int slice_min = 1;
+  int slice_max = slice_total;
+  int inc = beam->get_WriteFilter_inc();
 
-  if((slice_min<=idslice) && (idslice<=slice_max))
-    return(SLICESELECT_DUMP);
+  // if the from/to parameter is negative (=default), then the global first/last slice determines the value
+  if(beam->get_WriteFilter_from() >= 0)
+    slice_min = beam->get_WriteFilter_from();
+  if(beam->get_WriteFilter_to() >= 0)
+    slice_max = beam->get_WriteFilter_to();
 
+  if((slice_min<=idslice) && (idslice<=slice_max)) {
+    int t = idslice-slice_min;
+    if((t%inc)==0)
+      return(SLICESELECT_DUMP);
+  }
   return(SLICESELECT_IGNORE);
 }

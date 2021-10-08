@@ -29,7 +29,14 @@ Setup::Setup()
   exclude_current_output=true;
   exclude_field_dump=false;
 
-  runcount = 0 ;  // count of runs in conjunction of calls of altersetup
+  // filtering of beam slices during dump process (information is forwarded into active instance of Beam class when actually needed there)
+  beam_write_filter=false;
+  beam_write_slices_from=-1;
+  beam_write_slices_to=-1;
+  beam_write_slices_inc=1;
+
+  // count of runs in conjunction of calls of altersetup
+  runcount = 0;
 }
 
 Setup::~Setup(){}
@@ -93,6 +100,26 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
   if (arg->find("exclude_aux_output")!=end)       {exclude_aux_output      = atob(arg->at("exclude_aux_output"));       arg->erase(arg->find("exclude_aux_output"));}
   if (arg->find("exclude_current_output")!=end)   {exclude_current_output  = atob(arg->at("exclude_current_output"));   arg->erase(arg->find("exclude_current_output"));}
   if (arg->find("exclude_field_dump")!=end)   {exclude_field_dump  = atob(arg->at("exclude_field_dump"));   arg->erase(arg->find("exclude_field_dump"));}
+
+  if (arg->find("beam_write_slices_from")!=end) {
+    beam_write_slices_from = atoi(arg->at("beam_write_slices_from").c_str());
+    arg->erase(arg->find("beam_write_slices_from"));
+    beam_write_filter=true; // user can override this if needed
+  }
+  if (arg->find("beam_write_slices_to")!=end) {
+    beam_write_slices_to = atoi(arg->at("beam_write_slices_to").c_str());
+    arg->erase(arg->find("beam_write_slices_to"));
+    beam_write_filter=true; // user can override this if needed
+  }
+  if (arg->find("beam_write_slices_inc")!=end) {
+    beam_write_slices_inc = atoi(arg->at("beam_write_slices_inc").c_str());
+    arg->erase(arg->find("beam_write_slices_inc"));
+    beam_write_filter=true; // user can override this if needed
+  }
+  if (arg->find("beam_write_slices_filter")!=end) {
+    beam_write_filter = atob(arg->at("beam_write_slices_filter"));
+    arg->erase(arg->find("beam_write_slices_filter"));
+  }
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &setup" << endl; this->usage();}

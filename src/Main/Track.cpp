@@ -101,7 +101,8 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   }
   beam->setOutput(setup->outputCurrent(),setup->outputEnergy(),setup->outputSpatial(),setup->outputAux());
 
-
+  // propagate beam dump settings (the tracking process can generate beam dumps)
+  beam->setWriteFilter(setup->BWF_get_enabled(), setup->BWF_get_from(), setup->BWF_get_to(), setup->BWF_get_inc());
 
   // call to gencore to do the actual tracking.  
   Gencore core;

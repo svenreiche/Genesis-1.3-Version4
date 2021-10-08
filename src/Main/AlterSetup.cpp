@@ -101,6 +101,9 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
 	 }
       }
     }
+
+    // this process changed the slice numbering: disable slice filter for beam dumping
+    setup->BWF_set_enabled(false);
   }
 
   // step four: do harmonic conversion
@@ -141,13 +144,13 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
 	    return false;	    
 	 }
       }
-  
     }
+
+    // this process changed the slice numbering: disable slice filter for beam dumping
+    setup->BWF_set_enabled(false);
   }
 
   return true;
-
-
 }
 
 

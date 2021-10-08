@@ -33,6 +33,11 @@ class Beam{
    int sort();
    void track(double, vector<Field *> *, Undulator *);
    void setOutput(bool,bool,bool,bool);
+   void setWriteFilter(bool,int,int,int);
+   bool get_WriteFilter_active();
+   int  get_WriteFilter_from();
+   int  get_WriteFilter_to();
+   int  get_WriteFilter_inc();
 
    void setBunchingHarmonicOutput(int harm_in);
    int getBunchingHarmonics();
@@ -68,6 +73,9 @@ class Beam{
    int bharm;
    bool do_global_stat;
    bool doCurrent, doSpatial, doEnergy, doAux;
+
+   bool beam_write_filter;
+   int beam_write_slices_from, beam_write_slices_to, beam_write_slices_inc;
 };
 
 inline bool Beam::outputCurrent(){ return doCurrent;}
@@ -100,4 +108,14 @@ inline void Beam::setOutput(bool noCurrent_in, bool noEnergy_in, bool noSpatial_
   doEnergy = !noEnergy_in;
   doAux = !noAux_in;
 }
+inline void Beam::setWriteFilter(bool in_active, int in_from, int in_to, int in_inc) {
+   beam_write_filter = in_active;
+   beam_write_slices_from = in_from;
+   beam_write_slices_to = in_to;
+   beam_write_slices_inc = in_inc;
+}
+inline bool Beam::get_WriteFilter_active() { return beam_write_filter; }
+inline int  Beam::get_WriteFilter_from()   { return beam_write_slices_from; }
+inline int  Beam::get_WriteFilter_to()     { return beam_write_slices_to; }
+inline int  Beam::get_WriteFilter_inc()    { return beam_write_slices_inc; }
 #endif

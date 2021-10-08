@@ -49,6 +49,12 @@ class Setup: public StringProcessing{
    void incrementCount();
    string getLattice();
 
+   bool   BWF_get_enabled();
+   void   BWF_set_enabled(bool);
+   int    BWF_get_from();
+   int    BWF_get_to();
+   int    BWF_get_inc();
+
  private:
    void usage();
    string rootname,lattice,beamline,partfile,fieldfile;
@@ -56,6 +62,10 @@ class Setup: public StringProcessing{
    bool one4one,shotnoise;
    bool beam_global_stat, field_global_stat;
    bool exclude_spatial_output, exclude_fft_output, exclude_intensity_output, exclude_energy_output, exclude_aux_output, exclude_current_output, exclude_field_dump;
+
+   bool beam_write_filter;
+   int beam_write_slices_from, beam_write_slices_to, beam_write_slices_inc;
+
    int seed, rank,npart,nbins,runcount;
 };
 
@@ -81,4 +91,10 @@ inline bool   Setup::outputEnergy(){ return exclude_energy_output;}
 inline bool   Setup::outputCurrent(){ return exclude_current_output;}
 inline bool   Setup::outputAux(){ return exclude_aux_output;}
 inline bool   Setup::outputFieldDump() { return exclude_field_dump;}
+
+inline bool   Setup::BWF_get_enabled() { return beam_write_filter; }
+inline void   Setup::BWF_set_enabled(bool in) { beam_write_filter=in; }
+inline int    Setup::BWF_get_from() { return beam_write_slices_from; }
+inline int    Setup::BWF_get_to()   { return beam_write_slices_to; }
+inline int    Setup::BWF_get_inc()  { return beam_write_slices_inc; }
 #endif
