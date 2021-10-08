@@ -48,6 +48,7 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam)
   cur.resize(1);
   int nwork=0;
   int npart=0;
+  int local_nslice_written=0, global_nslice_written=0;
  
   int smin=rank*beam->beam.size();
   int smax=smin+beam->beam.size();
@@ -61,6 +62,7 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam)
         continue;
     }
 
+    local_nslice_written++;
 
     char name[16];
     sprintf(name,"slice%6.6d",i+1);
@@ -129,7 +131,17 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam)
 
   H5Fclose(fid);
 
- 
+  // warn if no slice was written (wrong parameters for slice selector?)
+  MPI_Reduce(&local_nslice_written, &global_nslice_written, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD); 
+  if(beam->get_WriteFilter_active()) {
+    if ((global_nslice_written==0) && (rank==0)) {
+      cout << "*** warning: no slice was written (beam dump slice selector parameters:"
+           << " from=" << beam->get_WriteFilter_from()
+           << " to=" << beam->get_WriteFilter_to()
+           << " inc=" << beam->get_WriteFilter_inc()
+           << ")" << endl;
+    }
+  }
 
   return;
 }
@@ -171,7 +183,10 @@ int WriteBeamHDF5::write_sliceselector(Beam *beam, int idslice)
   int slice_max = slice_total;
   int inc = beam->get_WriteFilter_inc();
 
-  // if the from/to parameter is negative (=default), then the global first/last slice determines the value
+  // If the from/to range parameter is negative (=default),
+  // then the global first/last slice determines the value.
+  // Using the 'inc' parameter, one can the write a subset
+  // of all slices, for instance every 10th slice, to the file. 
   if(beam->get_WriteFilter_from() >= 0)
     slice_min = beam->get_WriteFilter_from();
   if(beam->get_WriteFilter_to() >= 0)
