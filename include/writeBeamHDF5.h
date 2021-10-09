@@ -27,8 +27,10 @@ class WriteBeamHDF5 : public HDF5Base {
   int rank,size;
   hid_t fid;
 
-  void writeGlobal(int,bool,double,double,double,int);
+  // void writeGlobal(int,bool,double,double,double,int);
+  void writeGlobal(Beam *, int);
   int write_sliceselector(Beam *, int);
+  void write_sliceselector_geteffective_minmax(Beam *, int *, int *);
 };
 
 

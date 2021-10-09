@@ -101,6 +101,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
   if (arg->find("exclude_current_output")!=end)   {exclude_current_output  = atob(arg->at("exclude_current_output"));   arg->erase(arg->find("exclude_current_output"));}
   if (arg->find("exclude_field_dump")!=end)   {exclude_field_dump  = atob(arg->at("exclude_field_dump"));   arg->erase(arg->find("exclude_field_dump"));}
 
+  // same code also in AlterSetup.cpp
   if (arg->find("beam_write_slices_from")!=end) {
     beam_write_slices_from = atoi(arg->at("beam_write_slices_from").c_str());
     arg->erase(arg->find("beam_write_slices_from"));
@@ -112,7 +113,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
     beam_write_filter=true; // user can override this if needed
   }
   if (arg->find("beam_write_slices_inc")!=end) {
-    beam_write_slices_inc = atoi(arg->at("beam_write_slices_inc").c_str());
+    BWF_set_inc(atoi(arg->at("beam_write_slices_inc").c_str())); // setter function does checks if valid value
     arg->erase(arg->find("beam_write_slices_inc"));
     beam_write_filter=true; // user can override this if needed
   }

@@ -33,13 +33,14 @@ void AlterSetup::usage(){
 
 bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice *lat, Time *time, Beam *beam, vector<Field *> *field)
 {
-
   beamline="";  // clear beamline name for multiple calls of altersetup
   lattice=setup->getLattice();
   delz=setup->getStepLength();
-  rank=inrank;
-  
+  rank=inrank;  
   map<string,string>::iterator end=arg->end();
+
+  bool my_beam_write_filter=false;
+  bool update_beam_write_filter=false;
 
   if (arg->find("rootname")!=end){rootname = arg->at("rootname"); arg->erase(arg->find("rootname"));}
   //  if (arg->find("lattice")!=end) {lattice  = arg->at("lattice"); arg->erase(arg->find("lattice"));}
@@ -49,6 +50,34 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
   if (arg->find("harmonic")!=end){harmonic  = atoi(arg->at("harmonic").c_str());  arg->erase(arg->find("harmonic"));}
   if (arg->find("resample")!=end){resample  = atob(arg->at("resample"));  arg->erase(arg->find("resample"));}
   if (arg->find("disable")!=end){disable  = atob(arg->at("disable"));  arg->erase(arg->find("disable"));}
+
+  // same code as in Setup.cpp
+  if (arg->find("beam_write_slices_from")!=end) {
+    int t = atoi(arg->at("beam_write_slices_from").c_str());
+    arg->erase(arg->find("beam_write_slices_from"));
+    setup->BWF_set_from(t);
+    my_beam_write_filter=true;     // user can override this if needed
+    update_beam_write_filter=true; // this is updated only after the harmonic conversion steps
+  }
+  if (arg->find("beam_write_slices_to")!=end) {
+    int t = atoi(arg->at("beam_write_slices_to").c_str());
+    arg->erase(arg->find("beam_write_slices_to"));
+    setup->BWF_set_to(t);
+    my_beam_write_filter=true;     // user can override this if needed
+    update_beam_write_filter=true; // this is updated only after the harmonic conversion steps
+  }
+  if (arg->find("beam_write_slices_inc")!=end) {
+    int t = atoi(arg->at("beam_write_slices_inc").c_str());
+    arg->erase(arg->find("beam_write_slices_inc"));
+    setup->BWF_set_inc(t);
+    my_beam_write_filter=true;     // user can override this if needed
+    update_beam_write_filter=true; // this is updated only after the harmonic conversion steps
+  }
+  if (arg->find("beam_write_slices_filter")!=end) {
+    my_beam_write_filter = atob(arg->at("beam_write_slices_filter"));
+    update_beam_write_filter=true; // this is updated only after the harmonic conversion steps
+    arg->erase(arg->find("beam_write_slices_filter"));
+  }
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &alter_setup" << endl; this->usage();}
@@ -102,8 +131,13 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
       }
     }
 
-    // this process changed the slice numbering: disable slice filter for beam dumping
-    setup->BWF_set_enabled(false);
+    // this process changed the slice numbering: disable beam dumping slice filter if it was on
+    if((!update_beam_write_filter) && (setup->BWF_get_enabled())) {
+      if(rank==0) {
+        cout << "subharmonic conversion: disabling beam write filter" << endl;
+      }
+      setup->BWF_set_enabled(false);
+    }
   }
 
   // step four: do harmonic conversion
@@ -146,9 +180,18 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
       }
     }
 
-    // this process changed the slice numbering: disable slice filter for beam dumping
-    setup->BWF_set_enabled(false);
+    // this process changed the slice numbering: disable beam dumping slice filter if it was on
+    if((!update_beam_write_filter) && (setup->BWF_get_enabled())) {
+      if(rank==0) {
+        cout << "harmonic conversion: disabling beam write filter" << endl;
+      }
+      setup->BWF_set_enabled(false);
+    }
   }
+
+  // enable beam write filter again if requested (logic is identical to that in &setup)
+  if(update_beam_write_filter)
+    setup->BWF_set_enabled(my_beam_write_filter);
 
   return true;
 }
