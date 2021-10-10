@@ -50,6 +50,7 @@ class Setup: public StringProcessing{
    void incrementCount();
    string getLattice();
 
+   void   BWF_load_defaults();
    bool   BWF_get_enabled(); // BWF=beam write filter
    void   BWF_set_enabled(bool);
    int    BWF_get_from();

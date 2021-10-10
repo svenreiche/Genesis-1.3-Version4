@@ -51,6 +51,22 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
   if (arg->find("resample")!=end){resample  = atob(arg->at("resample"));  arg->erase(arg->find("resample"));}
   if (arg->find("disable")!=end){disable  = atob(arg->at("disable"));  arg->erase(arg->find("disable"));}
 
+
+  /* electron beam slice downselector parameters */
+  // If about to do harmonic/subharmonic conversion:
+  // (1) load defaults
+  //     --> do it before parsing the corresponding user input so that updated values before effective
+  // (2) disable write selector (unless requested otherwise)
+  //     --> done one we have parsed the corresponding user input
+  if ((harmonic>1) || (subharmonic>1)) {
+    if(setup->BWF_get_enabled()) {
+      if(rank==0) {
+        cout << "(sub-)harmonic conversion to be performed: loading default parameters for beam write slice selector" << endl;
+      }
+      setup->BWF_load_defaults(); // load defaults (but do not change 'enabled' flag)
+    }
+  }
+
   // same code as in Setup.cpp
   if (arg->find("beam_write_slices_from")!=end) {
     int t = atoi(arg->at("beam_write_slices_from").c_str());
@@ -82,6 +98,17 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &alter_setup" << endl; this->usage();}
     return false;
+  }
+
+  // if (sub-)harmonic conversion was requested and slice selector is enabled: disable it, unless
+  // one the parameters was touched by the user input
+  if ((harmonic>1) || (subharmonic>1)) {
+    if(!update_beam_write_filter) {
+      if(rank==0) {
+        cout << "(sub-)harmonic conversion: disabling beam write slice selector" << endl;
+      }
+      setup->BWF_set_enabled(false);
+    }
   }
 
   setup->setStepLength(delz);
@@ -131,13 +158,7 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
       }
     }
 
-    // this process changed the slice numbering: disable beam dumping slice filter if it was on
-    if((!update_beam_write_filter) && (setup->BWF_get_enabled())) {
-      if(rank==0) {
-        cout << "subharmonic conversion: disabling beam write filter" << endl;
-      }
-      setup->BWF_set_enabled(false);
-    }
+    // this process changed the slice numbering: slice downselector (for ebeam dumping was already disabled above)
   }
 
   // step four: do harmonic conversion
@@ -180,13 +201,7 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
       }
     }
 
-    // this process changed the slice numbering: disable beam dumping slice filter if it was on
-    if((!update_beam_write_filter) && (setup->BWF_get_enabled())) {
-      if(rank==0) {
-        cout << "harmonic conversion: disabling beam write filter" << endl;
-      }
-      setup->BWF_set_enabled(false);
-    }
+    // this process changed the slice numbering: slice downselector (for ebeam dumping was already disabled above)
   }
 
   // enable beam write filter again if requested (logic is identical to that in &setup)

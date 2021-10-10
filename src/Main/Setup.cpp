@@ -30,10 +30,8 @@ Setup::Setup()
   exclude_field_dump=false;
 
   // filtering of beam slices during dump process (information is forwarded into active instance of Beam class when actually needed there)
-  beam_write_filter=false;
-  beam_write_slices_from=-1;
-  beam_write_slices_to=-1;
-  beam_write_slices_inc=1;
+  BWF_set_enabled(false);
+  BWF_load_defaults();
 
   // count of runs in conjunction of calls of altersetup
   runcount = 0;
@@ -150,6 +148,12 @@ bool Setup::getRootName(string *filename)
     *filename+=ss.str();
   }
   return true; 
+}
 
-
+void Setup::BWF_load_defaults()
+{
+  // note: only loading defaults, not diabling the filter (if desired, this has to be done in addition)
+  beam_write_slices_from=-1;
+  beam_write_slices_to=-1;
+  beam_write_slices_inc=1;
 }
