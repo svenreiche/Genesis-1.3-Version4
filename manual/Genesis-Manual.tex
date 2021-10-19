@@ -20,11 +20,11 @@
 \rule{\textwidth}{0.2cm}\\
 {\rule{0cm}{4cm}\Huge\sf\hspace{2cm}GENESIS 1.3}\\
 \vspace{1cm}
-{\rule{0cm}{2cm}\LARGE\sf\hspace{2cm}Version 4.5.0}\\
+{\rule{0cm}{2cm}\LARGE\sf\hspace{2cm}Version 4.5.1}\\
 \vspace{1cm}
 {\rule{0cm}{2cm}\LARGE\sf\hspace{2cm}User Manual}\\
 \vspace{10cm}\\
-{\sf Mar-20}\\
+{\sf September-21}\\
 \rule{\textwidth}{0.2cm}\\
 \vspace{5cm}
 \pagebreak
@@ -438,12 +438,14 @@ This namelist initiate the actually tracking through the undulator and then writ
 \item {\bf output\_step} ({\it int, 1}): Defines the number of integration steps before the particle and field distribution is analyzed for output.
 \item {\bf field\_dump\_step} ({\it int, 0}): Defines the number of integration steps before a field dump is written. Be careful because for time-dependent simulation it can generate many large output files.
 \item {\bf beam\_dump\_step} ({\it int, 0}): Defines the number of integration steps before a particle dump is written. Be careful because for time-dependent simulation it can generate many large output files.
-\item {\bf sort\_step} ({\it int,0}): Defines the number of steps of integration before the particle distribution is sorted. Works only for one-4-one simulations.
+\item {\bf field\_dump\_at\_undexit} ({\it bool, false}): If true, a field dump is written at the exit of every {\tt undulator} element in the tracked beamline segment. If {\bf zstop} is within an {\tt undulator} element, no file is written for this final undulator.
+\item {\bf sort\_step} ({\it int, 0}): Defines the number of steps of integration before the particle distribution is sorted. Works only for one-4-one simulations.
 
 \end{itemize}
 
 
-
+\subsection{\sf stop}
+Ends the execution of the input deck. This namelist has no parameters and is useful if you do not want to execute the complete input deck (for example during debugging).
 
 
 \chapter*{\vspace{-3cm}$\underline{\mbox{\rule[-0.5em]{0cm}{1em}\huge\sf The Lattice Files}}$}

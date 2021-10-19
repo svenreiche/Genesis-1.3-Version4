@@ -73,7 +73,7 @@ void Output::open(string file, int s0_in, int ds_in)
 }
 
 
-void Output::writeMeta()
+void Output::writeMeta(Undulator *und)
 {
   VersionInfo vi;
   hid_t gid,gidsub;
@@ -114,7 +114,6 @@ void Output::writeMeta()
 
 
   /*** copy input files into .out.h5 file ***/
-
   ifstream inFile (meta_inputfile.c_str());
   stringstream buffer;
   buffer << inFile.rdbuf();//read the file
@@ -129,17 +128,14 @@ void Output::writeMeta()
   this->writeSingleNodeString(gid,"LatticeFile", &str2);
   inFile2.close(); 
 
-
+  reportDumps(gid, und);
 
   H5Gclose(gid);
 }
 
-void Output::writeGlobal(double gamma, double lambda, double sample, double slen, bool one4one, bool time, bool scan, int ntotal)
+void Output::writeGlobal(Undulator *und, double gamma, double lambda, double sample, double slen, bool one4one, bool time, bool scan, int ntotal)
 {
-
-
-
-  this->writeMeta();   
+  this->writeMeta(und);   
   vector<double> tmp;
   tmp.resize(1);
   hid_t gid;
@@ -181,13 +177,56 @@ void Output::writeGlobal(double gamma, double lambda, double sample, double slen
 }
 
 
+void Output::reportDumps(hid_t gid, Undulator *und)
+{
+  hid_t gid_dr;
+  vector<int> tmp(1);
+  size_t ndumps;
+  size_t k;
 
+  gid_dr=H5Gcreate(gid,"Fielddumps",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  ndumps = und->fielddumps_filename.size();
+  tmp[0] = ndumps;
+  writeSingleNodeInt(gid_dr, "ndumps", &tmp);
+  if(ndumps>0) {
+    writeSingleNodeInt(gid_dr, "intstep", &und->fielddumps_intstep);  // writeSingleNodeInt does not work when passing empty data vector
+  }
+  for(k=0; k<ndumps; k++)
+  {
+    stringstream objname;
+
+    objname << "filename" << (k+1);
+    writeSingleNodeString(gid_dr, objname.str(), &und->fielddumps_filename.at(k));
+/*    objname.str("");
+    objname << "intstep" << (k+1);
+    tmp[0] = und->fielddumps_intstep.at(k);
+    writeSingleNodeInt(gid_dr, objname.str(), &tmp); */
+  }
+  H5Gclose(gid_dr);
+
+  gid_dr=H5Gcreate(gid,"Beamdumps",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  ndumps = und->beamdumps_filename.size();
+  tmp[0] = ndumps;
+  writeSingleNodeInt(gid_dr, "ndumps", &tmp);
+  if(ndumps>0) {
+    writeSingleNodeInt(gid_dr, "intstep", &und->beamdumps_intstep);  // writeSingleNodeInt does not work when passing empty data vector
+  }
+  for(k=0; k<ndumps; k++)
+  {
+    stringstream objname;
+
+    objname << "filename" << (k+1);
+    writeSingleNodeString(gid_dr, objname.str(), &und->beamdumps_filename.at(k));
+/*    objname.str("intstep");
+    objname << (k+1);
+    tmp[0] = und->beamdumps_intstep.at(k);
+    writeSingleNodeInt(gid_dr, objname.str(), &tmp); */
+  }
+  H5Gclose(gid_dr);
+}
  
 void Output::writeLattice(Beam * beam,Undulator *und)
 {
-
-
-
   hid_t gid;
   gid=H5Gcreate(fid,"Lattice",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
@@ -215,8 +254,6 @@ void Output::writeLattice(Beam * beam,Undulator *und)
   this->writeSingleNode(gid,"chic_lt","m",&und->chic_lt);
 
   H5Gclose(gid);
-
-
 }
 
 void Output::writeBeamBuffer(Beam *beam)

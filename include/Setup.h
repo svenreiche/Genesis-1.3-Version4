@@ -46,6 +46,7 @@ class Setup: public StringProcessing{
    //   bool   getInputFileNameField(string *);
    bool   getRootName(string *);
    void   setRootName(string *);
+   int getCount();
    void incrementCount();
    string getLattice();
 
@@ -72,6 +73,7 @@ inline int    Setup::getNbins(){return nbins;}
 inline int    Setup::getSeed(){return seed;}
 inline double Setup::getStepLength(){return delz;}
 inline void   Setup::setStepLength(double din){delz=din;return;}
+inline int    Setup::getCount(){return(runcount);}
 inline void   Setup::incrementCount(){runcount++; return;}
 inline void   Setup::setRootName(string *newname){rootname=*newname; runcount=0; return;}
 inline bool   Setup::outputFFT(){ return exclude_fft_output;}
