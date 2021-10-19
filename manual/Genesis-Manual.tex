@@ -196,6 +196,11 @@ The namelist {\tt setup} is a mandatory namelist and should be the first in the 
 
 \item {\bf exclude\_field\_dump} ({\it bool, false}): Flag to suppress writing of electric field distributions to the generated {\tt .fld.h5} files. If {\tt true}, electric field data is not stored, while all other objects, such as intensity projections, are still written to the {\tt .fld.h5} files.
 
+\item {\bf beam\_write\_slices\_filter} ({\it bool, false}): If {\tt true}, enables downselection of slices when dumping the electron beam. Note that assigning a value to any of {\bf beam\_write\_slices\_from}, {\bf beam\_write\_slices\_to}, or {\bf beam\_write\_slices\_inc} automatically enables the downselection mechanism, therefore the only typical application of this parameter is to disable it.
+\item {\bf beam\_write\_slices\_from} ({\it int, -1}): First slice of the electron beam to be written to {\tt .par.h5} files. The default value of -1 corresponds to the first slice of the beam.
+\item {\bf beam\_write\_slices\_to} ({\it int, -1}): Last slice of the electron beam to be written to {\tt .par.h5} files. The default value of -1 corresponds to the last slice of the beam.
+\item {\bf beam\_write\_slices\_inc} ({\it int, 1}): Controls slice downsampling in the range defined by {\bf beam\_write\_slices\_from} and {\bf beam\_write\_slices\_to}. For example, only assigning {\tt beam\_write\_slices\_inc=5} enables the downsampling mechanism and would result in the beam slices 1, 6, 11, \ldots being written.
+
 
 
 
@@ -203,18 +208,20 @@ The namelist {\tt setup} is a mandatory namelist and should be the first in the 
 
 \subsection{\sf alter\_setup}
 
-A namelist to change some parameters within the simulation, which have been defined alread by the {\tt setup} namelist. The change values are stored in the {\tt setup} module so that for another invocation of {\tt alter\_setup} some defaults values are use which have been defined in the preceding call of {\tt alter\_setup}
+A namelist to change some parameters within the simulation, which have been defined already by the {\tt setup} namelist. The change values are stored in the {\tt setup} module so that for another invocation of {\tt alter\_setup} some defaults values are use which have been defined in the preceding call of {\tt alter\_setup}
 
 \begin{itemize}
 
 \item {\bf rootname} ({\it string, $<$ taken from SETUP $>$}): The basic string, with which all output files will start, unless the output filename is directly overwritten (see {\tt write} namelist)
 \item{\bf beamline} ({\it string, $<$ empty $>$}): The name of the beamline, which has to be defined within the lattice file. This way another beamline can be selected in the case the simulation has multiple stages
 \item {\bf delz} ({\it double, $<$ taken from SETUP $>$}): Preferred integration stepsize in meter. Note that this is not a strict value because Genesis tries to optimized the stepsize according to the elements it can resolve. E.g.~ if an undulator is 1.99 m long but the preferred stepsize is 2 cm than it uses a stepsize which is the closes to preserve the number of integration step. In this case the preferred stepsize gives 99.5 steps which is than rounded to 100 and thus resulting in an actual stepsize of 1.99 cm.  Note that outside of the undulator Genesis, which are free drifts for the radiation field, it progress the electron beam and radiation field in larger steps, namely one step per resolved element (drift, quadrupole, phase shifter).
-\item {\bf harmonic} ({\it int, 1}): If the value is not 1 than a harmonic conversion is done. This has several consequences. The reference wavelength in {\tt setup} is divided by the harmonic number, the sample rate in  {\tt time} is multiplied by the harmonic number, the ponderomotive phases of all macro particles are scaled with the harmonic number, all radiation fields, which are not identical to the harmonic numbers are deleted, while an existing harmonic field is changed to be at the fundamental wavelength
+\item {\bf harmonic} ({\it int, 1}): If the value is not 1 than a harmonic conversion is done. This has several consequences. The reference wavelength in {\tt setup} is divided by the harmonic number, the sample rate in  {\tt time} is multiplied by the harmonic number, the ponderomotive phases of all macro particles are scaled with the harmonic number, all radiation fields, which are not identical to the harmonic numbers are deleted, while an existing harmonic field is changed to be at the fundamental wavelength.
 
 \item {\bf subharmonic} ({\it int, 1}): If the value is not 1 than a down conversion is done. It is similar to the action of {\tt harmonics} but in the opposite directions. For the radiation field all field definitions are deleted except for the fundamental, which is converted to a harmonic. In this case the fundamental field needs to be defined before another tracking is called.
 
 \item {\bf resample} ({\it bool, false}): If this is set to true and only if one-for-one simulations are used the harmonic and subharmonic conversion can re-sample to the new wavelength. In the case of up-conversion the slices are split and the total number of slices increases. Same with the radiation field. An previously existing harmonic field, which is now becoming the fundamental, is interpolated between the existing sample points ({\it still needs to be implemented}). If a new field is generated it has automatically the new number of slices. If also prevents that the sample rate is changed by remaining unchanged.
+
+\item {\bf beam\_write\_slices\_filter}, {\bf beam\_write\_slices\_from}, {\bf beam\_write\_slices\_to}, and {\bf beam\_write\_slices\_inc}: See description of these parameters in namelist {\tt setup}. Note that the slice downselector is disabled and its parameters are reset to their default values when a subharmonic or a harmonic conversion is performed.
 
 \end{itemize}
 
