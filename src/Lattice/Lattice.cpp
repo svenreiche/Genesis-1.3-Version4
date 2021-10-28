@@ -46,12 +46,16 @@ bool Lattice::parse(string filename, string beamline, int rank)
 }
 
 
-// generate from the input lattice the explicit representation, including some modification with 'alt'
-
-bool Lattice::generateLattice(double delz, double lambda, double gamma, AlterLattice *alt,Undulator *und)
+// . generate from the input lattice the explicit representation,
+//   including some modification with 'alt'
+// . store the lattice information in the Undulator instance provided by caller
+bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
 {
+  double delz=setup->getStepLength();
+  double lambda=setup->getReferenceLength();
+  double gamma=setup->getReferenceEnergy();
 
-  this->unrollLattice(delz);  
+  this->unrollLattice(delz);
   this->calcSlippage(lambda,gamma);
 
   und->setGammaRef(gamma);
@@ -128,8 +132,9 @@ bool Lattice::generateLattice(double delz, double lambda, double gamma, AlterLat
       und->dz[i]=lat_dz[i];
       und->helical[i]=lat_helical[i];
       und->marker[i]=lat_mk[i];
-
   }
+
+
   int lastmark=this->findMarker(und->z[ndata-1]+und->dz[ndata-1],"Marker");
   if (lastmark < 0){
     und->marker[ndata]=0;
@@ -138,12 +143,7 @@ bool Lattice::generateLattice(double delz, double lambda, double gamma, AlterLat
         und->marker[ndata]=mark->action; 
   }
 
-
   return true;
-
-
-
-
 }
 
 
@@ -243,7 +243,7 @@ void Lattice::match(int rank, double z0, double gammaref)
 
   double phix,phiy;
 
-  this->unrollLattice(20); 
+  this->unrollLattice(20);
   Optics opt;
   opt.init();
 
@@ -289,7 +289,6 @@ void Lattice::match(int rank, double z0, double gammaref)
 
 void Lattice::unrollLattice(double delz)
 {
-
   lat_aw.clear();
   lat_ku.clear();
   lat_kx.clear();
@@ -309,9 +308,7 @@ void Lattice::unrollLattice(double delz)
   iend--;
   
 
-  // first fill lattice with undulator
-  
-
+  /* first, fill lattice with undulator */
   while(it !=iend){
       //default
 
@@ -362,7 +359,7 @@ void Lattice::unrollLattice(double delz)
     lat_z[i]=(lat_z[i-1]+lat_dz[i-1]);
   }   
 
-  // resize vector and assign default zero values 
+  /* resize and zero out vectors */
   lat_qf.resize(nz);
   lat_qx.resize(nz);
   lat_qy.resize(nz);
@@ -388,17 +385,17 @@ void Lattice::unrollLattice(double delz)
     lat_ps[i]=0;
   }
 
+
+  /* now, all other lattice elements */
   int lastChicane=-1;
-
-
   for (int i=0;i<nz;i++){
     double z0=lat_z[i];
     double z1=z0+lat_dz[i];
 
     bool inUnd=(lat_aw[i]>0);
     bool inQuad=0;
-    int iele=this->findElement(z0,z1,"Quadrupole");
 
+    int iele=this->findElement(z0,z1,"Quadrupole");
     if (iele!=-1){     // found quadrupole
         Quadrupole *quad=(Quadrupole *)lat[iele];
         lat_qf[i]=quad->k1; 
@@ -434,22 +431,19 @@ void Lattice::unrollLattice(double delz)
     if (iele!=-1){                                     // outside of a bend
         Phaseshifter *cor=(Phaseshifter *)lat[iele];
         lat_ps[i]=cor->phi; 
-    } 
+    }
 
-    // note that markers are only find at the beginning of the integration step. Thus a marker as the last element is ignored.
+    // NOTE that markers are only find at the beginning of the integration step.
+    // Thus a marker as the last element is ignored.
     iele=this->findMarker(z0,"Marker");
     if (iele!=-1){   
         Marker *mark=(Marker *)lat[iele];
         lat_mk[i]=mark->action; 
-    } 
+    }
   }
 
   return;  
-
 }
-
-
-
 
 bool Lattice::alterElement(string element, string field, double value, string valueref, Series *seq, int instance, bool add)
 {
@@ -507,26 +501,31 @@ bool Lattice::alterElement(string element, string field, double value, string va
   }
 
   return true;
-
 }
 
+void Lattice::report(string fn_report)
+{
+  ofstream fo;
+  int nz=lat_aw.size();
 
+  fo.open(fn_report);
+  fo << "i,lat_z,lat_aw,lat_qf,lat_mk,lat_mk_decoded" << endl;
+  for (int i=0;i<nz;i++)
+  {
+    int m  = lat_mk[i];
+    string s;
 
+    s = "";
+    if(m&1)
+      s+="F"; // Field dump
+    if(m&2)
+      s+="P"; // Particle dump
+    if(m&4)
+      s+="S"; // Sort
+    if(m&8)
+      s+="X"; // eXit
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    fo << i << "," << lat_z[i] << "," << lat_aw[i] << "," << lat_qf[i] << "," << lat_mk[i] << "," << s << endl;
+  }
+  fo.close();
+}

@@ -30,7 +30,11 @@ class Undulator: public HDF5Base{
    int getMarker();
 
    void updateMarker(int, int, int, double);
+   void markUndExits(void);
    void updateOutput(double,int);
+
+
+   void reportLattice(string);
 
 
 
@@ -56,6 +60,11 @@ class Undulator: public HDF5Base{
    vector<double> chic_angle,chic_lb,chic_ld,chic_lt; 
    vector<double> paw,pkx,pky,pgradx,pgrady,pphase; // perpendicular undulator parameters
    vector<int> helical,marker;
+
+   vector<string> fielddumps_filename;
+   vector<int>    fielddumps_intstep;
+   vector<string> beamdumps_filename;
+   vector<int>    beamdumps_intstep;
 
 
  private: 

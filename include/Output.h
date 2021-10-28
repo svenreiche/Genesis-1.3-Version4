@@ -30,8 +30,9 @@ class Output : public HDF5Base {
    void writeFieldBuffer(Field *);
    void writeBeamBuffer(Beam *);
    void writeLattice(Beam *, Undulator *);
-   void writeGlobal(double,double,double,double,bool,bool,bool,int);
-   void writeMeta();
+   void writeGlobal(Undulator *,double,double,double,double,bool,bool,bool,int);
+   void writeMeta(Undulator *);
+   void reportDumps(hid_t, Undulator *);
 
  private:
    void write(hsize_t,string,string,double *);
