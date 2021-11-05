@@ -1,0 +1,39 @@
+==============================
+== Modular Beam Diagnostics ==
+==============================
+Christoph Lechner, European XFEL, 2021-Nov
+
+This document summarizes a few key properties of the new modular
+diagnostics architecture. This architecture is still under development,
+therefore the code might still be modified in the future.
+
+Note that there is a demo diagnostics class in BeamDiag_Demo.cpp.
+
+With this architecture, adding additional diagnostics capabilities
+only requires a few additional lines of code in the function implementing
+the &track command (in src/Main/Track.cpp). The code implementing the
+additional diagnostics capability can be implemented in a single class
+based on the abstract base class 'BeamDiag'. Modifications to Beam.cpp,
+Output.cpp, or other source files are typically not required.
+Moreover, no additional member variables need to be added to class 'Beam'.
+All configuration parameters needed to set up the diagnostics module
+can be local variables in function Track::init, as their value will be
+stored directly in the diagnostics class.
+
+All diagnostics classes are based on the abstract based class 'BeamDiag'.
+This is the interface that needs to be implemented:
+* Function 'init' is called from Beam::initDiagnostics and prepares the
+  class instance, in particular setting up required memory
+* When the beam is to be diagnosed, function 'do_diag' is called
+* Data is written to the .out.h5 file by invoking function 'output'
+For configuration purposes, additional functions have to be implemented.
+
+This is the typical life cycle of the diagnostics objects:
+1) Modules are generated and configured in Track.cpp (code implementing
+   the &track command)
+2) The modules are registered with the instance of class 'Beam'
+3) Actual tracking process is started (call to function 'run' in class
+   'Gencore')
+3a) In function Gencore::run, also the output data is written
+4) The beam diagnostics objects are destroyed, as the 'Beam' instance
+   will be reused for the next &track command
