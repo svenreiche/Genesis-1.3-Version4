@@ -1,6 +1,8 @@
 #include "Track.h"
 #include "Gencore.h"
 
+#include "BeamDiag_Demo.h"
+
 Track::Track()
 {
   zstop=1e9;
@@ -136,8 +138,11 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   // called at every integration step).
   // ! Note: Do not free these here, the call to 'clear_beam_diag' releases !
   // ! the allocated memory.                                                !
-  // BeamDiag_x *bd_x = new BeamDiag_x();
-  // beam->register_beam_diag(bd_x);
+  BeamDiag_Demo *bd_demo = new BeamDiag_Demo();
+  // configure the demo diag module (every diag module provides its specific configuration functions, if needed)
+  bd_demo->config(12345);
+  bd_demo->set_verbose(true);
+  beam->register_beam_diag(bd_demo);
 
   // call to gencore to do the actual tracking.  
   Gencore core;
