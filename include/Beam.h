@@ -11,6 +11,7 @@
 #include "Incoherent.h"
 #include "Sorting.h"
 #include "Collective.h"
+#include "BeamDiag.h"
 
 using namespace std;
 
@@ -43,6 +44,10 @@ class Beam{
    bool outputEnergy();
    bool outputSpatial();
 
+   void register_beam_diag(BeamDiag *);
+   void clear_beam_diag(void);
+   void beam_diag_store_results(hid_t);
+
    vector< vector<Particle> > beam;
    vector<double> current,eloss;
    double reflength,slicelength;   // for conversion of theta in Particle to real position
@@ -58,7 +63,7 @@ class Beam{
 
    //global values
    vector<double> tgavg, tgsig, txavg,txsig,tyavg, tysig,tbun;  // global values, averaging over the entire beam 
-   
+
  private:
    BeamSolver solver;
    Incoherent incoherent;
@@ -68,6 +73,9 @@ class Beam{
    int bharm;
    bool do_global_stat;
    bool doCurrent, doSpatial, doEnergy, doAux;
+
+   vector<BeamDiag *> diaghooks;
+   bool can_change_diaghooks;
 };
 
 inline bool Beam::outputCurrent(){ return doCurrent;}

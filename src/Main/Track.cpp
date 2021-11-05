@@ -131,10 +131,21 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
     und->reportLattice(ss.str());
   }
 
+
+  // Setup beam diagnostics modules (their 'do_diag_ member function is 
+  // called at every integration step).
+  // ! Note: Do not free these here, the call to 'clear_beam_diag' releases !
+  // ! the allocated memory.                                                !
+  // BeamDiag_x *bd_x = new BeamDiag_x();
+  // beam->register_beam_diag(bd_x);
+
   // call to gencore to do the actual tracking.  
   Gencore core;
   core.run(file.c_str(),beam,field,und,isTime,isScan);
 
+  // Clear beam diagnostics (this instance of 'Beam' class could be re-used for the next &track command)
+  // Note: This also destroys the beam diagnostics objects
+  beam->clear_beam_diag();
 
   delete und;
    

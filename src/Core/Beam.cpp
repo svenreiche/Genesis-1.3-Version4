@@ -2,6 +2,7 @@
 #include "Field.h"
 #include "Sorting.h"
 
+#include "BeamDiag.h"
 
 Beam::~Beam(){}
 Beam::Beam(){
@@ -10,6 +11,8 @@ Beam::Beam(){
   doSpatial=true;
   doEnergy=true;
   doAux=true;
+
+  can_change_diaghooks=true;
 }
 
 void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, double s0_in, bool one4one_in )
@@ -33,8 +36,28 @@ void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, d
   return;
 }
 
+/*** Start: Code for modular beam diagnostics ***/
+void Beam::register_beam_diag(BeamDiag *bd) {
+	if(can_change_diaghooks)
+		diaghooks.push_back(bd);
+	else {
+		cout << "*** Error in Beam::register_beam_diag: cannot hook additional diagnostics after calling initDiagnostics ***" << endl;
+	}
+}
+void Beam::clear_beam_diag(void) {
+	for (unsigned int k=0; k<diaghooks.size(); k++)
+		delete diaghooks.at(k);
 
+	diaghooks.clear();
 
+	can_change_diaghooks=true;
+}
+void Beam::beam_diag_store_results(hid_t parentobj) {
+	for(unsigned int k=0; k<diaghooks.size(); k++) {
+		diaghooks.at(k)->output(parentobj);
+	}
+}
+/*** End: Code for modular beam diagnostics ***/
 
 void Beam::initDiagnostics(int nz)
 {
@@ -113,6 +136,11 @@ void Beam::initDiagnostics(int nz)
     tysig.resize(0);
   }
   tbun.resize(nz);
+
+  can_change_diaghooks=false;
+  for(unsigned int k=0; k<diaghooks.size(); k++) {
+    diaghooks.at(k)->init(nz,ns);
+  }
 }
 
 // initialize the sorting routine
@@ -438,6 +466,11 @@ void Beam::diagnostics(bool output, double z)
      }
   }
 
+  for(unsigned int k=0; k<diaghooks.size(); k++) {
+    diaghooks.at(k)->do_diag(this);
+  }
+
+  // Beam diagnostics complete: increment index into arrays holding the diagnostic data
   idx++;
 }
 
