@@ -2,6 +2,7 @@
 #include <hdf5.h>
 #include <math.h>
 #include <iostream>
+#include <sstream>
 #include "BeamDiag_Demo.h"
 
 BeamDiag_Demo::BeamDiag_Demo() {
@@ -23,6 +24,12 @@ BeamDiag_Demo::BeamDiag_Demo() {
 
 BeamDiag_Demo::~BeamDiag_Demo() {
 
+}
+
+std::string BeamDiag_Demo::to_str(void) const {
+	stringstream ss;
+	ss << "BeamDiag_Demo(verbose=" << verbose_ << ")";
+	return(ss.str());
 }
 
 void BeamDiag_Demo::init(int nz, int ns) {

@@ -57,6 +57,13 @@ void Beam::beam_diag_store_results(hid_t parentobj) {
 		diaghooks.at(k)->output(parentobj);
 	}
 }
+void Beam::beam_diag_list_registered(void) {
+	cout << "Listing diagnostics currently registered in this Beam instance" << endl;
+	for(unsigned int k=0; k<diaghooks.size(); k++) {
+		cout << "   element " << k << ": " << *(diaghooks.at(k)) << endl;
+	}
+	cout << "   (end of list)" << endl;
+}
 /*** End: Code for modular beam diagnostics ***/
 
 void Beam::initDiagnostics(int nz)

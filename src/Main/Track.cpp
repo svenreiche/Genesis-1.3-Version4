@@ -144,6 +144,9 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   bd_demo->config(12345);
   bd_demo->set_verbose(true);
   beam->register_beam_diag(bd_demo);
+
+  if(0==rank)
+    beam->beam_diag_list_registered();
 #endif
 
   // call to gencore to do the actual tracking.  

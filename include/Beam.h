@@ -47,6 +47,7 @@ class Beam{
    void register_beam_diag(BeamDiag *);
    void clear_beam_diag(void);
    void beam_diag_store_results(hid_t);
+   void beam_diag_list_registered(void);
 
    vector< vector<Particle> > beam;
    vector<double> current,eloss;
