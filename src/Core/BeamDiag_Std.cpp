@@ -14,17 +14,14 @@ BeamDiag_Std::BeamDiag_Std() {
 	// force call to class-specific function 'configure' before 'do_diag'
 	is_configured_=true; // <-- no required configuration variables at the moment
 
-	// these are overwritten before the actual tracking begins
-#if 0
-	param_x_ = 0;
-#endif
-	/* FIXME: reasonable default values are needed */
 	bharm=1;
+
+	/* defaults as previously in Beam::Beam */
 	do_global_stat=false;
 	doCurrent=false;
-	doSpatial=false;
-	doEnergy=false;
-	doAux=false;
+	doSpatial=true;
+	doEnergy=true;
+	doAux=true;
 
 	verbose_ = true;
 
@@ -271,7 +268,7 @@ void BeamDiag_Std::do_diag(Beam *beam) {
   }
 
 
-  // accumulate all data fromt eh cores
+  // accumulate all data from the cores
   double temp=0;
   int size;      
   if(do_global_stat) {
@@ -406,12 +403,6 @@ void BeamDiag_Std::output(hid_t parentobj) {
 	if(verbose_ && (0==my_rank_)) {
 		cout << "--> BeamDiag_Std::output called" << endl;
 	}
-#if 0
-	// Configure HDF5 write using members inherited from HDF5Base class (FIXME)
-	ds = ns_;
-	s0 = my_rank_*ns_;
-	writeBufferULL(parentobj, "diag_demo", " ", &demodiag_data_);
-#endif
 
   hid_t gid=parentobj;
   hid_t gidsub;

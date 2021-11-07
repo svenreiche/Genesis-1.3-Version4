@@ -28,7 +28,7 @@ void Output::close(){
    int norphans = H5Fget_obj_count(fid, H5F_OBJ_ALL);
    if (norphans > 1) { /* expect 1 for the file we have not closed */
        int i;
-       H5O_info_t info;
+       // H5O_info_t info;
        char name[64];
        hid_t *objects = (hid_t *) calloc(norphans, sizeof(hid_t));
        H5Fget_obj_ids(fid, H5F_OBJ_ALL, -1, objects);
@@ -258,65 +258,15 @@ void Output::writeLattice(Beam * beam,Undulator *und)
 
 void Output::writeBeamBuffer(Beam *beam)
 {
-  hid_t gid, gidsub;
+  hid_t gid;
 
-  // step 1 - create the group
+  // step 1: create the group
   gid=H5Gcreate(fid,"Beam",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
-#if 0
-  // step 2 - write individual datasets
-  if (beam->outputEnergy()){
-    this->writeBuffer(gid, "energy"," ",&beam->gavg);
-    this->writeBuffer(gid, "energyspread"," ", &beam->gsig);
-  }
-  if (beam->outputSpatial()){
-    this->writeBuffer(gid, "xposition","m",&beam->xavg);
-    this->writeBuffer(gid, "yposition","m",&beam->yavg);
-    this->writeBuffer(gid, "pxposition","rad", &beam->pxavg);
-    this->writeBuffer(gid, "pyposition","rad", &beam->pyavg);
-    this->writeBuffer(gid, "xsize","m", &beam->xsig);
-    this->writeBuffer(gid, "ysize","m", &beam->ysig);
-  }
-  this->writeBuffer(gid, "bunching"," ",&beam->bunch);
-  this->writeBuffer(gid, "bunchingphase","rad", &beam->bphi);
-  if (beam->outputAux()){
-    this->writeBuffer(gid, "efield","eV/m", &beam->efld);
-  }
-  
-  this->writeBuffer(gid, "betax","m",&beam->bx);
-  this->writeBuffer(gid, "betay","m",&beam->by);
-  this->writeBuffer(gid, "alphax","rad",&beam->ax);
-  this->writeBuffer(gid, "alphay","rad",&beam->ay);
-  this->writeBuffer(gid, "emitx","m",&beam->ex);
-  this->writeBuffer(gid, "emity","m",&beam->ey);
-  this->writeBuffer(gid, "current","A",&beam->cu);
 
-  int bh=beam->getBunchingHarmonics();
-  char bgroup[20];
-  for (int i=1; i<bh;i++){
-    sprintf(bgroup,"bunching%d",(i+1));
-    this->writeBuffer(gid, bgroup, " ",  &beam->bh[i-1]);
-    sprintf(bgroup,"bunchingphase%d",(i+1));
-    this->writeBuffer(gid, bgroup,"rad",  &beam->ph[i-1]);
-    }
-
-  if(beam->get_global_stat()) {
-    gidsub=H5Gcreate(gid,"Global",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
-    if (beam->outputEnergy()){
-      this->writeSingleNode(gidsub,"energy"," ", &beam->tgavg);
-      this->writeSingleNode(gidsub,"energyspread"," ", &beam->tgsig);
-    }
-    if (beam->outputSpatial()){
-      this->writeSingleNode(gidsub,"xposition","m", &beam->txavg);
-      this->writeSingleNode(gidsub,"xsize","m", &beam->txsig);
-      this->writeSingleNode(gidsub,"yposition","m", &beam->tyavg);
-      this->writeSingleNode(gidsub,"ysize","m", &beam->tysig);
-    }
-    H5Gclose(gidsub);  
-  }
-#endif
+  // step 2: write data
   beam->beam_diag_store_results(gid);
 
-  // step 3 - close group and done
+  // step 3: close group and done
   H5Gclose(gid);
 
   return;
@@ -325,9 +275,6 @@ void Output::writeBeamBuffer(Beam *beam)
 
 void Output::writeFieldBuffer(Field *field)
 {
-
-
-
   // step 1 - create the group
   hid_t gid, gidsub;
   char name[10];
@@ -401,17 +348,8 @@ void Output::writeFieldBuffer(Field *field)
 
 
   // step 3 - close group and done
-
-
-
-
-
-
   H5Gclose(gid);
   return;
-
- 
-
 }
 
 
