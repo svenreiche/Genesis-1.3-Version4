@@ -12,6 +12,7 @@ Beam::Beam(){
   doEnergy=true;
   doAux=true;
 
+  bd_std=NULL;
   can_change_diaghooks=true;
 }
 
@@ -72,6 +73,7 @@ void Beam::initDiagnostics(int nz)
   idx=0;
   int ns=current.size();
   zpos.resize(nz);
+#if 0
   if (doSpatial){
     xavg.resize(nz*ns);
     xsig.resize(nz*ns);
@@ -143,7 +145,7 @@ void Beam::initDiagnostics(int nz)
     tysig.resize(0);
   }
   tbun.resize(nz);
-
+#endif
   can_change_diaghooks=false;
   for(unsigned int k=0; k<diaghooks.size(); k++) {
     diaghooks.at(k)->init(nz,ns);
@@ -312,6 +314,9 @@ void Beam::diagnostics(bool output, double z)
 
   if (!output) { return; }
 
+  // FIXME: In BeamDiag code, we don't have 'z', so this is one of the objects that was not relocated
+  zpos[idx]=z;
+#if 0
   double acc_cur,acc_g,acc_g2,acc_x,acc_x2,acc_y,acc_y2;
   complex<double> acc_b=(0,0);
   acc_cur=0;
@@ -472,7 +477,7 @@ void Beam::diagnostics(bool output, double z)
         tysig[idx]=acc_y2;
      }
   }
-
+#endif
   for(unsigned int k=0; k<diaghooks.size(); k++) {
     diaghooks.at(k)->do_diag(this);
   }
@@ -484,11 +489,11 @@ void Beam::diagnostics(bool output, double z)
 
 void Beam::diagnosticsStart()
 {
+#if 0
   double gx,gy,gammax,gammay;
   double x1,y1,x2,y2,px1,py1,px2,py2,g1,xpx,ypy;
 
   int ds=beam.size();
-
 
   for (int is=0; is<ds;is++){
     if (!doCurrent){
@@ -550,7 +555,7 @@ void Beam::diagnosticsStart()
     gy=(1+ay[is]*ay[is])/by[is];
 
   }
-
+#endif
 
   return;
 }

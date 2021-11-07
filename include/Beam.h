@@ -12,10 +12,13 @@
 #include "Sorting.h"
 #include "Collective.h"
 #include "BeamDiag.h"
+// #include "BeamDiag_Std.h"
 
 using namespace std;
 
 extern const double ce;
+
+class BeamDiag_Std;
 
 class Beam{
  public:
@@ -33,8 +36,8 @@ class Beam{
    bool subharmonicConversion(int,bool);
    int sort();
    void track(double, vector<Field *> *, Undulator *);
-   void setOutput(bool,bool,bool,bool);
-
+//   void setOutput(bool,bool,bool,bool);
+#if 0
    void setBunchingHarmonicOutput(int harm_in);
    int getBunchingHarmonics();
    void set_global_stat(bool);
@@ -43,11 +46,13 @@ class Beam{
    bool outputAux();
    bool outputEnergy();
    bool outputSpatial();
+#endif
 
    void register_beam_diag(BeamDiag *);
    void clear_beam_diag(void);
    void beam_diag_store_results(hid_t);
    void beam_diag_list_registered(void);
+   BeamDiag_Std *bd_std; // this pointer is currently needed for first call to function replacing Beam::diagnosticsStart from Control::init
 
    vector< vector<Particle> > beam;
    vector<double> current,eloss;
@@ -56,6 +61,8 @@ class Beam{
    bool one4one;     // flag whether one4one simulation is done
    int nbins;
 
+   vector<double> zpos;
+#if 0
    // output buffer
    vector<double> zpos,gavg,gsig,xavg,xsig,yavg,ysig,pxavg,pyavg,bunch,bphi,efld;
    vector<double> bx,by,ax,ay,ex,ey,cu;
@@ -64,7 +71,7 @@ class Beam{
 
    //global values
    vector<double> tgavg, tgsig, txavg,txsig,tyavg, tysig,tbun;  // global values, averaging over the entire beam 
-
+#endif
  private:
    BeamSolver solver;
    Incoherent incoherent;
@@ -79,10 +86,12 @@ class Beam{
    bool can_change_diaghooks;
 };
 
+#if 0
 inline bool Beam::outputCurrent(){ return doCurrent;}
 inline bool Beam::outputSpatial(){ return doSpatial;}
 inline bool Beam::outputEnergy(){ return doEnergy;}
 inline bool Beam::outputAux(){ return doAux;}
+#endif
 
 inline void Beam::initIncoherent(int base, int rank, bool spread, bool loss){
   incoherent.init(base,rank,spread,loss);
@@ -98,7 +107,7 @@ inline void Beam::initWake(unsigned int ns, unsigned int nsNode, double ds, doub
   col.initWake(ns, nsNode, ds, wakeext, wakeres, wakegeo, wakerou, ztrans, radius, transient);
 }
 
-
+#if 0
 inline void Beam::setBunchingHarmonicOutput(int harm_in){bharm=harm_in;}
 inline int Beam::getBunchingHarmonics(){return bharm;}
 inline void Beam::set_global_stat(bool in){do_global_stat=in;}
@@ -109,4 +118,5 @@ inline void Beam::setOutput(bool noCurrent_in, bool noEnergy_in, bool noSpatial_
   doEnergy = !noEnergy_in;
   doAux = !noAux_in;
 }
+#endif
 #endif

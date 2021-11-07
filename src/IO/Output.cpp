@@ -230,7 +230,7 @@ void Output::writeLattice(Beam * beam,Undulator *und)
   hid_t gid;
   gid=H5Gcreate(fid,"Lattice",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
-  this->writeSingleNode(gid,"zplot","m",&beam->zpos);
+  this->writeSingleNode(gid,"zplot","m",&beam->zpos); // was not relocated into BeamDiag_Std
   this->writeSingleNode(gid,"z","m",&und->z);
   this->writeSingleNode(gid,"dz","m",&und->dz);
   this->writeSingleNode(gid,"aw"," ",&und->aw);
@@ -262,7 +262,7 @@ void Output::writeBeamBuffer(Beam *beam)
 
   // step 1 - create the group
   gid=H5Gcreate(fid,"Beam",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
-
+#if 0
   // step 2 - write individual datasets
   if (beam->outputEnergy()){
     this->writeBuffer(gid, "energy"," ",&beam->gavg);
@@ -313,7 +313,7 @@ void Output::writeBeamBuffer(Beam *beam)
     }
     H5Gclose(gidsub);  
   }
-  
+#endif
   beam->beam_diag_store_results(gid);
 
   // step 3 - close group and done

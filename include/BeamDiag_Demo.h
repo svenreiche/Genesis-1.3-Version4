@@ -1,4 +1,5 @@
 #ifndef __GEN_BEAMDIAG_DEMO
+#define __GEN_BEAMDIAG_DEMO
 
 #include <vector>
 

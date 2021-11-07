@@ -1,6 +1,7 @@
 #include "Track.h"
 #include "Gencore.h"
 
+#include "BeamDiag_Std.h"
 #include "BeamDiag_Demo.h"
 
 Track::Track()
@@ -83,7 +84,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   file.append(".out.h5");
 
 
- 
+  BeamDiag_Std *bd_std = new BeamDiag_Std; 
   Undulator *und = new Undulator;
 
   lat->generateLattice(setup, alt, und); /* !changes to 'lat' after this function call may have no effect, as this function also stores the generated lattice into the provided Undulator instance! */
@@ -92,7 +93,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
 
   und->updateOutput(zstop,output_step);
   und->updateMarker(dumpFieldStep,dumpBeamStep,sort_step,zstop);
-  beam->setBunchingHarmonicOutput(bunchharm);
+  bd_std->setBunchingHarmonicOutput(bunchharm);
 
   // controling the output
 
@@ -101,12 +102,12 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
     ssrun=false;              // no steady-state run if there is more than one core or more than one slice
   }
   if (ssrun){    // disable global output when there is only one slice calculated 
-    beam->set_global_stat(false);
+    bd_std->set_global_stat(false);
     for (int i=0; i<field->size();i++){
       field->at(i)->set_global_stat(false);
     }
   } else {
-    beam->set_global_stat(setup->getBeamGlobalStat());
+    bd_std->set_global_stat(setup->getBeamGlobalStat());
     for (int i=0; i<field->size();i++){
       field->at(i)->set_global_stat(setup->getFieldGlobalStat());
     }
@@ -118,7 +119,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
        setup->outputIntensity(),
        setup->outputFieldDump());
   }
-  beam->setOutput(setup->outputCurrent(),setup->outputEnergy(),setup->outputSpatial(),setup->outputAux());
+  bd_std->setOutput(setup->outputCurrent(),setup->outputEnergy(),setup->outputSpatial(),setup->outputAux());
 
   if(dbg_report_lattice && (rank==0)) {
     stringstream ss;
@@ -144,10 +145,13 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   bd_demo->config(12345);
   bd_demo->set_verbose(true);
   beam->register_beam_diag(bd_demo);
+#endif
+
+  beam->register_beam_diag(bd_std);
+  beam->bd_std=bd_std;
 
   if(0==rank)
     beam->beam_diag_list_registered();
-#endif
 
   // call to gencore to do the actual tracking.  
   Gencore core;
