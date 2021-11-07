@@ -50,7 +50,7 @@ void BeamDiag_Demo::set_verbose(bool v_in) {
 }
 
 /* Called when the electron beam is diagnosed, typically after every integration step */
-void BeamDiag_Demo::do_diag(Beam *beam) {
+void BeamDiag_Demo::do_diag(Beam *beam, double z) {
 	int ioff=idx_*ns_;
 
 	if((is_configured_==false) || (is_initialized_==false)){

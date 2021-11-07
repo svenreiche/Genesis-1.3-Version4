@@ -14,7 +14,7 @@ public:
 	virtual ~BeamDiag();
 
 	virtual void init(int nz, int ns)=0;
-	virtual void do_diag(Beam *)=0;
+	virtual void do_diag(Beam *, double)=0;
 	virtual void output(hid_t parentobj)=0;
 
 	virtual std::string to_str(void) const;
