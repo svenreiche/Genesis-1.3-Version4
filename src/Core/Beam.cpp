@@ -474,7 +474,7 @@ void Beam::diagnostics(bool output, double z)
   }
 
   for(unsigned int k=0; k<diaghooks.size(); k++) {
-    diaghooks.at(k)->do_diag(this);
+    diaghooks.at(k)->do_diag(this, z);
   }
 
   // Beam diagnostics complete: increment index into arrays holding the diagnostic data

@@ -1,4 +1,5 @@
 #ifndef __GEN_BEAMDIAG_DEMO
+#define __GEN_BEAMDIAG_DEMO
 
 #include <vector>
 
@@ -15,7 +16,7 @@ public:
 	~BeamDiag_Demo();
 
 	void init(int nz, int ns);
-	void do_diag(Beam *);
+	void do_diag(Beam *, double);
 	void output(hid_t parentobj);
 	std::string to_str(void) const;
 
