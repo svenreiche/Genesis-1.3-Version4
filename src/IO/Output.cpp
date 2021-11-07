@@ -10,6 +10,7 @@
 #include <fstream>
 #include <streambuf>
 
+#include "BeamDiag_Std.h"
 #include "VersionInfo.h"
 
 extern bool MPISingle;
@@ -230,7 +231,9 @@ void Output::writeLattice(Beam * beam,Undulator *und)
   hid_t gid;
   gid=H5Gcreate(fid,"Lattice",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
-  this->writeSingleNode(gid,"zplot","m",&beam->zpos); // was not relocated into BeamDiag_Std
+  if((NULL!=beam->bd_std) && (beam->bd_std->zpos.size()>0)) {
+    this->writeSingleNode(gid,"zplot","m",&beam->bd_std->zpos);
+  }
   this->writeSingleNode(gid,"z","m",&und->z);
   this->writeSingleNode(gid,"dz","m",&und->dz);
   this->writeSingleNode(gid,"aw"," ",&und->aw);

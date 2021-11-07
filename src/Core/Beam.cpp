@@ -62,11 +62,8 @@ void Beam::beam_diag_list_registered(void) {
 
 void Beam::initDiagnostics(int nz)
 {
-  
   idx=0;
   int ns=current.size();
-  zpos.resize(nz);
-
 
   can_change_diaghooks=false;
   for(unsigned int k=0; k<diaghooks.size(); k++) {
@@ -234,10 +231,6 @@ bool Beam::subharmonicConversion(int harmonic, bool resample)
 void Beam::diagnostics(bool output, double z)
 {
   if (!output) { return; }
-
-  // FIXME: In BeamDiag code, we don't have 'z', so this is one of the objects that was not relocated
-  zpos[idx]=z;
-
 
 
   for(unsigned int k=0; k<diaghooks.size(); k++) {

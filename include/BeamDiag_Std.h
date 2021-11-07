@@ -16,7 +16,7 @@ public:
 	~BeamDiag_Std();
 
 	void init(int nz, int ns);
-	void do_diag(Beam *);
+	void do_diag(Beam *, double);
 	void output(hid_t parentobj);
 	std::string to_str(void) const;
 
@@ -29,10 +29,13 @@ public:
 	bool get_global_stat(void);
 	void setOutput(bool, bool, bool, bool);
 
+
+	/* former member of class Beam (only member that is 'public' because Output::writeLattice needs access) */
+	vector<double> zpos;
+
 private:
 	/* former members of class Beam */
 	// output buffer
-	// vector<double> zpos;
 	vector<double> gavg,gsig,xavg,xsig,yavg,ysig,pxavg,pyavg,bunch,bphi,efld;
 	vector<double> bx,by,ax,ay,ex,ey,cu;
 	//   vector<unsigned long long> partcount;

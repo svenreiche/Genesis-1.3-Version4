@@ -23,7 +23,7 @@ BeamDiag_Std::BeamDiag_Std() {
 	doEnergy=true;
 	doAux=true;
 
-	verbose_ = true;
+	verbose_ = false;
 
 	ns_=0;
 	idx_=0;
@@ -44,9 +44,8 @@ void BeamDiag_Std::init(int nz, int ns) {
 	idx_ = 0;
 	is_initialized_=true;
 
-#if 1
   /* code from Beam::initDiagnostics */
-  // /* zpos remained in class Beam */ zpos.resize(nz);
+  zpos.resize(nz);
   if (doSpatial){
     xavg.resize(nz*ns);
     xsig.resize(nz*ns);
@@ -118,7 +117,6 @@ void BeamDiag_Std::init(int nz, int ns) {
     tysig.resize(0);
   }
   tbun.resize(nz);
-#endif
 }
 
 /* configuration functions */
@@ -134,7 +132,7 @@ void BeamDiag_Std::setOutput(bool noCurrent_in, bool noEnergy_in, bool noSpatial
 }
 
 /* Called when the electron beam is diagnosed, typically after every integration step */
-void BeamDiag_Std::do_diag(Beam *beam) {
+void BeamDiag_Std::do_diag(Beam *beam, double z) {
 	int ioff=idx_*ns_;
 
 	if((is_configured_==false) || (is_initialized_==false)){
@@ -150,7 +148,6 @@ void BeamDiag_Std::do_diag(Beam *beam) {
 		cout << "*** error: assertion ***" << endl;
 	}
 
-#if 1
   /* Code from Beam::diagnostics */
   double acc_cur,acc_g,acc_g2,acc_x,acc_x2,acc_y,acc_y2;
   complex<double> acc_b=(0,0);
@@ -162,10 +159,7 @@ void BeamDiag_Std::do_diag(Beam *beam) {
   acc_y=0;
   acc_y2=0;
 
-  // zpos[idx_]=z;
-
-//  int ds=beam->beam.size();
-//  int ioff=idx*ds;
+  zpos[idx_]=z;
 
   for (int is=0; is < ns_; is++){
     double bgavg=0;
@@ -312,7 +306,6 @@ void BeamDiag_Std::do_diag(Beam *beam) {
         tysig[idx_]=acc_y2;
      }
   }
-#endif
 
 	idx_++;
 }
@@ -331,7 +324,6 @@ void BeamDiag_Std::do_initial_diag(Beam *beam)
 		cout << "--> BeamDiag_Std::do_initial_diag called" << endl;
 	}
 
-#if 1
   for (int is=0; is<ds;is++){
     if (!doCurrent){
       cu[is]=beam->current[is];
@@ -392,7 +384,6 @@ void BeamDiag_Std::do_initial_diag(Beam *beam)
     // gy=(1+ay[is]*ay[is])/by[is];
 
   }
-#endif
 
   return;
 }
@@ -411,7 +402,6 @@ void BeamDiag_Std::output(hid_t parentobj) {
   hh.set_ds(ns_);
   hh.set_s0(my_rank_*ns_);
 
-#if 1
   /* Code from Output::writeBeamBuffer */
   // step 2 - write individual datasets
   if (doEnergy){
@@ -463,5 +453,4 @@ void BeamDiag_Std::output(hid_t parentobj) {
     }
     H5Gclose(gidsub);  
   }
-#endif
 }

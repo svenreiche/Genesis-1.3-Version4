@@ -50,8 +50,6 @@ class Beam{
    bool one4one;     // flag whether one4one simulation is done
    int nbins;
 
-   vector<double> zpos;
-
 private:
    BeamSolver solver;
    Incoherent incoherent;
