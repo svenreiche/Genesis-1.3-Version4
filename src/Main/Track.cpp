@@ -140,7 +140,8 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   // called at every integration step).
   // !Note: Do not free these here, the call to 'clear_beam_diag' releases!
   // !the allocated memory.                                               !
-#if 0
+// #define DO_BEAMDIAG_DEMO
+#ifdef DO_BEAMDIAG_DEMO
   BeamDiag_Demo *bd_demo = new BeamDiag_Demo();
   // configure the demo diag module (every diag module provides
   // its specific configuration functions, if needed)
