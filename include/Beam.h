@@ -59,6 +59,7 @@ private:
 
    vector<BeamDiag *> diaghooks;
    bool can_change_diaghooks;
+   void beam_diag_do_diag(double);
 };
 
 inline void Beam::initIncoherent(int base, int rank, bool spread, bool loss){

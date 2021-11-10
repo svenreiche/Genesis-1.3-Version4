@@ -16,12 +16,12 @@ public:
 	~BeamDiag_Std();
 
 	void init(int nz, int ns);
-	void do_diag(Beam *, double);
+	void do_diag(const Beam *, double);
 	void output(hid_t parentobj);
 	std::string to_str(void) const;
 
 	// functions specific to this BeamDiag implementation
-	void do_initial_diag(Beam *);
+	void do_initial_diag(const Beam *);
 
 	void setBunchingHarmonicOutput(int);
 	int getBunchingHarmonics(void);

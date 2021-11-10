@@ -132,7 +132,7 @@ void BeamDiag_Std::setOutput(bool noCurrent_in, bool noEnergy_in, bool noSpatial
 }
 
 /* Called when the electron beam is diagnosed, typically after every integration step */
-void BeamDiag_Std::do_diag(Beam *beam, double z) {
+void BeamDiag_Std::do_diag(const Beam *beam, double z) {
 	int ioff=idx_*ns_;
 
 	if((is_configured_==false) || (is_initialized_==false)){
@@ -309,7 +309,7 @@ void BeamDiag_Std::do_diag(Beam *beam, double z) {
 
 	idx_++;
 }
-void BeamDiag_Std::do_initial_diag(Beam *beam)
+void BeamDiag_Std::do_initial_diag(const Beam *beam)
 {
   // double gx,gy,gammax,gammay;
   double x1,y1,x2,y2,px1,py1,px2,py2,g1,xpx,ypy;

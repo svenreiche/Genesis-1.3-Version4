@@ -16,7 +16,7 @@ public:
 	~BeamDiag_Demo();
 
 	void init(int nz, int ns);
-	void do_diag(Beam *, double);
+	void do_diag(const Beam *, double);
 	void output(hid_t parentobj);
 	std::string to_str(void) const;
 

@@ -266,7 +266,7 @@ void Output::writeBeamBuffer(Beam *beam)
   // step 1: create the group
   gid=H5Gcreate(fid,"Beam",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
-  // step 2: write data
+  // step 2: trigger registered diagnostics modules to write to outfile
   beam->beam_diag_store_results(gid);
 
   // step 3: close group and done
