@@ -49,6 +49,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   bunchharm=1; //reset to default for each tracking
 
   bool dbg_report_lattice=false;  
+  bool dbg_report_moddiag=false;
   bool dumpFieldUE=false;
   bool isTime=time->isTime();
   bool isScan=time->isScan();
@@ -69,6 +70,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   if (arg->find("sort_step")!=end)   {sort_step= atoi(arg->at("sort_step").c_str());  arg->erase(arg->find("sort_step"));}
   if (arg->find("bunchharm")!=end)   {bunchharm= atoi(arg->at("bunchharm").c_str());  arg->erase(arg->find("bunchharm"));}
   if (arg->find("dbg_report_lattice")!=end) {dbg_report_lattice = atob(arg->at("dbg_report_lattice")); arg->erase(arg->find("dbg_report_lattice"));}
+  if (arg->find("dbg_report_moddiag")!=end) {dbg_report_moddiag = atob(arg->at("dbg_report_moddiag")); arg->erase(arg->find("dbg_report_moddiag"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &track" << endl; this->usage();}
@@ -140,14 +142,16 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   // !the allocated memory.                                               !
 #if 0
   BeamDiag_Demo *bd_demo = new BeamDiag_Demo();
-  // configure the demo diag module (every diag module provides its specific configuration functions, if needed)
+  // configure the demo diag module (every diag module provides
+  // its specific configuration functions, if needed)
   bd_demo->config(12345);
   bd_demo->set_verbose(true);
+  // Register demo module
   beam->register_beam_diag(bd_demo);
-
-  if(0==rank)
-    beam->beam_diag_list_registered();
 #endif
+
+  if((0==rank) && dbg_report_moddiag)
+    beam->beam_diag_list_registered();
 
   // call to gencore to do the actual tracking.  
   Gencore core;

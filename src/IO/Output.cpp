@@ -313,7 +313,8 @@ void Output::writeBeamBuffer(Beam *beam)
     }
     H5Gclose(gidsub);  
   }
-  
+
+  // trigger registered diagnostics modules to write to outfile
   beam->beam_diag_store_results(gid);
 
   // step 3 - close group and done

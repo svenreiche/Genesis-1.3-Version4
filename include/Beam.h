@@ -77,6 +77,7 @@ class Beam{
 
    vector<BeamDiag *> diaghooks;
    bool can_change_diaghooks;
+   void beam_diag_do_diag(double);
 };
 
 inline bool Beam::outputCurrent(){ return doCurrent;}

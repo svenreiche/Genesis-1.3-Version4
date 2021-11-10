@@ -52,6 +52,11 @@ void Beam::clear_beam_diag(void) {
 
 	can_change_diaghooks=true;
 }
+void Beam::beam_diag_do_diag(double z) {
+	for(unsigned int k=0; k<diaghooks.size(); k++) {
+		diaghooks.at(k)->do_diag(this, z);
+	}
+}
 void Beam::beam_diag_store_results(hid_t parentobj) {
 	for(unsigned int k=0; k<diaghooks.size(); k++) {
 		diaghooks.at(k)->output(parentobj);
@@ -473,9 +478,8 @@ void Beam::diagnostics(bool output, double z)
      }
   }
 
-  for(unsigned int k=0; k<diaghooks.size(); k++) {
-    diaghooks.at(k)->do_diag(this, z);
-  }
+  // update diagnostics data in all registered diagnostics modules
+  beam_diag_do_diag(z);
 
   // Beam diagnostics complete: increment index into arrays holding the diagnostic data
   idx++;
