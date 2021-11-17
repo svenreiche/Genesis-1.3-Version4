@@ -29,6 +29,8 @@ Setup::Setup()
   exclude_current_output=true;
   exclude_field_dump=false;
 
+  sema_file_enabled=false;
+
   runcount = 0 ;  // count of runs in conjunction of calls of altersetup
 }
 
@@ -58,6 +60,7 @@ void Setup::usage(){
   cout << " bool exclude_aux_output = false" << endl;
   cout << " bool exclude_current_output = true" << endl;
   cout << " bool exclude_field_dump = false" << endl;
+  cout << " bool write_semaphore_file = false" << endl;
   cout << "&end" << endl << endl;
   return;
 }
@@ -93,6 +96,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
   if (arg->find("exclude_aux_output")!=end)       {exclude_aux_output      = atob(arg->at("exclude_aux_output"));       arg->erase(arg->find("exclude_aux_output"));}
   if (arg->find("exclude_current_output")!=end)   {exclude_current_output  = atob(arg->at("exclude_current_output"));   arg->erase(arg->find("exclude_current_output"));}
   if (arg->find("exclude_field_dump")!=end)   {exclude_field_dump  = atob(arg->at("exclude_field_dump"));   arg->erase(arg->find("exclude_field_dump"));}
+  if (arg->find("write_semaphore_file")!=end)   {sema_file_enabled  = atob(arg->at("write_semaphore_file"));   arg->erase(arg->find("write_semaphore_file"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &setup" << endl; this->usage();}
@@ -122,6 +126,27 @@ bool Setup::getRootName(string *filename)
     *filename+=ss.str();
   }
   return true; 
+}
 
 
+
+
+
+/* returns true if filename for semaphore file was generated */
+bool Setup::getSemaFN(string *fnout) {
+	// user-defined filename overrides the logic to derive from rootname
+	if(! sema_file_name.empty()) {
+		*fnout = sema_file_name;
+		return(true);
+	}
+
+	if(rootname.empty()) {
+		return(false);
+	}
+	*fnout = rootname;
+	*fnout += ".sema";
+	return(true);
+}
+void Setup::setSemaFN(string fn_in) {
+	sema_file_name = fn_in;
 }

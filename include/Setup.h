@@ -39,6 +39,10 @@ class Setup: public StringProcessing{
    bool   outputEnergy();
    bool   outputAux();
    bool   outputFieldDump();
+   bool   getSemaEn();
+   void   setSemaFN(string);
+   bool   getSemaFN(string *);
+
    int    getNpart();
    int    getNbins();
    int    getSeed();
@@ -58,6 +62,9 @@ class Setup: public StringProcessing{
    bool beam_global_stat, field_global_stat;
    bool exclude_spatial_output, exclude_fft_output, exclude_intensity_output, exclude_energy_output, exclude_aux_output, exclude_current_output, exclude_field_dump;
    int seed, rank,npart,nbins,runcount;
+
+   bool sema_file_enabled;
+   string sema_file_name; // user-defined name of semaphore file, if empty: file name will be derived in function getSemaFN
 };
 
 inline string Setup::getLattice(){return lattice;}
@@ -83,4 +90,5 @@ inline bool   Setup::outputEnergy(){ return exclude_energy_output;}
 inline bool   Setup::outputCurrent(){ return exclude_current_output;}
 inline bool   Setup::outputAux(){ return exclude_aux_output;}
 inline bool   Setup::outputFieldDump() { return exclude_field_dump;}
+inline bool   Setup::getSemaEn() { return sema_file_enabled; }
 #endif

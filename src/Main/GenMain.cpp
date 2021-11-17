@@ -42,6 +42,7 @@
 #include "writeFieldHDF5.h"
 #include "Collective.h"
 #include "Wake.h"
+#include "SemaFile.h"
 #include "VersionInfo.h"
 
 #include <sstream>
@@ -364,6 +365,18 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
 	  }
 	  cout << "--------------------------" << endl;
 	  */
+        }
+
+
+        // generate semaphore file, if requested by user (filename is automatically defined by first "&track" command)
+        SemaFile sema;
+        if ((rank==0) && (setup->getSemaEn())) {
+          string fn;
+          if(setup->getSemaFN(&fn)) {
+            sema.put(fn);
+          } else {
+            cout << "error: not writing semaphore file, filename not defined" << endl;
+          }
         }
 
         return ret;
