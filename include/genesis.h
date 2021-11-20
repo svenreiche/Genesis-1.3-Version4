@@ -9,7 +9,5 @@
 
 using namespace std;
 
-
-
-double genmain(string, string, string, int,bool);
+int genmain(string, string, string, int, bool);
 #endif

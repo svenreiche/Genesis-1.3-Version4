@@ -62,7 +62,7 @@ bool MPISingle;  // global variable to do mpic or not
 //vector<double> evtime;
 //double evt0;
 
-double genmain (string mainstring, string latstring, string outstring, int in_seed, bool split) {
+int genmain (string mainstring, string latstring, string outstring, int in_seed, bool split) {
 
         meta_inputfile=mainstring;
         double ret=0;
@@ -71,7 +71,7 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
 	int rank,size;
 
         MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
-        MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
+        MPI_Comm_size(MPI_COMM_WORLD, &size);
 	if (MPISingle){
 	  rank=0;
 	  size=1;
@@ -106,8 +106,13 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
 
         //----------------------------------------------------------
         // main loop extracting one element with arguments at a time
-      
-        Parser parser; 
+        //
+        // It is assumed that (except for a few well-defined reasons)
+        // the loop is only left if there is an error while processing
+        // the input file.
+        bool successful_run=false; // successful simulation run?
+
+        Parser parser;
         string element;
         map<string,string> argument;
 
@@ -121,7 +126,18 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
 
         parser.open(mainstring,rank);
 
-        while(parser.parse(&element,&argument)){
+        while(true){
+          bool parser_result = parser.parse(&element,&argument);
+          if(parser_result==false) {
+            // parser returned 'false', analyse reason
+            if(parser.fail()) {
+              successful_run=false;
+            } else {
+              successful_run=true; // probably reached eof (nothing was parsed, but also no parsing error detected) => FIXME: implement more analysis
+            }
+            break;
+          }
+
 	  //----------------------------------------------
 	  // log event
 	  //	  clocknow=clock();
@@ -310,6 +326,7 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
             if (rank==0) {
               cout << endl << "*** &stop element: User requested end of simulation ***" << endl;
             }
+            successful_run=true; // we reached "stop" command without error
             break;
           }
 
@@ -368,14 +385,24 @@ double genmain (string mainstring, string latstring, string outstring, int in_se
         }
 
 
-        // generate semaphore file, if requested by user (filename is automatically defined by first "&track" command)
-        SemaFile sema;
-        if ((rank==0) && (setup->getSemaEn())) {
-          string fn;
-          if(setup->getSemaFN(&fn)) {
-            sema.put(fn);
+        // generate semaphore file
+        // -> if requested by user (filename is derived from rootname)
+        // -> if run was successful
+        if (setup->getSemaEn()) {
+          if(successful_run) {
+            SemaFile sema;
+            if (rank==0) {
+              string fn;
+              if(setup->getSemaFN(&fn)) {
+                sema.put(fn);
+              } else {
+                cout << "error: not writing semaphore file, filename not defined" << endl;
+              }
+            }
           } else {
-            cout << "error: not writing semaphore file, filename not defined" << endl;
+            if (rank==0) {
+              cout << "not writing semaphore file, as the run likely was not successful" << endl;
+            }
           }
         }
 
