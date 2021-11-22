@@ -508,7 +508,7 @@ void Lattice::report(string fn_report)
   ofstream fo;
   int nz=lat_aw.size();
 
-  fo.open(fn_report);
+  fo.open(fn_report.c_str());
   fo << "i,lat_z,lat_aw,lat_qf,lat_mk,lat_mk_decoded" << endl;
   for (int i=0;i<nz;i++)
   {
