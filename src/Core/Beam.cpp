@@ -10,6 +10,11 @@ Beam::Beam(){
   doSpatial=true;
   doEnergy=true;
   doAux=true;
+
+  beam_write_filter=false;
+  beam_write_slices_from=-1;
+  beam_write_slices_to=-1;
+  beam_write_slices_inc=1;
 }
 
 void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, double s0_in, bool one4one_in )

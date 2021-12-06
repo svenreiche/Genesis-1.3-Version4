@@ -9,6 +9,7 @@
 #include <map>
 #include <fstream>
 #include <cctype>
+#include <mpi.h>
 
 #include "StringProcessing.h"
 #include "Lattice.h"
@@ -50,6 +51,16 @@ class Setup: public StringProcessing{
    void incrementCount();
    string getLattice();
 
+   void   BWF_load_defaults();
+   bool   BWF_get_enabled(); // BWF=beam write filter
+   void   BWF_set_enabled(bool);
+   int    BWF_get_from();
+   void   BWF_set_from(int);
+   int    BWF_get_to();
+   void   BWF_set_to(int);
+   int    BWF_get_inc();
+   void   BWF_set_inc(int);
+
  private:
    void usage();
    string rootname,lattice,beamline,partfile,fieldfile;
@@ -57,6 +68,10 @@ class Setup: public StringProcessing{
    bool one4one,shotnoise;
    bool beam_global_stat, field_global_stat;
    bool exclude_spatial_output, exclude_fft_output, exclude_intensity_output, exclude_energy_output, exclude_aux_output, exclude_current_output, exclude_field_dump;
+
+   bool beam_write_filter;
+   int beam_write_slices_from, beam_write_slices_to, beam_write_slices_inc;
+
    int seed, rank,npart,nbins,runcount;
 };
 
@@ -83,4 +98,24 @@ inline bool   Setup::outputEnergy(){ return exclude_energy_output;}
 inline bool   Setup::outputCurrent(){ return exclude_current_output;}
 inline bool   Setup::outputAux(){ return exclude_aux_output;}
 inline bool   Setup::outputFieldDump() { return exclude_field_dump;}
+
+inline bool   Setup::BWF_get_enabled()    { return beam_write_filter; }
+inline void   Setup::BWF_set_enabled(bool in) { beam_write_filter=in; }
+inline int    Setup::BWF_get_from()       { return beam_write_slices_from; }
+inline void   Setup::BWF_set_from(int in) { beam_write_slices_from=in; }
+inline int    Setup::BWF_get_to()         { return beam_write_slices_to; }
+inline void   Setup::BWF_set_to(int in)   { beam_write_slices_to=in; }
+inline int    Setup::BWF_get_inc()        { return beam_write_slices_inc; }
+inline void   Setup::BWF_set_inc(int in)
+{
+	if(in<=0) {
+		int r;
+		MPI_Comm_rank(MPI_COMM_WORLD, &r); // unclear if member variable 'rank' is valid at any time this setter function is called
+		if(r==0) {
+			cout << "*** beam_write_slices_inc: positive value expected, forcing to 1" << endl;
+		}
+		in=1;
+	}
+	beam_write_slices_inc=in;
+}
 #endif
