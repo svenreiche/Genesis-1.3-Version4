@@ -20,8 +20,8 @@ CCOMPILER = h5pcc
 #
 #  flags
 #
-FLAGS = -O2
-# FLAGS = -g -O0
+#FLAGS = -O2
+FLAGS = -g -O2
 #
 #  executable name
 #
