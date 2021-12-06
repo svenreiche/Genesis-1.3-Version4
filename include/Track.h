@@ -28,6 +28,8 @@ class Track{
    bool init(int, int, map<string,string> *,Beam *, vector<Field *> *,Setup *, Lattice *, AlterLattice *, Time *);
  private:
    void usage();
+   bool atob(string);
+
    double zstop,slen,s0;
    int output_step,dumpFieldStep,dumpBeamStep,sort_step,bunchharm;
    int rank, size;

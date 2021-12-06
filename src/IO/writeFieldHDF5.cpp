@@ -75,34 +75,43 @@ void WriteFieldHDF5::writeMain(string fileroot, Field *field){
   double ks=4.*asin(1)/field->xlambda;
   double scl=field->dgrid*eev/ks/sqrt(vacimp);
 
-  /*** dump complex field data to file ***/
-  for (int i=0; i<ntotal;i++){
-    s0=-1;
-    char name[16];
-    sprintf(name,"slice%6.6d",i+1);
-    hid_t gid=H5Gcreate(fid,name,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  /*** if enabled, dump complex field data to file ***/
+  if(field->dumpFieldEnabled())
+  {
+    for (int i=0; i<ntotal;i++){
+      s0=-1;
+      char name[16];
+      sprintf(name,"slice%6.6d",i+1);
+      hid_t gid=H5Gcreate(fid,name,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
-    if ((i>=smin) && (i<smax)){
-      s0=0;    // select the slice which is writing
+      if ((i>=smin) && (i<smax)){
+        s0=0;    // select the slice which is writing
+      }
+
+      int islice= (i+field->first) % field->field.size() ;   // include the rotation due to slippage
+
+      if (s0==0){
+        for (int j=0; j<ngrid*ngrid;j++){ 
+          work[j]=scl*field->field.at(islice).at(j).real();
+        }  
+      }
+      this->writeSingleNode(gid,"field-real"," ",&work);     
+
+      if (s0==0){
+        for (int j=0; j<ngrid*ngrid;j++){ 
+          work[j]=scl*field->field.at(islice).at(j).imag();
+        }  
+      }
+      this->writeSingleNode(gid,"field-imag"," ",&work);     
+
+      H5Gclose(gid);
     }
-
-    int islice= (i+field->first) % field->field.size() ;   // include the rotation due to slippage
-
-    if (s0==0){
-      for (int j=0; j<ngrid*ngrid;j++){ 
-	work[j]=scl*field->field.at(islice).at(j).real();
-      }  
+  }
+  else
+  {
+    if(rank==0) {
+      cout << "Info: not dumping field data to .fld.h5 file (disabled by parameter 'exclude_field_dump')" << endl;
     }
-    this->writeSingleNode(gid,"field-real"," ",&work);     
-
-    if (s0==0){
-      for (int j=0; j<ngrid*ngrid;j++){ 
-	work[j]=scl*field->field.at(islice).at(j).imag();
-      }  
-    }
-    this->writeSingleNode(gid,"field-imag"," ",&work);     
-
-    H5Gclose(gid);
   }
 
 

@@ -3,13 +3,15 @@
 #
 # libraries
 #
+# on some systems -lmpi_cxx is needed to build
 LIB= -lm -lstdc++ -lmpi_cxx -lfftw3 
+#LIB= -lm -lstdc++ -lfftw3 
 #
 INCLUDE=-I./include
 #
 # cpp-macros - to enable the FFTW library
 #
-DMACRO = -DFFTW 
+DMACRO = -DFFTW
 #
 #  compilers
 #

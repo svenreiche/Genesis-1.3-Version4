@@ -43,6 +43,10 @@ bool Dump::init(int inrank, int insize, map<string,string> *arg, Setup *setup, B
   }
   if (dumpbeam.size()>0){
    WriteBeamHDF5 dump;
+
+   // propagate beam dump settings before initiating writing procedure
+   beam->setWriteFilter(setup->BWF_get_enabled(), setup->BWF_get_from(), setup->BWF_get_to(), setup->BWF_get_inc());
+
    dump.write(dumpbeam,beam);
   }
 

@@ -33,8 +33,6 @@ void Undulator::updateOutput(double zstop_in,int nzout)
   return;
 }
 
-
-
 void Undulator::updateMarker(int nfld, int npar, int nsort, double zstop)
 {
   for (int i=0; i<marker.size();i++){
@@ -56,9 +54,55 @@ void Undulator::updateMarker(int nfld, int npar, int nsort, double zstop)
     if (z[i]>zstop) {  // stop calculation
       marker[i]|=8;
     }
-  }  
+  }
   return;
-} 
+}
+
+// Field dumps at the exit of the undulator (one dump for each undulator
+// in the expanded lattice)?
+void Undulator::markUndExits(void)
+{
+  int nz=marker.size();
+  for (int i=0;i<nz;i++)
+  {
+    // NOTE: Setting flag for next integration step (the first one with aw==0),
+    // as the field is dumped before any other work done for this step
+
+    // !!!        vvvvvvvvvvvvv=== NOTE: as of git commit 1a9d191 (2021-08-11): vector 'aw' is one element shorter than 'marker', see Lattice::generateLattice !!!
+    if ( (i>0) && (i<aw.size()) ) {
+      if ((aw.at(i-1)!=0) && (aw.at(i)==0)) {
+        marker.at(i) |= 1; /* request field dump */
+      }
+    }
+  }
+}
+
+void Undulator::reportLattice(string fn_report)
+{
+  ofstream fo;
+  int nz=aw.size(); /* aw is one element shorter than marker (as of git commit 1a9d191), see Lattice::generateLattice */
+
+  fo.open(fn_report.c_str());
+  fo << "i,z,aw,qf,marker,marker_decoded" << endl;
+  for (int i=0;i<nz;i++)
+  {
+    int m  = marker[i];
+    string decoded;
+
+    decoded = "";
+    if(m&1)
+      decoded+="F"; // Field dump
+    if(m&2)
+      decoded+="P"; // Particle dump
+    if(m&4)
+      decoded+="S"; // Sort
+    if(m&8)
+      decoded+="X"; // eXit
+
+    fo << i << "," << z[i] << "," << aw[i] << "," << qf[i] << "," << marker[i] << "," << decoded << endl;
+  }
+  fo.close();
+}
 
 
 /*
