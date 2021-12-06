@@ -79,13 +79,11 @@ void Control::output(Beam *beam, vector<Field*> *field, Undulator *und)
   out->writeGlobal(und,und->getGammaRef(),reflen,sample,slen,one4one,timerun,scanrun,ntotal);
   out->writeLattice(beam,und);
 
-
-
   for (unsigned int i=0; i<field->size();i++){
         out->writeFieldBuffer(field->at(i));
   }
-
   out->writeBeamBuffer(beam);
+  
   out->close();
  
   delete out;
@@ -220,14 +218,20 @@ void Control::applySlippage(double slippage, Field *field)
       }
 
       MPI_Status status;
+      MPI_Errhandler_set(MPI_COMM_WORLD,MPI_ERRORS_RETURN);
+      int ierr;
+	
       if (size>1){
         if ( (rank % 2)==0 ){                   // even nodes are sending first and then receiving field
            for (int i=0; i<ncells; i++){
 	     work[2*i]  =field->field[last].at(i).real();
 	     work[2*i+1]=field->field[last].at(i).imag();
 	   }
-	   MPI_Send(work,2*ncells, /* <= number of DOUBLES */
+	   ierr = MPI_Send(work,2*ncells, /* <= number of DOUBLES */
                MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
+	   if (ierr != MPI_SUCCESS){
+	     cout << "Problem with MPI_Send" << endl;
+	   }
 	   MPI_Recv(work,2*ncells, MPI_DOUBLE,rank_prev,tag,MPI_COMM_WORLD,&status);
 	   for (int i=0; i<ncells; i++){
 	     complex <double> ctemp=complex<double> (work[2*i],work[2*i+1]);
@@ -244,7 +248,10 @@ void Control::applySlippage(double slippage, Field *field)
 	    work[2*i+1]=field->field[last].at(i).imag();
 	    field->field[last].at(i)=ctemp;
 	  }
-	  MPI_Send(work,2*ncells,MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
+	  ierr=MPI_Send(work,2*ncells,MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
+	  if (ierr != MPI_SUCCESS){
+	    cout << "Problem with MPI_SEND" << endl;
+	  }
 	}
       }
 

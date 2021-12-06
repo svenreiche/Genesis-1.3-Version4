@@ -110,7 +110,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 	  cout << "Writing output file..." << endl;
 	}
 	
-	control->output(beam,field,und);
+        control->output(beam,field,und);
 
 	delete control;
       
