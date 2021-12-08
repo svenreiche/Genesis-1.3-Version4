@@ -107,11 +107,11 @@ void Output::writeMeta(Undulator *und)
   this->writeSingleNode(gid,"mpisize", " ", &tmp);
 
 
-  const char *env_var[4] = {"LOGIN", "USER", "HOST","PWD"};
-  char *env_val[4];
+  const char *env_var[2] = {"HOST","PWD"};
+  char *env_val[2];
   string env;
   
-  for(int i=0; i<4; i++){
+  for(int i=0; i<2; i++){
      
      env_val[i] = getenv(env_var[i]);
      if (env_val[i] != NULL){
@@ -122,8 +122,13 @@ void Output::writeMeta(Undulator *und)
       this->writeSingleNodeString(gid,env_var[i], &env);
   }
   
+  struct passwd *pws;
+  string user = "username lookup failed";
+  if (NULL != (pws=getpwuid(getuid()))) // 'getpwuid' system call returns nullptr in case lookup was unsuccessful...
+    user = pws->pw_name;
+  this->writeSingleNodeString(gid,"User", &user);
 
-
+  
   /*** copy input files into .out.h5 file ***/
   ifstream inFile (meta_inputfile.c_str());
   stringstream buffer;
