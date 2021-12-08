@@ -44,7 +44,7 @@ bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Tim
 
   double lambda=setup->getReferenceLength();                        // reference length for theta
   
-  s0=s0;  // add offset from input deck
+  // s0=s0;  // add offset from input deck
   slen=slicelen*count;
 
 

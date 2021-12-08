@@ -283,7 +283,7 @@ void Beam::diagnostics(bool output, double z)
   if (!output) { return; }
 
   double acc_cur,acc_g,acc_g2,acc_x,acc_x2,acc_y,acc_y2;
-  complex<double> acc_b=(0,0);
+  // complex<double> acc_b=(0,0);
   acc_cur=0;
   acc_g=0;
   acc_g2=0;

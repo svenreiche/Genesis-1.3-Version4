@@ -268,7 +268,7 @@ void Lattice::match(int rank, double z0, double gammaref)
   }
 
 
-  if (matched=opt.match(&mbetax,&malphax,&mbetay,&malphay,&phix,&phiy)){
+  if (opt.match(&mbetax,&malphax,&mbetay,&malphay,&phix,&phiy)){
     if (rank==0){
         cout << "Matching for periodic solution between z = 0 and z = "<<z0 << " :" << endl;
         cout << "   betax (m) : " << mbetax  << endl;
