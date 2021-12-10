@@ -250,13 +250,16 @@ void Lattice::match(int rank, double z0, double gammaref)
   int i=0;
 
   while((lat_z[i]<z0)&&(i<lat_z.size())){
- 
-    double qf=lat_qf[i];
-    double qx=lat_aw[i]*lat_aw[i]/gammaref/gammaref;
+
+    double gref2=gammaref*gammaref-1-lat_aw[i]*lat_aw[i];
+    //    double qf=lat_qf[i];
+    //    double qx=lat_aw[i]*lat_aw[i]/gammaref/gammaref;
+    double qf=lat_qf[i]*gammaref*gammaref/gref2;
+    double qx=lat_aw[i]*lat_aw[i]/gref2;
     double qy=qx*lat_ky[i];
     qx*=lat_kx[i];
     double dz=lat_dz[i];
-    if ((lat_z[i]+lat_dz[i])>z0){ dz=z0-lat_z[i]; }
+    if ((lat_z[i]+lat_dz[i])>z0){ dz=z0-lat_z[i];}
     opt.addElement(dz,qf,qx,qy);
     i++; 
   }
