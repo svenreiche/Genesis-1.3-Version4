@@ -152,7 +152,12 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   beam->register_beam_diag(bd_demo);
 #endif
 
+
   beam->register_beam_diag(bd_std);
+  // FIXME: Additional pointer to standard diagnostics class.
+  // It is currently needed for two special operations:
+  // (1) first call to perform initial std diag,
+  // (2) writing object "/Lattice/zplot"
   beam->bd_std=bd_std;
 
   if((0==rank) && dbg_report_moddiag)

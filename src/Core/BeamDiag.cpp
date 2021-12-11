@@ -1,4 +1,9 @@
 #include "BeamDiag.h"
+/*
+ * See the header file for a list of functions that have
+ * to be implemented in your derived diagnostics class.
+ */
+
 
 BeamDiag::BeamDiag() {
 }
