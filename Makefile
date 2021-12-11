@@ -18,10 +18,14 @@ DMACRO = -DFFTW
 VPATH = src/Core src/IO src/Lattice src/Util src/Main src/Loading
 CCOMPILER = h5pcc
 #
-#  flags
+# compiler flags
 #
 #FLAGS = -O2
 FLAGS = -g -O2
+#
+# enable this if you want some additional debug diags (at the expense of performance)
+# FLAGS += -DG4_DBGDIAG
+#
 #
 #  executable name
 #
