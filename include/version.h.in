@@ -1,0 +1,28 @@
+//
+// Created by reiche on 05.01.22.
+//
+
+#ifndef GENESIS_1_3_VERSION4_VERSION_H
+#define GENESIS_1_3_VERSION4_VERSION_H
+
+#include <string>
+
+class VersionInfo {
+int vmajor = @_GENESIS_VERSION_MAJOR@;
+int vminor = @_GENESIS_VERSION_MINOR@;
+int vrev = @_GENESIS_VERSION_REV@;
+bool vbeta = @_GENESIS_VERSION_BETA@;
+
+
+public:
+    VersionInfo();
+    ~VersionInfo();
+
+    int Major(void) {return vmajor; };
+    int Minor(void) {return vminor; };
+    int Rev(void) {return vrev;};
+    bool isBeta(void) {return vbeta;};
+    const char *Build(void) {return "Compiled by @_user_name@ at @_config_time@ from Git Commit ID: @GIT_HASH@";};
+};
+
+#endif //GENESIS_1_3_VERSION4_VERSION_H
