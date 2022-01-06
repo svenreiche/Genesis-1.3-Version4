@@ -14,6 +14,7 @@ else()
     Message(STATUS "MPI not Found")
 endif()
 
+#include hdf5
 find_package(HDF5 REQUIRED COMPONENTS C HL)
 if (HDF5_FOUND)
     Message(STATUS "HDF5 Found")
@@ -27,19 +28,21 @@ else()
 endif()
 SET(HDF5_PREFER_PARALLEL TRUE)
 
+# include fftw as optional library
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFTW QUIET fftw3 IMPORTED_TARGET)
+if (TARGET PkgConfig::FFTW)
+    message(STATUS "FFTW found")
+else()
+    message(STATUS "FFTW not found")
+    message(STATUS "Excluding FFTW specific source code")
+endif()
 
 
 
-include_directories(${MPI_INCLUDE_PATH})
-include_directories(${HDF5_C_INCLUDE_DIRS})
-
-
-SET(CMAKE_C_COMPILER mpicc)
-SET(CMAKE_CXX_COMPILER mpicxx)
-
-SET(GIT_HASH "unknown")
 
 # generation of the version include file
+SET(GIT_HASH "unknown")
 find_package(Git QUIET)
 if (GIT_FOUND)
     execute_process(
@@ -68,11 +71,19 @@ execute_process(
 string(TIMESTAMP _config_time "%Y-%m-%d %H:%M:%S [UTC]" UTC)
 configure_file(include/version.h.in include/version.h @ONLY)
 
+
+# set compilers
+SET(CMAKE_C_COMPILER mpicc)
+SET(CMAKE_CXX_COMPILER mpicxx)
+
 # include directories
+include_directories(PkgConfig::FFTW)
+include_directories(${MPI_INCLUDE_PATH})
+include_directories(${HDF5_C_INCLUDE_DIRS})
 include_directories(include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 
-add_library(buildinfo STATIC build_info.c)
+
 
 add_library(genesis13 STATIC
         src/Util/BesselJ.cpp
@@ -82,7 +93,6 @@ add_library(genesis13 STATIC
         src/Util/RandomU.cpp
         src/Util/Sorting.cpp
         src/Util/StringProcessing.cpp
-        src/Main/VersionInfo.cpp
         src/Lattice/AlterLattice.cpp
         src/Lattice/Lattice.cpp
         src/Lattice/LatticeElements.cpp
@@ -126,9 +136,15 @@ add_library(genesis13 STATIC
         src/Main/Track.cpp
         src/Main/Wake.cpp
         )
-target_compile_definitions(genesis13 PRIVATE FFFFTW=0)
+
+if (TARGET PkgConfig::FFTW)
+  target_compile_definitions(genesis13 PRIVATE FFTW=1)
+endif()
 
 add_executable(genesis4 src/Main/mainwrap.cpp)
-
-target_link_libraries(genesis4 genesis13 buildinfo MPI::MPI_C HDF5::HDF5)
-
+target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5)
+if (TARGET PkgConfig::FFTW)
+    target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5 PkgConfig::FFTW)
+else()
+    target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5)
+endif()

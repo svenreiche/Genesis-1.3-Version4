@@ -15,8 +15,8 @@ bool vbeta = @_GENESIS_VERSION_BETA@;
 
 
 public:
-    VersionInfo();
-    ~VersionInfo();
+    VersionInfo(){};
+    ~VersionInfo(){};
 
     int Major(void) {return vmajor; };
     int Minor(void) {return vminor; };

@@ -10,7 +10,7 @@
 #include <fstream>
 #include <streambuf>
 
-#include "VersionInfo.h"
+
 
 extern bool MPISingle;
 
@@ -92,7 +92,7 @@ void Output::writeMeta(Undulator *und)
   tmp[0]=0;
   if (vi.isBeta()) { tmp[0]=1;}
   this->writeSingleNode(gidsub,"Beta"," ",&tmp);
-  string s_bi(vi.BuildInfo());
+  string s_bi(vi.Build());
   this->writeSingleNodeString(gidsub,"Build_Info", &s_bi);
   H5Gclose(gidsub);  
   
