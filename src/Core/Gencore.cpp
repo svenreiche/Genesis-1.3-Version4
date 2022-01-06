@@ -7,25 +7,24 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 {
 
 
-        //-------------------------------------------------------
-        // init MPI and get size etc.
-        //
-        int size=1;
-        int rank=0;
-
+    //-------------------------------------------------------
+    // init MPI and get size etc.
+    //
+    int size=1;
+    int rank=0;
 	if (!MPISingle){
-	  MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
-	  MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
-        }
+	    MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
+	    MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
+    }
 
 	if (rank==0) {
-          cout << endl << "Running Core Simulation..." << endl;
-        }
+        cout << endl << "Running Core Simulation..." << endl;
+    }
 
-        //-----------------------------------------
+    //-----------------------------------------
 	// init beam, field and undulator class
 
-        Control   *control=new Control;
+    Control   *control=new Control;
 
 	control->init(rank,size,file,beam,field,und,isTime,isScan); 
 

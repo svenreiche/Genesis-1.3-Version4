@@ -88,8 +88,9 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   if(dumpFieldUE)
     und->markUndExits();
 
-  und->updateOutput(zstop,output_step);
-  und->updateMarker(dumpFieldStep,dumpBeamStep,sort_step,zstop);
+  und->updateMarker(dumpFieldStep,dumpBeamStep,sort_step,zstop);  // update first the marker to calculate correctly the stopping length (otherwise it could be bypassed by the lattice file)
+  und->updateOutput(output_step);
+
   beam->setBunchingHarmonicOutput(bunchharm);
 
   // controling the output
