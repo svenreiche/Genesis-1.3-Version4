@@ -22,7 +22,7 @@ class Setup: public StringProcessing{
  public:
    Setup();
    virtual ~Setup();
-   bool init(int, map<string,string> *, Lattice *,string,string,int );
+   bool init(int, map<string,string> *, Lattice *);
    //   bool writeGlobal(hid_t, double, int, int,int,int,double, double, double, bool, bool);
    double getReferenceLength();
    void   setReferenceLength(double);

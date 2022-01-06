@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(Genesis_1_3_Version4 CXX C)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -128,7 +128,7 @@ add_library(genesis13 STATIC
         )
 target_compile_definitions(genesis13 PRIVATE FFFFTW=0)
 
-add_executable(Genesis_1_3_Version4 src/Main/mainwrap.cpp)
+add_executable(genesis4 src/Main/mainwrap.cpp)
 
-target_link_libraries(Genesis_1_3_Version4 genesis13 buildinfo MPI::MPI_C HDF5::HDF5)
+target_link_libraries(genesis4 genesis13 buildinfo MPI::MPI_C HDF5::HDF5)
 

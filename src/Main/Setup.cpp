@@ -67,14 +67,9 @@ void Setup::usage(){
   return;
 }
 
-bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstring, string outstring, int in_seed)
-{
+bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat){
 
   rank=inrank;
-  // initialize the values for lattice and output file from the command line arguments
-  lattice=latstring;
-  rootname=outstring;
-  seed=in_seed;
   map<string,string>::iterator end=arg->end();
 
   if (arg->find("rootname")!=end){rootname = arg->at("rootname"); arg->erase(arg->find("rootname"));}

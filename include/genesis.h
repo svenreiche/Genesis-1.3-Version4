@@ -3,7 +3,7 @@
 
 
 #include <string>
-
+#include <map>
 
 #include <mpi.h>
 
@@ -11,5 +11,5 @@ using namespace std;
 
 
 
-double genmain(string, string, string, int,bool);
+double genmain(string, map<string,string> &,bool);
 #endif

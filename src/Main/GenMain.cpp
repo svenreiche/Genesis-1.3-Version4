@@ -42,7 +42,6 @@
 #include "writeFieldHDF5.h"
 #include "Collective.h"
 #include "Wake.h"
-#include "VersionInfo.h"
 
 #include <sstream>
 
@@ -52,6 +51,7 @@ const double vacimp = 376.73;
 const double eev    = 510999.06; 
 const double ce     = 4.8032045e-11;
 
+// info for the meta group in the hdf5 output file
 string meta_inputfile;
 string meta_latfile;
 
@@ -61,92 +61,96 @@ bool MPISingle;  // global variable to do mpic or not
 //vector<double> evtime;
 //double evt0;
 
-double genmain (string mainstring, string latstring, string outstring, int in_seed, bool split) {
+double genmain (string mainstring, map<string,string> &comarg, bool split) {
 
-        meta_inputfile=mainstring;
-        double ret=0;
-    
-        MPISingle=split;       
+    meta_inputfile=mainstring;
+    double ret=0;
+    MPISingle=split;
 	int rank,size;
 
-        MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
-        MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
+    MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
 	if (MPISingle){
 	  rank=0;
 	  size=1;
-        }
+    }
 
 
-        time_t timer;
+    time_t timer;
 	clock_t clocknow;
 	clock_t clockstart = clock();
 	//	evt0 = double(clockstart);
 	//	event.push_back("start");
 	//	evtime.push_back(0);
 
-	if (rank==0){
-          VersionInfo vi;
-          time(&timer);
-          cout << "---------------------------------------------" << endl;
-          cout << "GENESIS - Version " <<  vi.Major() <<"."<< vi.Minor() << "." << vi.Rev() ;
-	  if (vi.isBeta()) {cout << " (beta)";}
-	  cout << " has started..." << endl;
-          cout << "compile info: " << vi.BuildInfo() << endl;			
-	  cout << "Starting Time: " << ctime(&timer)<< endl;
+	if (rank==0){         // the output of version and build has been moved to the wrapper mainwrap.cpp
+    	  cout << "Starting Time: " << ctime(&timer)<< endl;
           cout << "MPI-Comm Size: " << size << " nodes" << endl << endl;
-        }
+    }
 
-        //---------------------------------------------------------
-        // Instance of beam and field class to carry the distribution
+    //---------------------------------------------------------
+    // Instance of beam and field class to carry the distribution
 
-        vector<Field *> field;   // an vector of various field components (harmonics, vertical/horizonthal components)
-        Beam  *beam =new Beam;
+    vector<Field *> field;   // vector of various field components (harmonics, vertical/horizonthal components)
+    Beam  *beam =new Beam;
 
 
-        //----------------------------------------------------------
-        // main loop extracting one element with arguments at a time
-      
-        Parser parser; 
-        string element;
-        map<string,string> argument;
+    //----------------------------------------------------------
+    // main loop extracting one element with arguments at a time
+    Parser parser;
+    string element;
+    map<string,string> argument;
 
-        Setup *setup=new Setup;
+    // some dummy argument used earlier
+    string latstring="";
+    string outstring="";
+    int in_seed=0;
+
+
+    //-------------------------------------------
+    // instances of main classes
+    Setup *setup=new Setup;
 	AlterLattice *alt=new AlterLattice;
-        Lattice *lattice=new Lattice;
-        Profile *profile=new Profile;
+    Lattice *lattice=new Lattice;
+    Profile *profile=new Profile;
 	Series  *seq    =new Series;
-        Time *timewindow=new Time;
+    Time *timewindow=new Time;
 
 
-        parser.open(mainstring,rank);
+    //-----------------------------------------------------------
+    // main loop for parsing
+    parser.open(mainstring,rank);
 
-        while(parser.parse(&element,&argument)){
+    while(parser.parse(&element,&argument)){
 	  //----------------------------------------------
 	  // log event
 	  //	  clocknow=clock();
 	  //	  event.push_back(element);
 	  //	  evtime.push_back(double(clocknow-clockstart));
 
-          //----------------------------------------------
+      //----------------------------------------------
 	  // setup & parsing the lattice file
 
-          if (element.compare("&setup")==0){
-            if (!setup->init(rank,&argument,lattice,latstring,outstring,in_seed)){ break;}
-	    meta_latfile=setup->getLattice();
-            continue;  
-          }  
+      if (element.compare("&setup")==0){
+          for (const auto &[key,val] :comarg){   // overwriting from the commandline input
+              argument[key] = val;
+          }
+          if (!setup->init(rank,&argument,lattice)){ break;}
+          meta_latfile=setup->getLattice();
+          continue;
+      }
 
-          //----------------------------------------------
+      //----------------------------------------------
 	  // modifying run
 
-          if (element.compare("&alter_setup")==0){
+      if (element.compare("&alter_setup")==0){
 	    AlterSetup *altersetup= new AlterSetup;
-            if (!altersetup->init(rank,&argument,setup,lattice,timewindow,beam,&field)){ break;}
-	    delete altersetup;
-            continue;  
-          }  
+        if (!altersetup->init(rank,&argument,setup,lattice,timewindow,beam,&field)){ break;}
+        delete altersetup;
+        continue;
+      }
 
-          //----------------------------------------------
+      //----------------------------------------------
 	  // modifying the lattice file
 
           if (element.compare("&lattice")==0){
