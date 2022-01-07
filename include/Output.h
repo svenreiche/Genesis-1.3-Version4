@@ -33,6 +33,7 @@ class Output : public HDF5Base {
    void writeLattice(Beam *, Undulator *);
    void writeGlobal(Undulator *,double,double,double,double,bool,bool,bool,int);
    void writeMeta(Undulator *);
+   void writeGroup(std::string group,std::map<std::string,std::vector<double> >&, std::map<std::string,std::string> &);
    void reportDumps(hid_t, Undulator *);
 
  private:

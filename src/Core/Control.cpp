@@ -7,7 +7,6 @@
 
 
 
-
 Control::Control()
 {
   nwork=0;
@@ -67,7 +66,7 @@ bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und)
 }
 
 
-void Control::output(Beam *beam, vector<Field*> *field, Undulator *und)
+void Control::output(Beam *beam, vector<Field*> *field, Undulator *und, Diagnostic &diag)
 {
 
   
@@ -83,7 +82,7 @@ void Control::output(Beam *beam, vector<Field*> *field, Undulator *und)
         out->writeFieldBuffer(field->at(i));
   }
   out->writeBeamBuffer(beam);
-  
+  out->writeGroup("Beamtest",diag.val, diag.units);
   out->close();
  
   delete out;
@@ -139,6 +138,7 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
   // initial diagnostic
 
   if (rank==0) { cout << "Initial analysis of electron beam and radiation field..."  << endl; }
+
 
   beam->initDiagnostics(und->outlength());
   beam->diagnostics(true,0);

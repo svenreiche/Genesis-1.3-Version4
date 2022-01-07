@@ -272,6 +272,20 @@ void Output::writeLattice(Beam * beam,Undulator *und)
   H5Gclose(gid);
 }
 
+void Output::writeGroup(std::string group, std::map<std::string,std::vector<double> >& data, std::map<std::string,std::string>& units)
+{
+    hid_t gid, gidsub;
+
+    // step 1 - create the group
+    gid=H5Gcreate(fid,group.c_str(),H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+    for (auto &[key,val]: data){       // this should be converted to auto const &[key,val] and also in writeBuffer the argument should be const vector<double>
+        this->writeBuffer(gid, key.c_str(),units[key].c_str(), &val);
+    }
+    // step 3 - close group and done
+    H5Gclose(gid);
+    return;
+}
+
 void Output::writeBeamBuffer(Beam *beam)
 {
   hid_t gid, gidsub;

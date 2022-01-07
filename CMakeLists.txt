@@ -109,6 +109,7 @@ add_library(genesis13 STATIC
         src/Core/Incoherent.cpp
         src/Core/TrackBeam.cpp
         src/Core/Undulator.cpp
+        src/Core/Diagnostic.cpp
         src/IO/HDF5base.cpp
         src/IO/Output.cpp
         src/IO/readBeamHDF5.cpp
