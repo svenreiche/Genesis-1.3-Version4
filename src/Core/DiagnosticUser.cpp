@@ -33,7 +33,7 @@ std::map<std::string,OutputInfo> DiagBeamUser::getTags(FilterDiagnostics & filte
     //         A: energy modulation (for each slice)
     //         B: total loss by external fields e.g. wakes (global variable)
 
-    filter["template"] = false;     // <- set to true to enable output for the template parameters
+    filter["template"] = true;     // <- set to true to enable output for the template parameters
     if (filter["template"]){
         tags["modulation"] = {false, false, "mc^2"};
         if (global) {
@@ -45,7 +45,7 @@ std::map<std::string,OutputInfo> DiagBeamUser::getTags(FilterDiagnostics & filte
     return tags;  // must be returned
 }
 
-void DiagBeamUser::getValues(Beam *beam,std::map<std::string,std::vector<double> >&val, int iz) {
+void DiagBeamUser::getValues(Beam *beam, std::map<std::string,std::vector<double> >&val, int iz) {
 
     int ns = beam->beam.size();   // the number of slices per node
     int is = 0;    // counter for the current slice

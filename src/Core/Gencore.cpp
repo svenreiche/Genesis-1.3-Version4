@@ -29,12 +29,11 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
     control->init(rank,size,file,beam,field,und,isTime,isScan);
 
     Diagnostic diag;
-    diag.init(und->outlength(),beam->beam.size());
+    diag.init(und->outlength(),beam->beam.size(),field->size());
 
 
-
-        //------------------------------------------
-        // main loop
+    //------------------------------------------
+    // main loop
 	       	
 	while(und->advance(rank)){
 	  double delz=und->steplength();
@@ -103,7 +102,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 
 	    if (shift!=0){
 	      for (int i=0;i<field->size();i++){
-		control->applySlippage(shift, field->at(i));  
+		    control->applySlippage(shift, field->at(i));
 	      }
 	    }
 	}
@@ -119,11 +118,11 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 
 	delete control;
       
-        if (rank==0){
+    if (rank==0){
 	  cout << endl << "Core Simulation done." << endl;
-        }
+    }
 
 
-        return 0;
+    return 0;
 
 }

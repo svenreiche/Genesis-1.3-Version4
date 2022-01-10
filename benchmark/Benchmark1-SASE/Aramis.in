@@ -25,6 +25,15 @@ ngrid=255
 waist_size=30e-6
 &end
 
+&field
+harm = 3
+power=0
+dgrid=2.000000e-04
+ngrid=255
+waist_size=30e-6
+&end
+
+
 &beam
 current=3000
 delgam=1.000000

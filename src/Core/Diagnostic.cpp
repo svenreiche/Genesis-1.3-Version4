@@ -12,25 +12,42 @@
 // diagnostics classes are only concern with the actual calculation.
 
 // routine to register the output parameters and to allocate memory
-void Diagnostic::init(int nz_in, int ns_in){
+void Diagnostic::init(int nz_in, int ns_in, int nfld){
 
     FilterDiagnostics filter;
     nz = nz_in;
     ns = ns_in;
     val.clear();
     units.clear();
+
+    val.resize(1+nfld);   // at least the beam
+    units.resize(1+nfld);
+
     zout.resize(nz);
 
     // loop through the different class for registration and allocate memory
     for (auto group : dbeam){
         for (auto const &tag : group->getTags(filter)){
-            units[tag.first] = tag.second.units;   // accumulate all units
+            units.at(0)[tag.first] = tag.second.units;   // accumulate all units
             int size = ns * nz;
             if (tag.second.once) { size /= nz; }
             if (tag.second.global) {size /= ns; }
-            val[tag.first].resize(size);
+            val.at(0)[tag.first].resize(size);
         }
     }
+
+    for (int ifld=0; ifld<nfld;ifld++){
+        for (auto group : dfield){
+            for (auto const &tag : group->getTags(filter)){
+                units.at(1+ifld)[tag.first] = tag.second.units;   // accumulate all units
+                int size = ns * nz;
+                if (tag.second.once) { size /= nz; }
+                if (tag.second.global) {size /= ns; }
+                val.at(1+ifld)[tag.first].resize(size);
+            }
+        }
+    }
+
     iz=0;                              // set the counter
 }
 
@@ -38,14 +55,20 @@ void Diagnostic::init(int nz_in, int ns_in){
 void Diagnostic::calc(Beam* beam,std::vector<Field*> *field,Undulator* und) {
     zout[iz]=und->getz();
     for (auto group: dbeam){
-        group->getValues(beam,val,iz);
+        group->getValues(beam,val[0],iz);
     }
     iz++;
+
+    for (int ifld=0; ifld < field->size(); ifld++){
+        for (auto group: dfield) {
+            group->getValues(field->at(ifld),val[1+ifld],iz);
+        }
+    }
 }
 
 
 //-----------------------------------------------------------
-// actual implementation of diagnostic calculation
+// actual implementation of diagnostic calculation - beam
 
 std::map<std::string,OutputInfo> DiagBeam::getTags(FilterDiagnostics & filter_in) {
 
@@ -285,3 +308,32 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
 
 }
 
+//---------------------------------------------------------
+// diagnostic calculation - field
+
+std::map<std::string,OutputInfo> DiagField::getTags(FilterDiagnostics & filter_in){
+
+    tags.clear();
+    filter.clear();
+
+    tags["power"]={false,false,"W"};
+//    tags["dgrid"]={true,true,"m"};
+
+    return tags;
+}
+
+void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> >&val, int iz){
+
+    int ns = field->field.size();
+    int is = field->first;
+
+    for (auto const &slice :field->field){
+        double power=0;
+
+        int idx = iz*ns+is;         // index for saving the data
+        if (val.find("power") != val.end()) { val["power"][idx] = power; }
+        is++;
+        is = is % ns;
+    }
+    return;
+}

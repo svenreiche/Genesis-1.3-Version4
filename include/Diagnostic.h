@@ -52,13 +52,12 @@ struct FilterDiagnostics{
 };
 
 //---------------------------------------
-// base class for beam diangostics
+// base class for diagnostics
 
 class DiagBeamBase{
 protected:
     std::map<std::string, OutputInfo>  tags;  // holds a map with tags and units
     std::map<std::string,bool> filter;        // general map to store the selected flags
-    unsigned int nharm {1};    // beam specific for calculating harmonics in the bunching
     bool global {false};
 public:
     ~DiagBeamBase() = default;
@@ -67,15 +66,25 @@ public:
     virtual void getValues(Beam *, std::map<std::string,std::vector<double> > &, int) =0;
 };
 
+class DiagFieldBase{
+protected:
+    std::map<std::string, OutputInfo>  tags;  // holds a map with tags and units
+    std::map<std::string,bool> filter;        // general map to store the selected flags
+    bool global {false};
+public:
+    ~DiagFieldBase() = default;
+    DiagFieldBase() = default; // this is needed since the harmonics can be changed
+    virtual std::map<std::string,OutputInfo> getTags(FilterDiagnostics &filter) =0;
+    virtual void getValues(Field *, std::map<std::string,std::vector<double> > &, int) =0;
+};
+
+
 //------------------------------------
 // genesis official class for beam diagnostics
 
 class DiagBeam: public DiagBeamBase{
-protected:
-//    std::map<std::string, OutputInfo>  tags;  // holds a map with tags and units
-//    std::map<std::string,bool> filter;        // general map to store the selected flags
-//    unsigned int nharm {1};    // beam specific for calculating harmonics in the bunching
-//    bool global {false};
+private:
+    unsigned int nharm {1};    // beam specific for calculating harmonics in the bunching
 public:
     ~DiagBeam() = default;
     DiagBeam() = default; // this is needed since the harmonics can be changed
@@ -83,9 +92,19 @@ public:
     void getValues(Beam *, std::map<std::string,std::vector<double> > &, int) ;
 };
 
+class DiagField: public DiagFieldBase{
+public:
+    ~DiagField() = default;
+    DiagField() = default; // this is needed since the harmonics can be changed
+    std::map<std::string,OutputInfo> getTags(FilterDiagnostics &filter);
+    void getValues(Field *, std::map<std::string,std::vector<double> > &, int) ;
+};
+
 //----------------------------------------
 // template for user defined beam diagnostics
 class DiagBeamUser: public DiagBeamBase{
+private:
+    unsigned int nharm {1};
 public:
     DiagBeamUser() = default;
     ~DiagBeamUser() = default;
@@ -94,18 +113,11 @@ public:
 };
 
 
-//class DiagField : public DiagBase{
-//    unsigned int npar {1};
-//public:
-//    unsigned int getCount() {return npar;};
-//    std::vector< std::string> getTags() { return {"power"};};
-//};
-
-
 // ----------------------------------------------
 // class which manages all the diagnostic classes, acting as a wrapper for them, standardizing the interface.
 class Diagnostic{
     std::array<DiagBeamBase*,2> dbeam = {new DiagBeam(), new DiagBeamUser()};
+    std::array<DiagFieldBase*,1> dfield = {new DiagField()};
     int nz = 1;
     int ns = 1;
     int iz = 0;
@@ -113,10 +125,12 @@ class Diagnostic{
 public:
     Diagnostic() = default;
     virtual ~Diagnostic() = default;
-    void init(int,int);
+    void init(int,int,int);
     void calc(Beam *, std::vector<Field*> *,Undulator *);
-    std::map<std::string,std::vector<double> > val;
-    std::map<std::string,std::string > units;
+    std::vector<std::map<std::string,std::vector<double> > > val;
+    std::vector<std::map<std::string,std::string > >units;
+    std::vector<std::map<std::string,double> > svaldouble;
+    std::vector<std::map<std::string,int> > svalint;
     std::vector<double> zout;
 };
 
