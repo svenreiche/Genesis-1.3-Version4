@@ -56,7 +56,7 @@ if (GIT_FOUND)
 endif()
 message(STATUS "Git hash is ${GIT_HASH}")
 set(_GENESIS_VERSION_MAJOR "4")
-set(_GENESIS_VERSION_MINOR "5")
+set(_GENESIS_VERSION_MINOR "6")
 set(_GENESIS_VERSION_REV "1")
 set(_GENESIS_VERSION_BETA "true")
 execute_process(
@@ -110,6 +110,7 @@ add_library(genesis13 STATIC
         src/Core/TrackBeam.cpp
         src/Core/Undulator.cpp
         src/Core/Diagnostic.cpp
+        src/Core/DiagnosticUser.cpp
         src/IO/HDF5base.cpp
         src/IO/Output.cpp
         src/IO/readBeamHDF5.cpp

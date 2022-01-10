@@ -82,6 +82,8 @@ void Control::output(Beam *beam, vector<Field*> *field, Undulator *und, Diagnost
         out->writeFieldBuffer(field->at(i));
   }
   out->writeBeamBuffer(beam);
+
+
   out->writeGroup("Beamtest",diag.val, diag.units);
   out->close();
  

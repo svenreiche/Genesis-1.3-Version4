@@ -28,11 +28,6 @@ int main (int argc, char *argv[]) {
 
 	// parse the command line arguments
 
-    string latname ("");
-    string outname ("");
-    int seed = 123456;
-
-
     if (rank == 0) {
         VersionInfo vi;
         cout << "---------------------------------------------" << endl;
@@ -99,7 +94,7 @@ int main (int argc, char *argv[]) {
 	  }
 
       //   call the core routine for genesis
-	  if (ok) {genmain(filename,arguments,false); }
+	  if (ok) {genmain(filename,arguments,false); }   //
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);

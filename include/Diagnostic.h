@@ -16,29 +16,80 @@
 #include "Beam.h"
 #include "Undulator.h"
 
+extern bool MPISingle;
 
-// base class for calculating values for the output. It must be inherited by all classes
-//class DiagBase{
-//public:
-//    virtual unsigned int getCount() = 0;  // function to return number of calculated values per diagnostic step
-//    virtual std::vector< std::string> getTags() = 0;
-//    virtual std::vector<double> getValues() = 0
-//};
+// supplemental info for any field to be calculated. It helps to allocate the right size and automize
+// the writing to the hdf5 file
 
+struct OutputInfo{
+    bool global {false};
+    bool once {false};
+    std::string units {" "};
+};
 
+// filters to control output. A true value means that the output is included in the output file
+// these values are initialized and changed in the namelist setup, track and the upcoming output
+
+struct FilterBeam{
+    bool global {true};
+    bool spatial {true};
+    bool energy {true};
+    bool current {false};
+    bool auxiliar {true};
+    int harm {1};
+};
+
+struct FilterField{
+    bool global {false};
+    bool spatial {true};
+    bool fft {true};
+    bool intensity {true};
+};
+
+struct FilterDiagnostics{
+    FilterBeam beam;
+    FilterField field;
+};
+
+//---------------------------------------
 // base class for beam diangostics
-class DiagBeam{
-protected:
-    unsigned int npar {4};
-    std::map<std::string,std::string>  tags;
 
-private:
-    unsigned int nharm {1};
-    void defineTags();
+class DiagBeamBase{
+protected:
+    std::map<std::string, OutputInfo>  tags;  // holds a map with tags and units
+    std::map<std::string,bool> filter;        // general map to store the selected flags
+    unsigned int nharm {1};    // beam specific for calculating harmonics in the bunching
+    bool global {false};
+public:
+    ~DiagBeamBase() = default;
+    DiagBeamBase() = default; // this is needed since the harmonics can be changed
+    virtual std::map<std::string,OutputInfo> getTags(FilterDiagnostics &filter) =0;
+    virtual void getValues(Beam *, std::map<std::string,std::vector<double> > &, int) =0;
+};
+
+//------------------------------------
+// genesis official class for beam diagnostics
+
+class DiagBeam: public DiagBeamBase{
+protected:
+//    std::map<std::string, OutputInfo>  tags;  // holds a map with tags and units
+//    std::map<std::string,bool> filter;        // general map to store the selected flags
+//    unsigned int nharm {1};    // beam specific for calculating harmonics in the bunching
+//    bool global {false};
 public:
     ~DiagBeam() = default;
-    DiagBeam() noexcept {this->defineTags();}; // this is needed since the harmonics can be changed
-    auto getTags() { return tags;};
+    DiagBeam() = default; // this is needed since the harmonics can be changed
+    std::map<std::string,OutputInfo> getTags(FilterDiagnostics &filter);
+    void getValues(Beam *, std::map<std::string,std::vector<double> > &, int) ;
+};
+
+//----------------------------------------
+// template for user defined beam diagnostics
+class DiagBeamUser: public DiagBeamBase{
+public:
+    DiagBeamUser() = default;
+    ~DiagBeamUser() = default;
+    std::map<std::string,OutputInfo> getTags(FilterDiagnostics &filter);
     void getValues(Beam *, std::map<std::string,std::vector<double> > &, int);
 };
 
@@ -51,22 +102,22 @@ public:
 //};
 
 
-
-// the class to manage the various subclasses
+// ----------------------------------------------
+// class which manages all the diagnostic classes, acting as a wrapper for them, standardizing the interface.
 class Diagnostic{
-    std::array<DiagBeam*,1> dbeam = {new DiagBeam()};
-//    std::array<std::unique_ptr<DiagBase>,1> dfield = {std::unique_ptr<DiagBase>(new DiagField())};
+    std::array<DiagBeamBase*,2> dbeam = {new DiagBeam(), new DiagBeamUser()};
     int nz = 1;
     int ns = 1;
     int iz = 0;
 
 public:
-    Diagnostic();
-    virtual ~Diagnostic();
+    Diagnostic() = default;
+    virtual ~Diagnostic() = default;
     void init(int,int);
     void calc(Beam *, std::vector<Field*> *,Undulator *);
     std::map<std::string,std::vector<double> > val;
     std::map<std::string,std::string > units;
+    std::vector<double> zout;
 };
 
 

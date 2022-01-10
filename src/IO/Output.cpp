@@ -275,13 +275,26 @@ void Output::writeLattice(Beam * beam,Undulator *und)
 void Output::writeGroup(std::string group, std::map<std::string,std::vector<double> >& data, std::map<std::string,std::string>& units)
 {
     hid_t gid, gidsub;
-
+    bool hasSubGroup = false;
     // step 1 - create the group
     gid=H5Gcreate(fid,group.c_str(),H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+    // step 2 - loop through all records
     for (auto &[key,val]: data){       // this should be converted to auto const &[key,val] and also in writeBuffer the argument should be const vector<double>
-        this->writeBuffer(gid, key.c_str(),units[key].c_str(), &val);
+        std::size_t pos = key.find("global/");
+        if (pos == std::string::npos){
+            this->writeBuffer(gid, key.c_str(),units[key].c_str(), &val);
+        } else{
+            if (! hasSubGroup) {
+                gidsub=H5Gcreate(gid,"Global",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+                hasSubGroup=true;
+            }
+            this->writeSingleNode(gidsub, key.substr(pos+7).c_str(),units[key].c_str(), &val);
+        }
     }
     // step 3 - close group and done
+    if (hasSubGroup){
+        H5Gclose(gidsub);
+    }
     H5Gclose(gid);
     return;
 }
