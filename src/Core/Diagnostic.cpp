@@ -315,9 +315,37 @@ std::map<std::string,OutputInfo> DiagField::getTags(FilterDiagnostics & filter_i
 
     tags.clear();
     filter.clear();
+    global = filter_in.field.global;
 
     tags["power"]={false,false,"W"};
-//    tags["dgrid"]={true,true,"m"};
+    if (global){
+        tags["global/energy"]={true,false,"J"};
+    }
+
+    if (filter_in.field.spatial) {
+        filter["spatial"] = true;
+        tags["xposition"] = {false, false, "m"};
+        tags["xsize"] = {false, false, "m"};
+        tags["yposition"] = {false, false, "m"};
+        tags["ysize"] = {false, false, "m"};
+        if (global) {
+            tags["global/xposition"] = {true, false, "m"};
+            tags["global/xsize"] = {true, false, "m"};
+            tags["global/yposition"] = {true, false, "m"};
+            tags["global/ysize"] = {true, false, "m"};
+        }
+    }
+    if (filter_in.field.intensity) {
+        filter["intensity"] = true;
+        tags["intensity-nearfield"] = {false, false, "W/m^2"};
+        tags["phase-nearfield"] = {false, false, "rad"};
+        tags["intensity-farfield"] = {false, false, " "};
+        tags["phase-farfield"] = {false, false, "rad"};
+        if (global) {
+            tags["global/intensity-nearfield"] = {true, false, "W/m^2"};
+            tags["global/intensity-farfield"] = {true, false, " "};
+        }
+    }
 
     return tags;
 }
@@ -325,15 +353,103 @@ std::map<std::string,OutputInfo> DiagField::getTags(FilterDiagnostics & filter_i
 void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> >&val, int iz){
 
     int ns = field->field.size();
-    int is = field->first;
+    int is0 = 0;
+    int ngrid = field->ngrid;
+
+    double ks=4.*asin(1)/field->xlambda;
+    double scl=field->dgrid*eev/ks;
+    double scltheta=field->xlambda/(ngrid*ngrid);
+    double shift=-0.5*static_cast<double> (ngrid-1);
+
+    // global variables
+    double g_pow=0;
+    double g_x1=0;
+    double g_x2=0;
+    double g_y1=0;
+    double g_y2=0;
+    double g_ff=0;
+    double g_inten=0;
 
     for (auto const &slice :field->field){
+        int is = (ns + is0-field->first) % ns;
         double power=0;
+        double x1=0;
+        double x2=0;
+        double y1=0;
+        double y2=0;
+        complex<double> loc;
+        complex<double> ff = complex<double> (0,0);
+        for (int iy=0;iy<ngrid;iy++){
+            double dy=static_cast<double>(iy)+shift;
+            for (int ix=0;ix<ngrid;ix++){
+                double dx=static_cast<double>(ix)+shift;
+                int i=iy*ngrid+ix;
+                loc = slice.at(i);
+//                in[i]=loc;   // field for the FFT
+                double wei=loc.real()*loc.real()+loc.imag()*loc.imag();
+                ff+=loc;
+                power+=wei;
+                x1+=dx*wei;
+                x2+=dx*dx*wei;
+                y1+=dy*wei;
+                y2+=dy*dy*wei;
+            }
+        }
 
-        int idx = iz*ns+is;         // index for saving the data
+        if (global) {
+            g_pow+=power;
+            g_x1+=x1;
+            g_x2+=x2;
+            g_y1+=y1;
+            g_y2+=y2;
+        }
+        if (power > 0){
+            x1/=power;
+            x2/=power;
+            y1/=power;
+            y2/=power;
+        }
+
+        x2=sqrt(fabs(x2-x1*x1));
+        y2=sqrt(fabs(y2-y1*y1));
+
+        int i=(ngrid*ngrid-1)/2;
+        loc=slice.at(i);
+        double inten=loc.real()*loc.real()+loc.imag()*loc.imag();
+        double intenphi=atan2(loc.imag(),loc.real());
+        double farfield=ff.real()*ff.real()+ff.imag()*ff.imag();
+        double farfieldphi =atan2(ff.imag(),ff.real());
+
+        // scale to physical dimensions
+        power*=scl*scl/vacimp; // scale to W
+        x1*=field->dgrid;
+        x2*=field->dgrid;
+        y1*=field->dgrid;
+        y2*=field->dgrid;
+        inten*=eev*eev/ks/ks/vacimp;  // scale to W/m^2
+
+        if (global){
+            g_ff+=farfield;
+            g_inten+=inten;
+        }
+
+        // save the data into the provided arrays
+        int idx = iz*ns+is0;         // index for saving the data
         if (val.find("power") != val.end()) { val["power"][idx] = power; }
-        is++;
-        is = is % ns;
+        if (filter["spatial"]){
+            if (val.find("xposition") != val.end()){val["xposition"][idx]=x1;}
+            if (val.find("xsize") != val.end()){val["xsize"][idx]=x2;}
+            if (val.find("yposition") != val.end()){val["yposition"][idx]=y1;}
+            if (val.find("xsize") != val.end()){val["ysize"][idx]=y2;}
+        }
+        if (filter["intensity"]){
+            if (val.find("intensity-nearfield") != val.end()){val["intensity-nearfield"][idx]=inten;}
+            if (val.find("phase-nearfield") != val.end()){val["phase-nearfield"][idx]=intenphi;}
+            if (val.find("intensity-farfield") != val.end()){val["intensity-farfield"][idx]=farfield;}
+            if (val.find("phase-farfield") != val.end()){val["phase-farfield"][idx]=farfieldphi;}
+        }
+        // increase the slice counter
+        is0++;
     }
     return;
 }

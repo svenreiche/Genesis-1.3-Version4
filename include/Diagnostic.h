@@ -40,7 +40,7 @@ struct FilterBeam{
 };
 
 struct FilterField{
-    bool global {false};
+    bool global {true};
     bool spatial {true};
     bool fft {true};
     bool intensity {true};
