@@ -1,5 +1,5 @@
-# GENESIS 1.3
-### Version 4.5.1
+# GENESIS 1.3 - Manual
+### (Version 4.5.1 - needs update) 
 
 - [Compilation](#Compilation)
 - [Running Genesis 1.3](#Running)
