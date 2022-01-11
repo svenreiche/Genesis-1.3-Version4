@@ -49,6 +49,15 @@ void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undul
 
   for (int is=0; is<beam->beam.size(); is++){    
 
+    // calculating short range space charge    
+    if (esc.size() < beam->beam.at(is).size()){
+      esc.resize(beam->beam.at(is).size());
+      }
+      for (int ip=0; ip<beam->beam.at(is).size();ip++){
+	esc[ip]=0;
+      }
+	  
+      //      efield.shortRange(&beam->beam,vector<double> &ez, double current, double gammaz){
 
       for (int ip=0; ip<beam->beam.at(is).size();ip++){
         gamma=beam->beam.at(is).at(ip).gamma;
@@ -60,7 +69,7 @@ void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undul
 	double awloc=und->faw(x,y);                 // get the transverse dependence of the undulator field
         btpar=1+px*px+py*py+aw*aw*awloc*awloc;	  
 
-	ez=0;
+	ez=esc[ip];
 
 	cpart=0;
 	double wx,wy;

@@ -17,7 +17,7 @@ int VersionInfo::Rev(void) {
 }
 
 bool VersionInfo::isBeta(void) {
-	return(true);
+	return(false);
 }
 
 const char * VersionInfo::BuildInfo(void) {

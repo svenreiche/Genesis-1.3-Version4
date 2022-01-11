@@ -37,7 +37,8 @@ class BeamSolver{
 
    vector< double > rharm;
    vector< complex <double > > rpart;
-
+   vector<double> esc;
+   
    double ez;
    double xks,xku;
 
