@@ -5,41 +5,50 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# container for needed librarires
+list(APPEND _libraries)
 
-# include mpi
-find_package(MPI REQUIRED)
-if (MPI_FOUND)
+# check for existing compiler
+find_program(H5PCC h5pcc)
+if (H%PCC)
+    # set compilers
+    Messaage(STATUS "hdf5 + mpi wrapper found - No additional libraries needed")
+    SET(CMAKE_C_COMPILER h5pcc)
+    SET(CMAKE_CXX_COMPILER h5pcc)
+else()
+    SET(CMAKE_C_COMPILER mpicc)
+    SET(CMAKE_CXX_COMPILER mpicxx)
+    # check for MPI
+    find_package(MPI REQUIRED)
     Message(STATUS "MPI Found")
-else()
-    Message(STATUS "MPI not Found")
-endif()
-
-#include hdf5
-find_package(HDF5 REQUIRED COMPONENTS C HL)
-if (HDF5_FOUND)
+    # and check for HDF5
+    SET(HDF5_PREFER_PARALLEL TRUE)
+    find_package(HDF5 REQUIRED COMPONENTS C HL)
     Message(STATUS "HDF5 Found")
-else()
-    Message(STATUS "HDF5 not Found")
+
+    list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
+    # add the include paths for both libraries
+    include_directories(${MPI_INCLUDE_PATH})
+    include_directories(${HDF5_C_INCLUDE_DIRS})
+    if (HDF5_IS_PARALLEL)   # this should be required - needs a better check
+        Message(STATUS "Parallel HDF5 supported")
+    else()
+        Message(STATUS "No parallel HDF5 Support")
+    endif()
 endif()
-if (HDF5_IS_PARALLEL)
-    Message(STATUS "Parallel HDF5 supported")
-else()
-    Message(STATUS "No parallel HDF5 Support")
-endif()
-SET(HDF5_PREFER_PARALLEL TRUE)
 
 # include fftw as optional library
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(FFTW QUIET fftw3 IMPORTED_TARGET)
 if (TARGET PkgConfig::FFTW)
     message(STATUS "FFTW found")
+    list(APPEND _libraries PkgConfig::FFTW)
+    include_directories(PkgConfig::FFTW)
+
 else()
     message(STATUS "FFTW not found")
     message(STATUS "Excluding FFTW specific source code")
 endif()
-
-
-
 
 # generation of the version include file
 SET(GIT_HASH "unknown")
@@ -70,21 +79,15 @@ execute_process(
 )
 string(TIMESTAMP _config_time "%Y-%m-%d %H:%M:%S [UTC]" UTC)
 configure_file(include/version.h.in include/version.h @ONLY)
-
-
-# set compilers
-SET(CMAKE_C_COMPILER mpicc)
-SET(CMAKE_CXX_COMPILER mpicxx)
-
-# include directories
-include_directories(PkgConfig::FFTW)
-include_directories(${MPI_INCLUDE_PATH})
-include_directories(${HDF5_C_INCLUDE_DIRS})
-include_directories(include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 
+# include directories
+include_directories(include)
 
+# some status before compilation
+Message(STATUS "Used libraries: ${_libraries}")
 
+# objects for the main part - maybe needs a better name
 add_library(genesis13 STATIC
         src/Util/BesselJ.cpp
         src/Util/GaussHermite.cpp
@@ -138,15 +141,10 @@ add_library(genesis13 STATIC
         src/Main/Track.cpp
         src/Main/Wake.cpp
         )
-
-if (TARGET PkgConfig::FFTW)
-  target_compile_definitions(genesis13 PRIVATE FFTW=1)
+# add optional macro definition
+if (PkgConfig::FFTW)
+    target_compile_definitions(genesis13 PRIVATE FFTW=1)
 endif()
 
 add_executable(genesis4 src/Main/mainwrap.cpp)
-target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5)
-if (TARGET PkgConfig::FFTW)
-    target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5 PkgConfig::FFTW)
-else()
-    target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5)
-endif()
+target_link_libraries(genesis4 genesis13 ${_libraries})
