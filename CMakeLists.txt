@@ -1,12 +1,25 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.16)
 project(Genesis_1_3_Version4 CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# check for compiler wrapper
+find_program(H5PCC h5pcc)
+if (H5PCC)
+    Message(STATUS "Wrapper H5PCC found")
+    SET(CMAKE_C_COMPILER h5pcc)
+    SET(CMAKE_CXX_COMPILER h5pcc)
+else()
+    Message(STATUS "Wrapper H5PCC not found")
+    Message(STATUS "Add and link explicitly to HDF5")
+    SET(CMAKE_C_COMPILER mpicc)
+    SET(CMAKE_CXX_COMPILER mpicxx)
+endif()
 
 # include mpi
+
 find_package(MPI REQUIRED)
 if (MPI_FOUND)
     Message(STATUS "MPI Found")
@@ -15,7 +28,7 @@ else()
 endif()
 
 #include hdf5
-find_package(HDF5 REQUIRED COMPONENTS C HL)
+find_package(HDF5 REQUIRED C)
 if (HDF5_FOUND)
     Message(STATUS "HDF5 Found")
 else()
@@ -27,6 +40,7 @@ else()
     Message(STATUS "No parallel HDF5 Support")
 endif()
 SET(HDF5_PREFER_PARALLEL TRUE)
+
 
 # include fftw as optional library
 find_package(PkgConfig REQUIRED)
@@ -72,18 +86,17 @@ string(TIMESTAMP _config_time "%Y-%m-%d %H:%M:%S [UTC]" UTC)
 configure_file(include/version.h.in include/version.h @ONLY)
 
 
-# set compilers
-SET(CMAKE_C_COMPILER mpicc)
-SET(CMAKE_CXX_COMPILER mpicxx)
 
 # include directories
 include_directories(PkgConfig::FFTW)
 include_directories(${MPI_INCLUDE_PATH})
+Message(STATUS "Path for MPI include files: ${MPI_INCLUDE_PATH}")
 include_directories(${HDF5_C_INCLUDE_DIRS})
+Message(STATUS "Path for HDF5 include files: ${HDF5_C_INCLUDE_DIR}")
 include_directories(include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 
-
+# list of source files
 
 add_library(genesis13 STATIC
         src/Util/BesselJ.cpp
@@ -143,10 +156,13 @@ if (TARGET PkgConfig::FFTW)
   target_compile_definitions(genesis13 PRIVATE FFTW=1)
 endif()
 
+
 add_executable(genesis4 src/Main/mainwrap.cpp)
-target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5)
+#target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5)
 if (TARGET PkgConfig::FFTW)
-    target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5 PkgConfig::FFTW)
+    target_link_libraries(genesis4 genesis13 MPI::MPI_C PkgConfig::FFTW)
+#    target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5 PkgConfig::FFTW)
 else()
-    target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5)
+    target_link_libraries(genesis4 genesis13 MPI::MPI_C)
+#    target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5)
 endif()
