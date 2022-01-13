@@ -16,6 +16,13 @@
 #include "Beam.h"
 #include "Undulator.h"
 
+
+#ifdef FFTW
+#include <fftw3.h>
+#endif
+
+
+
 extern bool MPISingle;
 
 // supplemental info for any field to be calculated. It helps to allocate the right size and automize
@@ -36,11 +43,11 @@ struct FilterBeam{
     bool energy {true};
     bool current {false};
     bool auxiliar {true};
-    int harm {1};
+    int harm {2};
 };
 
 struct FilterField{
-    bool global {true};
+    bool global {false};
     bool spatial {true};
     bool fft {true};
     bool intensity {true};
@@ -53,6 +60,7 @@ struct FilterDiagnostics{
 
 //---------------------------------------
 // base class for diagnostics
+
 
 class DiagBeamBase{
 protected:
@@ -71,16 +79,27 @@ protected:
     std::map<std::string, OutputInfo>  tags;  // holds a map with tags and units
     std::map<std::string,bool> filter;        // general map to store the selected flags
     bool global {false};
+#ifdef FFTW
+    std::complex<double> *in;
+    std::complex<double> *out;
+    fftw_plan p;
+    bool hasPlan {false};
+#endif
+
 public:
     ~DiagFieldBase() = default;
-    DiagFieldBase() = default; // this is needed since the harmonics can be changed
+    DiagFieldBase() = default;
     virtual std::map<std::string,OutputInfo> getTags(FilterDiagnostics &filter) =0;
     virtual void getValues(Field *, std::map<std::string,std::vector<double> > &, int) =0;
+//#ifdef FFTW
+//    virtual void destroyFFTPlan()=0;
+//#endif
 };
 
 
 //------------------------------------
 // genesis official class for beam diagnostics
+
 
 class DiagBeam: public DiagBeamBase{
 private:
@@ -121,17 +140,23 @@ class Diagnostic{
     int nz = 1;
     int ns = 1;
     int iz = 0;
+    int noff = 0;
+    int ntotal=1;
+
 
 public:
     Diagnostic() = default;
     virtual ~Diagnostic() = default;
-    void init(int,int,int);
-    void calc(Beam *, std::vector<Field*> *,Undulator *);
+    void init(int,int, int, int,int,bool,bool);
+    void calc(Beam *, std::vector<Field*> *,double);
+    void writeToOutputFile(std:: string, Beam *, vector<Field*> *, Undulator *);
     std::vector<std::map<std::string,std::vector<double> > > val;
     std::vector<std::map<std::string,std::string > >units;
-    std::vector<std::map<std::string,double> > svaldouble;
-    std::vector<std::map<std::string,int> > svalint;
+    std::vector<std::map<std::string, bool> > single;
     std::vector<double> zout;
+private:
+    void addOutput(int groupID, std::string key, std::string unit, std::vector<double> &data);
+    bool time,scan;
 };
 
 

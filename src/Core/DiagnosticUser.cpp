@@ -37,7 +37,7 @@ std::map<std::string,OutputInfo> DiagBeamUser::getTags(FilterDiagnostics & filte
     if (filter["template"]){
         tags["modulation"] = {false, false, "mc^2"};
         if (global) {
-            tags["global/loss"] = {true, false, "eV/m"};  // to avoid duplicated tags with same name,
+            tags["Global/loss"] = {true, false, "eV/m"};  // to avoid duplicated tags with same name,
                                                     // global should have a preceeding 'global/' in tag
         }
     }

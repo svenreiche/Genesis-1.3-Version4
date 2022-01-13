@@ -142,7 +142,8 @@ add_library(genesis13 STATIC
         src/Main/Wake.cpp
         )
 # add optional macro definition
-if (PkgConfig::FFTW)
+if (TARGET PkgConfig::FFTW)
+    message(STATUS "Defining the macro FFTW in the source code")
     target_compile_definitions(genesis13 PRIVATE FFTW=1)
 endif()
 
