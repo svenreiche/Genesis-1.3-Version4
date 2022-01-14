@@ -35,6 +35,7 @@ class HDF5Base{
   void writeSingleNodeString(hid_t,string, string *);
   void writeSingleNodeInt(hid_t, string,vector<int> *);
 
+  bool groupExists(hid_t id, const std::string& path){return (H5Lexists( id, path.c_str(), H5P_DEFAULT ) > 0);};
 
 
   void createExpDataset(hid_t fid, char *name, hsize_t nz, hsize_t ns);

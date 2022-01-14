@@ -17,7 +17,7 @@
 #include "Time.h"
 #include "Beam.h"
 #include "Field.h"
-
+#include "Diagnostic.h"
 
 using namespace std;
 
@@ -25,7 +25,7 @@ class Track{
  public:
    Track();
    virtual ~Track();
-   bool init(int, int, map<string,string> *,Beam *, vector<Field *> *,Setup *, Lattice *, AlterLattice *, Time *);
+   bool init(int, int, map<string,string> *,Beam *, vector<Field *> *,Setup *, Lattice *, AlterLattice *, Time *, FilterDiagnostics &);
  private:
    void usage();
    bool atob(string);

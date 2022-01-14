@@ -42,6 +42,7 @@
 #include "writeFieldHDF5.h"
 #include "Collective.h"
 #include "Wake.h"
+#include "Diagnostic.h"
 
 #include <sstream>
 
@@ -115,7 +116,7 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
     Profile *profile=new Profile;
 	Series  *seq    =new Series;
     Time *timewindow=new Time;
-
+    FilterDiagnostics filter;
 
     //-----------------------------------------------------------
     // main loop for parsing
@@ -135,7 +136,7 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
           for (const auto &[key,val] :comarg){   // overwriting from the commandline input
               argument[key] = val;
           }
-          if (!setup->init(rank,&argument,lattice)){ break;}
+          if (!setup->init(rank,&argument,lattice, filter)){ break;}
           meta_latfile=setup->getLattice();
           continue;
       }
@@ -258,7 +259,7 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
 
 	  if (element.compare("&track")==0){
             Track *track=new Track;
-	    if (!track->init(rank,size,&argument,beam,&field,setup,lattice,alt,timewindow)){ break;}
+	    if (!track->init(rank,size,&argument,beam,&field,setup,lattice,alt,timewindow,filter)){ break;}
             delete track;
             continue;  
           }  

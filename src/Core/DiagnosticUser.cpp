@@ -33,11 +33,11 @@ std::map<std::string,OutputInfo> DiagBeamUser::getTags(FilterDiagnostics & filte
     //         A: energy modulation (for each slice)
     //         B: total loss by external fields e.g. wakes (global variable)
 
-    filter["template"] = true;     // <- set to true to enable output for the template parameters
+    filter["template"] = false;     // <- set to true to enable output for the template parameters
     if (filter["template"]){
         tags["modulation"] = {false, false, "mc^2"};
         if (global) {
-            tags["global/loss"] = {true, false, "eV/m"};  // to avoid duplicated tags with same name,
+            tags["Global/loss"] = {true, false, "eV/m"};  // to avoid duplicated tags with same name,
                                                     // global should have a preceeding 'global/' in tag
         }
     }

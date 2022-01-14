@@ -2,9 +2,9 @@
 
 extern bool MPISingle;
 
-#include "Diagnostic.h"
 
-int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan)
+
+int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan, FilterDiagnostics &filter)
 {
 
 
@@ -29,8 +29,8 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
     control->init(rank,size,file,beam,field,und,isTime,isScan);
 
     Diagnostic diag;
-    diag.init(und->outlength(),beam->beam.size(),field->size());
-
+    diag.init(rank, size, und->outlength(), beam->beam.size(),field->size(),isTime,isScan,filter);
+    diag.calc(beam, field, und->getz());  // initial calculation
 
     //------------------------------------------
     // main loop
@@ -87,7 +87,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 	  }
 
       if (und->outstep()) {
-          diag.calc(beam, field, und);
+          diag.calc(beam, field, und->getz());
       }
     }
      
@@ -113,7 +113,8 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 	if (rank==0){
 	  cout << "Writing output file..." << endl;
 	}
-	
+
+	diag.writeToOutputFile(file, beam,field,und);
     control->output(beam,field,und,diag);
 
 	delete control;
