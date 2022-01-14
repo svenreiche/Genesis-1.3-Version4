@@ -1,32 +1,36 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.10)
 project(Genesis_1_3_Version4 CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+#SET(CMAKE_C_COMPILER h5pcc)
+#SET(CMAKE_CXX_COMPILER h5pcc)
+
+
 
 # include mpi
-find_package(MPI REQUIRED)
-if (MPI_FOUND)
-    Message(STATUS "MPI Found")
-else()
-    Message(STATUS "MPI not Found")
-endif()
+#find_package(MPI REQUIRED)
+#if (MPI_FOUND)
+#    Message(STATUS "MPI Found")
+#else()
+#    Message(STATUS "MPI not Found")
+#endif()
 
 #include hdf5
-find_package(HDF5 REQUIRED COMPONENTS C HL)
-if (HDF5_FOUND)
-    Message(STATUS "HDF5 Found")
-else()
-    Message(STATUS "HDF5 not Found")
-endif()
-if (HDF5_IS_PARALLEL)
-    Message(STATUS "Parallel HDF5 supported")
-else()
-    Message(STATUS "No parallel HDF5 Support")
-endif()
-SET(HDF5_PREFER_PARALLEL TRUE)
+#find_package(HDF5 REQUIRED COMPONENTS C HL)
+#if (HDF5_FOUND)
+#    Message(STATUS "HDF5 Found")
+#else()
+#    Message(STATUS "HDF5 not Found")
+#endif()
+#if (HDF5_IS_PARALLEL)
+#    Message(STATUS "Parallel HDF5 supported")
+#else()
+#    Message(STATUS "No parallel HDF5 Support")
+#endif()
+#SET(HDF5_PREFER_PARALLEL TRUE)
 
 # include fftw as optional library
 find_package(PkgConfig REQUIRED)
@@ -39,49 +43,35 @@ else()
 endif()
 
 
-
-
-# generation of the version include file
-SET(GIT_HASH "unknown")
-find_package(Git QUIET)
-if (GIT_FOUND)
-    execute_process(
-            COMMAND ${GIT_EXECUTABLE} log -1 --pretty=format:%H
-            OUTPUT_VARIABLE GIT_HASH
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_QUIET
-            WORKING_DIRECTORY
-               ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-endif()
-message(STATUS "Git hash is ${GIT_HASH}")
-set(_GENESIS_VERSION_MAJOR "4")
-set(_GENESIS_VERSION_MINOR "6")
-set(_GENESIS_VERSION_REV "1")
-set(_GENESIS_VERSION_BETA "true")
-execute_process(
-        COMMAND
-            whoami
-        TIMEOUT
-            1
-        OUTPUT_VARIABLE
-            _user_name
-        OUTPUT_STRIP_TRAILING_WHITESPACE
+add_custom_command(
+    OUTPUT
+    ${CMAKE_CURRENT_BINARY_DIR}/include/version.h
+    ALL
+    COMMAND
+    ${CMAKE_COMMAND} -D TARGET_DIR=${CMAKE_CURRENT_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/git-hash.cmake
+    WORKING_DIRECTORY
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
-string(TIMESTAMP _config_time "%Y-%m-%d %H:%M:%S [UTC]" UTC)
-configure_file(include/version.h.in include/version.h @ONLY)
+
+add_custom_target(
+    get_git_hash
+    ALL
+    DEPENDS
+    ${CMAKE_CURRENT_BINARY_DIR}/include/version.h
+   
+)
+
 
 
 # set compilers
-SET(CMAKE_C_COMPILER mpicc)
-SET(CMAKE_CXX_COMPILER mpicxx)
+#SET(CMAKE_C_COMPILER mpicc)
+#SET(CMAKE_CXX_COMPILER mpicxx)
 
 # include directories
 include_directories(PkgConfig::FFTW)
 include_directories(${MPI_INCLUDE_PATH})
 include_directories(${HDF5_C_INCLUDE_DIRS})
 include_directories(include)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 
 
 
@@ -139,14 +129,21 @@ add_library(genesis13 STATIC
         src/Main/Wake.cpp
         )
 
+target_include_directories(genesis13
+	PRIVATE
+	${CMAKE_CURRENT_BINARY_DIR}/include
+)
+
 if (TARGET PkgConfig::FFTW)
   target_compile_definitions(genesis13 PRIVATE FFTW=1)
 endif()
 
+
+add_dependencies(genesis13 get_git_hash)
+
 add_executable(genesis4 src/Main/mainwrap.cpp)
-target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5)
 if (TARGET PkgConfig::FFTW)
-    target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5 PkgConfig::FFTW)
+    target_link_libraries(genesis4 genesis13 PkgConfig::FFTW)
 else()
-    target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5)
+    target_link_libraries(genesis4 genesis13)     
 endif()
