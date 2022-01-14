@@ -38,12 +38,12 @@ struct OutputInfo{
 // these values are initialized and changed in the namelist setup, track and the upcoming output
 
 struct FilterBeam{
-    bool global {true};
+    bool global {false};
     bool spatial {true};
     bool energy {true};
     bool current {false};
     bool auxiliar {true};
-    int harm {2};
+    int harm {1};
 };
 
 struct FilterField{
@@ -147,7 +147,7 @@ class Diagnostic{
 public:
     Diagnostic() = default;
     virtual ~Diagnostic() = default;
-    void init(int,int, int, int,int,bool,bool);
+    void init(int,int, int, int,int,bool,bool, FilterDiagnostics &);
     void calc(Beam *, std::vector<Field*> *,double);
     void writeToOutputFile(std:: string, Beam *, vector<Field*> *, Undulator *);
     std::vector<std::map<std::string,std::vector<double> > > val;

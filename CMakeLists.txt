@@ -5,16 +5,28 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
+
+
 # container for needed librarires
 list(APPEND _libraries)
+message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
+message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
+
 
 # check for existing compiler
 find_program(H5PCC h5pcc)
-if (H%PCC)
+if (H5PCC)
     # set compilers
-    Messaage(STATUS "hdf5 + mpi wrapper found - No additional libraries needed")
-    SET(CMAKE_C_COMPILER h5pcc)
-    SET(CMAKE_CXX_COMPILER h5pcc)
+    Message(STATUS "hdf5 + mpi wrapper found - No additional libraries needed")
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(MPICXX QUIET mpi_cxx IMPORTED_TARGET)
+    if (TARGET PkgConfig::MPICXX)
+        message(STATUS "MPI_CXX found")
+ #   list(APPEND _libraries MPI_CXX)
+#    SET(CMAKE_C_COMPILER h5pcc)
+#    SET(CMAKE_CXX_COMPILER h5pcc)
+
 else()
     SET(CMAKE_C_COMPILER mpicc)
     SET(CMAKE_CXX_COMPILER mpicxx)
@@ -84,7 +96,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 # include directories
 include_directories(include)
 
-# some status before compilation
+# some status print out before compilation
+MESSAGE( STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS} )
+MESSAGE( STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS} )
 Message(STATUS "Used libraries: ${_libraries}")
 
 # objects for the main part - maybe needs a better name

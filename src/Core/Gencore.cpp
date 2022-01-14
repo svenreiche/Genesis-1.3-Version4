@@ -2,9 +2,9 @@
 
 extern bool MPISingle;
 
-#include "Diagnostic.h"
 
-int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan)
+
+int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan, FilterDiagnostics &filter)
 {
 
 
@@ -29,7 +29,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
     control->init(rank,size,file,beam,field,und,isTime,isScan);
 
     Diagnostic diag;
-    diag.init(rank, size, und->outlength(), beam->beam.size(),field->size(),isTime,isScan);
+    diag.init(rank, size, und->outlength(), beam->beam.size(),field->size(),isTime,isScan,filter);
     diag.calc(beam, field, und->getz());  // initial calculation
 
     //------------------------------------------

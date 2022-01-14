@@ -14,9 +14,9 @@
 // diagnostics classes are only concern with the actual calculation.
 
 // routine to register the output parameters and to allocate memory
-void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool isTime, bool isScan){
+void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool isTime, bool isScan, FilterDiagnostics &filter){
 
-    FilterDiagnostics filter;
+ //   FilterDiagnostics filter;
     nz = nz_in;
     ns = ns_in;
     time = isTime;
@@ -124,14 +124,15 @@ void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> 
     this->addOutput(1,"s","m",global);
     double e0=1023.842e-9/beam->reflength;
     double df=e0*beam->reflength/beam->slicelength/static_cast<double>(ntotal);
-
     if (ntotal == 1) {
         df=0;
     }
+    e0 -=0.5*df*ntotal;
     for (int i=0; i<ntotal; i++){
         global[i]=e0+static_cast<double>(i)*df;
     }
     this->addOutput(1,"frequency","ev",global);
+
 
     out->open(file,noff,ns);
     out->writeMeta(und);
@@ -277,12 +278,14 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
            py2 += par.py*par.py;
            xpx += par.x*par.px;
            ypy += par.y*par.py;
-           complex<double> phasor = complex<double> (cos(par.theta),sin(par.theta));
-           complex<double> phasor_acc = phasor;
-           b[0] += phasor;
-           for(int iharm=1; iharm<nharm;iharm++){
-               phasor_acc *= phasor;
-               b[iharm]+=phasor_acc;
+//           complex<double> phasor = complex<double> (cos(par.theta),sin(par.theta));
+//           complex<double> phasor_acc = phasor;
+//           b[0] += phasor;
+           for(int iharm=0; iharm<nharm;iharm++){
+ //              phasor_acc *= phasor;
+//               b[iharm]+=phasor_acc;
+                b[iharm]+=complex<double> (cos((iharm+1)*par.theta),sin((iharm+1)*par.theta));
+//                b[iharm]+=phasor*phasor;
            }
         }
         double norm=1.;
@@ -322,8 +325,9 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
             if (val.find("pyposition") != val.end()){ val["pyposition"][idx]=py1;}
         }
 
-        if (val.find("bunching") != val.end()) {val["bunching"][idx] =abs(b[0]);}
+        if (val.find("bunching") != val.end()) {val["bunching"][idx] =fabs(b[0]);}
         if (val.find("bunchingphase") != val.end()) {val["bunchingphase"][idx] =atan2(b[0].imag(),b[0].real());}
+
         char buff[100];
         for (int iharm = 1; iharm < nharm; iharm++) {
             snprintf(buff, sizeof(buff), "bunching%d", iharm + 1);
@@ -445,6 +449,10 @@ std::map<std::string,OutputInfo> DiagField::getTags(FilterDiagnostics & filter_i
         tags["phase-nearfield"] = {false, false, "rad"};
         tags["intensity-farfield"] = {false, false, " "};
         tags["phase-farfield"] = {false, false, "rad"};
+        if (global){
+            tags["Global/intensity-nearfield"] = {true, false, "W/m^2"};
+            tags["Global/intensity-farfield"] = {true, false, " "};
+        }
     }
 #ifdef FFTW
     if (filter_in.field.fft) {
@@ -455,9 +463,9 @@ std::map<std::string,OutputInfo> DiagField::getTags(FilterDiagnostics & filter_i
         tags["ypointing"] = {false, false, "rad"};
         if (global) {
             tags["Global/xdivergence"] = {true, false, "rad"};
-            tags["Global/xdivergence"] = {true, false, "rad"};
+            tags["Global/ydivergence"] = {true, false, "rad"};
             tags["Global/xpointing"] = {true, false, "rad"};
-            tags["Global/xpointing"] = {true, false, "rad"};
+            tags["Global/ypointing"] = {true, false, "rad"};
         }
     }
 #endif
@@ -487,9 +495,10 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
 
     double ks=4.*asin(1)/field->xlambda;
     double scl=field->dgrid*eev/ks;
-    double scltheta=field->xlambda/(ngrid*ngrid);
-//    double shift=-0.5*static_cast<double> (ngrid-1);
-    double shift=-0.5*static_cast<double> (ngrid);
+    double scltheta=field->xlambda/ngrid/field->dgrid;
+ //   std::cout  << "new: " << scltheta << " " << field->xlambda << " " << ngrid << std::endl;
+    double shift=-0.5*static_cast<double> (ngrid-1);
+//    double shift=-0.5*static_cast<double> (ngrid);
 
     // global variables
     double g_pow=0;
@@ -595,6 +604,7 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
             fy1/=fpower;
             fy2/=fpower;
         }
+ //       std::cout << "New: fpower: " << fpower << " fx1: " << fx1 <<  " scltheta: " << scltheta << std::endl;
         fx1*=scltheta;
         fy1*=scltheta;
         fx2=sqrt(fabs(fx2-fx1*fx1))*scltheta;
@@ -609,6 +619,11 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
         double farfield=ff.real()*ff.real()+ff.imag()*ff.imag();
         double farfieldphi =atan2(ff.imag(),ff.real());
 
+        if (global){
+            g_ff+=farfield;
+            g_inten+=inten;
+        }
+
         // scale to physical dimensions
         power*=scl*scl/vacimp; // scale to W
         x1*=field->dgrid;
@@ -617,10 +632,7 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
         y2*=field->dgrid;
         inten*=eev*eev/ks/ks/vacimp;  // scale to W/m^2
 
-        if (global){
-            g_ff+=farfield;
-            g_inten+=inten;
-        }
+
 
         // save the data into the provided arrays
         int idx = iz*ns+is0;         // index for saving the data
@@ -669,6 +681,11 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
             g_y1 = temp;
             MPI_Allreduce(&g_y2, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
             g_y2 = temp;
+            MPI_Allreduce(&g_ff, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+            g_ff = temp;
+            MPI_Allreduce(&g_inten, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+            g_inten = temp;
+#
 #ifdef FFTW
             MPI_Allreduce(&f_pow, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
             f_pow = temp;
@@ -688,6 +705,10 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
         g_x2 *= norm;
         g_y1 *= norm;
         g_y2 *= norm;
+        g_x2=sqrt(fabs(g_x2-g_x1*g_x1))*field->dgrid;
+        g_y2=sqrt(fabs(g_y2-g_y1*g_y1))*field->dgrid;
+        g_x1*=field->dgrid;
+        g_y1*=field->dgrid;
 
 #ifdef FFTW
         norm = 1;
@@ -696,23 +717,34 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
         f_x2 *= norm;
         f_y1 *= norm;
         f_y2 *= norm;
+        f_x2=sqrt(fabs(f_x2-f_x1*f_x1))*scltheta;
+        f_y2=sqrt(fabs(f_y2-f_y1*f_y1))*scltheta;
+        f_x1*=scltheta;
+        f_y1*=scltheta;
 #endif
+        g_pow *=scl*scl/vacimp*field->slicelength/3e8;
+        norm = 1./static_cast<double>(size*field->field.size());
+        g_inten *= norm*eev*eev/ks/ks/vacimp;
+        g_ff*=norm;
+        if (val.find("Global/energy") != val.end()) { val["Global/energy"][iz] = g_pow; }
         if (filter["spatial"]) {
             if (val.find("Global/xposition") != val.end()) { val["Global/xposition"][iz] = g_x1; }
-            if (val.find("Global/xsize") != val.end()) { val["Global/xsize"][iz] = sqrt(fabs(g_x2 - g_x1 * g_x1)); }
+            if (val.find("Global/xsize") != val.end()) { val["Global/xsize"][iz] = g_x2; }
             if (val.find("Global/yposition") != val.end()) { val["Global/yposition"][iz] = g_y1; }
-            if (val.find("Global/xsize") != val.end()) { val["Global/ysize"][iz] = sqrt(fabs(g_y2 - g_y1 * g_y1)); }
+            if (val.find("Global/xsize") != val.end()) { val["Global/ysize"][iz] = g_y2; }
+        }
+
+        if (filter["intensity"]) {
+            if (val.find("Global/intensity-nearfield") !=
+                val.end()) { val["Global/intensity-nearfield"][iz] = g_inten; }
+            if (val.find("Global/intensity-farfield") != val.end()) { val["Global/intensity-farfield"][iz] = g_ff; }
         }
 #ifdef FFTW
         if (filter["fft"]) {
             if (val.find("Global/xpointing") != val.end()) { val["Global/xpointing"][iz] = f_x1; }
-            if (val.find("Global/xdivergence") != val.end()) {
-                val["Global/xdivergence"][iz] = sqrt(fabs(f_x2 - f_x1 * f_x1));
-            }
+            if (val.find("Global/xdivergence") != val.end()) { val["Global/xdivergence"][iz] = f_x2;}
             if (val.find("Global/ypointing") != val.end()) { val["Global/ypointing"][iz] = f_y1; }
-            if (val.find("Global/ydivergence") != val.end()) {
-                val["Global/ydivergence"][iz] = sqrt(fabs(f_y2 - f_y1 * f_y1));
-            }
+            if (val.find("Global/ydivergence") != val.end()) {val["Global/ydivergence"][iz] = f_y2;}
         }
 #endif
     }
