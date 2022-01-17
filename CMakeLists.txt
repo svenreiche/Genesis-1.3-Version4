@@ -10,11 +10,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # container for needed librarires
 list(APPEND _libraries)
 
-if (CMAKE_CXX_COMPILER STREQUAL "h5pcc")
+if (CMAKE_CXX_COMPILER MATCHES  ".*/h5pcc")
     Message(STATUS "h5pcc compiler wrapper found - No additional libraries needed")
-  else()
-#    SET(CMAKE_C_COMPILER mpicc)
-#    SET(CMAKE_CXX_COMPILER mpicxx)
+ else()
+   message(STATUS "h5pcc not found - looking for mpicxx and mpicc")
+    SET(CMAKE_C_COMPILER mpicc)
+    SET(CMAKE_CXX_COMPILER mpicxx)
     # check for MPI
     find_package(MPI REQUIRED)
     Message(STATUS "MPI Found")
@@ -35,9 +36,12 @@ if (CMAKE_CXX_COMPILER STREQUAL "h5pcc")
 endif()
 
 
-# include fftw as optional library
+
+
+#
+
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(FFTW QUIET fftw3 IMPORTED_TARGET)
+pkg_search_module(FFTW QUIET fftw3 IMPORTED_TARGET)
 if (TARGET PkgConfig::FFTW)
     message(STATUS "FFTW found")
     list(APPEND _libraries PkgConfig::FFTW)
