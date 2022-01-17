@@ -10,38 +10,29 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # container for needed librarires
 list(APPEND _libraries)
 
+if (CMAKE_CXX_COMPILER STREQUAL "h5pcc")
+    Message(STATUS "h5pcc compiler wrapper found - No additional libraries needed")
+else()
+    SET(CMAKE_C_COMPILER mpicc)
+    SET(CMAKE_CXX_COMPILER mpicxx)
+    # check for MPI
+    find_package(MPI REQUIRED)
+    Message(STATUS "MPI Found")
+    # and check for HDF5
+    SET(HDF5_PREFER_PARALLEL TRUE)
+    find_package(HDF5 REQUIRED COMPONENTS C HL)
+    Message(STATUS "HDF5 Found")
 
-# check for existing compiler
-#find_program(H5PCC h5pcc)
-#if (H5PCCccc)
-    # set compilers
-#    Message(STATUS "hdf5 + mpi wrapper found - No additional libraries needed")
-
- #   list(APPEND _libraries MPI_CXX)
-#    SET(CMAKE_C_COMPILER h5pcc)
-#    SET(CMAKE_CXX_COMPILER h5pcc)
-
-#else()
-#    #SET(CMAKE_C_COMPILER mpicc)
-#    #SET(CMAKE_CXX_COMPILER mpicxx)
-#    # check for MPI
-#    find_package(MPI REQUIRED)
-#    Message(STATUS "MPI Found")
-#    # and check for HDF5
-#    SET(HDF5_PREFER_PARALLEL TRUE)
-#    find_package(HDF5 REQUIRED COMPONENTS C HL)
-#    Message(STATUS "HDF5 Found")
-
-#    list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
-#    # add the include paths for both libraries
-#    include_directories(${MPI_INCLUDE_PATH})
-#    include_directories(${HDF5_C_INCLUDE_DIRS})
-#    if (HDF5_IS_PARALLEL)   # this should be required - needs a better check
-#        Message(STATUS "Parallel HDF5 supported")
-#    else()
-#        Message(STATUS "No parallel HDF5 Support")
-#    endif()
-#endif()
+    list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
+    # add the include paths for both libraries
+    include_directories(${MPI_INCLUDE_PATH})
+    include_directories(${HDF5_C_INCLUDE_DIRS})
+    if (HDF5_IS_PARALLEL)   # this should be required - needs a better check
+        Message(STATUS "Parallel HDF5 supported")
+    else()
+        Message(STATUS "No parallel HDF5 Support")
+    endif()
+endif()
 
 # include fftw as optional library
 find_package(PkgConfig REQUIRED)
@@ -78,13 +69,14 @@ add_custom_target(
 
 # include directories
 include_directories(include)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 
 
 # some status print out before compilation
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
-MESSAGE( STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS} )
-MESSAGE( STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS} )
+MESSAGE(STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS} )
+MESSAGE(STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS} )
 Message(STATUS "Used libraries: ${_libraries}")
 
 # objects for the main part - maybe needs a better name
@@ -155,7 +147,6 @@ if (TARGET PkgConfig::FFTW)
     message(STATUS "Defining the macro FFTW in the source code")
     target_compile_definitions(genesis13 PRIVATE FFTW=1)
 endif()
-
 
 add_dependencies(genesis13 get_git_hash)
 
