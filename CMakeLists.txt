@@ -4,7 +4,7 @@ project(Genesis_1_3_Version4 CXX C)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 
 # container for needed librarires
@@ -13,9 +13,9 @@ list(APPEND _libraries)
 if (CMAKE_CXX_COMPILER MATCHES  ".*/h5pcc")
     Message(STATUS "h5pcc compiler wrapper found - No additional libraries needed")
  else()
-   message(STATUS "h5pcc not found - looking for mpicxx and mpicc")
-    SET(CMAKE_C_COMPILER mpicc)
-    SET(CMAKE_CXX_COMPILER mpicxx)
+   message(STATUS "h5pcc not found - looking for basic compiler")
+   message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
+   message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
     # check for MPI
     find_package(MPI REQUIRED)
     Message(STATUS "MPI Found")
@@ -24,10 +24,11 @@ if (CMAKE_CXX_COMPILER MATCHES  ".*/h5pcc")
     find_package(HDF5 REQUIRED COMPONENTS C HL)
     Message(STATUS "HDF5 Found")
 
-    list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
+#    list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
+    list(APPEND _libraries MPI::MPI_C)
     # add the include paths for both libraries
     include_directories(${MPI_INCLUDE_PATH})
-    include_directories(${HDF5_C_INCLUDE_DIRS})
+#    include_directories(${HDF5_C_INCLUDE_DIRS})
     if (HDF5_IS_PARALLEL)   # this should be required - needs a better check
         Message(STATUS "Parallel HDF5 supported")
     else()
