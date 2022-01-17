@@ -12,9 +12,9 @@ list(APPEND _libraries)
 
 if (CMAKE_CXX_COMPILER STREQUAL "h5pcc")
     Message(STATUS "h5pcc compiler wrapper found - No additional libraries needed")
-else()
-    SET(CMAKE_C_COMPILER mpicc)
-    SET(CMAKE_CXX_COMPILER mpicxx)
+  else()
+#    SET(CMAKE_C_COMPILER mpicc)
+#    SET(CMAKE_CXX_COMPILER mpicxx)
     # check for MPI
     find_package(MPI REQUIRED)
     Message(STATUS "MPI Found")
@@ -77,7 +77,6 @@ message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
 MESSAGE(STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS} )
 MESSAGE(STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS} )
 Message(STATUS "Used libraries: ${_libraries}")
->>>>>>> 97fc77d6a562d172d1d30be27b8c86d604039c0a
 
 # objects for the main part - maybe needs a better name
 add_library(genesis13 STATIC
