@@ -83,18 +83,6 @@ void Control::output(Beam *beam, vector<Field*> *field, Undulator *und, Diagnost
   }
   out->writeBeamBuffer(beam);
 
-
-  out->writeGroup("Beamtest",diag.val[0], diag.units[0]);
-  for (int i=1; i<diag.val.size();i++){
-      int h=field->at(i-1)->harm;
-      if (h==1){
-          out->writeGroup("Fieldtest",diag.val[i], diag.units[i]);
-      } else {
-          char buff[30];
-          snprintf(buff, sizeof(buff), "Field%dtest", h);
-          out->writeGroup(buff,diag.val[i], diag.units[i]);
-      }
-  }
   out->close();
  
   delete out;

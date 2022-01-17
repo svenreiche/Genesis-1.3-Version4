@@ -1,45 +1,38 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.10)
 project(Genesis_1_3_Version4 CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# check for compiler wrapper
-find_program(H5PCC h5pcc)
-if (H5PCC)
-    Message(STATUS "Wrapper H5PCC found")
-    SET(CMAKE_C_COMPILER h5pcc)
-    SET(CMAKE_CXX_COMPILER h5pcc)
+
+
+# container for needed librarires
+list(APPEND _libraries)
+
+if (CMAKE_CXX_COMPILER STREQUAL "h5pcc")
+    Message(STATUS "h5pcc compiler wrapper found - No additional libraries needed")
 else()
-    Message(STATUS "Wrapper H5PCC not found")
-    Message(STATUS "Add and link explicitly to HDF5")
     SET(CMAKE_C_COMPILER mpicc)
     SET(CMAKE_CXX_COMPILER mpicxx)
-endif()
-
-# include mpi
-
-find_package(MPI REQUIRED)
-if (MPI_FOUND)
+    # check for MPI
+    find_package(MPI REQUIRED)
     Message(STATUS "MPI Found")
-else()
-    Message(STATUS "MPI not Found")
-endif()
-
-#include hdf5
-find_package(HDF5 REQUIRED C)
-if (HDF5_FOUND)
+    # and check for HDF5
+    SET(HDF5_PREFER_PARALLEL TRUE)
+    find_package(HDF5 REQUIRED COMPONENTS C HL)
     Message(STATUS "HDF5 Found")
-else()
-    Message(STATUS "HDF5 not Found")
+
+    list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
+    # add the include paths for both libraries
+    include_directories(${MPI_INCLUDE_PATH})
+    include_directories(${HDF5_C_INCLUDE_DIRS})
+    if (HDF5_IS_PARALLEL)   # this should be required - needs a better check
+        Message(STATUS "Parallel HDF5 supported")
+    else()
+        Message(STATUS "No parallel HDF5 Support")
+    endif()
 endif()
-if (HDF5_IS_PARALLEL)
-    Message(STATUS "Parallel HDF5 supported")
-else()
-    Message(STATUS "No parallel HDF5 Support")
-endif()
-SET(HDF5_PREFER_PARALLEL TRUE)
 
 
 # include fftw as optional library
@@ -47,57 +40,46 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(FFTW QUIET fftw3 IMPORTED_TARGET)
 if (TARGET PkgConfig::FFTW)
     message(STATUS "FFTW found")
+    list(APPEND _libraries PkgConfig::FFTW)
+    include_directories(PkgConfig::FFTW)
 else()
     message(STATUS "FFTW not found")
     message(STATUS "Excluding FFTW specific source code")
 endif()
 
 
-
-
-# generation of the version include file
-SET(GIT_HASH "unknown")
-find_package(Git QUIET)
-if (GIT_FOUND)
-    execute_process(
-            COMMAND ${GIT_EXECUTABLE} log -1 --pretty=format:%H
-            OUTPUT_VARIABLE GIT_HASH
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_QUIET
-            WORKING_DIRECTORY
-               ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-endif()
-message(STATUS "Git hash is ${GIT_HASH}")
-set(_GENESIS_VERSION_MAJOR "4")
-set(_GENESIS_VERSION_MINOR "6")
-set(_GENESIS_VERSION_REV "1")
-set(_GENESIS_VERSION_BETA "true")
-execute_process(
-        COMMAND
-            whoami
-        TIMEOUT
-            1
-        OUTPUT_VARIABLE
-            _user_name
-        OUTPUT_STRIP_TRAILING_WHITESPACE
+add_custom_command(
+    OUTPUT
+    ${CMAKE_CURRENT_BINARY_DIR}/include/version.h
+    ALL
+    COMMAND
+    ${CMAKE_COMMAND} -D TARGET_DIR=${CMAKE_CURRENT_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/git-hash.cmake
+    WORKING_DIRECTORY
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
-string(TIMESTAMP _config_time "%Y-%m-%d %H:%M:%S [UTC]" UTC)
-configure_file(include/version.h.in include/version.h @ONLY)
+
+add_custom_target(
+    get_git_hash
+    ALL
+    DEPENDS
+    ${CMAKE_CURRENT_BINARY_DIR}/include/version.h
+   
+)
 
 
-
-# include directories
-include_directories(PkgConfig::FFTW)
-include_directories(${MPI_INCLUDE_PATH})
-Message(STATUS "Path for MPI include files: ${MPI_INCLUDE_PATH}")
-include_directories(${HDF5_C_INCLUDE_DIRS})
-Message(STATUS "Path for HDF5 include files: ${HDF5_C_INCLUDE_DIR}")
 include_directories(include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 
-# list of source files
 
+# some status print out before compilation
+message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
+message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
+MESSAGE(STATUS "CMAKE_C_FLAGS: " ${CMAKE_C_FLAGS} )
+MESSAGE(STATUS "CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS} )
+Message(STATUS "Used libraries: ${_libraries}")
+>>>>>>> 97fc77d6a562d172d1d30be27b8c86d604039c0a
+
+# objects for the main part - maybe needs a better name
 add_library(genesis13 STATIC
         src/Util/BesselJ.cpp
         src/Util/GaussHermite.cpp
@@ -152,17 +134,25 @@ add_library(genesis13 STATIC
         src/Main/Wake.cpp
         )
 
+
+target_include_directories(genesis13
+	PRIVATE
+	${CMAKE_CURRENT_BINARY_DIR}/include
+)
+
+
+# add optional macro definition
+
 if (TARGET PkgConfig::FFTW)
-  target_compile_definitions(genesis13 PRIVATE FFTW=1)
+    message(STATUS "Defining the macro FFTW in the source code")
+    target_compile_definitions(genesis13 PRIVATE FFTW=1)
 endif()
 
+
+add_dependencies(genesis13 get_git_hash)
 
 add_executable(genesis4 src/Main/mainwrap.cpp)
-#target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5)
-if (TARGET PkgConfig::FFTW)
-    target_link_libraries(genesis4 genesis13 MPI::MPI_C PkgConfig::FFTW)
-#    target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5 PkgConfig::FFTW)
-else()
-    target_link_libraries(genesis4 genesis13 MPI::MPI_C)
-#    target_link_libraries(genesis4 genesis13 MPI::MPI_C HDF5::HDF5)
-endif()
+
+target_link_libraries(genesis4 genesis13 ${_libraries})
+
+
