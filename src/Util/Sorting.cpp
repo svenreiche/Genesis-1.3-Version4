@@ -99,9 +99,19 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
 	  p.y    =recdat->at(a).at(b).y;
 	  p.px   =recdat->at(a).at(b).px;
 	  p.py   =recdat->at(a).at(b).py;
-	  recdat->at(a+atar).push_back(p);  // pushing particle in correct slice
 
-          count[a+atar]+=1;
+	  // pushing particle in correct slice
+	  int id_dest_slice=a+atar;
+#ifdef G4_DBGDIAG
+	  if((id_dest_slice<0) || (id_dest_slice>=recdat->size())) {
+	    cout << "DBGDIAG(sorting): error detected for particle: mpirank="<<rank << ", local_slice="<<a << ", particle="<<b << ", theta="<<theta << endl;
+	    // FIXME: need to think if we should kill the process already here (the following array operation also kills it because of invalid access)
+	    // abort();
+	  }
+#endif
+	  recdat->at(id_dest_slice).push_back(p);
+
+          count[id_dest_slice]+=1;
           count2[a]-=1;
 
 	  // eliminating the current particle
