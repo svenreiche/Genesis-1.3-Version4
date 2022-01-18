@@ -43,8 +43,7 @@ int main (int argc, char *argv[]) {
         }
 	} else {
 	  for (int i = 1; i < argc; i++){
-
-          if (strstr(argv[i],"-h") || strstr(argv[argc-1],"-h")) {
+          if ((strcmp(argv[i],"-h") ==0) || (strcmp(argv[argc-1],"-h")==0)) {
                 ok = false;
                 if (rank == 0) {
                     cout << endl << "-------------------------------------------------------------------------------"<< endl;
@@ -61,22 +60,22 @@ int main (int argc, char *argv[]) {
                 break;
           }
           // checking for the individual commandline argumen
-          if (strstr(argv[i],"-o")) {     // output file
+          if (strcmp(argv[i],"-o")==0) {     // output file
               arguments["rootname"] = argv[i + 1];
               i++;
               continue;
           }
-          if (strstr(argv[i],"-l")) {     // output file
+          if (strcmp(argv[i],"-l")==0) {     // output file
               arguments["lattice"] = argv[i + 1];
               i++;
               continue;
           }
-          if (strstr(argv[i],"-b")) {     // output file
+          if (strcmp(argv[i],"-b")==0) {     // output file
               arguments["beamline"] = argv[i + 1];
               i++;
               continue;
           }
-          if (strstr(argv[i],"-s")) {     // output file
+          if (strcmp(argv[i],"-s")==0) {     // output file
               arguments["seed"] = argv[i + 1];
               i++;
               continue;

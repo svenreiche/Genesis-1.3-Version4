@@ -24,11 +24,11 @@ if (CMAKE_CXX_COMPILER MATCHES  ".*/h5pcc")
     find_package(HDF5 REQUIRED COMPONENTS C HL)
     Message(STATUS "HDF5 Found")
 
-#    list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
-    list(APPEND _libraries MPI::MPI_C)
+    list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
+  #  list(APPEND _libraries MPI::MPI_C)
     # add the include paths for both libraries
     include_directories(${MPI_INCLUDE_PATH})
-#    include_directories(${HDF5_C_INCLUDE_DIRS})
+    include_directories(${HDF5_C_INCLUDE_DIRS})
     if (HDF5_IS_PARALLEL)   # this should be required - needs a better check
         Message(STATUS "Parallel HDF5 supported")
     else()
@@ -157,6 +157,6 @@ add_dependencies(genesis13 get_git_hash)
 
 add_executable(genesis4 src/Main/mainwrap.cpp)
 
-target_link_libraries(genesis4 genesis13 ${_libraries})
+target_link_libraries(genesis4 genesis13 ${_libraries} mpi_cxx)
 
 
