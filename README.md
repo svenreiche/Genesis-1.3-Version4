@@ -14,7 +14,7 @@ Manual:
 Current Development:
 [here](DEVELOPMENT.md)
 
-# Installation
+# Compilation
 
 Genesis supports now the automatic configuration with CMAKE. Following commands will build Genesis from source on Linux platforms
 ```
@@ -23,7 +23,7 @@ chdir build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
-If a differnet compiler is needed the additional definition -DCMAKE_CXX_COMPILER=#### in the cmake command overwrites the default compiler.
+If a differnet compiler is needed the additional definition -DCMAKE_CXX_COMPILER=#### in the cmake command overwrites the default compiler. If debugging is needed the CMAKE_BUILD_TARGET should be Debug.
 
 The executable is found in the build directory. Note that for a successful build the libraries openmpi and parallel HDF5 are needed. The FFTW3 is recommended since it might become mandatory in upcoming releases.
 
