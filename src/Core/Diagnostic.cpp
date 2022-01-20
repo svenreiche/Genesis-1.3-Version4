@@ -605,10 +605,10 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
             fy2/=fpower;
         }
  //       std::cout << "New: fpower: " << fpower << " fx1: " << fx1 <<  " scltheta: " << scltheta << std::endl;
+	fx2=sqrt(fabs(fx2-fx1*fx1))*scltheta;
+	fy2=sqrt(fabs(fy2-fy1*fy1))*scltheta;
         fx1*=scltheta;
         fy1*=scltheta;
-        fx2=sqrt(fabs(fx2-fx1*fx1))*scltheta;
-        fy2=sqrt(fabs(fy2-fy1*fy1))*scltheta;
 #endif
 
 
@@ -635,7 +635,7 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
 
 
         // save the data into the provided arrays
-        int idx = iz*ns+is0;         // index for saving the data
+        int idx = iz*ns+is;         // index for saving the data
         if (val.find("power") != val.end()) { val["power"][idx] = power; }
         if (filter["spatial"]){
             if (val.find("xposition") != val.end()){val["xposition"][idx]=x1;}
