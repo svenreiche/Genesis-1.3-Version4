@@ -118,19 +118,16 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
     z +=beam[i].x;
     zz+=beam[i].x*beam[i].x;
     p +=beam[i].px;
-    pp+=beam[i].px*beam[i].px;
     zp+=beam[i].x*beam[i].px;    
   }
   z*=norm;
   p*=norm;
   zz=sqrt(fabs(zz*norm-z*z));
-  pp=sqrt(fabs(pp*norm-p*p));
   if (zz>0) {zz=1./zz;}
-  if (pp>0) {pp=1./p;}
   zp=(zp*norm-z*p)*zz*zz;
   
   for (int i=0; i<mpart;i++){
-    beam[i].px=(beam[i].px-p)*pp;
+    beam[i].px=beam[i].px-p;
     beam[i].px-=zp*beam[i].x;
     beam[i].x=(beam[i].x-z)*zz;
   }
@@ -146,25 +143,69 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
     z +=beam[i].y;
     zz+=beam[i].y*beam[i].y;
     p +=beam[i].py;
-    pp+=beam[i].py*beam[i].py;
     zp+=beam[i].y*beam[i].py;    
+  }
+  z*=norm;
+  p*=norm;
+  zz=sqrt(fabs(zz*norm-z*z));
+  if (zz>0) {zz=1./zz;}
+  zp=(zp*norm-z*p)*zz*zz;
+  
+  for (int i=0; i<mpart;i++){
+    beam[i].py=beam[i].py-p;
+    beam[i].py-=zp*beam[i].y;
+    beam[i].y=(beam[i].y-z)*zz;
+  }
+
+
+  z = 0;
+  zz = 0;
+  p = 0;
+  pp= 0 ;
+  
+  for (int i=0; i<mpart;i++){
+    z +=beam[i].px;
+    zz+=beam[i].px*beam[i].px;
+    p +=beam[i].py;
+    pp+=beam[i].py*beam[i].py;    
+  }
+  z*=norm;
+  p*=norm;
+  zz=sqrt(fabs(zz*norm-z*z));
+  if (zz>0) {zz=1./zz;}
+  pp=sqrt(fabs(pp*norm-p*p));
+  if (pp>0) {pp=1./pp;}
+
+  for (int i=0; i<mpart;i++){
+    beam[i].px=(beam[i].px-z)*zz;
+    beam[i].py=(beam[i].py-p)*pp;
+  }
+
+  // cross check
+  /*
+  z=0;
+  zz=0;
+  p=0;
+  pp=0;
+  zp=0;
+   for (int i=0; i<mpart;i++){
+    z +=beam[i].x;
+    zz+=beam[i].x*beam[i].x;
+    p +=beam[i].px;
+    pp+=beam[i].px*beam[i].px;
+    zp+=beam[i].x*beam[i].px;    
   }
   z*=norm;
   p*=norm;
   zz=sqrt(fabs(zz*norm-z*z));
   pp=sqrt(fabs(pp*norm-p*p));
   if (zz>0) {zz=1./zz;}
-  if (pp>0) {pp=1./p;}
+  if (pp>0) {pp=1./pp;}
   zp=(zp*norm-z*p)*zz*zz;
+
+  cout << "Quiet Loading Result in x : " <<  z << " " << zz << " "<< p << " " << pp << " " <<zp << endl;
+  */
   
-  for (int i=0; i<mpart;i++){
-    beam[i].py=(beam[i].py-p)*pp;
-    beam[i].py-=zp*beam[i].y;
-    beam[i].y=(beam[i].y-z)*zz;
-  }
-
-
-   
   // scale to physical size
  
   double sigx=sqrt(slice->ex*slice->betax/slice->gamma);
