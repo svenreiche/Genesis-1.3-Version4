@@ -41,17 +41,13 @@ else()
 endif()
 
 # check for FFTW libraries. Cray implementation are not found but have the environmental variable FFTW_ROOT defined.
-set(genesisFFTW 0)
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(FFTW QUIET fftw3)
+set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:$ENV{FFTW_ROOT}/lib/pkgconfig/")
+pkg_check_modules(FFTW QUIET fftw3 IMPORTED_TARGET)
 if (TARGET PkgConfig::FFTW)
     message(STATUS "FFTW found")
     list(APPEND _libraries PkgConfig::FFTW)
     include_directories(PkgConfig::FFTW)
-    set(genesisFFTW 1)
-elseif($ENV{FFTW_ROOT} MATCHES ".*[a-z].*")
-        message(STATUS "Cray-FFTW found")
-        set(genesisFFTW 1)    
 else()
         message(STATUS "FFTW not found")
         message(STATUS "Excluding FFTW specific source code")
@@ -153,8 +149,7 @@ target_include_directories(genesis13
 
 # add optional macro definition
 
-#if (TARGET PkgConfig::FFTW)
-if (genesisFFTW)
+if (TARGET PkgConfig::FFTW)
     message(STATUS "Defining the macro FFTW in the source code")
     target_compile_definitions(genesis13 PRIVATE FFTW=1)
 endif()
