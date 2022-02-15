@@ -21,6 +21,7 @@ Field::Field(){
   polarization=false;
   disabled=false;
   out_global=true;
+  difffilter_=false;  // flag to enable filtering of diffraction
 
   /* controlled by calls to Field::setOutput */
   doFFT=true;
@@ -69,6 +70,27 @@ void Field::init(int nsize, int ngrid_in, double dgrid_in, double xlambda0, doub
   return;
 }
 
+void Field::initDiffFilter(bool do_filter,double kx0, double ky0, double ksig)
+{
+    /*
+     * Initializes all parameter for filtering the source term
+     * @param do_filter - filter to enable and disable filtering
+     * @param kx0 - the relative spatial frequency in x, where sigmoid function is 1/2
+     * @param ky0 - the relative spatial frequency in y, where sigmoid function is 1/2
+     * @param ksig - the steepness of the sigmoid function
+     * @returns None
+     */
+#ifdef FFTW
+    difffilter_=do_filter;
+    filtcutx_=kx0;
+    filtcuty_=ky0;
+    filtsig_=ksig;
+    if (filtsig_ <= 0){  // check for unphysical input
+        filtsig_=1;
+        difffilter_=false;
+    }
+#endif
+}
 
 // at each run the buffer should be cleared.
 void Field::initDiagnostics(int nz)

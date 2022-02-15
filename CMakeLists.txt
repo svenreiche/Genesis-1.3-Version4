@@ -4,7 +4,7 @@ project(Genesis_1_3_Version4 CXX C)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # OpenMPI: preprocessor macro to disable C++ interface (then we don't have to link libmpi_cxx)
 add_compile_definitions(OMPI_SKIP_MPICXX)
@@ -23,16 +23,17 @@ else()
    # check for MPI
    find_package(MPI REQUIRED)
    Message(STATUS "MPI Found")
+
    # and check for HDF5
    SET(HDF5_PREFER_PARALLEL TRUE)
-   find_package(HDF5 REQUIRED COMPONENTS C HL)
+   find_package(HDF5 REQUIRED)
    Message(STATUS "HDF5 Found")
 
-   # list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
-    list(APPEND _libraries MPI::MPI_C)
+   # list(APPEND _libraries MPI::MPI_C)
+   list(APPEND _libraries MPI::MPI_C ${HDF5_LIBRARIES})
     # add the include paths for both libraries
     include_directories(${MPI_INCLUDE_PATH})
-   #  include_directories(${HDF5_C_INCLUDE_DIRS})
+    include_directories(${HDF5_C_INCLUDE_DIRS})
     if (HDF5_IS_PARALLEL)   # this should be required - needs a better check
         Message(STATUS "Parallel HDF5 supported")
     else()

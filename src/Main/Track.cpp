@@ -26,6 +26,10 @@ void Track::usage(){
   cout << " int beam_dump_step  = 0" << endl;
   cout << " int sort_step = 0" << endl;
   cout << " int bunchharm = 1" << endl;
+  cout << " bool filter_diff = false"  << endl;
+  cout << " double filter_kx = 1" << endl;
+  cout << " double filter_ky = 1" << endl;
+  cout << " double filter_sig = 1" << endl;
   cout << "&end" << endl << endl;
   /* currently undocumented debugging option: dbg_report_lattice */
 
@@ -54,6 +58,11 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   s0=time->getTimeWindowStart();
   slen=time->getTimeWindowLength();
 
+  // input parameter for controlling filtering of the source term
+  bool difffilt = false;
+  double filtx = 1;
+  double filty = 1;
+  double filtsig = 1;
   
   map<string,string>::iterator end=arg->end();
 
@@ -67,6 +76,12 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   if (arg->find("sort_step")!=end)   {sort_step= atoi(arg->at("sort_step").c_str());  arg->erase(arg->find("sort_step"));}
   if (arg->find("bunchharm")!=end)   {bunchharm= atoi(arg->at("bunchharm").c_str());  arg->erase(arg->find("bunchharm"));}
   if (arg->find("dbg_report_lattice")!=end) {dbg_report_lattice = atob(arg->at("dbg_report_lattice")); arg->erase(arg->find("dbg_report_lattice"));}
+  // variables to control source term filtering
+  if (arg->find("filter_kx")!=end)   {filtx= atof(arg->at("filter_kx").c_str());  arg->erase(arg->find("filter_kx"));}
+  if (arg->find("filter_ky")!=end)   {filty= atof(arg->at("filter_ky").c_str());  arg->erase(arg->find("filter_ky"));}
+  if (arg->find("filter_sig")!=end)  {filtsig= atof(arg->at("filter_sig").c_str());  arg->erase(arg->find("filter_sig"));}
+  if (arg->find("filter_diff")!=end) {difffilt= atob(arg->at("filter_diff").c_str());  arg->erase(arg->find("filter_diff"));}
+
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &track" << endl; this->usage();}
@@ -135,6 +150,10 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
     und->reportLattice(ss.str());
   }
 
+  // initializing filtering of the fields
+  for (int ifld = 0; ifld < field->size(); ifld++){
+      field->at(ifld)->initDiffFilter(difffilt,filtx,filty,filtsig);
+  }
   // call to gencore to do the actual tracking.  
   Gencore core;
   core.run(file.c_str(),beam,field,und,isTime,isScan, filter);

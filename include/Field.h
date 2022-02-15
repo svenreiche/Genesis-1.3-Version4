@@ -33,6 +33,7 @@ class Field{
    void initDiagnostics(int);
    void diagnostics(bool);
    void init(int, int, double, double, double, double,int);
+   void initDiffFilter(bool,double,double,double);
    bool harmonicConversion(int, bool);
    bool subharmonicConversion(int, bool);
    void track(double, Beam *, Undulator *);
@@ -72,6 +73,8 @@ class Field{
  private:
    int idx;
    bool disabled;
+   bool difffilter_;
+   double filtcutx_,filtcuty_,filtsig_;
    double rharm;
    bool out_global, doFFT,doSpatial, doIntensity;
    bool doDumpField; // controls write of field grid to .dfl files (can be OFF, if intensity projects are sufficient)
