@@ -1,8 +1,10 @@
-# Changelog
+# Change Log
 
-For proposed format see: https://keepachangelog.com/en/1.0.0/ , this page contains also a few remarks on how to write a good (=useful) changelog.
+## Released:
+### [4.5.1] - 2022/01/11 
+Version 4.5.1 has been released. Part of it is this Change Log file, which will be updated in the future releases.
 
-The latest changes come on top of the list.
+## Unreleased:
+nothing
 
-## Unreleased
 
