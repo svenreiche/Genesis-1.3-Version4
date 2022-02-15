@@ -9,7 +9,7 @@ Change Log:
 [here](CHANGELOG.md)
 
 Manual:
-[here](MANUAL.md)
+[here](MANUAL_MAIN.md)
 
 Current Development:
 [here](DEVELOPMENT.md)
