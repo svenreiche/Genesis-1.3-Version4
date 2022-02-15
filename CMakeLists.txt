@@ -4,7 +4,7 @@ project(Genesis_1_3_Version4 CXX C)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # OpenMPI: preprocessor macro to disable C++ interface (then we don't have to link libmpi_cxx)
 add_compile_definitions(OMPI_SKIP_MPICXX)
@@ -20,24 +20,27 @@ else()
    Message(STATUS "h5pcc not found - looking for basic compiler")
    Message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
    Message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
+
    # check for MPI
    find_package(MPI REQUIRED)
+   include_directories(${MPI_INCLUDE_PATH})
    Message(STATUS "MPI Found")
+
    # and check for HDF5
    SET(HDF5_PREFER_PARALLEL TRUE)
    find_package(HDF5 REQUIRED COMPONENTS C HL)
    Message(STATUS "HDF5 Found")
-
-   # list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
-    list(APPEND _libraries MPI::MPI_C)
-    # add the include paths for both libraries
-    include_directories(${MPI_INCLUDE_PATH})
-   #  include_directories(${HDF5_C_INCLUDE_DIRS})
-    if (HDF5_IS_PARALLEL)   # this should be required - needs a better check
+   if (TARGET HDF5::HDF5)
+       list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
+   else()
+       list(APPEND _libraries MPI::MPI_C)
+   endif()
+   include_directories(${HDF5_C_INCLUDE_DIRS})
+   if (HDF5_IS_PARALLEL)   # this should be required - needs a better check
         Message(STATUS "Parallel HDF5 supported")
-    else()
+   else()
         Message(STATUS "No parallel HDF5 Support")
-    endif()
+   endif()
 endif()
 
 # check for FFTW libraries. Cray implementation are not found but have the environmental variable FFTW_ROOT defined.
