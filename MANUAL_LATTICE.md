@@ -1,17 +1,17 @@
 # GENESIS 1.3 - Manual
   
-** Lattice Elements **
-  - Undulator
-  - Drift
-  - Quadrupole.
-  - Corrector
-  - Chicane.
-  - Phaseshifter
-  - Marker
-  - Line
+** Supported Lattice Elements **
+  - [Undulator](@Undulator)
+  - [Drift](@Drift)
+  - [Quadrupole](@Quadrupole)
+  - [Corrector](@Corrector)
+  - [Chicane](@Chicane)
+  - [Phaseshifter](@Phaseshifter)
+  - [Marker](@Marker)
+  - [Line](@Line)
 
 
-## The Lattice File
+***The Lattice File***
 
 In comparison to previous versions of Genesis the definition of the undulator lattice is now
 completely defined in a lattice file. The main input file just refers to it and might change
@@ -35,7 +35,7 @@ prior to parsing.
 Labels are used to identify elements and are referred to in the line element. More information
 is given at the end of this section.
 
-## Undulator
+**Undulator**
 
 - aw: The dimensionless rms undulator parameter. For planar undulator this value is
     smaller by the factor 1/
