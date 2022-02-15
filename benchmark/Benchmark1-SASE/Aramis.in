@@ -14,11 +14,10 @@ field_global_stat = true
 zmatch=9.5
 &end
 
-&time
-time=false
-slen=10e-10;
-sample=2;
-&end
+#&time
+#slen=10e-10;
+#sample=2;
+#&end
 
 &field
 power=5e3
@@ -44,8 +43,8 @@ ey=4.000000e-07
 &end
 
 &track
-zstop=2
-bunchharm=2
+#zstop=2
+#bunchharm=2
 #beam_dump_step=10
 #field_dump_step=10
 &end

@@ -60,6 +60,7 @@ void Field::init(int nsize, int ngrid_in, double dgrid_in, double xlambda0, doub
 
 #ifdef FFTW
   p  = fftw_plan_dft_2d(ngrid,ngrid,reinterpret_cast<fftw_complex*>(in),reinterpret_cast<fftw_complex*>(out),FFTW_FORWARD,FFTW_MEASURE);
+  pi  = fftw_plan_dft_2d(ngrid,ngrid,reinterpret_cast<fftw_complex*>(in),reinterpret_cast<fftw_complex*>(out),FFTW_BACKWARD,FFTW_MEASURE);
 #endif
 
   xks=4.*asin(1)/xlambda;
@@ -359,7 +360,7 @@ void Field::diagnostics(bool output)
       double dy=static_cast<double>(iy)+shift;
       for (int ix=0;ix<ngrid;ix++){
         double dx=static_cast<double>(ix)+shift;
-	int i=iy*ngrid+ix;
+	    int i=iy*ngrid+ix;
         loc=field.at(islice).at(i);
 	    in[i]=loc;   // field for the FFT
         double wei=loc.real()*loc.real()+loc.imag()*loc.imag();
