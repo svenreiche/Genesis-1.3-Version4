@@ -10,7 +10,7 @@
 using namespace std;
 
 // very basic wrapper for genesis. Most of the genesis stuff is moved into genmain.
-
+#include "hdf5.h"
 
 int main (int argc, char *argv[]) {
 
@@ -25,6 +25,19 @@ int main (int argc, char *argv[]) {
     string filename (argv[argc-1]);  // input file is always last element
     map<string,string> arguments;
     bool ok=true;
+
+
+    hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
+    string file = "test.h5";
+//    if (!MPISingle){
+//        H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+//    }
+//    hid_t fid=H5Fcreate(file.c_str(),H5F_ACC_TRUNC, H5P_DEFAULT,pid);
+    H5Pclose(pid);
+//    H5Fclose(fid);
+    MPI_Finalize(); // node turned off
+
+    return 0;
 
 	// parse the command line arguments
 

@@ -28,7 +28,7 @@ else()
 
    # and check for HDF5
    SET(HDF5_PREFER_PARALLEL TRUE)
-   find_package(HDF5 REQUIRED COMPONENTS C HL)
+   find_package(HDF5 REQUIRED COMPONENTS C)
    Message(STATUS "HDF5 Found")
    if (TARGET HDF5::HDF5)
        list(APPEND _libraries MPI::MPI_C HDF5::HDF5)

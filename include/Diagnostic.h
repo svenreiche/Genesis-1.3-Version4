@@ -131,12 +131,22 @@ public:
     void getValues(Beam *, std::map<std::string,std::vector<double> > &, int);
 };
 
+//----------------------------------------
+// template for user defined beam diagnostics
+class DiagFieldUser: public DiagFieldBase{
+public:
+    DiagFieldUser() = default;
+    ~DiagFieldUser() = default;
+    std::map<std::string,OutputInfo> getTags(FilterDiagnostics &filter);
+    void getValues(Field *, std::map<std::string,std::vector<double> > &, int);
+};
 
 // ----------------------------------------------
 // class which manages all the diagnostic classes, acting as a wrapper for them, standardizing the interface.
 class Diagnostic{
     std::array<DiagBeamBase*,2> dbeam = {new DiagBeam(), new DiagBeamUser()};
-    std::array<DiagFieldBase*,1> dfield = {new DiagField()};
+    std::array<DiagFieldBase*,2> dfield = {new DiagField(), new DiagFieldUser()};
+
     int nz = 1;
     int ns = 1;
     int iz = 0;

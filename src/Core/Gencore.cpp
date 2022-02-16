@@ -58,7 +58,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 
 	    if (shift!=0){
 	      for (int i=0;i<field->size();i++){
-		control->applySlippage(shift, field->at(i));  
+		      control->applySlippage(shift, field->at(i));
 	      }
 	    }
 	  }
@@ -68,7 +68,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 
 	  for (int i=0; i<field->size();i++){
 	    field->at(i)->track(delz,beam,und);
-          }
+      }
 
 
 	  //-----------------------------------------
@@ -81,10 +81,10 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 	  //-------------------------------
 	  // step 6 - Calculate beam parameter stored into a buffer for output
 
-	  beam->diagnostics(und->outstep(),und->getz());
-	  for (int i=0;i<field->size();i++){
-	    field->at(i)->diagnostics(und->outstep());
-	  }
+	  //beam->diagnostics(und->outstep(),und->getz());
+	  //for (int i=0;i<field->size();i++){
+	  //  field->at(i)->diagnostics(und->outstep());
+	  //}
 
       if (und->outstep()) {
           diag.calc(beam, field, und->getz());
@@ -115,7 +115,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 	}
 
 	diag.writeToOutputFile(file, beam,field,und);
-    control->output(beam,field,und,diag);
+    // control->output(beam,field,und,diag);
 
 	delete control;
       

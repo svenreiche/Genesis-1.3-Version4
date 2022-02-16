@@ -100,3 +100,39 @@ void DiagBeamUser::getValues(Beam *beam, std::map<std::string,std::vector<double
         if (val.find("global/loss") != val.end()) { val["global/loss"][iz] = g_loss; }
     }
 }
+
+std::map<std::string,OutputInfo> DiagFieldUser::getTags(FilterDiagnostics & filter_in){
+
+    tags.clear();
+    filter.clear();
+
+    // variables inherited from the base class.
+    global = filter_in.field.global; // user flag if global parameter are used or not
+
+    // here parameters needs ot be registed. See the beam class above on how to do it
+
+    filter["template"] = false;     // <- set to true to enable output for the template parameters
+    return tags;  // must be returned
+}
+
+void DiagFieldUser::getValues(Field *field, std::map<std::string,std::vector<double> >&val, int iz){
+
+    // some basic variables useful for any calculation
+    int ns = field->field.size();
+    int is0 = 0;
+    int ngrid = field->ngrid;
+    double ks=4.*asin(1)/field->xlambda;
+
+    // loop over field
+    for (auto const &slice :field->field) {
+        int is = (ns + is0 - field->first) % ns;
+        double tmp = 0;
+
+        // save the data into the provided arrays
+        int idx = iz*ns+is;         // index for saving the data
+        //example to save data with the correct index
+        //        if (val.find("temp") != val.end()) { val["temp"][idx] = tmp; }
+        // increase the slice counter
+        is0++;
+    }
+}

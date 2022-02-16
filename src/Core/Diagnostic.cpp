@@ -78,7 +78,7 @@ void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> 
 {
 
     Output *out=new Output;
-    string file=root.append(".test");
+//    string file=root.append(".test");
     this->addOutput(0,"zplot","m", zout);
     this->addOutput(0,"z","m", und->z);
     this->addOutput(0,"dz","m", und->dz);
@@ -134,7 +134,8 @@ void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> 
     this->addOutput(1,"frequency","ev",global);
 
 
-    out->open(file,noff,ns);
+    cout << root << " " << noff << " " << ns << endl;
+    out->open(root,noff,ns);
     out->writeMeta(und);
     out->writeGroup("Lattice",val[0], units[0],single[0]);
     out->writeGroup("Global",val[1], units[1],single[1]);

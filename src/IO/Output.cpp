@@ -25,7 +25,7 @@ void Output::close(){
   // output of unclosed elements
 
    int norphans = H5Fget_obj_count(fid, H5F_OBJ_ALL);
-   if (norphans > 1) { /* expect 1 for the file we have not closed */
+   if (norphans > 1) { // expect 1 for the file we have not closed
        int i;
        H5O_info_t info;
        char name[64];
@@ -39,7 +39,7 @@ void Output::close(){
        }
    }
 
-  H5Fclose(fid);
+ H5Fclose(fid);
 
 
 }
@@ -54,8 +54,10 @@ void Output::open(string file, int s0_in, int ds_in)
   // set record range and allocate working memory
   s0=s0_in;
   ds=ds_in;
+  cout << MPISingle << endl;
   // create the file for parallel access
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
+
   if (!MPISingle){
     H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
   }
