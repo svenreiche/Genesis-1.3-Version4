@@ -1,5 +1,5 @@
 #include "Output.h"
-#include <stdlib.h> 
+#include <stdlib.h>
 
 // Meta info
 #include <ctime>
@@ -10,7 +10,7 @@
 #include <fstream>
 #include <streambuf>
 
-#include "VersionInfo.h"
+
 
 extern bool MPISingle;
 
@@ -24,9 +24,8 @@ void Output::close(){
 
   // output of unclosed elements
 
-  
    int norphans = H5Fget_obj_count(fid, H5F_OBJ_ALL);
-   if (norphans > 1) { /* expect 1 for the file we have not closed */
+   if (norphans > 1) { // expect 1 for the file we have not closed
        int i;
        H5O_info_t info;
        char name[64];
@@ -35,41 +34,35 @@ void Output::close(){
        for (i=0; i<norphans; i++) {
 	 //           H5Oget_info(objects[i], &info);
            H5Iget_name(objects[i], name, 64);
-	   cout << "Slice " <<s0/ds << " : " << i+1 << " of " << norphans << " things still open: " << objects[i] << " with name " << name << endl; 
+	   cout << "Slice " <<s0/ds << " : " << i+1 << " of " << norphans << " things still open: " << objects[i] << " with name " << name << endl;
 	   // took out the H5O call since it changes with the new hdf5 release
        }
    }
 
+ H5Fclose(fid);
 
 
-  H5Fclose(fid);
-
-  
 }
 
 
 void Output::open(string file, int s0_in, int ds_in)
 {
-  
 
-
-  // ns = total number of slices
-  // nz = total number of integration steps
   // s0 = slice number of first slice for a given node
   // ds = number of slices, which are kept by a given node
 
   // set record range and allocate working memory
   s0=s0_in;
   ds=ds_in;
-  
+
   // create the file for parallel access
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
+
   if (!MPISingle){
     H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
   }
-  fid=H5Fcreate(file.c_str(),H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
+  fid=H5Fcreate(file.c_str(),H5F_ACC_TRUNC, H5P_DEFAULT,pid);
   H5Pclose(pid);
-
 }
 
 
@@ -92,10 +85,10 @@ void Output::writeMeta(Undulator *und)
   tmp[0]=0;
   if (vi.isBeta()) { tmp[0]=1;}
   this->writeSingleNode(gidsub,"Beta"," ",&tmp);
-  string s_bi(vi.BuildInfo());
+  string s_bi(vi.Build());
   this->writeSingleNodeString(gidsub,"Build_Info", &s_bi);
-  H5Gclose(gidsub);  
-  
+  H5Gclose(gidsub);
+
   time_t timer;
   time(&timer);
   string tim (ctime(&timer));
@@ -110,9 +103,9 @@ void Output::writeMeta(Undulator *und)
   const char *env_var[2] = {"HOST","PWD"};
   char *env_val[2];
   string env;
-  
+
   for(int i=0; i<2; i++){
-     
+
      env_val[i] = getenv(env_var[i]);
      if (env_val[i] != NULL){
        env=env_val[i];
@@ -121,14 +114,14 @@ void Output::writeMeta(Undulator *und)
      }
       this->writeSingleNodeString(gid,env_var[i], &env);
   }
-  
+
   struct passwd *pws;
   string user = "username lookup failed";
   if (NULL != (pws=getpwuid(getuid()))) // 'getpwuid' system call returns nullptr in case lookup was unsuccessful...
     user = pws->pw_name;
   this->writeSingleNodeString(gid,"User", &user);
 
-  
+
   /*** copy input files into .out.h5 file ***/
   ifstream inFile (meta_inputfile.c_str());
   stringstream buffer;
@@ -142,7 +135,7 @@ void Output::writeMeta(Undulator *und)
   buffer2 << inFile2.rdbuf();//read the file
   string str2=buffer2.str();
   this->writeSingleNodeString(gid,"LatticeFile", &str2);
-  inFile2.close(); 
+  inFile2.close();
 
   reportDumps(gid, und);
 
@@ -151,7 +144,7 @@ void Output::writeMeta(Undulator *und)
 
 void Output::writeGlobal(Undulator *und, double gamma, double lambda, double sample, double slen, bool one4one, bool time, bool scan, int ntotal)
 {
-  this->writeMeta(und);   
+  this->writeMeta(und);
   vector<double> tmp;
   tmp.resize(1);
   hid_t gid;
@@ -240,7 +233,7 @@ void Output::reportDumps(hid_t gid, Undulator *und)
   }
   H5Gclose(gid_dr);
 }
- 
+
 void Output::writeLattice(Beam * beam,Undulator *und)
 {
   hid_t gid;
@@ -271,6 +264,39 @@ void Output::writeLattice(Beam * beam,Undulator *und)
 
   H5Gclose(gid);
 }
+
+
+void Output::writeGroup(std::string group, std::map<std::string,std::vector<double> >& data, std::map<std::string,std::string>& units,  std::map<std::string,bool>& single) {
+    hid_t gid=H5Gcreate(fid,group.c_str(),H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+    for (auto &[key, val]: data) {
+        this->writeDataset(gid, key, val, units[key], single[key]);
+    }
+    H5Gclose(gid);
+    return;
+}
+
+void Output::writeDataset(hid_t gid, string path, std::vector<double> &val, std::string unit, bool single){
+
+    std::size_t pos = path.find("/");
+    if (pos == std::string::npos) {
+        if (single) {
+            this->writeSingleNode(gid, path.c_str(),unit.c_str(), &val);
+        } else {
+            this->writeBuffer(gid, path.c_str(), unit. c_str(), &val);
+        }
+    }  else {
+        string group = path.substr(0,pos);
+        hid_t gsub;
+        if (this->groupExists(gid,group)){
+            gsub = H5Gopen1(gid,group.c_str());
+        } else {
+            gsub=H5Gcreate(gid,group.c_str(),H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+        }
+        this->writeDataset(gsub, path.substr(pos+1),val,unit,single);
+        H5Gclose(gsub);
+    }
+}
+
 
 void Output::writeBeamBuffer(Beam *beam)
 {

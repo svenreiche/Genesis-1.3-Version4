@@ -169,6 +169,13 @@ void BeamSolver::ODE(double tgam,double tthet)
   }
   double btper0=btpar+ztemp1*ctmp.real();   //perpendicular velocity
   double btpar0=sqrt(1.-btper0/(tgam*tgam));     //parallel velocity
+#ifdef G4_DBGDIAG
+  // CL: detect negative radicands as NaN theta values can be the result
+  double btpar0_sq=1.-btper0/(tgam*tgam);     //(parallel velocity)^2
+  if(btpar0_sq<0) {
+    cout << "DBGDIAG(BeamSolver::ODE): error, negative radicand detected" << endl;
+  }
+#endif
   k2pp+=xks*(1.-1./btpar0)+xku;             //dtheta/dz
   k2gg+=ctmp.imag()/btpar0/tgam-ez;         //dgamma/dz
 

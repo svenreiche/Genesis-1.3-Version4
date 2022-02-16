@@ -67,6 +67,9 @@ void TrackBeam::track(double delz, Beam *beam,Undulator *und,bool lastStep=true)
     for (int j=0; j<beam->beam.at(i).size();j++){
       Particle *p=&beam->beam.at(i).at(j);
       double gammaz=sqrt(p->gamma*p->gamma-1- aw*aw - p->px*p->px - p->py*p->py); // = gamma*betaz=gamma*(1-(1+aw*aw)/gamma^2);
+#ifdef G4_DBGDIAG
+// G4_DBGDIAG: add test against negative radicand? Note that the particles probably already made lots of noise elsewhere.
+#endif
       (this->*ApplyX)(delz,qx,&(p->x),&(p->px),gammaz,xoff);
       (this->*ApplyY)(delz,qy,&(p->y),&(p->py),gammaz,yoff);
     }

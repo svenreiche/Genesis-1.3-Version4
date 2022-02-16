@@ -31,7 +31,7 @@ class Undulator: public HDF5Base{
 
    void updateMarker(int, int, int, double);
    void markUndExits(void);
-   void updateOutput(double,int);
+   void updateOutput(int);
 
 
    void reportLattice(string);
@@ -71,7 +71,7 @@ class Undulator: public HDF5Base{
 
    vector<bool> out;
 
-   double gammaref,zstop;  
+   double gammaref,zstop,zfrac;
    int istepz,nstepz,nout;
 };
 

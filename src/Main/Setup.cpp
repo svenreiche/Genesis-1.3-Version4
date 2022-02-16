@@ -67,14 +67,9 @@ void Setup::usage(){
   return;
 }
 
-bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstring, string outstring, int in_seed)
-{
+bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagnostics &filter){
 
   rank=inrank;
-  // initialize the values for lattice and output file from the command line arguments
-  lattice=latstring;
-  rootname=outstring;
-  seed=in_seed;
   map<string,string>::iterator end=arg->end();
 
   if (arg->find("rootname")!=end){rootname = arg->at("rootname"); arg->erase(arg->find("rootname"));}
@@ -125,6 +120,16 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
     return false;
   }
 
+  // sort the filter flags
+  filter.beam.global = beam_global_stat;
+  filter.beam.spatial = !exclude_spatial_output;
+  filter.beam.energy = !exclude_energy_output;
+  filter.beam.current = !exclude_energy_output;
+  filter.beam.auxiliar = !exclude_aux_output;
+  filter.field.global = field_global_stat;
+  filter.field.spatial = !exclude_spatial_output;
+  filter.field.fft = !exclude_fft_output;
+  filter.field.intensity = !exclude_intensity_output;
 
   if (one4one)
   {

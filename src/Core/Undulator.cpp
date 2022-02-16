@@ -6,35 +6,40 @@ Undulator::Undulator()
 {
   istepz=-1;
   zstop=1e9;
+  zfrac=1;
 }
 
 
-void Undulator::updateOutput(double zstop_in,int nzout)
+void Undulator::updateOutput(int nzout)
 {
 
 
 // calculate the size of the output record
 
-  zstop=zstop_in;
-
-
   istepz=-1;
-  nstepz=aw.size();
   nout=1;
   out.resize(nstepz+1);
   out[0]=true;  // first is always output
   for (int i=1;i<(nstepz+1);i++){   
     out[i]=false;
-    if (((i % nzout)==0)&&(z[i-1]<zstop)){
+    if (((i % nzout)==0)&&( (marker[i-1] & 8) == 0)){
       out[i]=true;
       nout++;
     } 
   }
+
   return;
 }
 
-void Undulator::updateMarker(int nfld, int npar, int nsort, double zstop)
+void Undulator::updateMarker(int nfld, int npar, int nsort, double zstop_in)
 {
+    nstepz=aw.size();
+    zstop = zstop_in;
+    zfrac = 1. ;
+    if (zstop < z[nstepz-1]) {
+        zfrac = zstop / z[nstepz - 1];
+    }
+
   for (int i=0; i<marker.size();i++){
     if (nfld > 0){  // field dump
      if ((i % nfld) == 0) {
@@ -228,12 +233,12 @@ bool Undulator::advance(int rank)
 
   if ((marker[istepz]&8)>0){ // check for 3rd bit set in marker value for stoping calculation
     if (rank==0){
-      cout << "Calculation terminated due to requested stop. Missing output padded with zeros in output file" << endl;
+      cout << "Calculation terminated due to requested stop." << endl;
     }
     return false; 
   }
 
-  int dstepz=nstepz/10;
+  int dstepz=static_cast<int> (round(nstepz/10.*zfrac));
   if (dstepz<1){dstepz=1;}
 
   if (((istepz % dstepz) == 0) && (istepz >0) && (rank==0)){
@@ -246,7 +251,7 @@ double Undulator::fc(int h)
 {
   BesselJ bessj;
 
-  double coup=aw[istepz]; 
+  double coup=aw[istepz];
   if (this->isHelical()){
     if (h==1){
       return coup;

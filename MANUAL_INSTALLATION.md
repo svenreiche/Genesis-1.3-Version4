@@ -7,40 +7,16 @@
 
 <a name="Compilation">**Compilation**</a>
 
-In the root directory there is the file `Makefile` which is the makefile for the compilation on
-Unix and Linux machines. This file can be used to help setting up the installation. In the file there is
-the `OBJECTS` list, which contains all required source code files. There are located in several
-directories in the subfolder `src`. To find them, the compiler search path has to be extended
-as with the `VPATH` directive under unix. The compilation instruction should convert each
-individual source file into an objects file and then link them with the HDF5 and OpenMPI
-libraries. Note that at some systems the required definition of the include and libraries files
-are wrapped in the compiler executive. E.g. in the given Makefile the compiler `h5pcc`
-supports directly both required libraries. If this wrapper command does not exist on your system and both
-libraries (HDF5 and OpenMPI) are not supported by the standard search path, they have
-to be set explicitly with the `-I`, `-L`, and `-l` directive for the include search path, library search
-path and the library name, respectively. Genesis 1.3 supports the library `FFTW`, enabling it
-by setting the directive `-DFFTW` in the make file. It is needed if the user wants to calculate the instantaneous
-divergence of the radiation field during run time.
+Genesis supports now the automatic configuration with CMAKE. Following commands will build Genesis from source on Linux platforms. The minimal command to compile the code from the source code root directory is:
+```
+mkdir build
+chdir build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make
+```
+Depending on your compiler and system configuration, additional information may be given to CMAKE. Most important is the used compiler. This can be done with the additional definition ```-DCMAKE_CXX_COMPILER=####``` in the cmake command overwriting the default compiler, where ```###``` is the compiler, e.g. `mpicxx` or `CC`. If debugging is needed the CMAKE_BUILD_TARGET should be changed to `Debug`.
+The executable is found in the build directory. For a successful build the libraries openmpi/mpich and parallel HDF5 are needed. The FFTW3 is recommended but might become mandatory in upcoming releases.
 
-If the make file is set-up correctly, type `make` under Unix systems to compile, which should
-produce the executable `gencore` in the local directory. If source files have changed
-the code can be compiled again. Only those files, which have been edited will be recompiled
-and then linked with the unchanged object files. However, if some include files have changed
-it is recommended to recompile from scratch. The command `make clean` will clean up the
-directory by deleting all object files and the current executable. To install into your local
-library, which is the `bin` folder in your home directory, just type `make install`. You can
-edit the makefile to fit your system.
-
-On platforms, which do not support GNU compiler directly, you have to build up your com-
-pilation instruction according to the Makefile.
-
-To complete the installation it is recommended to install the scripts in the directory `sdds2hdf`
-in a directory (e.g. /bin), which is included in your search path. The files will convert El-
-egant output distribution into HDF5 format. More info can be found later in the manual.
-Also, the directory `xgenesis` includes some functions, which allows Matlab to parse the
-output file of Genesis and to plot the results. They are not required for running Genesis
-itself. To use them add the given folder to your Matlab Path or place the file in a directory,
-which is already in the search path.
 
 <a name="Running">**Running Genesis 1.3**</a>
 
@@ -48,18 +24,18 @@ Genesis 1.3 is a command line executable and requires at least a single input ar
 filename of the input deck:
 
 ```
-genesis4 [-o output-rootname] [-l lattice-filename] [-s seed] input-filename
+genesis4 [-o output-rootname] [-l lattice-filename] [-s seed] [-b beamline] input-filename
 ```
 
-The arguments for the lattice filename, the rootname for all output filenames and the seed for the random number generator are optional.
-If defined, they act as the default values in the `setup` namelist and thus can be omitted in the main input file.
-Any further information must be provided within the input deck. Starting Genesis in this
+The arguments for the lattice filename, the beamline, the rootname for all output filenames and the seed for the random number generator are optional.
+when defined they will overwrite any values in the ```setup``` namelist from the input file.
+Starting Genesis in this
 way will effectively invoke a parallel job with only one single core. To start the code with
 just more than one core the launching command `mpirun` needs to be called, including the
 number of cores. In its simplest call it would be:
 
 ```
-mpirun -np xxx genesis4 [-o output-rootname] [-l lattice-filename] [-s seed] input-filename
+mpirun -np xxx genesis4 [-o output-rootname] [-l lattice-filename] [-s seed] [-b beamline] input-filename
 ```
 
 where xxx is the number of cores to be requested.

@@ -40,7 +40,7 @@ bool Track::atob(string in)
 	return ret;
 }
 
-bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, vector<Field *> *field,Setup *setup, Lattice *lat, AlterLattice *alt,Time *time)
+bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, vector<Field *> *field,Setup *setup, Lattice *lat, AlterLattice *alt,Time *time, FilterDiagnostics &filter)
 {
   rank=inrank;
   size=insize;
@@ -72,8 +72,8 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
     if (rank==0){ cout << "*** Error: Unknown elements in &track" << endl; this->usage();}
     return false;
   }
-
-
+  if (bunchharm <1) { bunchharm = 1; }
+  filter.beam.harm = bunchharm;
   if (output_step < 1) { output_step=1; }
 
   string file;
@@ -88,8 +88,9 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   if(dumpFieldUE)
     und->markUndExits();
 
-  und->updateOutput(zstop,output_step);
-  und->updateMarker(dumpFieldStep,dumpBeamStep,sort_step,zstop);
+  und->updateMarker(dumpFieldStep,dumpBeamStep,sort_step,zstop);  // update first the marker to calculate correctly the stopping length (otherwise it could be bypassed by the lattice file)
+  und->updateOutput(output_step);
+
   beam->setBunchingHarmonicOutput(bunchharm);
 
   // controling the output
@@ -136,7 +137,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
 
   // call to gencore to do the actual tracking.  
   Gencore core;
-  core.run(file.c_str(),beam,field,und,isTime,isScan);
+  core.run(file.c_str(),beam,field,und,isTime,isScan, filter);
 
 
   delete und;
