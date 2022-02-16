@@ -133,8 +133,6 @@ void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> 
     }
     this->addOutput(1,"frequency","ev",global);
 
-
-    cout << root << " " << noff << " " << ns << endl;
     out->open(root,noff,ns);
     out->writeMeta(und);
     out->writeGroup("Lattice",val[0], units[0],single[0]);

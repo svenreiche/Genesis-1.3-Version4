@@ -7,9 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # OpenMPI: preprocessor macro to disable C++ interface (then we don't have to link libmpi_cxx)
-add_compile_definitions(OMPI_SKIP_MPICXX)
+#add_compile_definitions(OMPI_SKIP_MPICXX)
 
-#list(APPEND CMAKE_PREFIX_PATH $ENV{FFTW_ROOT})
+list(APPEND CMAKE_PREFIX_PATH $ENV{FFTW_ROOT})
 
 # container for needed librarires
 list(APPEND _libraries)
@@ -28,9 +28,11 @@ else()
 
    # and check for HDF5
    SET(HDF5_PREFER_PARALLEL TRUE)
-   find_package(HDF5 REQUIRED COMPONENTS C)
+   find_package(HDF5 REQUIRED)
    Message(STATUS "HDF5 Found")
+   Message(STATUS "Version: ${HDF5_VERSION}")
    if (TARGET HDF5::HDF5)
+#       list(APPEND _libraries MPI::MPI_C hdf5_mpich)  # needed for my local computer
        list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
    else()
        list(APPEND _libraries MPI::MPI_C)

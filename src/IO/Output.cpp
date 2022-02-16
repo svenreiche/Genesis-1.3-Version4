@@ -54,7 +54,7 @@ void Output::open(string file, int s0_in, int ds_in)
   // set record range and allocate working memory
   s0=s0_in;
   ds=ds_in;
-  cout << MPISingle << endl;
+
   // create the file for parallel access
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
 
