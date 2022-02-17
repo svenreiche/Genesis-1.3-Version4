@@ -66,18 +66,12 @@ class Field{
    vector<double> nf_intensity,nf_phi,ff_intensity,ff_phi;
    // global variables   - energy is proportional to the mean power
    vector<double> energy,gl_xsig,gl_xavg,gl_ysig,gl_yavg,gl_nf_intensity,gl_ff_intensity;
-#ifdef FFTW
-   vector<double> gl_txsig, gl_txavg, gl_tysig, gl_tyavg;
-   complex<double> *in;
-   complex<double> *out;
-   fftw_plan p,pi;
-#endif
+
 
  private:
    int idx;
    bool disabled;
-   bool difffilter_;
-   double filtcutx_,filtcuty_,filtsig_;
+
    double rharm;
    bool out_global, doFFT,doSpatial, doIntensity;
    bool doDumpField; // controls write of field grid to .dfl files (can be OFF, if intensity projects are sufficient)
@@ -99,6 +93,10 @@ inline void Field::setOutput(bool nofft_in, bool noSpatial_in, bool noInten_in, 
   doDumpField = !noDumpField_in;
 }
 
+inline void Field::initDiffFilter(bool do_filter,double kx0, double ky0, double ksig){
+    solver.initDiffFilter(do_filter,kx0,ky0,ksig);
+}
+
 inline void Field::disable(double conv)
 {
   if (disabled==false){  // check whether it hasn't been disabled before
@@ -109,20 +107,8 @@ inline void Field::disable(double conv)
 
 }
 
-inline bool Field::isEnabled()
-{
-  return !disabled;
-}
-
-
-inline double Field::getRHarm()
-{
-  return rharm;
-}
-
-inline int Field::getHarm()
-{
-  return harm;
-}
+inline bool Field::isEnabled() {return !disabled;}
+inline double Field::getRHarm() {return rharm;}
+inline int Field::getHarm() {return harm;}
 
 #endif

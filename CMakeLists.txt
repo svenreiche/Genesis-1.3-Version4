@@ -30,7 +30,7 @@ else()
    Message(STATUS "HDF5 Found")
 
    # list(APPEND _libraries MPI::MPI_C)
-   list(APPEND _libraries MPI::MPI_C ${HDF5_LIBRARIES})
+   list(APPEND _libraries MPI::MPI_C hdf5_mpich)
     # add the include paths for both libraries
     include_directories(${MPI_INCLUDE_PATH})
     include_directories(${HDF5_C_INCLUDE_DIRS})

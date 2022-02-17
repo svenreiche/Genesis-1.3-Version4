@@ -415,14 +415,7 @@ void Output::writeFieldBuffer(Field *field)
       this->writeSingleNode(gidsub,"intensity-nearfield","arb unit", &field->gl_nf_intensity);
       this->writeSingleNode(gidsub,"intensity-farfield","arb unit ", &field->gl_ff_intensity);
     }
-#ifdef FFTW
-    if (field->outputFFT()){
-      this->writeSingleNode(gidsub,"xdivergence","rad", &field->gl_txsig);
-      this->writeSingleNode(gidsub,"ydivergence","rad", &field->gl_tysig);
-      this->writeSingleNode(gidsub,"xpointing","rad", &field->gl_txavg);
-      this->writeSingleNode(gidsub,"ypointing","rad", &field->gl_tyavg);
-    }
-#endif
+
     H5Gclose(gidsub);  
   }
   

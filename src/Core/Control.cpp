@@ -140,13 +140,13 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
   if (rank==0) { cout << "Initial analysis of electron beam and radiation field..."  << endl; }
 
 
-  beam->initDiagnostics(und->outlength());
-  beam->diagnostics(true,0);
-  beam->diagnosticsStart();
-  for (unsigned int i=0; i<field->size();i++){
-      field->at(i)->initDiagnostics(und->outlength());
-      field->at(i)->diagnostics(true);  // initial values
-  }	
+  //beam->initDiagnostics(und->outlength());
+  //beam->diagnostics(true,0);
+  //beam->diagnosticsStart();
+//  for (unsigned int i=0; i<field->size();i++){
+ //     field->at(i)->initDiagnostics(und->outlength());
+ //     field->at(i)->diagnostics(true);  // initial values
+ // }
 
   return true;  
 }

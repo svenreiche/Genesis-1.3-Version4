@@ -115,7 +115,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 	}
 
 	diag.writeToOutputFile(file, beam,field,und);
-    control->output(beam,field,und,diag);
+ //   control->output(beam,field,und,diag);
 
 	delete control;
       
