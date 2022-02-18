@@ -76,7 +76,8 @@ int main (int argc, char *argv[])
 		{NULL, 0, NULL, 0}
 	};
 
-	// inhibit error messages by getopt from all MPI processes except rank 0
+	// Inhibit error messages by getopt from all MPI processes except rank 0
+	// Note that these error messages go to stderr, so depending on your simulation setup, they can end up in a different file
 	if(rank!=0) {
 		// Inhibits error message: "unrecognized option '--xyz'"
 		// Also inhibits other messages, for instance msg informing about missing required argument ("option '--xyz' requires an argument")
