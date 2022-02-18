@@ -84,9 +84,10 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
 	//	event.push_back("start");
 	//	evtime.push_back(0);
 
-	if (rank==0){         // the output of version and build has been moved to the wrapper mainwrap.cpp
-    	  cout << "Starting Time: " << ctime(&timer)<< endl;
-          cout << "MPI-Comm Size: " << size << " nodes" << endl << endl;
+    if (rank==0){         // the output of version and build has been moved to the wrapper mainwrap.cpp
+        time(&timer);
+        cout << "Starting Time: " << ctime(&timer)<< endl;
+        cout << "MPI-Comm Size: " << size << " nodes" << endl << endl;
     }
 
     //---------------------------------------------------------
