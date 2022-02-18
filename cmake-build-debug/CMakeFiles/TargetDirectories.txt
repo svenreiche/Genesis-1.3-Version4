@@ -1,0 +1,5 @@
+/data/Codes/Genesis/Version4/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/data/Codes/Genesis/Version4/cmake-build-debug/CMakeFiles/get_git_hash.dir
+/data/Codes/Genesis/Version4/cmake-build-debug/CMakeFiles/genesis13.dir
+/data/Codes/Genesis/Version4/cmake-build-debug/CMakeFiles/genesis4.dir
+/data/Codes/Genesis/Version4/cmake-build-debug/CMakeFiles/edit_cache.dir

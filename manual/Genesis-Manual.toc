@@ -1,0 +1,45 @@
+\contentsline {chapter}{\sf About this Manual}{5}
+\contentsline {chapter}{\sf Installation}{7}
+\contentsline {section}{\sf The Source Code Distribution}{7}
+\contentsline {section}{\sf Compilation}{7}
+\contentsline {chapter}{\sf Running Genesis 1.3}{9}
+\contentsline {chapter}{\sf The Main Input File}{11}
+\contentsline {subsection}{\sf setup}{11}
+\contentsline {subsection}{\sf alter\_setup}{12}
+\contentsline {subsection}{\sf lattice}{13}
+\contentsline {subsection}{\sf time}{14}
+\contentsline {subsection}{\sf profiles}{15}
+\contentsline {subsubsection}{\sf profile\_const}{15}
+\contentsline {subsubsection}{\sf profile\_gauss}{15}
+\contentsline {subsubsection}{\sf profile\_step}{16}
+\contentsline {subsubsection}{\sf profile\_polynom}{16}
+\contentsline {subsubsection}{\sf profile\_file}{16}
+\contentsline {subsection}{\sf beam}{17}
+\contentsline {subsection}{\sf field}{18}
+\contentsline {subsection}{\sf importdistribution}{19}
+\contentsline {subsection}{\sf importbeam}{20}
+\contentsline {subsection}{\sf importfield}{20}
+\contentsline {subsection}{\sf efield}{21}
+\contentsline {subsection}{\sf sponrad}{21}
+\contentsline {subsection}{\sf wake}{21}
+\contentsline {subsection}{\sf sort}{23}
+\contentsline {subsection}{\sf write}{23}
+\contentsline {subsection}{\sf track}{23}
+\contentsline {chapter}{\sf The Lattice File}{25}
+\contentsline {subsection}{\sf Undulator}{25}
+\contentsline {subsection}{\sf Drift}{26}
+\contentsline {subsection}{\sf Quadrupole}{26}
+\contentsline {subsection}{\sf Corrector}{26}
+\contentsline {subsection}{\sf Chicane}{26}
+\contentsline {subsection}{\sf Phaseshifter}{27}
+\contentsline {subsection}{\sf Marker}{27}
+\contentsline {subsection}{\sf Line}{27}
+\contentsline {chapter}{\sf Output and Input Files}{29}
+\contentsline {section}{\sf Main Output File}{29}
+\contentsline {section}{\sf Particle and Field Dump}{30}
+\contentsline {section}{\sf Particle Distribution}{30}
+\contentsline {chapter}{\sf The Postprocessor XGENESIS}{31}
+\contentsline {subsection}{\sf xgeninit}{31}
+\contentsline {subsection}{\sf xgenplot}{31}
+\contentsline {subsection}{\sf xgenwigner}{32}
+\contentsline {chapter}{\sf Where to Find Further Information}{33}
