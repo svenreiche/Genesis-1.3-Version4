@@ -27,6 +27,8 @@ Field::Field(){
   doSpatial=true;
   doIntensity=true;
   doDumpField=true;
+
+  accuslip = 0;
 }
 
 
