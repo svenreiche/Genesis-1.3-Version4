@@ -42,6 +42,8 @@ void FieldSolver::init(int ngrid_in){
             fftw_destroy_plan(p);
             fftw_destroy_plan(pi);
         }
+        sigmoidx_.resize(ngrid);
+        sigmoidy_.resize(ngrid);
         in = new complex<double>[ngrid * ngrid];
         out = new complex<double>[ngrid * ngrid];
         p = fftw_plan_dft_2d(ngrid, ngrid, reinterpret_cast<fftw_complex *>(in), reinterpret_cast<fftw_complex *>(out),
@@ -63,12 +65,21 @@ void FieldSolver::initSourceFilter(bool do_filter,double kx0, double ky0, double
     */
 #ifdef FFTW
     difffilter_ = do_filter;
-    filtcutx_ = kx0;
-    filtcuty_ = ky0;
-    filtsig_ = ksig;
-    if (filtsig_ <= 0) {  // check for unphysical input
-        filtsig_ = 1;
+    if (ksig <= 0) {  // check for unphysical input
         difffilter_ = false;
+    }
+    if (difffilter_){  // pre-calculation of sigmoid function
+        int nhalf = (ngrid-1)/2;
+        double xc = static_cast<double>(nhalf)*kx0;
+        double yc = static_cast<double>(nhalf)*ky0;
+        double sig = static_cast<double>(nhalf)*ksig;
+        for (int i=0; i<ngrid;i++){
+            int j = ((i+nhalf) % ngrid) - ngrid; // sequence: 0 1 2 3 ... n -(n-1) -(n-2) .... -2 -1  -> FFT order
+            double arg = (fabs(static_cast<double>(j))-xc)/sig;
+            sigmoidx_[i] = 1./(1.+exp(arg));
+            arg = (fabs(static_cast<double>(j))-yc)/sig;
+            sigmoidy_[i] = 1./(1.+exp(arg));
+        }
     }
 #endif
 }
@@ -133,27 +144,25 @@ void FieldSolver::filterSourceTerm()
     * @returns None
     */
     if (!difffilter_) { return; }
+
 #ifdef FFTW
-    double sum1 = 0;
     for (int idx=0; idx <ngrid*ngrid;idx++){
         in[idx]=crsource[idx];   // field for the FFT
-        sum1+=crsource[idx].real()*crsource[idx].real();
-        sum1+=crsource[idx].imag()*crsource[idx].imag();
     }
     fftw_execute(p);
-    for (int idx=0;idx<ngrid*ngrid;idx++) {
-        in[idx] = out[idx];
+    // the sigmoid function can be pre-calculated
+    int idx = 0;
+    for (int ix=0; ix <ngrid; ix++){
+        for (int iy; iy < ngrid; iy++){
+            in[idx]=out[idx]*sigmoidx_[ix]*sigmoidy_[iy];
+            idx++;
+        }
     }
     fftw_execute(pi);
-    double sum2=0;
+    double norm = static_cast<double>(ngrid*ngrid*ngrid*ngrid);
     for (int idx=0; idx <ngrid*ngrid;idx++){
-        sum2+=out[idx].real()*out[idx].real();
-        sum2+=out[idx].imag()*out[idx].imag();
+        crsource[idx]=out[idx]*norm;
     }
-    cout << "FFT input: " << sum1 << endl;
-    cout << "FFT output:" << sum2 << endl;
-    cout << "ratio: " << sum1/sum2*ngrid*ngrid*ngrid*ngrid<< endl;
-
 #endif
 }
 

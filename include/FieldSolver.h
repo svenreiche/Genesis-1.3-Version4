@@ -38,10 +38,12 @@ class FieldSolver{
 
    bool   difffilter_;
    double filtcutx_, filtcuty_, filtsig_;
+   vector<double> sigmoidx_,sigmoidy_;
 
 #ifdef FFTW
     complex<double> *in, *out;
     fftw_plan p,pi;
+
 #endif
    void filterSourceTerm();
    void ADI(vector<complex< double > > &);

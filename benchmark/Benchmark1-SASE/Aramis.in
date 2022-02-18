@@ -44,6 +44,10 @@ ey=4.000000e-07
 &end
 
 &track
+filter_diff = true
+filter_kx = 1
+filter_ky=1
+filter_sig =1
 zstop=2
 #bunchharm=2
 #beam_dump_step=10

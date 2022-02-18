@@ -27,6 +27,8 @@ Field::Field(){
   doSpatial=true;
   doIntensity=true;
   doDumpField=true;
+
+  accuslip=0;
 }
 
 
@@ -47,12 +49,14 @@ void Field::init(int nsize, int ngrid_in, double dgrid_in, double xlambda0, doub
   if (field.size()!=nsize){                  // allocate the memory in advance
      field.resize(nsize);
   }
-  
+  solver.init(ngrid);
+
   if (field[0].size()!=ngrid*ngrid){
     for (int i=0;i<nsize;i++){
-        field[i].resize(ngrid*ngrid); 
-    } 
-  } 
+        field[i].resize(ngrid*ngrid);
+    }
+  }
+
 
   in = new complex<double> [ngrid*ngrid];
   out= new complex<double> [ngrid*ngrid];

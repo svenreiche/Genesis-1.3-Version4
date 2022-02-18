@@ -32,6 +32,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
     diag.init(rank, size, und->outlength(), beam->beam.size(),field->size(),isTime,isScan,filter);
     diag.calc(beam, field, und->getz());  // initial calculation
 
+
     //------------------------------------------
     // main loop
 	       	
@@ -42,7 +43,6 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 	  // step 1 - apply most marker action  (always at beginning of a step)
 
 	  bool sort=control->applyMarker(beam, field, und);
-
 
 	  // ---------------------------------------
 	  // step 2 - Advance electron beam
@@ -62,14 +62,13 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 	      }
 	    }
 	  }
-  
+
 	  // ---------------------------------------
 	  // step 4 - Advance radiation field
 
 	  for (int i=0; i<field->size();i++){
 	    field->at(i)->track(delz,beam,und);
       }
-
 
 	  //-----------------------------------------
 	  // step 5 - Apply slippage
@@ -89,10 +88,11 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
       if (und->outstep()) {
           diag.calc(beam, field, und->getz());
       }
-    }
+
+    } // end of integration along the undulator
      
-        //---------------------------
-        // end and clean-up 
+    //---------------------------
+    // end and clean-up
 
 	// perform last marker action
 
