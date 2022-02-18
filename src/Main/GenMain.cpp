@@ -362,9 +362,32 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
           delete field[i];
 
 
+
+        // generate semaphore file (done by mpi rank 0)
+        // -> if requested by user (filename is derived from rootname)
+        // -> if run was successful
+        if (setup->getSemaEn()) {
+          if(successful_run) {
+            SemaFile sema;
+            if (rank==0) {
+              string fn;
+              if(setup->getSemaFN(&fn)) {
+                sema.put(fn);
+                cout << endl << "generating semaphore file " << fn << endl;
+              } else {
+                cout << endl << "error: not writing semaphore file, filename not defined" << endl;
+              }
+            }
+          } else {
+            if (rank==0) {
+              cout << endl << "not writing semaphore file, as the run likely was not successful" << endl;
+            }
+          }
+        }
+
+
 	//	event.push_back("end");
 	//	evtime.push_back(double(clocknow-clockstart));
-
 	clocknow=clock();
 
  	if (rank==0) {
@@ -391,26 +414,6 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
         }
 
 
-        // generate semaphore file
-        // -> if requested by user (filename is derived from rootname)
-        // -> if run was successful
-        if (setup->getSemaEn()) {
-          if(successful_run) {
-            SemaFile sema;
-            if (rank==0) {
-              string fn;
-              if(setup->getSemaFN(&fn)) {
-                sema.put(fn);
-              } else {
-                cout << "error: not writing semaphore file, filename not defined" << endl;
-              }
-            }
-          } else {
-            if (rank==0) {
-              cout << "not writing semaphore file, as the run likely was not successful" << endl;
-            }
-          }
-        }
-
+        ret = (successful_run) ? 0 : 1;
         return(ret);
 }

@@ -85,7 +85,7 @@ int main (int argc, char *argv[])
 
 	bool got_filename=false;
 	string filename;
-	map<string,string> arguments;
+	map<string,string> arguments; /* keys of this map correspond to the parameter names in &setup namelist */
 
 	int curr_opt;
 	while((curr_opt=getopt_long(argc, argv, "o:l:b:s:h", opts, NULL)) != -1)
@@ -160,12 +160,14 @@ int main (int argc, char *argv[])
     exit(0);
 #endif
 
-    // call the core routine for genesis
-    genmain(filename,arguments,false);
+    // call the core routine for genesis (returns 0 when successful)
+    int sim_core_result = genmain(filename,arguments,false);
 
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize(); // node turned off
-    return 0;
+
+    // return 0;
+    return(sim_core_result);
 
 #if 0
 	if (argc == 1){
