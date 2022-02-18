@@ -99,6 +99,7 @@ add_library(genesis13 STATIC
         src/Util/RandomU.cpp
         src/Util/Sorting.cpp
         src/Util/StringProcessing.cpp
+        src/Util/SemaFile.cpp
         src/Lattice/AlterLattice.cpp
         src/Lattice/Lattice.cpp
         src/Lattice/LatticeElements.cpp

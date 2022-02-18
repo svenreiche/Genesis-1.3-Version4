@@ -24,12 +24,15 @@ class Parser : public StringProcessing {
    bool open(string, int);
    bool parse(string *,map<string,string> *);
 
+   bool fail(void);
+
  private:
 
    int rank;
    istringstream input;
    bool fillMap(string *,map<string,string> *);
 
+   bool is_parse_error;
 };
 
 
