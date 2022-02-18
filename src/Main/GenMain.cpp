@@ -151,7 +151,14 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
 	  // setup & parsing the lattice file
 
       if (element.compare("&setup")==0){
-          for (const auto &[key,val] :comarg){   // overwriting from the commandline input
+          // overwriting from the commandline input
+          for (const auto &[key,val] :comarg){
+              // consistency check: display info message if new element is added to argument map (it may fail in Setup::init)
+              if(argument.find(key)==argument.end()) {
+                  if(rank==0) {
+                      cout << "info message: adding parameter '"<<key<<"' to &setup" << endl;
+                  }
+              }
               argument[key] = val;
           }
           if (!setup->init(rank,&argument,lattice, filter)){ break;}
