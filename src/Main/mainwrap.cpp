@@ -132,6 +132,7 @@ int main (int argc, char *argv[])
 		// cout << "input file name: " << filename << endl;
 	}
 
+#if 0
     if(rank==0) {
         cout << endl << "### reporting options ###" << endl;
 
@@ -146,6 +147,7 @@ int main (int argc, char *argv[])
         }
         cout << "### DONE ###" << endl;
     }
+#endif
 
     if(!got_filename) {
         if(rank==0)
