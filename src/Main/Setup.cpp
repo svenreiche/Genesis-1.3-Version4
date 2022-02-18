@@ -66,6 +66,7 @@ void Setup::usage(){
   cout << " bool exclude_current_output = true" << endl;
   cout << " bool exclude_field_dump = false" << endl;
   cout << " bool write_semaphore_file = false" << endl;
+  cout << " string semaphore_file_name = <derived from 'rootname'>" << endl;
   cout << "&end" << endl << endl;
   return;
 }
@@ -97,6 +98,12 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagno
   if (arg->find("exclude_current_output")!=end)   {exclude_current_output  = atob(arg->at("exclude_current_output"));   arg->erase(arg->find("exclude_current_output"));}
   if (arg->find("exclude_field_dump")!=end)   {exclude_field_dump  = atob(arg->at("exclude_field_dump"));   arg->erase(arg->find("exclude_field_dump"));}
   if (arg->find("write_semaphore_file")!=end)   {sema_file_enabled  = atob(arg->at("write_semaphore_file"));   arg->erase(arg->find("write_semaphore_file"));}
+  if (arg->find("semaphore_file_name")!=end) {
+    // Providing a file name for the semaphore file always switches it on, overriding 'write_semaphore_file' flag.
+    // This allows to switch on semaphore functionality just by specifying corresponding command line argument -- no modification of G4 input file needed.
+    sema_file_enabled = true;
+    setSemaFN(arg->at("semaphore_file_name")); arg->erase(arg->find("semaphore_file_name"));
+  }
 
   // same code also in AlterSetup.cpp
   if (arg->find("beam_write_slices_from")!=end) {

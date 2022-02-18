@@ -72,8 +72,9 @@ int main (int argc, char *argv[])
 		{"lattice", 	required_argument,	NULL, 'l'},
 		{"beamline",	required_argument,	NULL, 'b'},
 		{"seed",	required_argument,	NULL, 's'},
+		{"semaphore-file", required_argument,	NULL, 'S'},
 		{"help",	no_argument,		NULL, 'h'},
-		{NULL, 0, NULL, 0}
+		{NULL, 0, NULL, 0}	/* marks end of list => do not remove */
 	};
 
 	// inhibit error messages by getopt from all MPI processes except rank 0
@@ -88,8 +89,14 @@ int main (int argc, char *argv[])
 	map<string,string> arguments; /* keys of this map correspond to the parameter names in &setup namelist */
 
 	int curr_opt;
-	while((curr_opt=getopt_long(argc, argv, "o:l:b:s:h", opts, NULL)) != -1)
+	while((curr_opt=getopt_long(
+		argc, argv,
+		"o:l:b:s:h",	/* options that can be specified by single letter (see docs for effect of ':') */
+		opts,
+		NULL)) != -1)
 	{
+		// Keep in mind that the value of 'optarg' changes with every iteration of this loop
+		// => generate copy if needed
 		switch(curr_opt)
 		{
 			case 'o':
@@ -107,6 +114,10 @@ int main (int argc, char *argv[])
 			case 's':
 				/* FIXME: add check to see if user-provided string can be converted to int */
 				arguments["seed"] = optarg;
+				break;
+
+			case 'S':
+				arguments["semaphore_file_name"] = optarg;
 				break;
 
 
