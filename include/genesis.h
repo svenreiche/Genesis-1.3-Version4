@@ -9,7 +9,6 @@
 
 using namespace std;
 
+int genmain(string, map<string,string> &,bool);
 
-
-double genmain(string, map<string,string> &,bool);
 #endif

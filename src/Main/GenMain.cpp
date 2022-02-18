@@ -43,6 +43,7 @@
 #include "Collective.h"
 #include "Wake.h"
 #include "Diagnostic.h"
+#include "SemaFile.h"
 
 #include <sstream>
 
@@ -62,10 +63,10 @@ bool MPISingle;  // global variable to do mpic or not
 //vector<double> evtime;
 //double evt0;
 
-double genmain (string mainstring, map<string,string> &comarg, bool split) {
+int genmain (string mainstring, map<string,string> &comarg, bool split) {
 
     meta_inputfile=mainstring;
-    double ret=0;
+    int ret=0;
     MPISingle=split;
 	int rank,size;
 
@@ -99,6 +100,11 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
 
     //----------------------------------------------------------
     // main loop extracting one element with arguments at a time
+    //
+    // It is assumed that (except for a few well-defined reasons)
+    // the loop is only left if there is an error while processing
+    // the input file.
+    bool successful_run=false; // successful simulation run?
     Parser parser;
     string element;
     map<string,string> argument;
@@ -123,7 +129,18 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
     // main loop for parsing
     parser.open(mainstring,rank);
 
-    while(parser.parse(&element,&argument)){
+        while(true){
+          bool parser_result = parser.parse(&element,&argument);
+          if(parser_result==false) {
+            // parser returned 'false', analyse reason
+            if(parser.fail()) {
+              successful_run=false;
+            } else {
+              successful_run=true; // probably reached eof (nothing was parsed, but also no parsing error detected) => FIXME: implement more analysis
+            }
+            break;
+          }
+
 	  //----------------------------------------------
 	  // log event
 	  //	  clocknow=clock();
@@ -134,7 +151,14 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
 	  // setup & parsing the lattice file
 
       if (element.compare("&setup")==0){
-          for (const auto &[key,val] :comarg){   // overwriting from the commandline input
+          // overwriting from the commandline input
+          for (const auto &[key,val] :comarg){
+              // consistency check: display info message if new element is added to argument map (it may fail in Setup::init)
+              if(argument.find(key)==argument.end()) {
+                  if(rank==0) {
+                      cout << "info message: adding parameter '"<<key<<"' to &setup" << endl;
+                  }
+              }
               argument[key] = val;
           }
           if (!setup->init(rank,&argument,lattice, filter)){ break;}
@@ -315,6 +339,7 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
             if (rank==0) {
               cout << endl << "*** &stop element: User requested end of simulation ***" << endl;
             }
+            successful_run=true; // we reached "stop" command without error
             break;
           }
 
@@ -344,9 +369,32 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
           delete field[i];
 
 
+
+        // generate semaphore file (done by mpi rank 0)
+        // -> if requested by user (filename is derived from rootname)
+        // -> if run was successful
+        if (setup->getSemaEn()) {
+          if(successful_run) {
+            SemaFile sema;
+            if (rank==0) {
+              string fn;
+              if(setup->getSemaFN(&fn)) {
+                sema.put(fn);
+                cout << endl << "generating semaphore file " << fn << endl;
+              } else {
+                cout << endl << "error: not writing semaphore file, filename not defined" << endl;
+              }
+            }
+          } else {
+            if (rank==0) {
+              cout << endl << "not writing semaphore file, as the run likely was not successful" << endl;
+            }
+          }
+        }
+
+
 	//	event.push_back("end");
 	//	evtime.push_back(double(clocknow-clockstart));
-
 	clocknow=clock();
 
  	if (rank==0) {
@@ -372,6 +420,7 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
 	  */
         }
 
-        return ret;
 
+        ret = (successful_run) ? 0 : 1;
+        return(ret);
 }

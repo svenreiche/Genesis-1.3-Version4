@@ -113,6 +113,8 @@ user want to change some parameter the namelist `altersetup` should be used.
     true and sorting events the current profile might change. Example are ESASE/HGHG
     schemes. By setting the flag to false the current profile is written out at each output
     step similar to radiation power and bunching profile
+- `write_semaphore_file` (*bool, false*): If true, an empty file is generated as the simulation is completed. The default file name is derived from `rootname` and has the extension `.sema`. No file is written if the simulation aborts (examples are errors while parsing the input file or errors while executing commands), or if the simulation crashes (for example because of out-of-memory condition).
+- `semaphore_file_name` (*string,< rootname.sema >*): Adjust name of semaphore file written as simulation is completed. Assigning this parameter automatically sets `write_semaphore_file=true`, overriding the value of `write_semaphore_file` in the input file. This parameter can also be specified using the `--semaphore-file` command line option.
 
 <a name="altersetup">**altersetup**</a>
 

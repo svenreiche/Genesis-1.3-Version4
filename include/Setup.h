@@ -41,6 +41,10 @@ class Setup: public StringProcessing{
    bool   outputEnergy();
    bool   outputAux();
    bool   outputFieldDump();
+   bool   getSemaEn();
+   void   setSemaFN(string);
+   bool   getSemaFN(string *);
+
    int    getNpart();
    int    getNbins();
    int    getSeed();
@@ -74,6 +78,9 @@ class Setup: public StringProcessing{
    int beam_write_slices_from, beam_write_slices_to, beam_write_slices_inc;
 
    int seed, rank,npart,nbins,runcount;
+
+   bool sema_file_enabled;
+   string sema_file_name; // user-defined name of semaphore file, if empty: file name will be derived in function getSemaFN
 };
 
 inline string Setup::getLattice(){return lattice;}
@@ -119,4 +126,6 @@ inline void   Setup::BWF_set_inc(int in)
 	}
 	beam_write_slices_inc=in;
 }
+
+inline bool   Setup::getSemaEn() { return sema_file_enabled; }
 #endif

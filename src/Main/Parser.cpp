@@ -2,15 +2,20 @@
 
 Parser::Parser()
 {
+  is_parse_error=false;
 }
 
 Parser::~Parser()
 {
 }
 
+bool Parser::fail(void)
+{
+  return (is_parse_error);
+}
+
 bool Parser::open(string file, int inrank)
 {
-
   string instring;
   ostringstream os;
   fstream fin;
@@ -27,14 +32,12 @@ bool Parser::open(string file, int inrank)
   fin.close();
   input.str(os.str());
   return true;
-
 }
 
 
 
 bool Parser::parse(string *element, map<string,string> *argument)
 {
-
   string instring, list;
   bool accumulate=false;
   
@@ -48,7 +51,8 @@ bool Parser::parse(string *element, map<string,string> *argument)
     // check for terminating element and then return
     if ((instring.compare("&end")==0)|| (instring.compare("&END")==0) || (instring.compare("&End")==0)){
       if (!accumulate){
-        if (rank==0){cout << "*** Error: Termination string outside element definition in input file" << endl;}    
+        if (rank==0){cout << "*** Error: Termination string outside element definition in input file" << endl;}
+        is_parse_error=true;
 	return false;
       }
       return this->fillMap(&list,argument);
@@ -58,6 +62,7 @@ bool Parser::parse(string *element, map<string,string> *argument)
     if (!instring.compare(0,1,"&")){
       if (accumulate){
         if (rank==0) {cout << "*** Error: Nested elements in main input file" << endl;}
+        is_parse_error=true;
 	return false;
       }
       accumulate=true;
@@ -66,7 +71,6 @@ bool Parser::parse(string *element, map<string,string> *argument)
       }
       *element=instring;   
       continue;
-
     }
 
     // add content if in element
@@ -77,7 +81,6 @@ bool Parser::parse(string *element, map<string,string> *argument)
   }
   
   return false;
-
 }
 
 bool Parser::fillMap(string *list,map<string,string> *map){
@@ -97,6 +100,7 @@ bool Parser::fillMap(string *list,map<string,string> *map){
        tpos=val.find_first_of("=");
        if (tpos ==string::npos){
          if (rank==0){ cout << "*** Error: Invalid format " << val << " in input file" << endl;}
+         is_parse_error=true;
          return false;
        } else{
          key=val.substr(0,tpos);
@@ -107,6 +111,7 @@ bool Parser::fillMap(string *list,map<string,string> *map){
        }
      }
   }
-  
+
+  is_parse_error=false; 
   return true;
 }

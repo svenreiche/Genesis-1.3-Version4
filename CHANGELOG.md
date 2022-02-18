@@ -10,5 +10,6 @@ Version 4.5.1 has been released. Part of it is this Change Log file, which will 
 - Command line arguments are now overwriting the correpsonding input the main input file. Supported are the output file root name, the lattice file, the beam line and the seed for the shot noise power.
 - The compilation is changed to CMAKE, which allows for some configuration before compilation. It automatically searches for the required libraries and no manual configuration of the Makefile is needed any longer. 
 - 20220218: New command line parser
+- 20220218: Added support for semaphore file. If requested, this file is written at the end of a successful simulation run.
 
 
