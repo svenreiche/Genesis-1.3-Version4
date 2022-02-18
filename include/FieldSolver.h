@@ -6,6 +6,10 @@
 #include <string>
 #include <complex>
 
+#ifdef FFTW
+#include <fftw3.h>
+#endif
+
 
 class Field;
 class Beam;
@@ -23,6 +27,8 @@ class FieldSolver{
    virtual ~FieldSolver();
    void getDiag(double,double,double,int);
    void advance(double, Field *, Beam *, Undulator *);
+   void init(int);
+   void initSourceFilter(bool, double, double, double);
 
  private:
    int ngrid;
@@ -30,6 +36,14 @@ class FieldSolver{
    complex<double> cstep;
    vector< complex< double > > r,c,cbet,cwet,crsource;
 
+   bool   difffilter_;
+   double filtcutx_, filtcuty_, filtsig_;
+
+#ifdef FFTW
+    complex<double> *in, *out;
+    fftw_plan p,pi;
+#endif
+   void filterSourceTerm();
    void ADI(vector<complex< double > > &);
    void tridagx(vector<complex< double > > &);
    void tridagy(vector<complex< double > > &);

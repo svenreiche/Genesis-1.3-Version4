@@ -58,7 +58,7 @@ class Field{
    bool polarization;
    double slicelength,s0;
    double accuslip;
-
+   FieldSolver solver;
 
    vector<double> power,xsig,xavg,ysig,yavg ;  // buffer to accumulate before writing it out
    vector<double> txsig,txavg,tysig,tyavg ;  // buffer to accumulate before writing it out
@@ -82,7 +82,7 @@ class Field{
    fftw_plan p;
 #endif
      
-   FieldSolver solver;
+
 };
 
 

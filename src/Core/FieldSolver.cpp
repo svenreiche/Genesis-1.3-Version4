@@ -5,10 +5,73 @@
 FieldSolver::FieldSolver()
 {
   delz_save=0;
+  difffilter_ = false;
+  ngrid = 0;
 }
 
-FieldSolver::~FieldSolver(){}
+FieldSolver::~FieldSolver(){
+#ifdef FFTW
+    if (ngrid > 0){
+        delete[] in;
+        delete[] out;
+        fftw_destroy_plan(p);
+        fftw_destroy_plan(pi);
+    }
+#endif
+}
 
+
+void FieldSolver::init(int ngrid_in){
+    /**
+     * Initialize the field solver to allocate memory etc.
+     * @param ngrid_in - number of grid points in one dimension
+     * @return none
+     */
+
+    if (ngrid !=ngrid_in) {
+        ngrid = ngrid_in;
+        c.resize(ngrid);
+        r.resize(ngrid * ngrid);
+        cbet.resize(ngrid);
+        cwet.resize(ngrid);
+        crsource.resize(ngrid * ngrid);
+#ifdef FFTW
+        if (ngrid > 0) {
+            delete[] in;
+            delete[] out;
+            fftw_destroy_plan(p);
+            fftw_destroy_plan(pi);
+        }
+        in = new complex<double>[ngrid * ngrid];
+        out = new complex<double>[ngrid * ngrid];
+        p = fftw_plan_dft_2d(ngrid, ngrid, reinterpret_cast<fftw_complex *>(in), reinterpret_cast<fftw_complex *>(out),
+                             FFTW_FORWARD, FFTW_MEASURE);
+        pi = fftw_plan_dft_2d(ngrid, ngrid, reinterpret_cast<fftw_complex *>(in), reinterpret_cast<fftw_complex *>(out),
+                              FFTW_BACKWARD, FFTW_MEASURE);
+#endif
+    }
+}
+
+void FieldSolver::initSourceFilter(bool do_filter,double kx0, double ky0, double ksig) {
+    /**
+    * Initializes all parameter for filtering the source term
+    * @param do_filter - filter to enable and disable filtering
+    * @param kx0 - the relative spatial frequency in x, where sigmoid function is 1/2
+    * @param ky0 - the relative spatial frequency in y, where sigmoid function is 1/2
+    * @param ksig - the steepness of the sigmoid function
+    * @returns None
+    */
+#ifdef FFTW
+    difffilter_ = do_filter;
+    filtcutx_ = kx0;
+    filtcuty_ = ky0;
+    filtsig_ = ksig;
+    if (filtsig_ <= 0) {  // check for unphysical input
+        filtsig_ = 1;
+        difffilter_ = false;
+    }
+#endif
+}
 
 
 void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
@@ -33,38 +96,67 @@ void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
        int idx;
 
        for (int ip=0;ip<beam->beam.at(ii).size();ip++){
-	 double x    =beam->beam.at(ii).at(ip).x;
-	 double y    =beam->beam.at(ii).at(ip).y;
-	 double theta=static_cast<double>(harm)*beam->beam.at(ii).at(ip).theta;
-	 double gamma=beam->beam.at(ii).at(ip).gamma;
-
-         if (field->getLLGridpoint(x,y,&wx,&wy,&idx)){
-
-           part=sqrt(und->faw2(x,y))*scl/gamma;
+	      double x    =beam->beam.at(ii).at(ip).x;
+	      double y    =beam->beam.at(ii).at(ip).y;
+	      double theta=static_cast<double>(harm)*beam->beam.at(ii).at(ip).theta;
+	      double gamma=beam->beam.at(ii).at(ip).gamma;
+          if (field->getLLGridpoint(x,y,&wx,&wy,&idx)){
+            part=sqrt(und->faw2(x,y))*scl/gamma;
            // tmp  should be also normalized with beta parallel
-           cpart=complex<double>(sin(theta),cos(theta))*part;
+            cpart=complex<double>(sin(theta),cos(theta))*part;
+            weight=wx*wy;
+ 	        crsource[idx]+=weight*cpart;
+            weight=(1-wx)*wy;
+            idx++;
+	        crsource[idx]+=weight*cpart;
+            weight=wx*(1-wy);
+            idx+=ngrid-1;
+            crsource[idx]+=weight*cpart;
+            weight=(1-wx)*(1-wy);
+            idx++;
+	        crsource[idx]+=weight*cpart;
 
-           weight=wx*wy;
-	   crsource[idx]+=weight*cpart;
-           weight=(1-wx)*wy;
-           idx++;
-	   crsource[idx]+=weight*cpart;
-           weight=wx*(1-wy);
-           idx+=ngrid-1;
-           crsource[idx]+=weight*cpart;
-           weight=(1-wx)*(1-wy);
-           idx++;
-	   crsource[idx]+=weight*cpart;
-
-	 }
+          }
        } 
     }  // end of source term construction
-
+    this->filterSourceTerm();
     this->ADI(field->field[i]);
-  } 	  
-
+  }
   return;
 }
+
+void FieldSolver::filterSourceTerm()
+{
+    /**
+    * filter the source term to avoid emission under strong angle. The source term is transformed via
+    * FFTW2D. Spectral components under a large angle are damped according to a sigmoid function.
+    * @returns None
+    */
+    if (!difffilter_) { return; }
+#ifdef FFTW
+    double sum1 = 0;
+    for (int idx=0; idx <ngrid*ngrid;idx++){
+        in[idx]=crsource[idx];   // field for the FFT
+        sum1+=crsource[idx].real()*crsource[idx].real();
+        sum1+=crsource[idx].imag()*crsource[idx].imag();
+    }
+    fftw_execute(p);
+    for (int idx=0;idx<ngrid*ngrid;idx++) {
+        in[idx] = out[idx];
+    }
+    fftw_execute(pi);
+    double sum2=0;
+    for (int idx=0; idx <ngrid*ngrid;idx++){
+        sum2+=out[idx].real()*out[idx].real();
+        sum2+=out[idx].imag()*out[idx].imag();
+    }
+    cout << "FFT input: " << sum1 << endl;
+    cout << "FFT output:" << sum2 << endl;
+    cout << "ratio: " << sum1/sum2*ngrid*ngrid*ngrid*ngrid<< endl;
+
+#endif
+}
+
 
 
 void FieldSolver::ADI(vector<complex<double> > &crfield)
@@ -157,13 +249,6 @@ void FieldSolver::getDiag(double delz,double dgrid, double xks, int ngrid_in)
   double *mlow = new double[ngrid];
   complex<double> *cwrk1= new complex<double>[ngrid];
   complex<double> *cwrk2= new complex<double>[ngrid];
-  if (c.size()!=ngrid){
-    c.resize(ngrid);
-    r.resize(ngrid*ngrid);
-    cbet.resize(ngrid);
-    cwet.resize(ngrid);
-    crsource.resize(ngrid*ngrid);
-  }
 
   mupp[0]=rtmp;
   mmid[0]=-2*rtmp;
