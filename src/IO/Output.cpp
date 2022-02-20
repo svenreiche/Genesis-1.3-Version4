@@ -95,7 +95,8 @@ void Output::writeMeta(Undulator *und)
   this->writeSingleNodeString(gid,"TimeStamp", &tim);
 
   /* store selected environment variables */
-  const char *env_vars[] = {"HOST", "PWD", NULL};
+  // const char *env_vars[] = {"HOST", "PWD", NULL};
+  const char *env_vars[] = {"HOST", NULL};
   for(const char **p_env = &env_vars[0]; *p_env!=NULL; p_env++) {
      char *env_val = getenv(*p_env);
      string env = "Undefined";
@@ -111,6 +112,15 @@ void Output::writeMeta(Undulator *und)
   if (NULL != (pws=getpwuid(getuid()))) // 'getpwuid' system call returns nullptr in case lookup was unsuccessful...
     user = pws->pw_name;
   this->writeSingleNodeString(gid,"User", &user);
+
+
+  const int cwd_buflen = 4096;
+  char cwd_buf[cwd_buflen];
+  string cwd="getcwd call failed";
+  if (getcwd(cwd_buf, cwd_buflen)!=NULL) {
+    cwd = cwd_buf;
+  }
+  this->writeSingleNodeString(gid,"cwd", &cwd);
 
 
   /*** copy input files into .out.h5 file ***/
