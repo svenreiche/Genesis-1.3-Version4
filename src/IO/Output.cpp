@@ -94,26 +94,17 @@ void Output::writeMeta(Undulator *und)
   string tim (ctime(&timer));
   this->writeSingleNodeString(gid,"TimeStamp", &tim);
 
-  int mpisize;
-  MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
-  tmp[0] = mpisize;
-  this->writeSingleNode(gid,"mpisize", " ", &tmp);
-
-
-  const char *env_var[2] = {"HOST","PWD"};
-  char *env_val[2];
-  string env;
-
-  for(int i=0; i<2; i++){
-
-     env_val[i] = getenv(env_var[i]);
-     if (env_val[i] != NULL){
-       env=env_val[i];
-     } else {
-       env = "Undefined";
+  /* store selected environment variables */
+  const char *env_vars[] = {"HOST", "PWD", NULL};
+  for(const char **p_env = &env_vars[0]; *p_env!=NULL; p_env++) {
+     char *env_val = getenv(*p_env);
+     string env = "Undefined";
+     if (env_val != NULL){
+       env=env_val;
      }
-      this->writeSingleNodeString(gid,env_var[i], &env);
+     this->writeSingleNodeString(gid, *p_env, &env);
   }
+
 
   struct passwd *pws;
   string user = "username lookup failed";
@@ -138,6 +129,7 @@ void Output::writeMeta(Undulator *und)
   inFile2.close();
 
   reportDumps(gid, und);
+  reportMPI(gid);
 
   H5Gclose(gid);
 }
@@ -232,6 +224,17 @@ void Output::reportDumps(hid_t gid, Undulator *und)
     writeSingleNodeInt(gid_dr, objname.str(), &tmp); */
   }
   H5Gclose(gid_dr);
+}
+
+void Output::reportMPI(hid_t gid)
+{
+  vector<double> tmp;
+  tmp.resize(1);
+
+  int mpisize;
+  MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
+  tmp[0] = mpisize;
+  this->writeSingleNode(gid,"mpisize", " ", &tmp);
 }
 
 void Output::writeLattice(Beam * beam,Undulator *und)
