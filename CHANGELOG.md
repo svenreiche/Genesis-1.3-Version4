@@ -11,5 +11,6 @@ Version 4.5.1 has been released. Part of it is this Change Log file, which will 
 - The compilation is changed to CMAKE, which allows for some configuration before compilation. It automatically searches for the required libraries and no manual configuration of the Makefile is needed any longer. 
 - 20220218: New command line parser
 - 20220218: Added support for semaphore file. If requested, this file is written at the end of a successful simulation run.
+- 20220218: Exit code of GENESIS binary now depends on status (0 for success, 1 in case of error)
 
 

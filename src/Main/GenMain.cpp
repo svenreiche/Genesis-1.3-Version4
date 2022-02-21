@@ -354,6 +354,25 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
           break;
         }
 
+        /*
+         * Semaphore file: Decide now what to do in the end (and prepare the needed information)
+         * -> if requested by user (filename is provided by user *or* derived from rootname)
+         * -> if run was successful
+         *
+         * Actual file generation is delayed until the very end as the
+         * simulation could still crash when free-ing objects.
+         */
+        bool semafile_en=false;
+        string semafile_fn;
+        bool semafile_fn_valid=false;
+        if ((semafile_en=setup->getSemaEn())) {
+          if(successful_run) {
+            if(setup->getSemaFN(&semafile_fn)) {
+              semafile_fn_valid=true;
+            }
+          }
+        }
+
 
         /*** clean up ***/
         delete timewindow;
@@ -369,18 +388,14 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
           delete field[i];
 
 
-
-        // generate semaphore file (done by mpi rank 0)
-        // -> if requested by user (filename is derived from rootname)
-        // -> if run was successful
-        if (setup->getSemaEn()) {
+        /* NOW, generate the semaphore file */
+        if (semafile_en) {
           if(successful_run) {
             SemaFile sema;
             if (rank==0) {
-              string fn;
-              if(setup->getSemaFN(&fn)) {
-                sema.put(fn);
-                cout << endl << "generating semaphore file " << fn << endl;
+              if(semafile_fn_valid) {
+                sema.put(semafile_fn);
+                cout << endl << "generating semaphore file " << semafile_fn << endl;
               } else {
                 cout << endl << "error: not writing semaphore file, filename not defined" << endl;
               }
