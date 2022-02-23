@@ -79,6 +79,13 @@ bool Parser::parse(string *element, map<string,string> *argument)
        list.append(";");
     }
   }
+
+
+  if(accumulate) {
+    // Currently accumulating parameters of namelist, arriving here before reaching &end is considered an error
+    if (rank==0){cout << "*** Error: Reached end of input file while parsing namelist '" << *element << "'" << endl;}
+    is_parse_error=true;
+  }
   
   return false;
 }
