@@ -132,9 +132,10 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
        }
     }
   }
+  
 
   for (unsigned int i=0; i<field->size();i++){
-        field->at(i)->resetSlippage();
+      field->at(i)->resetSlippage();
   }
 
     // initial diagnostic

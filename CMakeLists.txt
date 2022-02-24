@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # OpenMPI: preprocessor macro to disable C++ interface (then we don't have to link libmpi_cxx)
-#add_compile_definitions(OMPI_SKIP_MPICXX)
+add_compile_definitions(OMPI_SKIP_MPICXX)
 
 list(APPEND CMAKE_PREFIX_PATH $ENV{FFTW_ROOT})
 
@@ -99,6 +99,7 @@ add_library(genesis13 STATIC
         src/Util/RandomU.cpp
         src/Util/Sorting.cpp
         src/Util/StringProcessing.cpp
+        src/Util/SemaFile.cpp
         src/Lattice/AlterLattice.cpp
         src/Lattice/Lattice.cpp
         src/Lattice/LatticeElements.cpp

@@ -57,7 +57,6 @@ void Field::init(int nsize, int ngrid_in, double dgrid_in, double xlambda0, doub
     }
   }
 
-
   in = new complex<double> [ngrid*ngrid];
   out= new complex<double> [ngrid*ngrid];
 

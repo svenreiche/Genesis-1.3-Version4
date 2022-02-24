@@ -100,8 +100,6 @@ inline void Field::setOutput(bool nofft_in, bool noSpatial_in, bool noInten_in, 
   doDumpField = !noDumpField_in;
 }
 
-inline void Field::resetSlippage(){ accuslip=0; }
-
 inline void Field::disable(double conv)
 {
   if (disabled==false){  // check whether it hasn't been disabled before

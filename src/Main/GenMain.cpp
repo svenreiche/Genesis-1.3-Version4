@@ -43,6 +43,7 @@
 #include "Collective.h"
 #include "Wake.h"
 #include "Diagnostic.h"
+#include "SemaFile.h"
 
 #include <sstream>
 
@@ -62,10 +63,10 @@ bool MPISingle;  // global variable to do mpic or not
 //vector<double> evtime;
 //double evt0;
 
-double genmain (string mainstring, map<string,string> &comarg, bool split) {
+int genmain (string mainstring, map<string,string> &comarg, bool split) {
 
     meta_inputfile=mainstring;
-    double ret=0;
+    int ret=0;
     MPISingle=split;
 	int rank,size;
 
@@ -84,9 +85,10 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
 	//	event.push_back("start");
 	//	evtime.push_back(0);
 
-	if (rank==0){         // the output of version and build has been moved to the wrapper mainwrap.cpp
-    	  cout << "Starting Time: " << ctime(&timer)<< endl;
-          cout << "MPI-Comm Size: " << size << " nodes" << endl << endl;
+    if (rank==0){         // the output of version and build has been moved to the wrapper mainwrap.cpp
+        time(&timer);
+        cout << "Starting Time: " << ctime(&timer)<< endl;
+        cout << "MPI-Comm Size: " << size << " nodes" << endl << endl;
     }
 
     //---------------------------------------------------------
@@ -98,6 +100,11 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
 
     //----------------------------------------------------------
     // main loop extracting one element with arguments at a time
+    //
+    // It is assumed that (except for a few well-defined reasons)
+    // the loop is only left if there is an error while processing
+    // the input file.
+    bool successful_run=false; // successful simulation run?
     Parser parser;
     string element;
     map<string,string> argument;
@@ -122,7 +129,18 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
     // main loop for parsing
     parser.open(mainstring,rank);
 
-    while(parser.parse(&element,&argument)){
+        while(true){
+          bool parser_result = parser.parse(&element,&argument);
+          if(parser_result==false) {
+            // parser returned 'false', analyse reason
+            if(parser.fail()) {
+              successful_run=false;
+            } else {
+              successful_run=true; // probably reached eof (nothing was parsed, but also no parsing error detected) => FIXME: implement more analysis
+            }
+            break;
+          }
+
 	  //----------------------------------------------
 	  // log event
 	  //	  clocknow=clock();
@@ -133,7 +151,14 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
 	  // setup & parsing the lattice file
 
       if (element.compare("&setup")==0){
-          for (const auto &[key,val] :comarg){   // overwriting from the commandline input
+          // overwriting from the commandline input
+          for (const auto &[key,val] :comarg){
+              // consistency check: display info message if new element is added to argument map (it may fail in Setup::init)
+              if(argument.find(key)==argument.end()) {
+                  if(rank==0) {
+                      cout << "info message: adding parameter '"<<key<<"' to &setup" << endl;
+                  }
+              }
               argument[key] = val;
           }
           if (!setup->init(rank,&argument,lattice, filter)){ break;}
@@ -314,6 +339,7 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
             if (rank==0) {
               cout << endl << "*** &stop element: User requested end of simulation ***" << endl;
             }
+            successful_run=true; // we reached "stop" command without error
             break;
           }
 
@@ -326,6 +352,25 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
             cout << "*** Error: Unknown element in input file: " << element << endl; 
 	  }
           break;
+        }
+
+        /*
+         * Semaphore file: Decide now what to do in the end (and prepare the needed information)
+         * -> if requested by user (filename is provided by user *or* derived from rootname)
+         * -> if run was successful
+         *
+         * Actual file generation is delayed until the very end as the
+         * simulation could still crash when free-ing objects.
+         */
+        bool semafile_en=false;
+        string semafile_fn;
+        bool semafile_fn_valid=false;
+        if ((semafile_en=setup->getSemaEn())) {
+          if(successful_run) {
+            if(setup->getSemaFN(&semafile_fn)) {
+              semafile_fn_valid=true;
+            }
+          }
         }
 
 
@@ -343,9 +388,28 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
           delete field[i];
 
 
+        /* NOW, generate the semaphore file */
+        if (semafile_en) {
+          if(successful_run) {
+            SemaFile sema;
+            if (rank==0) {
+              if(semafile_fn_valid) {
+                sema.put(semafile_fn);
+                cout << endl << "generating semaphore file " << semafile_fn << endl;
+              } else {
+                cout << endl << "error: not writing semaphore file, filename not defined" << endl;
+              }
+            }
+          } else {
+            if (rank==0) {
+              cout << endl << "not writing semaphore file, as the run likely was not successful" << endl;
+            }
+          }
+        }
+
+
 	//	event.push_back("end");
 	//	evtime.push_back(double(clocknow-clockstart));
-
 	clocknow=clock();
 
  	if (rank==0) {
@@ -371,6 +435,7 @@ double genmain (string mainstring, map<string,string> &comarg, bool split) {
 	  */
         }
 
-        return ret;
 
+        ret = (successful_run) ? 0 : 1;
+        return(ret);
 }
