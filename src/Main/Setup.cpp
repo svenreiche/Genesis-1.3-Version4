@@ -35,6 +35,8 @@ Setup::Setup()
 
   // count of runs in conjunction of calls of altersetup
   runcount = 0;
+
+  sema_file_enabled=false;
 }
 
 Setup::~Setup(){}
@@ -63,6 +65,8 @@ void Setup::usage(){
   cout << " bool exclude_aux_output = false" << endl;
   cout << " bool exclude_current_output = true" << endl;
   cout << " bool exclude_field_dump = false" << endl;
+  cout << " bool write_semaphore_file = false" << endl;
+  cout << " string semaphore_file_name = <derived from 'rootname'>" << endl;
   cout << "&end" << endl << endl;
   return;
 }
@@ -93,6 +97,13 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagno
   if (arg->find("exclude_aux_output")!=end)       {exclude_aux_output      = atob(arg->at("exclude_aux_output"));       arg->erase(arg->find("exclude_aux_output"));}
   if (arg->find("exclude_current_output")!=end)   {exclude_current_output  = atob(arg->at("exclude_current_output"));   arg->erase(arg->find("exclude_current_output"));}
   if (arg->find("exclude_field_dump")!=end)   {exclude_field_dump  = atob(arg->at("exclude_field_dump"));   arg->erase(arg->find("exclude_field_dump"));}
+  if (arg->find("write_semaphore_file")!=end)   {sema_file_enabled  = atob(arg->at("write_semaphore_file"));   arg->erase(arg->find("write_semaphore_file"));}
+  if (arg->find("semaphore_file_name")!=end) {
+    // Providing a file name for the semaphore file always switches it on, overriding 'write_semaphore_file' flag.
+    // This allows to switch on semaphore functionality just by specifying corresponding command line argument -- no modification of G4 input file needed.
+    sema_file_enabled = true;
+    setSemaFN(arg->at("semaphore_file_name")); arg->erase(arg->find("semaphore_file_name"));
+  }
 
   // same code also in AlterSetup.cpp
   if (arg->find("beam_write_slices_from")!=end) {
@@ -161,4 +172,26 @@ void Setup::BWF_load_defaults()
   beam_write_slices_from=-1;
   beam_write_slices_to=-1;
   beam_write_slices_inc=1;
+}
+
+
+
+
+/* returns true if filename for semaphore file was generated */
+bool Setup::getSemaFN(string *fnout) {
+	// user-defined filename overrides the logic to derive from rootname
+	if(! sema_file_name.empty()) {
+		*fnout = sema_file_name;
+		return(true);
+	}
+
+	if(rootname.empty()) {
+		return(false);
+	}
+	*fnout = rootname;
+	*fnout += ".sema";
+	return(true);
+}
+void Setup::setSemaFN(string fn_in) {
+	sema_file_name = fn_in;
 }
