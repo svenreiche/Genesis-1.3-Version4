@@ -13,10 +13,10 @@ Version 4.5.1 has been released (11.1.2022)
 
 **Manual:**
 
-[Compilation](MANUAL_INSTALLATION.md)
+[Compilation](manual/INSTALLATION.md)
 
-[Main Input File](MANUAL_MAIN.md)
+[Main Input File](manual/MAIN_INPUT.md)
 
-[Lattice File](MANUAL_LATTICE.md)
+[Lattice File](manual/LATTICE.md)
 
 
