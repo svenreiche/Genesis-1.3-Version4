@@ -1,1 +1,0 @@
-/usr/bin/mpic++ -g CMakeFiles/genesis4.dir/src/Main/mainwrap.cpp.o -o genesis4  libgenesis13.a -lhdf5_mpich /usr/lib/x86_64-linux-gnu/libfftw3.so 

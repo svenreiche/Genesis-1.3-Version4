@@ -42,8 +42,7 @@ void FieldSolver::init(int ngrid_in){
             fftw_destroy_plan(p);
             fftw_destroy_plan(pi);
         }
-        sigmoidx_.resize(ngrid);
-        sigmoidy_.resize(ngrid);
+        sigmoid_.resize(ngrid*ngrid);
         in = new complex<double>[ngrid * ngrid];
         out = new complex<double>[ngrid * ngrid];
         p = fftw_plan_dft_2d(ngrid, ngrid, reinterpret_cast<fftw_complex *>(in), reinterpret_cast<fftw_complex *>(out),
@@ -54,7 +53,7 @@ void FieldSolver::init(int ngrid_in){
     }
 }
 
-void FieldSolver::initSourceFilter(bool do_filter,double kx0, double ky0, double ksig) {
+void FieldSolver::initSourceFilter(bool do_filter,double xc, double yc, double sig) {
     /**
     * Initializes all parameter for filtering the source term
     * @param do_filter - filter to enable and disable filtering
@@ -65,20 +64,20 @@ void FieldSolver::initSourceFilter(bool do_filter,double kx0, double ky0, double
     */
 #ifdef FFTW
     difffilter_ = do_filter;
-    if (ksig <= 0) {  // check for unphysical input
+    if (sig <= 0) {  // check for unphysical input
         difffilter_ = false;
     }
-    if (difffilter_){  // pre-calculation of sigmoid function
-        int nhalf = (ngrid-1)/2;
-        double xc = static_cast<double>(nhalf)*kx0;
-        double yc = static_cast<double>(nhalf)*ky0;
-        double sig = static_cast<double>(nhalf)*ksig;
-        for (int i=0; i<ngrid;i++){
-            int j = ((i+nhalf) % ngrid) - ngrid; // sequence: 0 1 2 3 ... n -(n-1) -(n-2) .... -2 -1  -> FFT order
-            double arg = (fabs(static_cast<double>(j))-xc)/sig;
-            sigmoidx_[i] = 1./(1.+exp(arg));
-            arg = (fabs(static_cast<double>(j))-yc)/sig;
-            sigmoidy_[i] = 1./(1.+exp(arg));
+    if (difffilter_) {  // pre-calculation of sigmoid function
+        int nhalf = (ngrid - 1) / 2;
+        int idx = 0;
+        for (int ix = 0; ix < ngrid; ix++) {
+            double x = static_cast<double>(((ix + nhalf) % ngrid - ngrid)) / static_cast<double>(nhalf) / xc;
+            for (int iy = 0; iy < ngrid; iy++) {
+                double y = static_cast<double>(((iy + nhalf) % ngrid - ngrid)) / static_cast<double>(nhalf) / yc;
+                double r = (sqrt(x * x + y * y) - 1) / sig;
+                sigmoid_[idx] = 1. / (1 + exp(r));
+                idx++;
+            }
         }
     }
 #endif
@@ -151,12 +150,8 @@ void FieldSolver::filterSourceTerm()
     }
     fftw_execute(p);
     // the sigmoid function can be pre-calculated
-    int idx = 0;
-    for (int ix=0; ix <ngrid; ix++){
-        for (int iy; iy < ngrid; iy++){
-            in[idx]=out[idx]*sigmoidx_[ix]*sigmoidy_[iy];
-            idx++;
-        }
+    for (int idx=0; idx <ngrid*ngrid; idx++){
+        in[idx]=out[idx]*sigmoid_[idx];
     }
     fftw_execute(pi);
     double norm = static_cast<double>(ngrid*ngrid*ngrid*ngrid);

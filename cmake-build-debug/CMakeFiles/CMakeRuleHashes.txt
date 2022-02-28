@@ -1,3 +1,0 @@
-# Hashes of file build rules.
-a6bf20eaf2e44a05680489dff7478d5b CMakeFiles/get_git_hash
-58e282c60f3bce37cdf121187257cce3 include/version.h

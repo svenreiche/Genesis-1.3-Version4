@@ -40,24 +40,8 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Reverted back CMakeLists.txt to original state">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/include/SemaFile.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/manual/INSTALLATION.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/manual/LATTICE.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/manual/MAIN_INPUT.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/manual/MANUAL.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/manual/Manual.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/manual/XGENESIS.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/manual/generate_manual.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Util/SemaFile.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MANUAL_INSTALLATION.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MANUAL_LATTICE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MANUAL_MAIN.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="merging dev into home-dev">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/cache-v2-12c0c8d2333ef38617f6.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/cmakeFiles-v1-46ff8d0f770185cf586e.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/.cmake/api/v1/reply/codemodel-v2-90222c5b868346f9226f.json" beforeDir="false" />
@@ -154,18 +138,7 @@
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/get_git_hash.dir/progress.make" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Field.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Field.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Output.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Output.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Parser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Setup.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Setup.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/genesis.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/genesis.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Core/Control.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Core/Control.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Core/Field.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Core/Field.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/IO/Output.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/IO/Output.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main/GenMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main/GenMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main/Parser.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main/Parser.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main/Setup.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main/Setup.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main/mainwrap.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main/mainwrap.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Core/FieldSolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Core/FieldSolver.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -222,11 +195,6 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.genesis4">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="genesis13" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Genesis_1_3_Version4" TARGET_NAME="genesis13" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -296,6 +264,7 @@
       <workItem from="1645112835305" duration="18890000" />
       <workItem from="1645710733905" duration="561000" />
       <workItem from="1645711362376" duration="2000" />
+      <workItem from="1646063920040" duration="524000" />
     </task>
     <task id="LOCAL-00001" summary="Imported into CLion">
       <created>1593502139044</created>
@@ -395,7 +364,14 @@
       <option name="project" value="LOCAL" />
       <updated>1645710801008</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="merging dev into home-dev">
+      <created>1645720180457</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1645720180457</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -452,6 +428,7 @@
     <MESSAGE value="Fixed missing initialization of accuslip, which was previously in Field::initDiagnostic() but is essential and should be initialized elsewhere. It is now in COntrol::init() where accuslip is set to zero at the beginning of each tracking" />
     <MESSAGE value="Initial draft for source term filtering. The input file in Benchmark 1 has the new input parameters listed. It needs testing in particular check if X- and Y- are exchange in the output. This includes also the divergence in the main output file&quot;" />
     <MESSAGE value="Reverted back CMakeLists.txt to original state" />
-    <option name="LAST_COMMIT_MESSAGE" value="Reverted back CMakeLists.txt to original state" />
+    <MESSAGE value="merging dev into home-dev" />
+    <option name="LAST_COMMIT_MESSAGE" value="merging dev into home-dev" />
   </component>
 </project>
