@@ -87,6 +87,7 @@ class Field{
 };
 
 
+inline void Field::resetSlippage() {accuslip=0;}
 inline bool Field::outputFFT(){ return doFFT;}
 inline bool Field::outputSpatial(){ return doSpatial;}
 inline bool Field::outputIntensity(){ return doIntensity;}

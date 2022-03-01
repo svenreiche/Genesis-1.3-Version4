@@ -37,8 +37,7 @@ class FieldSolver{
    vector< complex< double > > r,c,cbet,cwet,crsource;
 
    bool   difffilter_;
-   double filtcutx_, filtcuty_, filtsig_;
-   vector<double> sigmoidx_,sigmoidy_;
+   vector<double> sigmoid_;
 
 #ifdef FFTW
     complex<double> *in, *out;

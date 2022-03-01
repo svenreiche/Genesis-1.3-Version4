@@ -70,10 +70,10 @@ void FieldSolver::initSourceFilter(bool do_filter,double xc, double yc, double s
     if (difffilter_) {  // pre-calculation of sigmoid function
         int nhalf = (ngrid - 1) / 2;
         int idx = 0;
-        for (int ix = 0; ix < ngrid; ix++) {
-            double x = static_cast<double>(((ix + nhalf) % ngrid - ngrid)) / static_cast<double>(nhalf) / xc;
-            for (int iy = 0; iy < ngrid; iy++) {
-                double y = static_cast<double>(((iy + nhalf) % ngrid - ngrid)) / static_cast<double>(nhalf) / yc;
+        for (int iy = 0; iy < ngrid; iy++) {
+            double y = static_cast<double>(((iy + nhalf) % ngrid - nhalf)) / static_cast<double>(nhalf) / yc;
+            for (int ix = 0; ix < ngrid; ix++) {
+                double x = static_cast<double>(((ix + nhalf) % ngrid - nhalf)) / static_cast<double>(nhalf) / xc;
                 double r = (sqrt(x * x + y * y) - 1) / sig;
                 sigmoid_[idx] = 1. / (1 + exp(r));
                 idx++;
@@ -154,7 +154,7 @@ void FieldSolver::filterSourceTerm()
         in[idx]=out[idx]*sigmoid_[idx];
     }
     fftw_execute(pi);
-    double norm = static_cast<double>(ngrid*ngrid*ngrid*ngrid);
+    double norm = 1./static_cast<double>(ngrid*ngrid);
     for (int idx=0; idx <ngrid*ngrid;idx++){
         crsource[idx]=out[idx]*norm;
     }
