@@ -1,5 +1,6 @@
 #include "Lattice.h"
 
+
 Lattice::Lattice()
 {
   matched=false;
@@ -26,9 +27,13 @@ bool Lattice::parse(string filename, string beamline, int rank)
   lat.clear();
 
   LatticeParser parser;
+  ParseLattice parser2;
+
   matched=false;
 
   if (rank == 0) { cout << "Parsing lattice file..." << endl; }
+
+  bool err2 = parser2.parse(filename,beamline,rank);
   bool err=parser.parse(filename,beamline,rank, lat);
   if (err==false) { 
     return err; 

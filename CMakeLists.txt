@@ -32,8 +32,8 @@ else()
    Message(STATUS "HDF5 Found")
    Message(STATUS "Version: ${HDF5_VERSION}")
    if (TARGET HDF5::HDF5)
-       #      list(APPEND _libraries MPI::MPI_C hdf5_mpich)  # needed for my local computer
-       list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
+             list(APPEND _libraries MPI::MPI_C hdf5_mpich)  # needed for my local computer
+       # list(APPEND _libraries MPI::MPI_C HDF5::HDF5)
    else()
        list(APPEND _libraries MPI::MPI_C)
    endif()
@@ -104,6 +104,7 @@ add_library(genesis13 STATIC
         src/Lattice/Lattice.cpp
         src/Lattice/LatticeElements.cpp
         src/Lattice/LatticeParser.cpp
+        src/Lattice/ParseLattice.cpp
         src/Lattice/Optics.cpp
         src/Core/Beam.cpp
         src/Core/BeamSolver.cpp

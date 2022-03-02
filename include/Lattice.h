@@ -11,6 +11,7 @@
 //#include "HDF5base.h"
 
 #include "LatticeParser.h"
+#include "ParseLattice.h"
 #include "Optics.h"
 #include "Setup.h"
 #include "AlterLattice.h"

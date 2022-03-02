@@ -12,7 +12,7 @@
 -- C Compiler: /usr/bin/mpicc
 -- CMAKE_C_FLAGS: 
 -- CMAKE_CXX_FLAGS: 
--- Used libraries: MPI::MPI_C;HDF5::HDF5;PkgConfig::FFTW
+-- Used libraries: MPI::MPI_C;hdf5_mpich;PkgConfig::FFTW
 -- Defining the macro FFTW in the source code
 -- Configuring done
 -- Generating done
