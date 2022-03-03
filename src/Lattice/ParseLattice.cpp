@@ -1,5 +1,6 @@
 #include "ParseLattice.h"
 
+
 ParseLattice::ParseLattice()
 {
 }
@@ -9,6 +10,63 @@ ParseLattice::~ParseLattice()
 {
 }
 
+void ParseLattice::generateLattice(double dz) {
+
+    double z=0;
+    double l;
+    vector<double> zloc;
+    vector<pair<double,double>> zfine;
+    zloc.push_back(0);
+    for (auto& ele: beamline){
+        // check if beam line has absolute position
+        if (ele.ref >=0) {
+            z = beamline[ele.ref].z + ele.zoff;
+            zloc.push_back(z);
+        }
+
+        l = 0;
+        if (elements[ele.key]["type"] == "undu") {
+            l = atof(elements[ele.key]["lambdau"].c_str()) * atoi(elements[ele.key]["nwig"].c_str());
+            zfine.push_back({z,l});
+        }
+        else {
+            if (elements[ele.key].find("l") != elements[ele.key].end()){
+                l = atof(elements[ele.key]["l"].c_str());
+            }
+        }
+        ele.z = z;
+        ele.l = l;
+        z+=l;
+        zloc.push_back(z);
+    }
+
+    // sort the entries and find nasty overlaps
+    sort(zloc.begin(),zloc.end());
+
+
+    for (auto const & ele :zfine) {
+        cout << "Undulator from " << ele.first << " to " << ele.first + ele.second << endl;
+        auto first = find(zloc.begin(), zloc.end(), ele.first);
+        auto last = find(zloc.begin(), zloc.end(), ele.first + ele.second);
+        for (auto iter = first; iter < last; iter++) {
+            auto delz=*(iter+1)-*(iter);
+            if (delz > 0) {
+                int nfine = static_cast<int>(round(delz / dz));
+                if (nfine < 1) { nfine = 1; }
+                auto dzfine = delz / static_cast<double>(nfine);
+                cout << " Distances: " << delz << " with step size (mm) " << dzfine * 1e3 << " for " << nfine <<
+                    " steps (Reference: " << dz * 1e3 << " )" << endl;
+//                for (int i =1; i < nfine ; i ++){
+//                    zloc.push_back(*iter+dzfine*static_cast<double>(i) );
+//                }
+            }
+        }
+//        sort(zloc.begin(),zloc.end());
+    }
+
+
+    return;
+}
 
 bool ParseLattice::parse(string file, string line, int in_rank) {
     cout << "New Parser started..." << endl;
@@ -195,9 +253,9 @@ bool ParseLattice::unroll(const string line, int recursion){
                     return false;
                 }
                 if (ref < 0) {
-                    beamline.push_back({mele, 0, 0, -1});
+                    beamline.push_back({mele, 0, 0,0, -1});                // z and l are define latter
                 } else {
-                    beamline.push_back({mele, 0, ref, isave});
+                    beamline.push_back({mele, 0, 0, ref, isave});
                 }
                 iref++;
             } else {

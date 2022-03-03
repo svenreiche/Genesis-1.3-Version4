@@ -40,19 +40,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="basic testing of source term filtering">
-      <change afterPath="$PROJECT_DIR$/include/ParseLattice.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Lattice/ParseLattice.cpp" afterDir="false" />
+    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Added additional class ParseLattice which parses the file in parallel while preserving possible references.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/benchmark/Benchmark1-SASE/Aramis.lat" beforeDir="false" afterPath="$PROJECT_DIR$/benchmark/Benchmark1-SASE/Aramis.lat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/benchmark/Benchmark1-SASE/Benchmark.out.h5" beforeDir="false" afterPath="$PROJECT_DIR$/benchmark/Benchmark1-SASE/Benchmark.out.h5" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/genesis4" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/genesis4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/include/version.h" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/include/version.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/libgenesis13.a" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/libgenesis13.a" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/Lattice.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Lattice.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/ParseLattice.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/ParseLattice.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Lattice/Lattice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lattice/Lattice.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lattice/ParseLattice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lattice/ParseLattice.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,9 +110,9 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.genesis4">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="genesis13" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Genesis_1_3_Version4" TARGET_NAME="genesis13" CONFIG_NAME="Debug">
@@ -187,7 +186,8 @@
       <workItem from="1645711362376" duration="2000" />
       <workItem from="1646063920040" duration="9279000" />
       <workItem from="1646148777353" duration="2192000" />
-      <workItem from="1646150979658" duration="28132000" />
+      <workItem from="1646150979658" duration="28974000" />
+      <workItem from="1646294289672" duration="8681000" />
     </task>
     <task id="LOCAL-00001" summary="Imported into CLion">
       <created>1593502139044</created>
@@ -308,7 +308,14 @@
       <option name="project" value="LOCAL" />
       <updated>1646130954424</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="Added additional class ParseLattice which parses the file in parallel while preserving possible references.">
+      <created>1646240181571</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1646240181571</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -368,6 +375,7 @@
     <MESSAGE value="merging dev into home-dev" />
     <MESSAGE value="adding the modificed ellipse sigmoid for source filtering" />
     <MESSAGE value="basic testing of source term filtering" />
-    <option name="LAST_COMMIT_MESSAGE" value="basic testing of source term filtering" />
+    <MESSAGE value="Added additional class ParseLattice which parses the file in parallel while preserving possible references." />
+    <option name="LAST_COMMIT_MESSAGE" value="Added additional class ParseLattice which parses the file in parallel while preserving possible references." />
   </component>
 </project>

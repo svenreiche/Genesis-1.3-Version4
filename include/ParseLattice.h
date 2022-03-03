@@ -9,7 +9,9 @@
 #include <sstream>
 #include <fstream>
 #include <map>
+#include <utility>
 #include <algorithm>
+#include <stdlib.h>
 
 #include "StringProcessing.h"
 
@@ -18,6 +20,7 @@ using namespace std;
 struct LatticeLayout {
       string key;
       double z;
+      double l;
       double zoff;
       int ref;
 };
@@ -29,6 +32,7 @@ public:
     ParseLattice();
     virtual ~ParseLattice();
     bool parse(string, string, int);
+    void generateLattice(double dz);
 
 
 private:

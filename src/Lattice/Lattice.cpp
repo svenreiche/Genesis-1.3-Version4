@@ -27,15 +27,15 @@ bool Lattice::parse(string filename, string beamline, int rank)
   lat.clear();
 
   LatticeParser parser;
-  ParseLattice parser2;
+
 
   matched=false;
 
   if (rank == 0) { cout << "Parsing lattice file..." << endl; }
 
-  bool err2 = parser2.parse(filename,beamline,rank);
+  bool err2 = rawlattice_.parse(filename,beamline,rank);
   bool err=parser.parse(filename,beamline,rank, lat);
-  if (err==false) { 
+  if ((err==false) || (err2==false)) {
     return err; 
   }
   
@@ -59,6 +59,9 @@ bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
   double delz=setup->getStepLength();
   double lambda=setup->getReferenceLength();
   double gamma=setup->getReferenceEnergy();
+
+
+  rawlattice_.generateLattice(delz);
 
   this->unrollLattice(delz);
   this->calcSlippage(lambda,gamma);

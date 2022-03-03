@@ -39,6 +39,7 @@ class Lattice{
    void report(string);
 
  private:
+   ParseLattice rawlattice_;     // this holds the raw information of the lattice
 
    map<double,int> layout;
    vector<Element *> lat;
