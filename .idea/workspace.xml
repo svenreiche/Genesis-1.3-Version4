@@ -40,7 +40,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Added additional class ParseLattice which parses the file in parallel while preserving possible references.">
+    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Working on generating the fine lattice after parsing the lattice file">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/benchmark/Benchmark1-SASE/Aramis.lat" beforeDir="false" afterPath="$PROJECT_DIR$/benchmark/Benchmark1-SASE/Aramis.lat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/benchmark/Benchmark1-SASE/Benchmark.out.h5" beforeDir="false" afterPath="$PROJECT_DIR$/benchmark/Benchmark1-SASE/Benchmark.out.h5" afterDir="false" />
@@ -48,7 +48,6 @@
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/genesis4" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/genesis4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/include/version.h" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/include/version.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/libgenesis13.a" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/libgenesis13.a" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Lattice.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Lattice.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/ParseLattice.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/ParseLattice.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Lattice/Lattice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lattice/Lattice.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Lattice/ParseLattice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lattice/ParseLattice.cpp" afterDir="false" />
@@ -187,7 +186,7 @@
       <workItem from="1646063920040" duration="9279000" />
       <workItem from="1646148777353" duration="2192000" />
       <workItem from="1646150979658" duration="28974000" />
-      <workItem from="1646294289672" duration="8681000" />
+      <workItem from="1646294289672" duration="24286000" />
     </task>
     <task id="LOCAL-00001" summary="Imported into CLion">
       <created>1593502139044</created>
@@ -315,7 +314,14 @@
       <option name="project" value="LOCAL" />
       <updated>1646240181571</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="Working on generating the fine lattice after parsing the lattice file">
+      <created>1646326650432</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1646326650432</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -376,6 +382,7 @@
     <MESSAGE value="adding the modificed ellipse sigmoid for source filtering" />
     <MESSAGE value="basic testing of source term filtering" />
     <MESSAGE value="Added additional class ParseLattice which parses the file in parallel while preserving possible references." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added additional class ParseLattice which parses the file in parallel while preserving possible references." />
+    <MESSAGE value="Working on generating the fine lattice after parsing the lattice file" />
+    <option name="LAST_COMMIT_MESSAGE" value="Working on generating the fine lattice after parsing the lattice file" />
   </component>
 </project>

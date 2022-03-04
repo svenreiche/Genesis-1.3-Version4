@@ -32,16 +32,16 @@ public:
     ParseLattice();
     virtual ~ParseLattice();
     bool parse(string, string, int);
-    void generateLattice(double dz);
-
+    void generateLattice(double dz, map<string,vector<double>> &lattice);
 
 private:
     void parseArguments(vector<string> &, string &);
+    string convertArguments(string key, map<string, double> &arg);
     bool dereference(const string key, const string type, int recursion);
     bool unroll(const string, int recursion);
     int checkMultiplier(string &);
     double checkReference(string &);
-
+    double calculateChicAngle(double delay0, double lb, double ld);
     // the default values of beamline elements
     const map<string, string> cdrift = {{"l", "0"}};
     const map<string, string> cquad = {{"l",  "0"},
@@ -65,7 +65,7 @@ private:
                                       {"lambdau", "0"},
                                       {"aw",      "0"},
                                       {"nwig",    "1"},
-                                      {"kx",      "0"},
+                                      {"kx",      "1"},
                                       {"ky",      "0"},
                                       {"ax",      "0"},
                                       {"ay",      "0"},

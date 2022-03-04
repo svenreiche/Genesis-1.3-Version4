@@ -22,7 +22,7 @@ public:
     int Minor(void) {return vminor; };
     int Rev(void) {return vrev;};
     bool isBeta(void) {return vbeta;};
-    const char *Build(void) {return "Compiled by reiche at 2022-03-03 16:55:35 [UTC] from Git Commit ID: 0a5589ac0eddaa41a8320d56c68d2b313aa498f5";};
+    const char *Build(void) {return "Compiled by reiche at 2022-03-04 15:14:46 [UTC] from Git Commit ID: 3dd7c2ae2ba4ff5e7ecf953c1d00919264fe0f38";};
 };
 
 #endif //GENESIS_1_3_VERSION4_VERSION_H

@@ -10,13 +10,21 @@ ParseLattice::~ParseLattice()
 {
 }
 
-void ParseLattice::generateLattice(double dz) {
+void ParseLattice::generateLattice(double dz, map<string,vector<double>> &lattice) {
+
+
+    // clear first old lattice
+    for (auto &ele : lattice){
+        ele.second.clear();
+    }
 
     double z=0;
     double l;
     vector<double> zloc;
     vector<pair<double,double>> zfine;
     zloc.push_back(0);
+
+    // generate first the unordered lattice of the starting and end point of all elements
     for (auto& ele: beamline){
         // check if beam line has absolute position
         if (ele.ref >=0) {
@@ -40,10 +48,19 @@ void ParseLattice::generateLattice(double dz) {
         zloc.push_back(z);
     }
 
-    // sort the entries and find nasty overlaps
+    // sort the entries
     sort(zloc.begin(),zloc.end());
 
+    // fill the final lattice grid and eliminate zero elements (e.g. markers)
+    double zlast=-1.;
+    for (auto const &ele : zloc){
+        if (ele > zlast) {
+            lattice["z"].push_back(ele);
+            zlast=ele;
+        }
+    }
 
+    // search for undulators and add additional lattice points
     for (auto const & ele :zfine) {
         cout << "Undulator from " << ele.first << " to " << ele.first + ele.second << endl;
         auto first = find(zloc.begin(), zloc.end(), ele.first);
@@ -56,17 +73,121 @@ void ParseLattice::generateLattice(double dz) {
                 auto dzfine = delz / static_cast<double>(nfine);
                 cout << " Distances: " << delz << " with step size (mm) " << dzfine * 1e3 << " for " << nfine <<
                     " steps (Reference: " << dz * 1e3 << " )" << endl;
-//                for (int i =1; i < nfine ; i ++){
-//                    zloc.push_back(*iter+dzfine*static_cast<double>(i) );
-//                }
+                for (int i =1; i < nfine ; i ++){
+                    lattice["z"].push_back(*iter+dzfine*static_cast<double>(i) );
+                }
             }
         }
-//        sort(zloc.begin(),zloc.end());
+    }
+    sort(lattice["z"].begin(),lattice["z"].end());
+
+    // allocate space for other lattice objects and initialize them to zero
+    int nlat = lattice["z"].size();
+    cout << "Lattice size is " << nlat << endl;
+
+    for (auto &ele: lattice){
+        if (ele.first != "z") {
+            ele.second.resize(nlat-1);
+            for (auto &val: ele.second) {
+                val = 0;
+            }
+        }
+    }
+    cout << " allocate: " << lattice["aw"].size() << endl;
+    map<string,double> args;
+
+    // fill lattice with all other elements
+    for (auto const &ele: beamline){
+        double z0 = ele.z;
+        double z1 = z0 + ele.l;
+        double temp = 0;
+        string type = this->convertArguments(ele.key, args);
+        cout << "Parsing " << ele.key << " of type " << type << endl;
+        for (auto const & arg : args) {
+            cout << "   " << arg.first << " : " << arg.second << endl;
+        }
+        if (type=="chic"){
+            temp = this->calculateChicAngle(args["delay"],args["lb"],args["ld"]);
+        }
+        int first = static_cast<int> (find(lattice["z"].begin(), lattice["z"].end(), z0)- lattice["z"].begin());
+        int last = static_cast<int> (find(lattice["z"].begin(), lattice["z"].end(), z1)- lattice["z"].begin());
+        cout << " Index range: " << first << " to "  << last <<  " (" << z0 << " to " << z1 << ")" << endl;
+        for (int idx = first; idx < last; idx++){
+            if (type=="undu") {
+                lattice["aw"][idx]=args["aw"];
+                lattice["kx"][idx]=args["kx"];
+                lattice["ky"][idx]=args["ky"];
+                lattice["ax"][idx]=args["ax"];
+                lattice["ay"][idx]=args["ay"];
+                lattice["gradx"][idx]=args["gradx"];
+                lattice["grady"][idx]=args["grady"];
+                double twopi = 4*asin(1.);
+                if (args["lambdau"] > 0) { lattice["ku"][idx]=twopi/args["lambdau"];}
+                lattice["helical"][idx]=args["helical"];
+            } else if (type=="quad") {
+                lattice["qf"][idx]=args["k1"];
+                lattice["qx"][idx]=args["dx"];
+                lattice["qy"][idx]=args["dy"];
+            } else if (type=="corr") {
+                lattice["cx"][idx]=args["cx"];
+                lattice["cy"][idx]=args["cy"];
+            } else if (type=="phas") {
+                lattice["phaseshift"][idx]=args["phi"];
+            } else if (type=="chic"){
+                lattice["chic_angle"][idx] = temp;
+                lattice["chic_lb"][idx]=args["lb"];
+                lattice["chic_ld"][idx]=args["ld"];
+                lattice["chic_lt"][idx]=args["l"];
+            } else if (type=="mark") {
+                lattice["marker"][idx]=(args["dumpfield"] > 0 ? 1 : 0)
+                                        +(args["dumpbeam"]> 0 ? 2 : 0 )
+                                        +(args["sort"]>0 ? 4 : 0)
+                                        +(args["stop"]>0 ? 8 : 0);
+            }
+        }
+    }
+
+    for (int idx =0; idx < nlat-1; idx++){
+        lattice["dz"][idx]=lattice["z"][idx+1]-lattice["z"][idx];
     }
 
 
     return;
 }
+
+double ParseLattice::calculateChicAngle(double delay0, double lb, double ld){
+    if (delay0==0){
+        return 0.;
+    }
+    double delay=fabs(delay);
+    double tmin=0;
+    double tmax=asin(1)-0.001;
+    bool converged=false;
+    double theta,d;
+    while (!converged) {
+        theta = 0.5 * (tmax + tmin);
+        d = 4 * lb * (theta / sin(theta) - 1) + 2 * ld * (1 / cos(theta) - 1);
+        if (d > delay) {
+            tmax = theta;
+        } else {
+            tmin = theta;
+        }
+        if (fabs(delay - d) < 1e-15) { converged = true; }
+    }
+    return delay;
+}
+
+
+
+string ParseLattice::convertArguments(string key, map<string, double> &args){
+    args.clear();
+    // here comes the check for variables or sequences
+    for (auto const &arg : elements[key]){
+        if (arg.first != "type") { args[arg.first]=atof(arg.second.c_str());}
+    }
+    return elements[key]["type"];
+}
+
 
 bool ParseLattice::parse(string file, string line, int in_rank) {
     cout << "New Parser started..." << endl;

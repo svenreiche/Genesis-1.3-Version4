@@ -60,8 +60,33 @@ bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
   double lambda=setup->getReferenceLength();
   double gamma=setup->getReferenceEnergy();
 
+  map<string,vector<double>> lattemp;
+  lattemp["z"]={};
+  lattemp["dz"]={};
+  lattemp["qf"]={};
+  lattemp["qx"]={};
+  lattemp["qy"]={};
+  lattemp["cx"]={};
+  lattemp["cy"]={};
+  lattemp["aw"]={};
+  lattemp["kx"]={};
+  lattemp["ky"]={};
+  lattemp["ax"]={};
+  lattemp["ay"]={};
+  lattemp["gradx"]={};
+  lattemp["grady"]={};
+  lattemp["ku"]={};
+  lattemp["helical"]={};
+  lattemp["phaseshift"]={};
+  lattemp["chic_angle"]={};
+  lattemp["chic_lb"]={};
+  lattemp["chic_ld"]={};
+  lattemp["chic_lt"]={};
+  lattemp["marker"]={};
 
-  rawlattice_.generateLattice(delz);
+
+  rawlattice_.generateLattice(delz,lattemp); // is kind of unrollLattice in this class.
+
 
   this->unrollLattice(delz);
   this->calcSlippage(lambda,gamma);
@@ -69,6 +94,9 @@ bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
   und->setGammaRef(gamma);
 
   int ndata=lat_aw.size();
+  cout << "Old Lattice size is " << ndata << endl;
+
+
 
   und->aw.resize(ndata);
   und->ax.resize(ndata);
@@ -151,6 +179,9 @@ bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
         und->marker[ndata]=mark->action; 
   }
 
+   for (int i=0; i<ndata;i++){
+      cout << "z: " << und->z[i] << " qf: " << und->qf[i] << " " << lattemp["qf"][i] << endl;
+   }
   return true;
 }
 
