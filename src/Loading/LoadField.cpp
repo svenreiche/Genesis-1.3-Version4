@@ -82,8 +82,7 @@ bool LoadField::init(int rank, int size, map<string,string> *arg, vector<Field *
     return false;
   }
 
-
-  // checking for wrong profiles
+    // checking for wrong profiles
   string wrongProf="";
   if (prof->check(lambdaref)== false){ wrongProf=lambdaref;}
   if (prof->check(powerref)== false) { wrongProf=powerref;}
@@ -131,12 +130,13 @@ bool LoadField::init(int rank, int size, map<string,string> *arg, vector<Field *
   int nslice=time->getPosition(&s);
 
   field->init(time->getNodeNSlice(),ngrid,dgrid,lambda,sample*lambda,s[0],harm);
-  
+
   if (idx<0){
     fieldin->push_back(field);
     idx=fieldin->size()-1;
   }
 
+  
   complex< double >  *fieldslice = new complex<double> [ngrid*ngrid];
   FieldSlice slice;
   GaussHermite gh;

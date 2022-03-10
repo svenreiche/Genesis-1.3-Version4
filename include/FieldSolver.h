@@ -40,8 +40,9 @@ class FieldSolver{
    vector<double> sigmoid_;
 
 #ifdef FFTW
-    complex<double> *in, *out;
-    fftw_plan p,pi;
+   bool hasPlan;
+   complex<double> *in, *out;
+   fftw_plan p,pi;
 
 #endif
    void filterSourceTerm();

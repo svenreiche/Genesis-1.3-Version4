@@ -46,22 +46,23 @@ void Field::init(int nsize, int ngrid_in, double dgrid_in, double xlambda0, doub
   gridmax=dgrid_in;
   dgrid=2*gridmax/static_cast<double>(ngrid-1); // grid pointe separation
 
-  if (field.size()!=nsize){                  // allocate the memory in advance
+   if (field.size()!=nsize){                  // allocate the memory in advance
      field.resize(nsize);
   }
+ 
   solver.init(ngrid);
-
+ 
   if (field[0].size()!=ngrid*ngrid){
     for (int i=0;i<nsize;i++){
         field[i].resize(ngrid*ngrid);
     }
   }
-
+ 
   in = new complex<double> [ngrid*ngrid];
   out= new complex<double> [ngrid*ngrid];
 
 #ifdef FFTW
-  p  = fftw_plan_dft_2d(ngrid,ngrid,reinterpret_cast<fftw_complex*>(in),reinterpret_cast<fftw_complex*>(out),FFTW_FORWARD,FFTW_MEASURE);
+   p  = fftw_plan_dft_2d(ngrid,ngrid,reinterpret_cast<fftw_complex*>(in),reinterpret_cast<fftw_complex*>(out),FFTW_FORWARD,FFTW_MEASURE);
 #endif
 
   xks=4.*asin(1)/xlambda;

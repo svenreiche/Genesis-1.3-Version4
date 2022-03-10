@@ -7,11 +7,12 @@ FieldSolver::FieldSolver()
   delz_save=0;
   difffilter_ = false;
   ngrid = 0;
+  hasPlan=false;
 }
 
 FieldSolver::~FieldSolver(){
 #ifdef FFTW
-    if (ngrid > 0){
+    if (hasPlan){
         delete[] in;
         delete[] out;
         fftw_destroy_plan(p);
@@ -36,19 +37,23 @@ void FieldSolver::init(int ngrid_in){
         cwet.resize(ngrid);
         crsource.resize(ngrid * ngrid);
 #ifdef FFTW
-        if (ngrid > 0) {
+        if (hasPlan) {
             delete[] in;
             delete[] out;
             fftw_destroy_plan(p);
             fftw_destroy_plan(pi);
         }
         sigmoid_.resize(ngrid*ngrid);
+
         in = new complex<double>[ngrid * ngrid];
         out = new complex<double>[ngrid * ngrid];
+
         p = fftw_plan_dft_2d(ngrid, ngrid, reinterpret_cast<fftw_complex *>(in), reinterpret_cast<fftw_complex *>(out),
                              FFTW_FORWARD, FFTW_MEASURE);
         pi = fftw_plan_dft_2d(ngrid, ngrid, reinterpret_cast<fftw_complex *>(in), reinterpret_cast<fftw_complex *>(out),
                               FFTW_BACKWARD, FFTW_MEASURE);
+        hasPlan=true;
+		
 #endif
     }
 }
