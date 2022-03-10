@@ -190,10 +190,12 @@ string ParseLattice::convertArguments(string key, map<string, double> &args){
 
 
 bool ParseLattice::parse(string file, string line, int in_rank) {
-    cout << "New Parser started..." << endl;
+
 
     rank=in_rank;
 
+    if (rank==0) {  cout << "New Parser started..." << endl; }
+    
     istringstream input;
     string instring;
     ostringstream os;
@@ -318,7 +320,7 @@ bool ParseLattice::parse(string file, string line, int in_rank) {
             reverse(lines[ele.first].begin(),lines[ele.first].end());  // needs flipped order
         }
     }
-
+    if (rank == 0) {
     for (auto const &ele :elements){
         cout << "Element: " << ele.first << endl;
         for (auto const &par: ele.second){
@@ -326,7 +328,7 @@ bool ParseLattice::parse(string file, string line, int in_rank) {
         }
         cout << endl;
     }
-
+    }
 
     // -------------------------------------------------------------
     // step 3 - resolving all references and convert raw lattice to lattice of type LatElement

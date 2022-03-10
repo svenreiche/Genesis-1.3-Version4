@@ -85,7 +85,7 @@ bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
   lattemp["marker"]={};
 
 
-  rawlattice_.generateLattice(delz,lattemp); // is kind of unrollLattice in this class.
+  // rawlattice_.generateLattice(delz,lattemp); // is kind of unrollLattice in this class.
 
 
   this->unrollLattice(delz);
@@ -94,7 +94,7 @@ bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
   und->setGammaRef(gamma);
 
   int ndata=lat_aw.size();
-  cout << "Old Lattice size is " << ndata << endl;
+  //cout << "Old Lattice size is " << ndata << endl;
 
 
 
@@ -179,9 +179,9 @@ bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
         und->marker[ndata]=mark->action; 
   }
 
-   for (int i=0; i<ndata;i++){
-      cout << "z: " << und->z[i] << " qf: " << und->qf[i] << " " << lattemp["qf"][i] << endl;
-   }
+  //   for (int i=0; i<ndata;i++){
+  //    cout << "z: " << und->z[i] << " qf: " << und->qf[i] << " " << lattemp["qf"][i] << endl;
+  // }
   return true;
 }
 
