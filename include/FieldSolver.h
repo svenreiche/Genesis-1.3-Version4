@@ -10,6 +10,8 @@
 #include <fftw3.h>
 #endif
 
+#include <hdf5.h>
+
 
 class Field;
 class Beam;
@@ -20,6 +22,18 @@ class Beam;
 
 using namespace std;
 
+class HDF5_CollWriteCore;
+struct dump_settings {
+	int dump_en;
+
+	// one instance per obj. in the file
+	HDF5_CollWriteCore *pcwc;
+	HDF5_CollWriteCore *pcwc_filt;
+
+	// parameters describing the data layout along the first axis of the HDF5 data objs to be generated (=longitudinal axis)
+	int curr_slice;
+	int nstot;
+};
 
 class FieldSolver{
  public:
@@ -43,13 +57,15 @@ class FieldSolver{
    bool hasPlan;
    complex<double> *in, *out;
    fftw_plan p,pi;
-
 #endif
-   void filterSourceTerm();
+
+   int cntr_;
+   void dump_crsource(struct dump_settings *, HDF5_CollWriteCore *);
+
+   void filterSourceTerm(struct dump_settings *);
    void ADI(vector<complex< double > > &);
    void tridagx(vector<complex< double > > &);
    void tridagy(vector<complex< double > > &);
-   
 };
 
 #endif

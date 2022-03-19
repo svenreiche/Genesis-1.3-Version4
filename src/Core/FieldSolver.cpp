@@ -2,12 +2,19 @@
 #include "Field.h"
 #include "Beam.h"
 
+// CL, added for crsource term dumping
+#include <mpi.h>
+#include <hdf5.h>
+#include "HDF5_cwc.h"
+
 FieldSolver::FieldSolver()
 {
   delz_save=0;
   difffilter_ = false;
   ngrid = 0;
   hasPlan=false;
+
+  cntr_=0;
 }
 
 FieldSolver::~FieldSolver(){
@@ -91,18 +98,55 @@ void FieldSolver::initSourceFilter(bool do_filter,double xc, double yc, double s
 
 void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
 {
- 
+  HDF5_CollWriteCore *pcwc = NULL;
+  HDF5_CollWriteCore *pcwc_filt = NULL;
+  int mpi_rank,mpi_size;
+  hid_t fid;
+  int do_dump=0;
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+  int nstotal=mpi_size*field->field.size();
+  int smin=mpi_rank*field->field.size();
+  int smax=smin+field->field.size();
+
+  cntr_++;
+  do_dump = (cntr_%100)==0; // FIXME
+  if(do_dump) {
+    stringstream ss_fn;
+
+    ss_fn << "x" << "." << cntr_ << ".crsource.h5";
+    hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
+    if (mpi_size>1){
+      H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+    }
+    fid=H5Fcreate(ss_fn.str().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
+    H5Pclose(pid);
+
+    const int datadim=3;
+    vector<hsize_t> totalsize(datadim,0);
+    totalsize[0] = nstotal;
+    totalsize[1] = ngrid*ngrid;
+    totalsize[2] = 2; /* re/im */
+
+    pcwc = new HDF5_CollWriteCore;
+    pcwc_filt = new HDF5_CollWriteCore;
+    pcwc->create_and_prepare(fid, "crsource", " ", &totalsize, datadim);
+    pcwc_filt->create_and_prepare(fid, "crsource_filtered", " ", &totalsize, datadim);
+  }
+
   for (int ii=0; ii<field->field.size();ii++){  // ii is index for the beam
     int i= (ii+field->first) % field->field.size();           // index for the field
   
     // clear source term
-    for (int i=0; i< ngrid*ngrid; i++){
-      crsource[i]=0;
+    for (int k=0; k<ngrid*ngrid; k++){
+      crsource[k]=0;
     }
 
     int harm=field->getHarm();
     //   cout << "Harm: " << harm << " Coupling: " << und->fc(harm) << endl;
-    // construc source term
+
+    /*** construct source term ***/
     if (und->inUndulator()&& field->isEnabled()) { 
        double scl=und->fc(harm)*vacimp*beam->current[ii]*field->xks*delz;
        scl/=4*eev*beam->beam[ii].size()*field->dgrid*field->dgrid;
@@ -133,14 +177,51 @@ void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
 
           }
        } 
-    }  // end of source term construction
-    this->filterSourceTerm();
+    }
+    /*** end of source term construction ***/
+
+    struct dump_settings ds;
+    ds.dump_en = do_dump;
+    ds.pcwc = pcwc;
+    ds.pcwc_filt = pcwc_filt;
+    ds.curr_slice = smin+ii;
+    ds.nstot = nstotal;
+
+    this->filterSourceTerm(&ds);
     this->ADI(field->field[i]);
+  }
+
+  if(do_dump) {
+    pcwc->close();
+    pcwc_filt->close();
+    H5Fclose(fid);
   }
   return;
 }
 
-void FieldSolver::filterSourceTerm()
+void FieldSolver::dump_crsource(struct dump_settings *pds, HDF5_CollWriteCore *pcwc)
+{
+    const int datadim=3;
+    vector<hsize_t> my_offset(datadim,0); /* is assigned in the loop (depends on current slice to be written) */
+    vector<hsize_t> my_count(datadim,0);
+    my_count[0] = 1;
+    my_count[1] = ngrid*ngrid;
+    my_count[2] = 2; /* re/im */
+
+
+    vector<double> tmp(ngrid*ngrid*2);
+    for(int i=0; i<ngrid*ngrid; i++) {
+      tmp[2*i  ] = crsource[i].real();
+      tmp[2*i+1] = crsource[i].imag();
+    }
+    tmp[0] = pds->curr_slice; // earmark this slice for debugging purposes
+
+    /* initiate collective write (all processes on MPI communicator write their slice) */
+    my_offset[0] = pds->curr_slice;
+    pcwc->write(&tmp, &my_count, &my_offset);
+}
+
+void FieldSolver::filterSourceTerm(struct dump_settings *pds)
 {
     /**
     * filter the source term to avoid emission under strong angle. The source term is transformed via
@@ -150,6 +231,9 @@ void FieldSolver::filterSourceTerm()
     if (!difffilter_) { return; }
 
 #ifdef FFTW
+    if(pds->dump_en)
+        dump_crsource(pds, pds->pcwc);
+
     for (int idx=0; idx <ngrid*ngrid;idx++){
         in[idx]=crsource[idx];   // field for the FFT
     }
@@ -163,6 +247,9 @@ void FieldSolver::filterSourceTerm()
     for (int idx=0; idx <ngrid*ngrid;idx++){
         crsource[idx]=out[idx]*norm;
     }
+
+    if(pds->dump_en)
+        dump_crsource(pds, pds->pcwc_filt);
 #endif
 }
 

@@ -151,13 +151,19 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   }
 
   // initializing filtering of the fields
+#ifndef FFTW
+  if(rank==0) {
+    cout << "*** Requested filter_diff, however this GENESIS binary does was built without FFTW. => filter_diff setting has no effect. ***" << endl;
+  }
+#endif
   for (int ifld = 0; ifld < field->size(); ifld++){
       field->at(ifld)->solver.initSourceFilter(difffilt,filtx,filty,filtsig);
   }
+
+
   // call to gencore to do the actual tracking.  
   Gencore core;
   core.run(file.c_str(),beam,field,und,isTime,isScan, filter);
-
 
   delete und;
    
