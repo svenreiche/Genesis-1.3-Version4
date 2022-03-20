@@ -65,6 +65,7 @@ class FieldSolver{
    string crsource_dump_rootname_;
    int call_cntr_adv_;
    void dump_crsource(struct dump_settings *, HDF5_CollWriteCore *);
+   void dump_filter(struct dump_settings *, hid_t);
 
    void filterSourceTerm(struct dump_settings *);
    void ADI(vector<complex< double > > &);
