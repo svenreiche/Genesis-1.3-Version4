@@ -24,7 +24,7 @@ using namespace std;
 
 class HDF5_CollWriteCore;
 struct dump_settings {
-	int dump_en;
+	bool do_dump;
 
 	// one instance per obj. in the file
 	HDF5_CollWriteCore *pcwc;
@@ -43,6 +43,7 @@ class FieldSolver{
    void advance(double, Field *, Beam *, Undulator *);
    void init(int);
    void initSourceFilter(bool, double, double, double);
+   void initSourceFilter_DbgDumpSettings(bool, int, string);
 
  private:
    int ngrid;
@@ -59,7 +60,10 @@ class FieldSolver{
    fftw_plan p,pi;
 #endif
 
-   int cntr_;
+   bool crsource_dump_en_;
+   int crsource_dump_every_;
+   string crsource_dump_rootname_;
+   int call_cntr_adv_;
    void dump_crsource(struct dump_settings *, HDF5_CollWriteCore *);
 
    void filterSourceTerm(struct dump_settings *);

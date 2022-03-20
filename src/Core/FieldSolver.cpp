@@ -14,7 +14,10 @@ FieldSolver::FieldSolver()
   ngrid = 0;
   hasPlan=false;
 
-  cntr_=0;
+  crsource_dump_en_ = false;
+  crsource_dump_every_ = 100;
+  crsource_dump_rootname_ = "__";
+  call_cntr_adv_ = 0; // variable counting the number of source term constructions (it is used for crsource dumping, if requested by user)
 }
 
 FieldSolver::~FieldSolver(){
@@ -60,7 +63,6 @@ void FieldSolver::init(int ngrid_in){
         pi = fftw_plan_dft_2d(ngrid, ngrid, reinterpret_cast<fftw_complex *>(in), reinterpret_cast<fftw_complex *>(out),
                               FFTW_BACKWARD, FFTW_MEASURE);
         hasPlan=true;
-		
 #endif
     }
 }
@@ -94,6 +96,15 @@ void FieldSolver::initSourceFilter(bool do_filter,double xc, double yc, double s
     }
 #endif
 }
+void FieldSolver::initSourceFilter_DbgDumpSettings(bool dump_en_in, int step_in, string rootname_in) {
+  // ignore illegal values for downscaler
+  if(step_in<=0)
+    return;
+
+  crsource_dump_every_ = step_in;
+  crsource_dump_rootname_ = rootname_in;
+  crsource_dump_en_ = dump_en_in;
+}
 
 
 void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
@@ -102,7 +113,8 @@ void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
   HDF5_CollWriteCore *pcwc_filt = NULL;
   int mpi_rank,mpi_size;
   hid_t fid;
-  int do_dump=0;
+  bool dump_at_this_step=false;
+  struct dump_settings ds;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
@@ -110,12 +122,25 @@ void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
   int smin=mpi_rank*field->field.size();
   int smax=smin+field->field.size();
 
-  cntr_++;
-  do_dump = (cntr_%100)==0; // FIXME
-  if(do_dump) {
+  // Write crsource dump file for this integration step?
+  // Note that the result needs to be identical for all processes
+  // on the MPI communicator (all nodes have to participate in HDF5
+  // parallel I/O), otherwise the program will freeze
+  call_cntr_adv_++;
+  dump_at_this_step=false;
+  if(crsource_dump_en_ && difffilter_)
+    dump_at_this_step = ((call_cntr_adv_ % crsource_dump_every_) == 0);
+
+  /* if crsource data is to be dumped, set up output file and collective I/O */
+  if(dump_at_this_step) {
     stringstream ss_fn;
 
-    ss_fn << "x" << "." << cntr_ << ".crsource.h5";
+    // construct file name and open file for parallel write access
+    ss_fn << crsource_dump_rootname_ << "." << call_cntr_adv_;
+    if(field->getHarm()>1) {
+      ss_fn << ".h" << field->getHarm();
+    }
+    ss_fn << ".crsource.h5";
     hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
     if (mpi_size>1){
       H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
@@ -134,6 +159,10 @@ void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
     pcwc->create_and_prepare(fid, "crsource", " ", &totalsize, datadim);
     pcwc_filt->create_and_prepare(fid, "crsource_filtered", " ", &totalsize, datadim);
   }
+  ds.do_dump = dump_at_this_step;
+  ds.pcwc = pcwc;
+  ds.pcwc_filt = pcwc_filt;
+  ds.nstot = nstotal;
 
   for (int ii=0; ii<field->field.size();ii++){  // ii is index for the beam
     int i= (ii+field->first) % field->field.size();           // index for the field
@@ -146,7 +175,7 @@ void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
     int harm=field->getHarm();
     //   cout << "Harm: " << harm << " Coupling: " << und->fc(harm) << endl;
 
-    /*** construct source term ***/
+    /*** construct source term for this slice ***/
     if (und->inUndulator()&& field->isEnabled()) { 
        double scl=und->fc(harm)*vacimp*beam->current[ii]*field->xks*delz;
        scl/=4*eev*beam->beam[ii].size()*field->dgrid*field->dgrid;
@@ -178,20 +207,14 @@ void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
           }
        } 
     }
-    /*** end of source term construction ***/
+    /*** end of source term construction for this slice ***/
 
-    struct dump_settings ds;
-    ds.dump_en = do_dump;
-    ds.pcwc = pcwc;
-    ds.pcwc_filt = pcwc_filt;
     ds.curr_slice = smin+ii;
-    ds.nstot = nstotal;
-
     this->filterSourceTerm(&ds);
     this->ADI(field->field[i]);
   }
 
-  if(do_dump) {
+  if(dump_at_this_step) {
     pcwc->close();
     pcwc_filt->close();
     H5Fclose(fid);
@@ -201,6 +224,10 @@ void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
 
 void FieldSolver::dump_crsource(struct dump_settings *pds, HDF5_CollWriteCore *pcwc)
 {
+    if(!pds->do_dump)
+      return;
+
+
     const int datadim=3;
     vector<hsize_t> my_offset(datadim,0); /* is assigned in the loop (depends on current slice to be written) */
     vector<hsize_t> my_count(datadim,0);
@@ -214,7 +241,7 @@ void FieldSolver::dump_crsource(struct dump_settings *pds, HDF5_CollWriteCore *p
       tmp[2*i  ] = crsource[i].real();
       tmp[2*i+1] = crsource[i].imag();
     }
-    tmp[0] = pds->curr_slice; // earmark this slice for debugging purposes
+    // tmp[0] = pds->curr_slice; // label slice data for debugging purposes
 
     /* initiate collective write (all processes on MPI communicator write their slice) */
     my_offset[0] = pds->curr_slice;
@@ -231,7 +258,7 @@ void FieldSolver::filterSourceTerm(struct dump_settings *pds)
     if (!difffilter_) { return; }
 
 #ifdef FFTW
-    if(pds->dump_en)
+    if(pds->do_dump)
         dump_crsource(pds, pds->pcwc);
 
     for (int idx=0; idx <ngrid*ngrid;idx++){
@@ -248,7 +275,7 @@ void FieldSolver::filterSourceTerm(struct dump_settings *pds)
         crsource[idx]=out[idx]*norm;
     }
 
-    if(pds->dump_en)
+    if(pds->do_dump)
         dump_crsource(pds, pds->pcwc_filt);
 #endif
 }

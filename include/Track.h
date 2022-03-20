@@ -29,6 +29,8 @@ class Track{
  private:
    void usage();
    bool atob(string);
+   bool ExtractArgBool(map<string,string> *, const string, bool *);
+   bool ExtractArgInt(map<string,string> *, const string, int *);
 
    double zstop,slen,s0;
    int output_step,dumpFieldStep,dumpBeamStep,sort_step,bunchharm;
