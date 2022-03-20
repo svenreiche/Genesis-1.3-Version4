@@ -158,6 +158,24 @@ void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
     pcwc_filt = new HDF5_CollWriteCore;
     pcwc->create_and_prepare(fid, "crsource", " ", &totalsize, datadim);
     pcwc_filt->create_and_prepare(fid, "crsource_filtered", " ", &totalsize, datadim);
+
+    const int filt_datadim=1;
+    vector<hsize_t> filt_totalsize(filt_datadim,0);
+    filt_totalsize[0] = ngrid*ngrid; // sigmoid is vector<double>
+    HDF5_CollWriteCore cwc_f;
+    cwc_f.create_and_prepare(fid, "f", " ", &filt_totalsize, filt_datadim);
+    vector<hsize_t> my_offset(filt_datadim,0);
+    vector<hsize_t> my_count(filt_datadim,0);
+    // Only process with rank=0 is writing (controlled by setting count to zero on all others).
+    // Note that we still need to call write member of HDF5_CollWriteCore on all processes.
+    if(mpi_rank==0)
+      my_count[0] = ngrid*ngrid;
+    else
+      my_count[0] = 0;
+
+    // sigmoid_[0] = 1+mpi_rank; // test code: which node is writing the data???
+    cwc_f.write(&sigmoid_, &my_count, &my_offset);
+    cwc_f.close();
   }
   ds.do_dump = dump_at_this_step;
   ds.pcwc = pcwc;

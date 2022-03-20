@@ -61,6 +61,10 @@ void HDF5_CollWriteCore::create_and_prepare(hid_t gid, string dataset, string un
 
 void HDF5_CollWriteCore::write(vector<double> *data, vector<hsize_t> *count, vector<hsize_t> *offset)
 {
+  bool do_write = true;
+  double *pdata = NULL;
+  hsize_t ntot_xfer;
+
   if(!did_valid_)
   {
     cout << "error: no valid HDF5 object is assigned to this instance" << endl;
@@ -72,6 +76,16 @@ void HDF5_CollWriteCore::write(vector<double> *data, vector<hsize_t> *count, vec
     return;
   }
 
+
+  do_write=true;
+  if(data==NULL)
+    do_write=false;
+
+  for(int k=0; k<count->size(); k++)
+    if(count->at(k)==0)
+      do_write=false;
+  
+
   // step 2 - file space
   hid_t memspace=H5Screate_simple(ndim_,&(*count)[0],NULL);
 
@@ -79,13 +93,23 @@ void HDF5_CollWriteCore::write(vector<double> *data, vector<hsize_t> *count, vec
   hid_t filespace=H5Dget_space(did_);
   H5Sselect_hyperslab(filespace,H5S_SELECT_SET,&(*offset)[0],NULL,&(*count)[0],NULL);
 
+  pdata=NULL;
+  if(do_write) {
+    pdata = &data->at(0);
+  } else {
+    // No data is transferred by the local process ...
+    // ... but it still has to call H5Dwrite
+    H5Sselect_none(memspace);
+    H5Sselect_none(filespace);
+  }
+
 
   // step 4 - set up transfer and write
   hid_t pid =  H5Pcreate(H5P_DATASET_XFER);
   if (!MPISingle){
     H5Pset_dxpl_mpio(pid,H5FD_MPIO_COLLECTIVE);    
   }
-  H5Dwrite(did_,H5T_NATIVE_DOUBLE,memspace,filespace,pid,&data->at(0));
+  H5Dwrite(did_,H5T_NATIVE_DOUBLE,memspace,filespace,pid,pdata);
   H5Sclose(memspace);
   H5Sclose(filespace);
   H5Pclose(pid);
