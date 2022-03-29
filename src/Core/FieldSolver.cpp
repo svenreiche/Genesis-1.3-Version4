@@ -58,10 +58,15 @@ void FieldSolver::init(int ngrid_in){
         in = new complex<double>[ngrid * ngrid];
         out = new complex<double>[ngrid * ngrid];
 
-        p = fftw_plan_dft_2d(ngrid, ngrid, reinterpret_cast<fftw_complex *>(in), reinterpret_cast<fftw_complex *>(out),
-                             FFTW_FORWARD, FFTW_MEASURE);
-        pi = fftw_plan_dft_2d(ngrid, ngrid, reinterpret_cast<fftw_complex *>(in), reinterpret_cast<fftw_complex *>(out),
-                              FFTW_BACKWARD, FFTW_MEASURE);
+        unsigned int flags = FFTW_MEASURE;
+        // DBG: if you want to have absolutely reproducible FFT results
+        // flags = FFTW_ESTIMATE;
+        p = fftw_plan_dft_2d(ngrid, ngrid,
+               reinterpret_cast<fftw_complex *>(in), reinterpret_cast<fftw_complex *>(out),
+               FFTW_FORWARD,  flags);
+        pi = fftw_plan_dft_2d(ngrid, ngrid,
+               reinterpret_cast<fftw_complex *>(in), reinterpret_cast<fftw_complex *>(out),
+               FFTW_BACKWARD, flags);
         hasPlan=true;
 #endif
     }
@@ -109,18 +114,8 @@ void FieldSolver::initSourceFilter_DbgDumpSettings(bool dump_en_in, int step_in,
 
 void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
 {
-  HDF5_CollWriteCore *pcwc = NULL;
-  HDF5_CollWriteCore *pcwc_filt = NULL;
-  int mpi_rank,mpi_size;
-  hid_t fid;
   bool dump_at_this_step=false;
   struct dump_settings ds;
-
-  MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
-  int nstotal=mpi_size*field->field.size();
-  int smin=mpi_rank*field->field.size();
-  int smax=smin+field->field.size();
 
   // Write crsource dump file for this integration step?
   // Note that the result needs to be identical for all processes
@@ -133,37 +128,8 @@ void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
 
   /* if crsource data is to be dumped, set up output file and collective I/O */
   ds.do_dump = dump_at_this_step;
-  ds.nstot = nstotal;
   if(dump_at_this_step) {
-    stringstream ss_fn;
-
-    // construct file name and open file for parallel write access
-    ss_fn << crsource_dump_rootname_ << "." << call_cntr_adv_;
-    if(field->getHarm()>1) {
-      ss_fn << ".h" << field->getHarm();
-    }
-    ss_fn << ".crsource.h5";
-    hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
-    if (mpi_size>1){
-      H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
-    }
-    fid=H5Fcreate(ss_fn.str().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
-    H5Pclose(pid);
-
-    const int datadim=3;
-    vector<hsize_t> totalsize(datadim,0);
-    totalsize[0] = nstotal;
-    totalsize[1] = ngrid*ngrid;
-    totalsize[2] = 2; /* re/im */
-
-    pcwc = new HDF5_CollWriteCore;
-    pcwc_filt = new HDF5_CollWriteCore;
-    pcwc->create_and_prepare(fid, "crsource", " ", &totalsize, datadim);
-    ds.pcwc = pcwc;
-    pcwc_filt->create_and_prepare(fid, "crsource_filtered", " ", &totalsize, datadim);
-    ds.pcwc_filt = pcwc_filt;
-
-    dump_filter(&ds, fid);
+    dump_file_open(&ds, field);
   }
 
   for (int ii=0; ii<field->field.size();ii++){  // ii is index for the beam
@@ -211,17 +177,82 @@ void FieldSolver::advance(double delz, Field *field, Beam *beam, Undulator *und)
     }
     /*** end of source term construction for this slice ***/
 
-    ds.curr_slice = smin+ii;
+    ds.curr_slice = ds.smin + ii;
     this->filterSourceTerm(&ds);
     this->ADI(field->field[i]);
   }
 
   if(dump_at_this_step) {
-    pcwc->close();
-    pcwc_filt->close();
-    H5Fclose(fid);
+    dump_file_close(&ds);
   }
   return;
+}
+
+
+
+void FieldSolver::dump_file_open(struct dump_settings *pds, Field *field)
+{
+  HDF5_CollWriteCore *pcwc = NULL;
+  HDF5_CollWriteCore *pcwc_filt = NULL;
+  int mpi_rank,mpi_size;
+  hid_t fid;
+  stringstream ss_fn;
+  string fn;
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+  int nstotal=mpi_size*field->field.size();
+  int smin=mpi_rank*field->field.size();
+  int smax=smin+field->field.size();
+  pds->smin=smin;
+  pds->nstot=nstotal;
+
+  // construct file name and open file for parallel write access
+  ss_fn << crsource_dump_rootname_ << "." << call_cntr_adv_;
+  if(field->getHarm()>1) {
+    ss_fn << ".h" << field->getHarm();
+  }
+  ss_fn << ".crsource.h5";
+  hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
+  if (mpi_size>1){
+    H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+  }
+  fn = ss_fn.str();
+  fid=H5Fcreate(fn.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
+  H5Pclose(pid);
+  if(mpi_rank==0) {
+    cout << "Info: opened crsource dump file "<<fn <<endl;
+  }
+
+  const int datadim=3;
+  vector<hsize_t> totalsize(datadim,0);
+  totalsize[0] = nstotal;
+  totalsize[1] = ngrid*ngrid;
+  totalsize[2] = 2; /* re/im */
+
+  pcwc = new HDF5_CollWriteCore;
+  pcwc_filt = new HDF5_CollWriteCore;
+  pcwc->create_and_prepare(fid, "crsource", " ", &totalsize, datadim);
+  pds->pcwc = pcwc;
+  pcwc_filt->create_and_prepare(fid, "crsource_filtered", " ", &totalsize, datadim);
+  pds->pcwc_filt = pcwc_filt;
+
+  dump_filter(pds, fid);
+
+  pds->fid = fid;
+}
+void FieldSolver::dump_file_close(struct dump_settings *pds)
+{
+  int mpi_rank;
+
+  pds->pcwc->close();
+  pds->pcwc_filt->close();
+  H5Fclose(pds->fid);
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+  if(mpi_rank==0) {
+    cout << "Info: closing crsource dump file" << endl;
+  }
 }
 
 void FieldSolver::dump_crsource(struct dump_settings *pds, HDF5_CollWriteCore *pcwc)
@@ -277,6 +308,8 @@ void FieldSolver::dump_filter(struct dump_settings *pds, hid_t pobj)
     cwc.write(&sigmoid_, &my_count, &my_offset);
     cwc.close();
 }
+
+
 
 void FieldSolver::filterSourceTerm(struct dump_settings *pds)
 {
