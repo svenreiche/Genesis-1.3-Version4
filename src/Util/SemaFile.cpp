@@ -21,6 +21,8 @@ void SemaFile::remove(string fn) {
 void SemaFile::put(string fn) {
 	if (0==my_rank_) {
 		ofstream ofs;
+
+		// Note: already existing files are truncated
 		ofs.open(fn, ofstream::out);
 		if(!ofs) {
 			cout << "error generating semaphore file " << fn << endl;
