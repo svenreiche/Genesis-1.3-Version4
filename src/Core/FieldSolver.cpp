@@ -15,6 +15,7 @@ FieldSolver::FieldSolver()
   hasPlan=false;
 
   crsource_dump_en_ = false;
+  crsource_dump_filter_ = crsource_dump_crsource_ = crsource_dump_crsource_filt_ = false;
   crsource_dump_every_ = 100;
   crsource_dump_rootname_ = "__";
   call_cntr_adv_ = 0; // variable counting the number of source term constructions (it is used for crsource dumping, if requested by user)
@@ -101,14 +102,69 @@ void FieldSolver::initSourceFilter(bool do_filter,double xc, double yc, double s
     }
 #endif
 }
-void FieldSolver::initSourceFilter_DbgDumpSettings(bool dump_en_in, int step_in, string rootname_in) {
+bool FieldSolver::initSourceFilter_DbgDumpSettings(bool dump_en_in, int step_in, string rootname_in, string what)
+{
+  int mpi_rank;
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+
   // ignore illegal values for downscaler
   if(step_in<=0)
-    return;
+    return(false);
+
+  // process option characters (classic C approach)
+  const char *pwhat = what.c_str();
+  bool ok_what=true;
+  crsource_dump_filter_ = crsource_dump_crsource_ = crsource_dump_crsource_filt_ = false; // defaults
+  while(*pwhat != '\0') {
+    switch(*pwhat) {
+      case 'A':
+      case 'a':
+        crsource_dump_crsource_ = true;
+        break;
+
+      case 'B':
+      case 'b':
+        crsource_dump_crsource_filt_ = true;
+        break;
+
+      case 'F':
+      case 'f':
+        crsource_dump_filter_ = true;
+        break;
+
+      case '*':
+        // switch on dumping of everything
+        crsource_dump_filter_ = crsource_dump_crsource_ = crsource_dump_crsource_filt_ = true;
+        break;
+
+      default:
+        ok_what = false;
+        break;
+    }
+    pwhat++; // next character
+  }
+  if(!ok_what) {
+    if(mpi_rank==0) {
+      cout << "*** error in parameters for crsource_dump code: illegal option character detected, not dumping crsource data" << endl;
+    }
+    crsource_dump_en_ = false;
+    crsource_dump_filter_ = crsource_dump_crsource_ = crsource_dump_crsource_filt_ = false; // defaults
+    return(false);
+  }
 
   crsource_dump_every_ = step_in;
   crsource_dump_rootname_ = rootname_in;
-  crsource_dump_en_ = dump_en_in;
+  if(crsource_dump_filter_ || crsource_dump_crsource_ || crsource_dump_crsource_filt_)
+    crsource_dump_en_ = dump_en_in;
+  else {
+    crsource_dump_en_ = false;
+    if(mpi_rank==0) {
+      cout << "*** crsource_dump code: you did not ask for any objects to be dumped (empty value of dbg_dump_crsource_what parameter) => not writing .crsource.h5 files" << endl;
+    }
+  }
+
+  return(true); // ok
 }
 
 
@@ -230,14 +286,21 @@ void FieldSolver::dump_file_open(struct dump_settings *pds, Field *field)
   totalsize[1] = ngrid*ngrid;
   totalsize[2] = 2; /* re/im */
 
-  pcwc = new HDF5_CollWriteCore;
-  pcwc_filt = new HDF5_CollWriteCore;
-  pcwc->create_and_prepare(fid, "crsource", " ", &totalsize, datadim);
-  pds->pcwc = pcwc;
-  pcwc_filt->create_and_prepare(fid, "crsource_filtered", " ", &totalsize, datadim);
-  pds->pcwc_filt = pcwc_filt;
+  pds->pcwc = pds->pcwc_filt = NULL;
+  if(crsource_dump_crsource_) {
+    pcwc = new HDF5_CollWriteCore;
+    pcwc->create_and_prepare(fid, "crsource", " ", &totalsize, datadim);
+    pds->pcwc = pcwc;
+  }
+  if(crsource_dump_crsource_filt_) {
+    pcwc_filt = new HDF5_CollWriteCore;
+    pcwc_filt->create_and_prepare(fid, "crsource_filtered", " ", &totalsize, datadim);
+    pds->pcwc_filt = pcwc_filt;
+  }
 
-  dump_filter(pds, fid);
+  if(crsource_dump_filter_) {
+    dump_filter(pds, fid);
+  }
 
   pds->fid = fid;
 }
@@ -245,8 +308,12 @@ void FieldSolver::dump_file_close(struct dump_settings *pds)
 {
   int mpi_rank;
 
-  pds->pcwc->close();
-  pds->pcwc_filt->close();
+  if(pds->pcwc) {
+    pds->pcwc->close();
+  }
+  if(pds->pcwc_filt) {
+    pds->pcwc_filt->close();
+  }
   H5Fclose(pds->fid);
 
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -258,6 +325,9 @@ void FieldSolver::dump_file_close(struct dump_settings *pds)
 void FieldSolver::dump_crsource(struct dump_settings *pds, HDF5_CollWriteCore *pcwc)
 {
     if(!pds->do_dump)
+      return;
+
+    if(pcwc==NULL)
       return;
 
 
@@ -321,7 +391,7 @@ void FieldSolver::filterSourceTerm(struct dump_settings *pds)
     if (!difffilter_) { return; }
 
 #ifdef FFTW
-    if(pds->do_dump)
+    if(pds->do_dump && crsource_dump_crsource_)
         dump_crsource(pds, pds->pcwc);
 
     for (int idx=0; idx <ngrid*ngrid;idx++){
@@ -338,7 +408,7 @@ void FieldSolver::filterSourceTerm(struct dump_settings *pds)
         crsource[idx]=out[idx]*norm;
     }
 
-    if(pds->do_dump)
+    if(pds->do_dump && crsource_dump_crsource_filt_)
         dump_crsource(pds, pds->pcwc_filt);
 #endif
 }

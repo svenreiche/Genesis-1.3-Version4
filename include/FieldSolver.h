@@ -46,7 +46,7 @@ class FieldSolver{
    void advance(double, Field *, Beam *, Undulator *);
    void init(int);
    void initSourceFilter(bool, double, double, double);
-   void initSourceFilter_DbgDumpSettings(bool, int, string);
+   bool initSourceFilter_DbgDumpSettings(bool, int, string, string);
 
  private:
    int ngrid;
@@ -64,6 +64,7 @@ class FieldSolver{
 #endif
 
    bool crsource_dump_en_;
+   bool crsource_dump_filter_, crsource_dump_crsource_, crsource_dump_crsource_filt_;
    int crsource_dump_every_;
    string crsource_dump_rootname_;
    int call_cntr_adv_;

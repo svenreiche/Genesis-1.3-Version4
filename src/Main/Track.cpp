@@ -38,6 +38,8 @@ void Track::usage(){
    * . dbg_report_lattice=false
    * . dbg_dump_crsource=false
    * . dbg_dump_crsource_step=100
+   * . dbg_dump_crsource_what=f
+   *   supported option characters are: 'a' for crsource before filtering, 'b' for crsource after filtering, 'f' for filter, '*' for everything
    */
 
   return;
@@ -121,9 +123,11 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   if (arg->find("filter_ky")!=end)   {filty= atof(arg->at("filter_ky").c_str());  arg->erase(arg->find("filter_ky"));}
   if (arg->find("filter_sig")!=end)  {filtsig= atof(arg->at("filter_sig").c_str());  arg->erase(arg->find("filter_sig"));}
   if (arg->find("filter_diff")!=end) {difffilt= atob(arg->at("filter_diff").c_str());  arg->erase(arg->find("filter_diff"));}
+
   ExtractArgBool(arg, "dbg_dump_crsource", &dbg_dump_crsource);
   ExtractArgInt(arg,  "dbg_dump_crsource_step", &dbg_dump_crsource_step);
-
+  string dbg_dump_crsource_what = "f";
+  if (arg->find("dbg_dump_crsource_what")!=end) {dbg_dump_crsource_what = arg->at("dbg_dump_crsource_what"); arg->erase(arg->find("dbg_dump_crsource_what"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &track" << endl; this->usage();}
@@ -203,7 +207,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
 
       string rootname;
       setup->getRootName(&rootname);
-      field->at(ifld)->solver.initSourceFilter_DbgDumpSettings(dbg_dump_crsource, dbg_dump_crsource_step, rootname);
+      field->at(ifld)->solver.initSourceFilter_DbgDumpSettings(dbg_dump_crsource, dbg_dump_crsource_step, rootname, dbg_dump_crsource_what);
   }
 
 
