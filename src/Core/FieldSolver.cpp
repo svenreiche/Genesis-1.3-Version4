@@ -102,6 +102,8 @@ void FieldSolver::initSourceFilter(bool do_filter,double xc, double yc, double s
     }
 #endif
 }
+
+/* function is called from Track::init as the next run is being set up/configured */
 bool FieldSolver::initSourceFilter_DbgDumpSettings(bool dump_en_in, int step_in, string rootname_in, string what)
 {
   int mpi_rank;
@@ -153,6 +155,7 @@ bool FieldSolver::initSourceFilter_DbgDumpSettings(bool dump_en_in, int step_in,
     return(false);
   }
 
+  call_cntr_adv_ = 0; // new run: reset integration step counter
   crsource_dump_every_ = step_in;
   crsource_dump_rootname_ = rootname_in;
   if(crsource_dump_filter_ || crsource_dump_crsource_ || crsource_dump_crsource_filt_)
