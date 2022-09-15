@@ -13,5 +13,6 @@ Version 4.5.1 has been released. Part of it is this Change Log file, which will 
 - 20220218: Added support for semaphore file. If requested, this file is written at the end of a successful simulation run.
 - 20220218: Exit code of GENESIS binary now depends on status (0 for success, 1 in case of error)
 - 20220319: Debug code for dumping of crsource fields before and after filtering (parameters are in "track" command, WARNING: generated files are very large, about twice as large as a complete field dump)
+- 20220329: Added additional "start" semaphore file that is written after &setup block was processed
 
 

@@ -36,7 +36,8 @@ Setup::Setup()
   // count of runs in conjunction of calls of altersetup
   runcount = 0;
 
-  sema_file_enabled=false;
+  sema_file_enabled_start=false;
+  sema_file_enabled_done=false;
 }
 
 Setup::~Setup(){}
@@ -66,6 +67,8 @@ void Setup::usage(){
   cout << " bool exclude_current_output = true" << endl;
   cout << " bool exclude_field_dump = false" << endl;
   cout << " bool write_semaphore_file = false" << endl;
+  cout << " bool write_semaphore_file_done = false" << endl;
+  cout << " bool write_semaphore_file_started = false" << endl;
   cout << " string semaphore_file_name = <derived from 'rootname'>" << endl;
   cout << "&end" << endl << endl;
   return;
@@ -90,6 +93,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagno
   if (arg->find("shotnoise")!=end){shotnoise  = atob(arg->at("shotnoise"));  arg->erase(arg->find("shotnoise"));}
   if (arg->find("beam_global_stat")!=end)  {beam_global_stat  = atob(arg->at("beam_global_stat"));   arg->erase(arg->find("beam_global_stat"));}
   if (arg->find("field_global_stat")!=end) {field_global_stat = atob(arg->at("field_global_stat"));  arg->erase(arg->find("field_global_stat"));}
+
   if (arg->find("exclude_spatial_output")!=end)   {exclude_spatial_output  = atob(arg->at("exclude_spatial_output"));   arg->erase(arg->find("exclude_spatial_output"));}
   if (arg->find("exclude_fft_output")!=end)       {exclude_fft_output      = atob(arg->at("exclude_fft_output"));       arg->erase(arg->find("exclude_fft_output"));}
   if (arg->find("exclude_intensity_output")!=end) {exclude_intensity_output= atob(arg->at("exclude_intensity_output")); arg->erase(arg->find("exclude_intensity_output"));}
@@ -97,13 +101,18 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagno
   if (arg->find("exclude_aux_output")!=end)       {exclude_aux_output      = atob(arg->at("exclude_aux_output"));       arg->erase(arg->find("exclude_aux_output"));}
   if (arg->find("exclude_current_output")!=end)   {exclude_current_output  = atob(arg->at("exclude_current_output"));   arg->erase(arg->find("exclude_current_output"));}
   if (arg->find("exclude_field_dump")!=end)   {exclude_field_dump  = atob(arg->at("exclude_field_dump"));   arg->erase(arg->find("exclude_field_dump"));}
-  if (arg->find("write_semaphore_file")!=end)   {sema_file_enabled  = atob(arg->at("write_semaphore_file"));   arg->erase(arg->find("write_semaphore_file"));}
+
+  if (arg->find("write_semaphore_file")!=end)   {sema_file_enabled_done  = atob(arg->at("write_semaphore_file"));   arg->erase(arg->find("write_semaphore_file"));}
+  /* alias for write_semaphore_file */
+  if (arg->find("write_semaphore_file_done")!=end)   {sema_file_enabled_done  = atob(arg->at("write_semaphore_file_done"));   arg->erase(arg->find("write_semaphore_file_done"));}
+  if (arg->find("write_semaphore_file_started")!=end)   {sema_file_enabled_start  = atob(arg->at("write_semaphore_file_started"));   arg->erase(arg->find("write_semaphore_file_started"));}
   if (arg->find("semaphore_file_name")!=end) {
-    // Providing a file name for the semaphore file always switches it on, overriding 'write_semaphore_file' flag.
+    // Providing a file name for the semaphore file always switches on writing the "done" semaphore file, overriding 'write_semaphore_file' flag.
     // This allows to switch on semaphore functionality just by specifying corresponding command line argument -- no modification of G4 input file needed.
-    sema_file_enabled = true;
+    sema_file_enabled_done = true;
     setSemaFN(arg->at("semaphore_file_name")); arg->erase(arg->find("semaphore_file_name"));
   }
+  /* Note: if requested, semaphore file of type "started" is generated in GenMain after successfully returning from Setup::init */
 
   // same code also in AlterSetup.cpp
   if (arg->find("beam_write_slices_from")!=end) {
