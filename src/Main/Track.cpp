@@ -31,10 +31,21 @@ void Track::usage(){
   cout << " double filter_ky = 1" << endl;
   cout << " double filter_sig = 1" << endl;
   cout << "&end" << endl << endl;
-  /* currently undocumented debugging option: dbg_report_lattice */
+
+
+  /*
+   *  currently undocumented debugging options:
+   * . dbg_report_lattice=false
+   * . dbg_dump_crsource=false
+   * . dbg_dump_crsource_step=100
+   * . dbg_dump_crsource_what=f
+   *   supported option characters are: 'a' for crsource before filtering, 'b' for crsource after filtering, 'f' for filter, '*' for everything
+   */
 
   return;
 }
+
+/**** HELPER FUNCTIONS FOR ARGUMENT PROCESSING *****/
 
 /* from StringProcessing.cpp */
 bool Track::atob(string in)
@@ -43,6 +54,34 @@ bool Track::atob(string in)
 	if ((in.compare("1")==0)||(in.compare("true")==0)||(in.compare("t")==0)) { ret=true; }
 	return ret;
 }
+
+// Notes
+// 1) the output argument is only written if an entry matching 'key' was found
+// 2) return code indicates if output argument was updated
+bool Track::ExtractArgBool(map<string,string> *arg, const string key, bool *out)
+{
+  map<string,string>::iterator end=arg->end();
+
+  if (arg->find(key)!=end) {
+    *out = atob(arg->at(key));
+    arg->erase(arg->find(key));
+    return(true);
+  }
+  return(false);
+}
+bool Track::ExtractArgInt(map<string,string> *arg, const string key, int *out)
+{
+  map<string,string>::iterator end=arg->end();
+
+  if (arg->find(key)!=end) {
+    *out = atoi(arg->at(key).c_str());
+    arg->erase(arg->find(key));
+    return(true);
+  }
+  return(false);
+}
+
+/**** END: HELPER FUNCTIONS *****/
 
 bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, vector<Field *> *field,Setup *setup, Lattice *lat, AlterLattice *alt,Time *time, FilterDiagnostics &filter)
 {
@@ -58,11 +97,13 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   s0=time->getTimeWindowStart();
   slen=time->getTimeWindowLength();
 
-  // input parameter for controlling filtering of the source term
+  // input parameters for controlling filtering of the source term
   bool difffilt = false;
   double filtx = 1;
   double filty = 1;
   double filtsig = 1;
+  bool dbg_dump_crsource=false;
+  int dbg_dump_crsource_step=100;
   
   map<string,string>::iterator end=arg->end();
 
@@ -76,12 +117,17 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   if (arg->find("sort_step")!=end)   {sort_step= atoi(arg->at("sort_step").c_str());  arg->erase(arg->find("sort_step"));}
   if (arg->find("bunchharm")!=end)   {bunchharm= atoi(arg->at("bunchharm").c_str());  arg->erase(arg->find("bunchharm"));}
   if (arg->find("dbg_report_lattice")!=end) {dbg_report_lattice = atob(arg->at("dbg_report_lattice")); arg->erase(arg->find("dbg_report_lattice"));}
+
   // variables to control source term filtering
   if (arg->find("filter_kx")!=end)   {filtx= atof(arg->at("filter_kx").c_str());  arg->erase(arg->find("filter_kx"));}
   if (arg->find("filter_ky")!=end)   {filty= atof(arg->at("filter_ky").c_str());  arg->erase(arg->find("filter_ky"));}
   if (arg->find("filter_sig")!=end)  {filtsig= atof(arg->at("filter_sig").c_str());  arg->erase(arg->find("filter_sig"));}
   if (arg->find("filter_diff")!=end) {difffilt= atob(arg->at("filter_diff").c_str());  arg->erase(arg->find("filter_diff"));}
 
+  ExtractArgBool(arg, "dbg_dump_crsource", &dbg_dump_crsource);
+  ExtractArgInt(arg,  "dbg_dump_crsource_step", &dbg_dump_crsource_step);
+  string dbg_dump_crsource_what = "f";
+  if (arg->find("dbg_dump_crsource_what")!=end) {dbg_dump_crsource_what = arg->at("dbg_dump_crsource_what"); arg->erase(arg->find("dbg_dump_crsource_what"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &track" << endl; this->usage();}
@@ -151,13 +197,23 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   }
 
   // initializing filtering of the fields
+#ifndef FFTW
+  if(rank==0) {
+    cout << "*** Requested filter_diff, however this GENESIS binary does was built without FFTW. => filter_diff setting has no effect. ***" << endl;
+  }
+#endif
   for (int ifld = 0; ifld < field->size(); ifld++){
       field->at(ifld)->solver.initSourceFilter(difffilt,filtx,filty,filtsig);
+
+      string rootname;
+      setup->getRootName(&rootname);
+      field->at(ifld)->solver.initSourceFilter_DbgDumpSettings(dbg_dump_crsource, dbg_dump_crsource_step, rootname, dbg_dump_crsource_what);
   }
+
+
   // call to gencore to do the actual tracking.  
   Gencore core;
   core.run(file.c_str(),beam,field,und,isTime,isScan, filter);
-
 
   delete und;
    

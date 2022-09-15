@@ -6,6 +6,10 @@ set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
+# CL, 2022-03-19: settings for developers
+# set(CMAKE_VERBOSE_MAKEFILE ON)
+# add_compile_options(-Wall -Wextra)
+
 # OpenMPI: preprocessor macro to disable C++ interface (then we don't have to link libmpi_cxx)
 add_compile_definitions(OMPI_SKIP_MPICXX)
 
@@ -126,6 +130,7 @@ add_library(genesis13 STATIC
         src/IO/SDDSBeam.cpp
         src/IO/writeBeamHDF5.cpp
         src/IO/writeFieldHDF5.cpp
+        src/IO/HDF5_cwc.cpp
         src/Loading/ImportBeam.cpp
         src/Loading/ImportField.cpp
         src/Loading/LoadBeam.cpp
