@@ -41,7 +41,8 @@ class Setup: public StringProcessing{
    bool   outputEnergy();
    bool   outputAux();
    bool   outputFieldDump();
-   bool   getSemaEn();
+   bool   getSemaEnStart();
+   bool   getSemaEnDone();
    void   setSemaFN(string);
    bool   getSemaFN(string *);
 
@@ -79,7 +80,7 @@ class Setup: public StringProcessing{
 
    int seed, rank,npart,nbins,runcount;
 
-   bool sema_file_enabled;
+   bool sema_file_enabled_start, sema_file_enabled_done;
    string sema_file_name; // user-defined name of semaphore file, if empty: file name will be derived in function getSemaFN
 };
 
@@ -127,5 +128,6 @@ inline void   Setup::BWF_set_inc(int in)
 	beam_write_slices_inc=in;
 }
 
-inline bool   Setup::getSemaEn() { return sema_file_enabled; }
+inline bool   Setup::getSemaEnStart() { return sema_file_enabled_start; }
+inline bool   Setup::getSemaEnDone()  { return sema_file_enabled_done; }
 #endif

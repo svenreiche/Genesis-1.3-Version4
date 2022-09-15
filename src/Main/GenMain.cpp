@@ -163,6 +163,22 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
           }
           if (!setup->init(rank,&argument,lattice, filter)){ break;}
           meta_latfile=setup->getLattice();
+
+          /* successfully processed "&setup" block => generate start semaphore file if requested to do so by user */
+          if (setup->getSemaEnStart()) {
+            string semafile_fn_started;
+            SemaFile sema;
+            if (rank==0) {
+              if(setup->getSemaFN(&semafile_fn_started)) {
+                semafile_fn_started+="start"; // "started"-type semaphore file have additional filename suffix
+                sema.put(semafile_fn_started);
+                cout << endl << "generating 'start' semaphore file " << semafile_fn_started << endl << endl;
+              } else {
+                cout << endl << "error: not writing 'start' semaphore file, filename not defined" << endl << endl;
+              }
+            }
+          }
+
           continue;
       }
 
@@ -365,7 +381,7 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
         bool semafile_en=false;
         string semafile_fn;
         bool semafile_fn_valid=false;
-        if ((semafile_en=setup->getSemaEn())) {
+        if ((semafile_en=setup->getSemaEnDone())) {
           if(successful_run) {
             if(setup->getSemaFN(&semafile_fn)) {
               semafile_fn_valid=true;
