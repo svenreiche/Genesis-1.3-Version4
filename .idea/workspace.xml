@@ -37,20 +37,12 @@
   <component name="CMakeSettings">
     <configurations>
       <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc" />
+      <configuration PROFILE_NAME="Release" ENABLED="true" CONFIG_NAME="Release" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc" />
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Working on generating the fine lattice after parsing the lattice file">
+    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Update of CHANGELOG.md">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/benchmark/Benchmark1-SASE/Aramis.lat" beforeDir="false" afterPath="$PROJECT_DIR$/benchmark/Benchmark1-SASE/Aramis.lat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/benchmark/Benchmark1-SASE/Benchmark.out.h5" beforeDir="false" afterPath="$PROJECT_DIR$/benchmark/Benchmark1-SASE/Benchmark.out.h5" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Testing/Temporary/LastTest.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/genesis4" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/genesis4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/include/version.h" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/include/version.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/libgenesis13.a" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/libgenesis13.a" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/ParseLattice.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/ParseLattice.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lattice/Lattice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lattice/Lattice.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lattice/ParseLattice.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lattice/ParseLattice.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,11 +52,11 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="dev-latticeparser" />
+        <entry key="$PROJECT_DIR$" value="home-dev" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -90,7 +82,7 @@
     <property name="cf.first.check.clang-format" value="false" />
     <property name="cidr.known.project.marker" value="true" />
     <property name="cmake.loaded.for.project" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/include" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -98,13 +90,11 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.gutterIcons" />
+    <property name="settings.editor.selected.configurable" value="CMakeSettings" />
     <property name="structure.view.defaults.are.configured" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/include" />
-      <recent name="$PROJECT_DIR$/src/Lattice" />
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
@@ -183,10 +173,7 @@
       <workItem from="1645112835305" duration="18890000" />
       <workItem from="1645710733905" duration="561000" />
       <workItem from="1645711362376" duration="2000" />
-      <workItem from="1646063920040" duration="9279000" />
-      <workItem from="1646148777353" duration="2192000" />
-      <workItem from="1646150979658" duration="28974000" />
-      <workItem from="1646294289672" duration="24286000" />
+      <workItem from="1669218404911" duration="1812000" />
     </task>
     <task id="LOCAL-00001" summary="Imported into CLion">
       <created>1593502139044</created>
@@ -286,42 +273,21 @@
       <option name="project" value="LOCAL" />
       <updated>1645710801008</updated>
     </task>
-    <task id="LOCAL-00015" summary="merging dev into home-dev">
-      <created>1645720180457</created>
+    <task id="LOCAL-00015" summary="Fixed bug that harmonics couldn't be imported with importfield">
+      <created>1669220191037</created>
       <option name="number" value="00015" />
       <option name="presentableId" value="LOCAL-00015" />
       <option name="project" value="LOCAL" />
-      <updated>1645720180457</updated>
+      <updated>1669220191038</updated>
     </task>
-    <task id="LOCAL-00016" summary="adding the modificed ellipse sigmoid for source filtering">
-      <created>1646065462410</created>
+    <task id="LOCAL-00016" summary="Update of CHANGELOG.md">
+      <created>1669220527044</created>
       <option name="number" value="00016" />
       <option name="presentableId" value="LOCAL-00016" />
       <option name="project" value="LOCAL" />
-      <updated>1646065462410</updated>
+      <updated>1669220527044</updated>
     </task>
-    <task id="LOCAL-00017" summary="basic testing of source term filtering">
-      <created>1646130954423</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1646130954424</updated>
-    </task>
-    <task id="LOCAL-00018" summary="Added additional class ParseLattice which parses the file in parallel while preserving possible references.">
-      <created>1646240181571</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1646240181571</updated>
-    </task>
-    <task id="LOCAL-00019" summary="Working on generating the fine lattice after parsing the lattice file">
-      <created>1646326650432</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1646326650432</updated>
-    </task>
-    <option name="localTasksCounter" value="20" />
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -378,11 +344,8 @@
     <MESSAGE value="Fixed missing initialization of accuslip, which was previously in Field::initDiagnostic() but is essential and should be initialized elsewhere. It is now in COntrol::init() where accuslip is set to zero at the beginning of each tracking" />
     <MESSAGE value="Initial draft for source term filtering. The input file in Benchmark 1 has the new input parameters listed. It needs testing in particular check if X- and Y- are exchange in the output. This includes also the divergence in the main output file&quot;" />
     <MESSAGE value="Reverted back CMakeLists.txt to original state" />
-    <MESSAGE value="merging dev into home-dev" />
-    <MESSAGE value="adding the modificed ellipse sigmoid for source filtering" />
-    <MESSAGE value="basic testing of source term filtering" />
-    <MESSAGE value="Added additional class ParseLattice which parses the file in parallel while preserving possible references." />
-    <MESSAGE value="Working on generating the fine lattice after parsing the lattice file" />
-    <option name="LAST_COMMIT_MESSAGE" value="Working on generating the fine lattice after parsing the lattice file" />
+    <MESSAGE value="Fixed bug that harmonics couldn't be imported with importfield" />
+    <MESSAGE value="Update of CHANGELOG.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update of CHANGELOG.md" />
   </component>
 </project>
