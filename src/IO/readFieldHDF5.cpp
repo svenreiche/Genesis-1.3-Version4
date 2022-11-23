@@ -55,7 +55,7 @@ bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Tim
   dgrid=0.5*dgrid*static_cast<double>(ngrid-1);
 
 
-  if (fabs((lambda-reflen)/lambda)>1e-6){
+  if (fabs((lambda-reflen*static_cast<double>(harm))/lambda)>1e-6){
       if (rank==0){ cout << "*** Error: Mismatch between reference length of run and of input file" << endl;}
       return false;    
   }
