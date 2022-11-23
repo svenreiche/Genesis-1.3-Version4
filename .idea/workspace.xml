@@ -37,10 +37,13 @@
   <component name="CMakeSettings">
     <configurations>
       <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc" />
+      <configuration PROFILE_NAME="Release" ENABLED="true" CONFIG_NAME="Release" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=mpic++ -DCMAKE_C_COMPILER=mpicc" />
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Reverted back CMakeLists.txt to original state" />
+    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Update of CHANGELOG.md">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -49,7 +52,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
@@ -87,7 +90,7 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.gutterIcons" />
+    <property name="settings.editor.selected.configurable" value="CMakeSettings" />
     <property name="structure.view.defaults.are.configured" value="true" />
   </component>
   <component name="RecentsManager">
@@ -96,6 +99,11 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.genesis4">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="genesis13" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Genesis_1_3_Version4" TARGET_NAME="genesis13" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -165,6 +173,7 @@
       <workItem from="1645112835305" duration="18890000" />
       <workItem from="1645710733905" duration="561000" />
       <workItem from="1645711362376" duration="2000" />
+      <workItem from="1669218404911" duration="1812000" />
     </task>
     <task id="LOCAL-00001" summary="Imported into CLion">
       <created>1593502139044</created>
@@ -264,7 +273,21 @@
       <option name="project" value="LOCAL" />
       <updated>1645710801008</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="Fixed bug that harmonics couldn't be imported with importfield">
+      <created>1669220191037</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1669220191038</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Update of CHANGELOG.md">
+      <created>1669220527044</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1669220527044</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -321,6 +344,8 @@
     <MESSAGE value="Fixed missing initialization of accuslip, which was previously in Field::initDiagnostic() but is essential and should be initialized elsewhere. It is now in COntrol::init() where accuslip is set to zero at the beginning of each tracking" />
     <MESSAGE value="Initial draft for source term filtering. The input file in Benchmark 1 has the new input parameters listed. It needs testing in particular check if X- and Y- are exchange in the output. This includes also the divergence in the main output file&quot;" />
     <MESSAGE value="Reverted back CMakeLists.txt to original state" />
-    <option name="LAST_COMMIT_MESSAGE" value="Reverted back CMakeLists.txt to original state" />
+    <MESSAGE value="Fixed bug that harmonics couldn't be imported with importfield" />
+    <MESSAGE value="Update of CHANGELOG.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update of CHANGELOG.md" />
   </component>
 </project>
