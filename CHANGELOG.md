@@ -5,6 +5,10 @@
 Version 4.5.1 has been released. Part of it is this Change Log file, which will be updated in the future releases.
 
 ## Unreleased:
+
+## [4.6.1-beta] - 2022/11/23
+- Fixed the bug that importing harmonics with the importfield namelist cause always the error that wavelength and reference length weren't matching.  
+
 ### [4.6.1-beta] - 2022/02/16
 - Moved the calculation for the output file from the Beam and Field class to the class Diagnostic.cpp. This class interacts with the class  in Output.cpp so that the output class does not need to know the name of the field to be written. This informationis provided by the new class in Diagnostic.cpp. That way it gets easier to add additional output, where only on location needs to be changed (namely the derived classes in DiagnostUser.cpp)
 - Command line arguments are now overwriting the correpsonding input the main input file. Supported are the output file root name, the lattice file, the beam line and the seed for the shot noise power.
