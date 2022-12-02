@@ -2,40 +2,41 @@
 #include "Field.h"
 #include "Sorting.h"
 
+extern bool MPISingle;
 
 Beam::~Beam(){}
 Beam::Beam(){
-  do_global_stat=false;
-  doCurrent=false;
-  doSpatial=true;
-  doEnergy=true;
-  doAux=true;
+      do_global_stat=false;
+      doCurrent=false;
+      doSpatial=true;
+      doEnergy=true;
+      doAux=true;
 
-  beam_write_filter=false;
-  beam_write_slices_from=-1;
-  beam_write_slices_to=-1;
-  beam_write_slices_inc=1;
+      beam_write_filter=false;
+      beam_write_slices_from=-1;
+      beam_write_slices_to=-1;
+      beam_write_slices_inc=1;
 }
 
-void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, double s0_in, bool one4one_in )
-{  
+void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, double s0_in, bool one4one_in ) {
 
-  nbins=nbins_in;
-  reflength=reflen_in;  // the length corresponding to 2pi in ponderomotive phase.
-  slicelength=slicelen_in;  // reflength times samplerate.
-  s0=s0_in;
-  one4one=one4one_in;
-  do_global_stat=false;
+    nbins = nbins_in;
+    reflength = reflen_in;  // the length corresponding to 2pi in ponderomotive phase.
+    slicelength = slicelen_in;  // reflength times samplerate.
+    s0 = s0_in;
+    one4one = one4one_in;
+    do_global_stat = false;
 
-  current.resize(nsize);
-  eloss.resize(nsize);
-  for (int i=0; i<nsize; i++){
-    eloss[i]=0;
-  }
+    current.resize(nsize);
+    eloss.resize(nsize);
+    longESC.resize(nsize);  // array to hold long range space charge field
+    for (int i = 0; i < nsize; i++) {
+        eloss[i] = 0;
+        longESC[i] = 0;
+    }
 
-  beam.resize(nsize);
-
-  return;
+    beam.resize(nsize);
+    return;
 }
 
 
@@ -160,7 +161,7 @@ void Beam::track(double delz,vector<Field *> *field, Undulator *und){
   incoherent.apply(this,und,delz);         // apply effect of incoherent synchrotron
   col.apply(this,und,delz);         // apply effect of collective effects
   
-  solver.applyR56(this,und,reflength);    // apply the longitudinalphase shift due to R56 if a chicane is selected.
+  solver.applyR56(this,und,reflength);    // apply the longitudinal phase shift due to R56 if a chicane is selected.
 
   solver.track(delz*0.5,this,und,true);      // apply corrector settings and track second half for transverse coordinate
   return;

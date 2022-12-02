@@ -25,7 +25,7 @@ class BeamSolver{
    BeamSolver();
    virtual ~BeamSolver();
 
-   void initEField(double rmax, int ngrid, int nz, int nphi, double lambda);
+   void initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool longr);
 
    void advance(double, Beam *, vector< Field *> *, Undulator *);
    void track(double, Beam *, Undulator *,bool);
@@ -57,8 +57,8 @@ class BeamSolver{
 };
 
 
-inline void BeamSolver::initEField(double rmax, int ngrid, int nz, int nphi, double lambda){
-  efield.init(rmax,ngrid,nz,nphi,lambda);
+inline void BeamSolver::initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool longr){
+  efield.init(rmax,ngrid,nz,nphi,lambda,longr);
   return;
 }
 

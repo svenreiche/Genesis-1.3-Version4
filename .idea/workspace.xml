@@ -43,6 +43,14 @@
   <component name="ChangeListManager">
     <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Update of CHANGELOG.md">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/Beam.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Beam.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/BeamSolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/BeamSolver.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/EField.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/EField.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/EFieldSolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/EFieldSolver.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Core/Beam.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Core/Beam.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Core/BeamSolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Core/BeamSolver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Core/EFieldSolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Core/EFieldSolver.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Main/EField.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main/EField.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,11 +60,11 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="home-dev" />
+        <entry key="$PROJECT_DIR$" value="dev" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -99,9 +107,9 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.genesis4">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
     <configuration name="genesis13" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Genesis_1_3_Version4" TARGET_NAME="genesis13" CONFIG_NAME="Debug">
@@ -174,6 +182,7 @@
       <workItem from="1645710733905" duration="561000" />
       <workItem from="1645711362376" duration="2000" />
       <workItem from="1669218404911" duration="1812000" />
+      <workItem from="1669974588271" duration="6356000" />
     </task>
     <task id="LOCAL-00001" summary="Imported into CLion">
       <created>1593502139044</created>

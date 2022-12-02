@@ -1,22 +1,62 @@
 #include "EFieldSolver.h"
+#include "Beam.h"
+
+extern bool MPISingle;
 
 EFieldSolver::EFieldSolver(){
   nz=0;
   nphi=0;
   ngrid_ref=0;
+  longrange=false;
+  fcurrent.clear();
 
 }
 
 EFieldSolver::~EFieldSolver(){}
 
-void EFieldSolver::init(double rmax_in, int ngrid_in, int nz_in, int nphi_in, double lambda){
+void EFieldSolver::init(double rmax_in, int ngrid_in, int nz_in, int nphi_in, double lambda, bool longr_in){
 
   rmax_ref=rmax_in;
   ngrid_ref=ngrid_in;
   nz=nz_in;
   nphi=nphi_in;
   ks = 4*asin(1)/lambda;
+  longrange=longr_in;
 }
+
+void EFieldSolver::longRange(Beam *beam) {
+    int nsize = beam->beam.size();
+    for (int i =0; i < nsize; i++){
+        beam->longESC[i]=0;
+    }
+    if (!longrange) {
+        return;
+    }
+    int MPIsize=1;
+    int MPIrank=0;
+    if (!MPISingle){
+        MPI_Comm_size(MPI_COMM_WORLD, &MPIsize); // assign rank to node
+        MPI_Comm_rank(MPI_COMM_WORLD, &MPIrank); // assign rank to node
+    }
+
+    // resize if needed
+    if (fcurrent.size()==0){
+        fcurrent.resize(MPIsize*nsize);
+        fsize.resize(MPIsize*nsize);
+        work1.resize(nsize);
+        work2.resize(nsize);
+    }
+
+    // fill local slices
+    for (int i=0; i<nsize;i++){
+        work1[i]=beam->current[i];
+        work2[i]=20e-6*20e-6;
+    }
+    // gathering information on full current and beam size profile
+    MPI_Allgather(&work1[0],nsize,MPI_DOUBLE,&fcurrent[0],nsize*MPIsize,MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Allgather(&work2[0],nsize,MPI_DOUBLE,&fsize[0],nsize*MPIsize,MPI_DOUBLE, MPI_COMM_WORLD);
+}
+
 
 void EFieldSolver::shortRange(vector<Particle> *beam,vector<double> &ez, double current, double gammaz){
 
