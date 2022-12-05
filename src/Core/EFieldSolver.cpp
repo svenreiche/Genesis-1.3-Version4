@@ -24,7 +24,7 @@ void EFieldSolver::init(double rmax_in, int ngrid_in, int nz_in, int nphi_in, do
   longrange=longr_in;
 }
 
-void EFieldSolver::longRange(Beam *beam) {
+void EFieldSolver::longRange(Beam *beam, double gamma) {
     int nsize = beam->beam.size();
     for (int i =0; i < nsize; i++){
         beam->longESC[i]=0;
@@ -50,11 +50,28 @@ void EFieldSolver::longRange(Beam *beam) {
     // fill local slices
     for (int i=0; i<nsize;i++){
         work1[i]=beam->current[i];
-        work2[i]=20e-6*20e-6;
+        work2[i]=beam->getSize(i);
     }
     // gathering information on full current and beam size profile
     MPI_Allgather(&work1[0],nsize,MPI_DOUBLE,&fcurrent[0],nsize*MPIsize,MPI_DOUBLE, MPI_COMM_WORLD);
     MPI_Allgather(&work2[0],nsize,MPI_DOUBLE,&fsize[0],nsize*MPIsize,MPI_DOUBLE, MPI_COMM_WORLD);
+
+    double scl = beam->slicelength/2./asin(1)/3e8/511000;  // convert to units of electron rest mass.
+    for (int i=0; i < nsize; i++){
+        double EFld = 0;
+        int isplit = nsize*MPIrank+i;
+        for (int j = 0; j < isplit; j++) {
+            double ds = static_cast<double>(j - isplit) * beam->slicelength*gamma;
+            double coef = 1 +ds/sqrt(ds*ds+fsize[j]); // ds is negative
+            EFld += coef*scl*fcurrent[j]/fsize[j];
+        }
+        for (int j = isplit+1; j < MPIsize*nsize; j++) {
+            double ds = static_cast<double>(j - isplit) * beam->slicelength*gamma;
+            double coef = 1 -ds/sqrt(ds*ds+fsize[j]); // ds is negative
+            EFld -= coef*scl*fcurrent[j]/fsize[j];
+        }
+        beam->longESC[i] = EFld;
+    }
 }
 
 

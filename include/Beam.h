@@ -31,6 +31,7 @@ class Beam{
    bool harmonicConversion(int,bool);
    bool subharmonicConversion(int,bool);
    int sort();
+   double getSize(int);
    void track(double, vector<Field *> *, Undulator *);
    void setOutput(bool,bool,bool,bool);
    void setWriteFilter(bool,int,int,int);

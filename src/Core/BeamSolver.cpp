@@ -42,12 +42,14 @@ void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undul
 
   double autophase=und->autophase();
 
-  // obtaining wakefields and space charge
-  efield.longRange(beam);
+  // obtaining long range space charge field
+  efield.longRange(beam,und->getGammaRef());  // defines the array beam->longESC
 
   // Runge Kutta solver to advance particle
 
   for (int is=0; is<beam->beam.size(); is++){    
+    // accumulate space charge field
+    double eloss = beam->longESC[is]; // + wakes ....
 
     // calculating short range space charge    
     if (esc.size() < beam->beam.at(is).size()){
@@ -66,10 +68,10 @@ void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undul
         double y =beam->beam.at(is).at(ip).y;
         double px=beam->beam.at(is).at(ip).px;
         double py=beam->beam.at(is).at(ip).py;
-	double awloc=und->faw(x,y);                 // get the transverse dependence of the undulator field
+	    double awloc=und->faw(x,y);                 // get the transverse dependence of the undulator field
         btpar=1+px*px+py*py+aw*aw*awloc*awloc;	  
 
-	ez=esc[ip]+beam->longESC[is];  // adding global long range space charge field to each particle
+	ez=esc[ip]+eloss;  // adding global long range space charge field to each particle
 
 	cpart=0;
 	double wx,wy;

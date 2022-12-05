@@ -30,7 +30,7 @@ class EFieldSolver{
    virtual ~EFieldSolver();
    void init(double,int,int,int, double, bool);
    void shortRange(vector<Particle> *,vector<double> &, double, double);
-   void longRange(Beam *beam);
+   void longRange(Beam *beam, double gamma);
  private:
     vector<double> fcurrent,fsize;
     vector<double> work1,work2;

@@ -40,7 +40,32 @@ void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, d
 }
 
 
+double Beam::getSize(int is) {  // a calculation of the rms sizes needed for space charge calculation
+    if (this->current[is] <= 0){
+        return 1;    // dummy value if there is no current
+    }
 
+    double x1=0;
+    double x2=0;
+    double y1=0;
+    double y2=0;
+    int count = 0;
+    for (auto const &par: this->beam.at(is)){
+            x1 += par.x;
+            x2 += par.x*par.x;
+            y1 += par.y;
+            y2 += par.y*par.y;
+            count++;
+    }
+    if (count == 0) {
+        return 1.;
+    }
+    x1 /=static_cast<double>(count);
+    x2 /=static_cast<double>(count);
+    y1 /=static_cast<double>(count);
+    y2 /=static_cast<double>(count);
+    return sqrt(std::abs(x2-x1*x1))*sqrt(std::abs(y2-y1*y1));
+}
 
 void Beam::initDiagnostics(int nz)
 {
@@ -160,7 +185,7 @@ void Beam::track(double delz,vector<Field *> *field, Undulator *und){
 
   incoherent.apply(this,und,delz);         // apply effect of incoherent synchrotron
   col.apply(this,und,delz);         // apply effect of collective effects
-  
+
   solver.applyR56(this,und,reflength);    // apply the longitudinal phase shift due to R56 if a chicane is selected.
 
   solver.track(delz*0.5,this,und,true);      // apply corrector settings and track second half for transverse coordinate
