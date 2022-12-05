@@ -1,4 +1,4 @@
-#include "Time.h"
+#include "GenTime.h"
 
 Time::Time()
 {

@@ -9,7 +9,7 @@
 
 #include "StringProcessing.h"
 #include "Setup.h"
-#include "Time.h"
+#include "GenTime.h"
 #include "Particle.h"
 
 class Beam;

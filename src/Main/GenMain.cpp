@@ -27,7 +27,7 @@
 #include "Setup.h"
 #include "AlterSetup.h"
 #include "Lattice.h"
-#include "Time.h"
+#include "GenTime.h"
 #include "Gencore.h"
 #include "LoadField.h"
 #include "LoadBeam.h"
