@@ -141,7 +141,7 @@ add_library(genesis13 STATIC
         src/Main/Parser.cpp
         src/Main/Setup.cpp
         src/Main/SponRad.cpp
-        src/Main/Time.cpp
+        src/Main/GenTime.cpp
         src/Main/Track.cpp
         src/Main/Wake.cpp
         )
