@@ -41,16 +41,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Update of CHANGELOG.md">
+    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Preparation for adding long range space charge to Genesis. To enable a single bool value of True is needed for the corresponding element in the efield namelist">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Beam.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Beam.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/BeamSolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/BeamSolver.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/EField.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/EField.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/EFieldSolver.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/EFieldSolver.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Core/Beam.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Core/Beam.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Core/BeamSolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Core/BeamSolver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Core/EFieldSolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Core/EFieldSolver.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main/EField.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main/EField.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/Inverfc.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Inverfc.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/include/Time.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Time.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,9 +101,9 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.genesis4">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="genesis13" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Genesis_1_3_Version4" TARGET_NAME="genesis13" CONFIG_NAME="Debug">
@@ -182,7 +176,8 @@
       <workItem from="1645710733905" duration="561000" />
       <workItem from="1645711362376" duration="2000" />
       <workItem from="1669218404911" duration="1812000" />
-      <workItem from="1669974588271" duration="6356000" />
+      <workItem from="1669974588271" duration="7079000" />
+      <workItem from="1670229996063" duration="2268000" />
     </task>
     <task id="LOCAL-00001" summary="Imported into CLion">
       <created>1593502139044</created>
@@ -296,7 +291,14 @@
       <option name="project" value="LOCAL" />
       <updated>1669220527044</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Preparation for adding long range space charge to Genesis. To enable a single bool value of True is needed for the corresponding element in the efield namelist">
+      <created>1669997393806</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1669997393806</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -355,6 +357,7 @@
     <MESSAGE value="Reverted back CMakeLists.txt to original state" />
     <MESSAGE value="Fixed bug that harmonics couldn't be imported with importfield" />
     <MESSAGE value="Update of CHANGELOG.md" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update of CHANGELOG.md" />
+    <MESSAGE value="Preparation for adding long range space charge to Genesis. To enable a single bool value of True is needed for the corresponding element in the efield namelist" />
+    <option name="LAST_COMMIT_MESSAGE" value="Preparation for adding long range space charge to Genesis. To enable a single bool value of True is needed for the corresponding element in the efield namelist" />
   </component>
 </project>
