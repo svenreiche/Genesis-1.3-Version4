@@ -42,22 +42,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Update of CHANGELOG.md">
+      <change afterPath="$PROJECT_DIR$/include/FieldManipulator.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/Main/FieldManipulator.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/AlterSetup.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/AlterSetup.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/EField.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/EField.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/ImportBeam.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/ImportBeam.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/ImportField.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/ImportField.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/LoadBeam.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/LoadBeam.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/LoadField.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/LoadField.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/SDDSBeam.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/SDDSBeam.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/SponRad.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/SponRad.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Time.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/GenTime.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Track.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Track.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Wake.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Wake.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/readBeamHDF5.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/readBeamHDF5.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/readFieldHDF5.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/readFieldHDF5.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Main/GenMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main/GenMain.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main/Time.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main/GenTime.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,7 +61,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="home-dev" />
+        <entry key="$PROJECT_DIR$" value="dev" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -114,9 +104,9 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.genesis4">
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
       </method>
     </configuration>
     <configuration name="genesis13" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Genesis_1_3_Version4" TARGET_NAME="genesis13" CONFIG_NAME="Debug">
