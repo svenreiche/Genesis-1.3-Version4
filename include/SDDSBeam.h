@@ -13,7 +13,7 @@
 #include "StringProcessing.h"
 #include "Beam.h"
 #include "Setup.h"
-#include "Time.h"
+#include "GenTime.h"
 #include "Lattice.h"
 #include "Sorting.h"
 #include <hdf5.h>

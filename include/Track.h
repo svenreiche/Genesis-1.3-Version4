@@ -14,7 +14,7 @@
 #include "Setup.h"
 #include "Lattice.h"
 #include "AlterLattice.h"
-#include "Time.h"
+#include "GenTime.h"
 #include "Beam.h"
 #include "Field.h"
 #include "Diagnostic.h"

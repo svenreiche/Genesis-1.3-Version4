@@ -6,10 +6,6 @@ set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
-# CL, 2022-03-19: settings for developers
-# set(CMAKE_VERBOSE_MAKEFILE ON)
-# add_compile_options(-Wall -Wextra)
-
 # OpenMPI: preprocessor macro to disable C++ interface (then we don't have to link libmpi_cxx)
 add_compile_definitions(OMPI_SKIP_MPICXX)
 
@@ -142,12 +138,13 @@ add_library(genesis13 STATIC
         src/Main/AlterSetup.cpp
         src/Main/Dump.cpp
         src/Main/EField.cpp
+        src/Main/FieldManipulator.cpp
         src/Main/GenMain.cpp
         src/Main/mainwrap.cpp
         src/Main/Parser.cpp
         src/Main/Setup.cpp
         src/Main/SponRad.cpp
-        src/Main/Time.cpp
+        src/Main/GenTime.cpp
         src/Main/Track.cpp
         src/Main/Wake.cpp
         )

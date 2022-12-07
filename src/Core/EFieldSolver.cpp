@@ -1,22 +1,87 @@
 #include "EFieldSolver.h"
+#include "Beam.h"
+
+extern bool MPISingle;
 
 EFieldSolver::EFieldSolver(){
   nz=0;
   nphi=0;
   ngrid_ref=0;
+  longrange=false;
+  fcurrent.clear();
 
 }
 
 EFieldSolver::~EFieldSolver(){}
 
-void EFieldSolver::init(double rmax_in, int ngrid_in, int nz_in, int nphi_in, double lambda){
+void EFieldSolver::init(double rmax_in, int ngrid_in, int nz_in, int nphi_in, double lambda, bool longr_in, bool red_in){
 
   rmax_ref=rmax_in;
   ngrid_ref=ngrid_in;
   nz=nz_in;
   nphi=nphi_in;
   ks = 4*asin(1)/lambda;
+  longrange=longr_in;
+  reducedLF=red_in;
 }
+
+void EFieldSolver::longRange(Beam *beam, double gamma0, double aw) {
+    int nsize = beam->beam.size();
+    for (int i =0; i < nsize; i++){
+        beam->longESC[i]=0;
+    }
+    if (!longrange) {
+        return;
+    }
+    double gamma = gamma0;
+    if (reducedLF){
+        gamma/=sqrt(1+aw*aw);
+    }
+
+    int MPIsize=1;
+    int MPIrank=0;
+    if (!MPISingle){
+        MPI_Comm_size(MPI_COMM_WORLD, &MPIsize); // assign rank to node
+        MPI_Comm_rank(MPI_COMM_WORLD, &MPIrank); // assign rank to node
+    }
+
+    // resize if needed
+    if (fcurrent.size()==0){
+        fcurrent.resize(MPIsize*nsize);
+        fsize.resize(MPIsize*nsize);
+        work1.resize(nsize);
+        work2.resize(nsize);
+    }
+
+    // fill local slices
+    for (int i=0; i<nsize;i++){
+        work1[i]=beam->current[i];
+        work2[i]=beam->getSize(i);
+    }
+
+    // gathering information on full current and beam size profile
+    MPI_Allgather(&work1.front(),nsize,MPI_DOUBLE,&fcurrent.front(),nsize,MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Allgather(&work2.front(),nsize,MPI_DOUBLE, &fsize.front(),nsize,MPI_DOUBLE, MPI_COMM_WORLD);
+
+    double scl = beam->slicelength/2./asin(1)/3e8/2/8.85e-12;  // convert to units of electron rest mass.
+
+    for (int i=0; i < nsize; i++){
+        double EFld = 0;
+        int isplit = nsize*MPIrank+i;
+        for (int j = 0; j < isplit; j++) {
+            double ds = static_cast<double>(j - isplit) * beam->slicelength*gamma;
+            double coef = 1 +ds/sqrt(ds*ds+fsize[j]); // ds is negative
+            EFld += coef*scl*fcurrent[j]/fsize[j];
+        }
+        for (int j = isplit+1; j < MPIsize*nsize; j++) {
+            double ds = static_cast<double>(j - isplit) * beam->slicelength*gamma;
+            double coef = 1 -ds/sqrt(ds*ds+fsize[j]); // ds is negative
+            EFld -= coef*scl*fcurrent[j]/fsize[j];
+        }
+        beam->longESC[i] = EFld;
+    }
+}
+
 
 void EFieldSolver::shortRange(vector<Particle> *beam,vector<double> &ez, double current, double gammaz){
 

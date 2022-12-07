@@ -12,7 +12,7 @@
 
 #include "StringProcessing.h"
 #include "Setup.h"
-#include "Time.h"
+#include "GenTime.h"
 #include "Profile.h"
 #include "Lattice.h"
 #include "Field.h"

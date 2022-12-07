@@ -12,7 +12,7 @@
 
 #include "StringProcessing.h"
 #include "Lattice.h"
-#include "Time.h"
+#include "GenTime.h"
 #include "Setup.h"
 #include "Beam.h"
 #include "Field.h"

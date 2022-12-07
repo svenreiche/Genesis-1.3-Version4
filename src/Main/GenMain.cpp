@@ -27,7 +27,7 @@
 #include "Setup.h"
 #include "AlterSetup.h"
 #include "Lattice.h"
-#include "Time.h"
+#include "GenTime.h"
 #include "Gencore.h"
 #include "LoadField.h"
 #include "LoadBeam.h"
@@ -44,6 +44,7 @@
 #include "Wake.h"
 #include "Diagnostic.h"
 #include "SemaFile.h"
+#include "FieldManipulator.h"
 
 #include <sstream>
 
@@ -242,6 +243,16 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
 	    LoadField *loadfield=new LoadField;
             if (!loadfield->init(rank,size,&argument,&field,setup,timewindow,profile)){ break;}
 	    delete loadfield;
+            continue;  
+          }  
+
+          //----------------------------------------------------
+          // field manipulation
+
+	  if (element.compare("&field_manipulator")==0){
+	    FieldManipulator *q = new FieldManipulator;
+            if (!q->init(rank,size,&argument,&field,setup,timewindow,profile)){ break;}
+	    delete q;
             continue;  
           }  
 	 

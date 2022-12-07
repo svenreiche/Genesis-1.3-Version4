@@ -5,8 +5,14 @@
 Version 4.5.1 has been released. Part of it is this Change Log file, which will be updated in the future releases.
 
 ## Unreleased:
+### [4.6.1-beta] - 2022/12/06
+- add "field_manipulator" feature, currently it can be used to scale to power of the light field
 
-## [4.6.1-beta] - 2022/11/23
+### [4.6.1-beta] - 2022/12/05
+- Refactor the name "Time.h" and "Time.cpp" to "GenTime.h" and "GenTime.cpp" to prevent the conflict with the std-library Time.h
+- Fixed in Diagnostic.cpp the evaluation of a complext value element with fabs. Replaced it with std::abs
+
+### [4.6.1-beta] - 2022/11/23
 - Fixed the bug that importing harmonics with the importfield namelist cause always the error that wavelength and reference length weren't matching.  
 
 ### [4.6.1-beta] - 2022/02/16

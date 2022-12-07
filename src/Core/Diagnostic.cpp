@@ -216,7 +216,9 @@ std::map<std::string,OutputInfo> DiagBeam::getTags(FilterDiagnostics & filter_in
     }
     if (filter_in.beam.auxiliar) {
         filter["aux"] = true;
-        tags["efield"] = {false, false, "eV/m"};
+        tags["efield"] = {false, false, "eV/m"}; // full field which changes particle energy
+        tags["wakefield"] = {false, false, "eV/m"}; // effect from wakefields
+        tags["LSCfield"] = {false, false, "eV/m"}; // effect from space charge field
     }
     if (filter_in.beam.current) {
         tags["current"] = {false, false, "A"};
@@ -324,18 +326,20 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
             if (val.find("pyposition") != val.end()){ val["pyposition"][idx]=py1;}
         }
 
-        if (val.find("bunching") != val.end()) {val["bunching"][idx] =fabs(b[0]);}
+        if (val.find("bunching") != val.end()) {val["bunching"][idx] =std::abs(b[0]);}
         if (val.find("bunchingphase") != val.end()) {val["bunchingphase"][idx] =atan2(b[0].imag(),b[0].real());}
 
         char buff[100];
         for (int iharm = 1; iharm < nharm; iharm++) {
             snprintf(buff, sizeof(buff), "bunching%d", iharm + 1);
-            if (val.find(buff) != val.end()) { val[buff][idx] = abs(b[iharm]); }
+            if (val.find(buff) != val.end()) { val[buff][idx] = std::abs(b[iharm]); }
             snprintf(buff, sizeof(buff), "bunchingphase%d", iharm + 1);
             if (val.find(buff) != val.end()) { val[buff][idx] = atan2(b[iharm].imag(), b[iharm].real()); }
         }
-        if (filter["auxiliar"]){
-            if (val.find("efield") != val.end()) {val["efield"][idx]=beam->eloss[is];}
+        if (filter["aux"]){
+            if (val.find("efield") != val.end()) {val["efield"][idx]=beam->eloss[is]+beam->longESC[is];}
+            if (val.find("wakefield") != val.end()) {val["wakefield"][idx]=beam->eloss[is];}
+            if (val.find("LSCfield") != val.end()) {val["LSCfield"][idx]=beam->longESC[is];}
         }
         // here are all the values which are only evaluated once at the bieginning of the run with iz = 0
         if (tags["current"].once){

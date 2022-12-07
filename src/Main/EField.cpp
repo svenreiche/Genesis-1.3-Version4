@@ -12,6 +12,8 @@ void EField::usage(){
   cout << " int nz   = 0" << endl;
   cout << " int nphi = 0" << endl;
   cout << " int ngrid = 100" << endl;
+  cout << " bool longrange = False" << endl;
+  cout << " bool reducedLF = False" << endl;
   cout << "&end" << endl << endl;
   return;
 }
@@ -21,6 +23,8 @@ bool EField::init(int rank, int size, map<string,string> *arg,  Beam *beam, Setu
 
   bool dotime=time->isTime();                  // check for time simulation
   lambda=setup->getReferenceLength();
+  longrange=false;
+  redLorentz=false;
 
   map<string,string>::iterator end=arg->end();
 
@@ -28,6 +32,8 @@ bool EField::init(int rank, int size, map<string,string> *arg,  Beam *beam, Setu
   if (arg->find("ngrid")!=end) {ngrid = atoi(arg->at("ngrid").c_str());  arg->erase(arg->find("ngrid"));}
   if (arg->find("nz")!=end)    {nz    = atoi(arg->at("nz").c_str());  arg->erase(arg->find("nz"));}
   if (arg->find("nphi")!=end)  {nphi  = atoi(arg->at("nphi").c_str());  arg->erase(arg->find("nphi"));}
+  if (arg->find("longrange")!=end)  {longrange = atob(arg->at("longrange").c_str()); arg->erase(arg->find("longrange"));}
+  if (arg->find("reducedLF")!=end)  {redLorentz = atob(arg->at("reducedLF").c_str()); arg->erase(arg->find("reduceLF"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &efield" << endl; this->usage();}
@@ -35,7 +41,7 @@ bool EField::init(int rank, int size, map<string,string> *arg,  Beam *beam, Setu
   }
 
 
-  beam->initEField(rmax,ngrid,nz,nphi,lambda);
+  beam->initEField(rmax,ngrid,nz,nphi,lambda,longrange,redLorentz);
 
 
   return true;

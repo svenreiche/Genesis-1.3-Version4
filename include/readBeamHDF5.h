@@ -14,7 +14,7 @@
 #include "HDF5base.h"
 #include "Particle.h"
 #include "Setup.h"
-#include "Time.h"
+#include "GenTime.h"
 
 using namespace std;
 
