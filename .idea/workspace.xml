@@ -41,9 +41,8 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Worked on calculating the long range space charge fields. Added new fields in output 'wakefield' and 'LSCfield' for the individual contribution by wakefields and longitudinal space charge field. The combined effect is in the field eloss.">
+    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Corrected a bug in the MPI_allgather comand">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Core/EFieldSolver.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Core/EFieldSolver.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -170,7 +169,7 @@
       <workItem from="1645710733905" duration="561000" />
       <workItem from="1645711362376" duration="2000" />
       <workItem from="1669218404911" duration="1812000" />
-      <workItem from="1670335989311" duration="3559000" />
+      <workItem from="1670335989311" duration="6244000" />
     </task>
     <task id="LOCAL-00001" summary="Imported into CLion">
       <created>1593502139044</created>
@@ -291,7 +290,14 @@
       <option name="project" value="LOCAL" />
       <updated>1670258880251</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="Corrected a bug in the MPI_allgather comand">
+      <created>1670342349020</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1670342349020</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -351,6 +357,7 @@
     <MESSAGE value="Fixed bug that harmonics couldn't be imported with importfield" />
     <MESSAGE value="Update of CHANGELOG.md" />
     <MESSAGE value="Worked on calculating the long range space charge fields. Added new fields in output 'wakefield' and 'LSCfield' for the individual contribution by wakefields and longitudinal space charge field. The combined effect is in the field eloss." />
-    <option name="LAST_COMMIT_MESSAGE" value="Worked on calculating the long range space charge fields. Added new fields in output 'wakefield' and 'LSCfield' for the individual contribution by wakefields and longitudinal space charge field. The combined effect is in the field eloss." />
+    <MESSAGE value="Corrected a bug in the MPI_allgather comand" />
+    <option name="LAST_COMMIT_MESSAGE" value="Corrected a bug in the MPI_allgather comand" />
   </component>
 </project>
