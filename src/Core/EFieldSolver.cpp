@@ -14,7 +14,7 @@ EFieldSolver::EFieldSolver(){
 
 EFieldSolver::~EFieldSolver(){}
 
-void EFieldSolver::init(double rmax_in, int ngrid_in, int nz_in, int nphi_in, double lambda, bool longr_in){
+void EFieldSolver::init(double rmax_in, int ngrid_in, int nz_in, int nphi_in, double lambda, bool longr_in, bool red_in){
 
   rmax_ref=rmax_in;
   ngrid_ref=ngrid_in;
@@ -22,9 +22,10 @@ void EFieldSolver::init(double rmax_in, int ngrid_in, int nz_in, int nphi_in, do
   nphi=nphi_in;
   ks = 4*asin(1)/lambda;
   longrange=longr_in;
+  reducedLF=red_in;
 }
 
-void EFieldSolver::longRange(Beam *beam, double gamma) {
+void EFieldSolver::longRange(Beam *beam, double gamma0, double aw) {
     int nsize = beam->beam.size();
     for (int i =0; i < nsize; i++){
         beam->longESC[i]=0;
@@ -32,6 +33,11 @@ void EFieldSolver::longRange(Beam *beam, double gamma) {
     if (!longrange) {
         return;
     }
+    double gamma = gamma0;
+    if (reducedLF){
+        gamma/=sqrt(1+aw*aw);
+    }
+
     int MPIsize=1;
     int MPIrank=0;
     if (!MPISingle){
@@ -57,7 +63,7 @@ void EFieldSolver::longRange(Beam *beam, double gamma) {
     MPI_Allgather(&work1.front(),nsize,MPI_DOUBLE,&fcurrent.front(),nsize,MPI_DOUBLE, MPI_COMM_WORLD);
     MPI_Allgather(&work2.front(),nsize,MPI_DOUBLE, &fsize.front(),nsize,MPI_DOUBLE, MPI_COMM_WORLD);
 
-    double scl = beam->slicelength/2./asin(1)/3e8/511000;  // convert to units of electron rest mass.
+    double scl = beam->slicelength/2./asin(1)/3e8/2/8.85e-12;  // convert to units of electron rest mass.
 
     for (int i=0; i < nsize; i++){
         double EFld = 0;

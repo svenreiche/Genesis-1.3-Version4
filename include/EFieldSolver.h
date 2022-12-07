@@ -28,9 +28,9 @@ class EFieldSolver{
  public:
    EFieldSolver();
    virtual ~EFieldSolver();
-   void init(double,int,int,int, double, bool);
+   void init(double,int,int,int, double, bool,bool);
    void shortRange(vector<Particle> *,vector<double> &, double, double);
-   void longRange(Beam *beam, double gamma);
+   void longRange(Beam *beam, double gamma, double aw);
  private:
     vector<double> fcurrent,fsize;
     vector<double> work1,work2;
@@ -41,7 +41,7 @@ class EFieldSolver{
 
     int nz,nphi,ngrid_ref;
     double rmax_ref,ks;
-    bool longrange;
+    bool longrange,reducedLF;
 
 };
 

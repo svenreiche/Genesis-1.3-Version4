@@ -336,7 +336,7 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
             snprintf(buff, sizeof(buff), "bunchingphase%d", iharm + 1);
             if (val.find(buff) != val.end()) { val[buff][idx] = atan2(b[iharm].imag(), b[iharm].real()); }
         }
-        if (filter["auxiliar"]){
+        if (filter["aux"]){
             if (val.find("efield") != val.end()) {val["efield"][idx]=beam->eloss[is]+beam->longESC[is];}
             if (val.find("wakefield") != val.end()) {val["wakefield"][idx]=beam->eloss[is];}
             if (val.find("LSCfield") != val.end()) {val["LSCfield"][idx]=beam->longESC[is];}

@@ -43,13 +43,13 @@ void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undul
   double autophase=und->autophase();
 
   // obtaining long range space charge field
-  efield.longRange(beam,und->getGammaRef());  // defines the array beam->longESC
+  efield.longRange(beam,und->getGammaRef(),aw);  // defines the array beam->longESC
 
   // Runge Kutta solver to advance particle
 
   for (int is=0; is<beam->beam.size(); is++){    
     // accumulate space charge field
-    double eloss = beam->longESC[is]; // + wakes ....
+    double eloss = beam->longESC[is]/511000; // convert eV to units of electron rest mass
 
     // calculating short range space charge    
     if (esc.size() < beam->beam.at(is).size()){

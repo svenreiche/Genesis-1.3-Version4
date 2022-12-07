@@ -28,8 +28,7 @@ class EField: public StringProcessing{
    void usage();
    double rmax,dr,lambda;
    int nz,nphi,ngrid;
-   bool longrange;
-
+   bool longrange,redLorentz;
 
 
 };
