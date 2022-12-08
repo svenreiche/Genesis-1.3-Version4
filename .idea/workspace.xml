@@ -42,7 +42,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Corrected a bug in the MPI_allgather comand">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/manual/MAIN_INPUT.md" beforeDir="false" afterPath="$PROJECT_DIR$/manual/MAIN_INPUT.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -314,7 +314,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="dev" />
+                        <option value="dev-efield" />
                       </list>
                     </value>
                   </entry>
@@ -332,7 +332,17 @@
             <list>
               <RecentGroup>
                 <option name="FILTER_VALUES">
+                  <option value="dev-efield" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
                   <option value="dev" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="home-dev" />
                 </option>
               </RecentGroup>
             </list>

@@ -5,6 +5,14 @@
 Version 4.5.1 has been released. Part of it is this Change Log file, which will be updated in the future releases.
 
 ## Unreleased:
+
+### [4.6.2-beta] - 2022/12/06
+- add support for self-consistent calculation of the space charge field on the scale longer than the radiation wavelength. The calculation is controlled
+with the boolean flag `longrange` in the efield namelist. It adds also the individual output dataset `LSCfield` in the `beam` group of the output file.
+A second boolean flag `reducedLF` controls if the Lorentz Factor is reduced by the undulator field with the scaling factor of sqrt(1+aw^2).
+At the moment I cannot decide if the correction is needed since the theory predicts it but experiments at SwissFEL with ESASE shows no dependence on aw when scanning the K-value between 0.8 and 3.7
+So I leave in the option to use this correction or not.
+
 ### [4.6.1-beta] - 2022/12/06
 - add "field_manipulator" feature, currently it can be used to scale to power of the light field
 
