@@ -241,7 +241,7 @@ The modules controls the import of a Genesis 1.3 particle file to replace the in
 [Back](#supported-namelists)
 
 <div style="page-break-after: always; visibility: hidden"> \pagebreak </div>
-
+./g 
 ### importfield
 
 The modules controls the import of a Genesis 1.3 field file to replace the internal generation of the field distribution (note that the module `field` should only be called afterwards with the `accumulate`-option enabled). The routine defines also the parameter for a time-dependent run if the `time`-namelist hasn’t been defined yet.
@@ -256,12 +256,16 @@ The modules controls the import of a Genesis 1.3 field file to replace the inter
 
 ### efield
 
-This namelist controls the short range space charge on a length scale of the resonant wavelength or shorter. The calculation is done on a radial-azimuthal grid, centered to the centroid position of the electron slice
+This namelist controls the long and short range space charge fields. The long range corresponds to any length scale longer than the slice length of the simulation, while the short range is on the resonant wavelength scale. Numerically they are treated differently.
+The calculation for the short range is done on a radial-azimuthal grid, centered to the centroid position of the electron slice, while the long range is the sum of the space charge field in the rest frame where each slice is treated as a uniform disk.
+At the moment the short range field is disabled but will be reenabled in upcoming versions of Genesis 1.3
 
-- `rmax` (*double, 0*): Scaling factor to define the grid size, which is given by the product of `rmax` and the maximum offset of the macro particles from its centroid
-- `nz` (*int, 0*): Number of longitudinal Fourier component of the space charge field. Note that this should be not in conflict with the beamlet size.
-- `nphi` (*int, 0*): Number of azimuthal modes in the calculation of the space charge field.
-- `ngrid` (*int, 100*): Number of grid points of the radial grid.
+- `longrange` (*bool, false*): Flag to enable the calculation of the long range space charge field.
+- `reducedLF` (*bool, false*): Flag to do the Lorentz correction for the motion in the undulator field so that the effective relativistic factor is scaled by sqrt(1+aw^2).
+- `rmax` (*double, 0*): Scaling factor to define the grid size for the short range space charge field, which is given by the product of `rmax` and the maximum offset of the macro particles from its centroid
+- `nz` (*int, 0*): Number of longitudinal Fourier component of the short range space charge field. Note that this should be not in conflict with the beamlet size.
+- `nphi` (*int, 0*): Number of azimuthal modes in the calculation of the short range space charge field.
+- `ngrid` (*int, 100*): Number of grid points of the radial grid for the short range space charge field.
 
 [Back](#supported-namelists)
 
