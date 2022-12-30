@@ -319,7 +319,7 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
             if (val.find("xposition") != val.end()){val["xposition"][idx]=x1;}
             if (val.find("xsize") != val.end()){val["xsize"][idx]=sqrt( fabs(x2-x1*x1));}
             if (val.find("yposition") != val.end()){val["yposition"][idx]=y1;}
-            if (val.find("xsize") != val.end()){val["ysize"][idx]=sqrt( fabs(y2-y1*y1));}
+            if (val.find("ysize") != val.end()){val["ysize"][idx]=sqrt( fabs(y2-y1*y1));}
             if (val.find("pxposition") != val.end()){val["pxposition"][idx]=px1;}
             if (val.find("pyposition") != val.end()){ val["pyposition"][idx]=py1;}
         }
