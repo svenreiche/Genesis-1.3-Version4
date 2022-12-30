@@ -34,6 +34,7 @@ std::map<std::string,OutputInfo> DiagBeamUser::getTags(FilterDiagnostics & filte
     //         B: total loss by external fields e.g. wakes (global variable)
 
     filter["template"] = false;     // <- set to true to enable output for the template parameters
+    filter["template"] = true;     // <- set to true to enable output for the template parameters
     if (filter["template"]){
         tags["modulation"] = {false, false, "mc^2"};
         if (global) {
@@ -54,27 +55,45 @@ void DiagBeamUser::getValues(Beam *beam, std::map<std::string,std::vector<double
 
     // loop over the slices in the electron bunch
     for (auto const &slice: beam->beam) {
+        double gamavg=0.;
         complex<double> emod = 0; // parameter for the energy modulation
-        // loop over the particle in each slice
-        for (auto const &par: slice) {
-            emod += complex<double>(par.gamma * cos(par.theta), par.gamma * sin(par.theta));
+        double norm = 1.;
+
+        if (!slice.empty()) {
+            norm = 1./static_cast<double>(slice.size()); // normalize with the number of particles per slice
         }
 
-        double norm = 1.;
-        if (!slice.empty()) {
-            norm = 1. / static_cast<double>(slice.size()); // normalize with the number of particles per slice
+        // compute average gamma value (lechner, 2022-Dec)
+        // Needed for correct computation of Emod by first
+        // subtracting <gamma>.
+        // My key parameters: I=5kA, one4one=true, 16.5GeV, emod=10, 17keV
+        for (auto const &par: slice) {
+            gamavg+=par.gamma;
+        }
+        gamavg *= norm;
+
+        // loop over the particle in each slice
+        for (auto const &par: slice) {
+            emod += (par.gamma-gamavg) * complex<double>(cos(par.theta),sin(par.theta));
         }
         emod *= norm;
+
+
         // gather info for the global variables
         g_norm += beam->current[is];
         g_loss += beam->current[is] * beam->eloss[is];
 
+
         // saving the calculated values into the records defined with getTags.
-        // it is good practice to check whether a given tag exists, since they can vary with filter flags, such as for global parameters
-        int idx = iz * ns + is;         // index for saving the data in the individual vectors of 'val'
-        // for 'once' parameters it would be just idx=is
-        // for 'global' parameters it would just iz
+        // (1) Compute index into data array.
+        //     For 'once' parameters it would be just idx=is
+        //     For 'global' parameters it would just iz
+        int idx = iz*ns + is;         // index for saving the data in the individual vectors of 'val'
+
+        // (2) Store value
+        // It is good practice to check whether a given tag exists, since they can vary with filter flags, such as for global parameters
         if (val.find("modulation") != val.end()) { val["modulation"][idx] = abs(emod); }
+        is++; // and increment slice counter (FIXME: maybe replace the outer loop by traditional 'for' loop?)
     }
 
     //-------------------------------------------------
