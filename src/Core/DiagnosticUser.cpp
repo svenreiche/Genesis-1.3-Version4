@@ -78,6 +78,10 @@ void DiagBeamUser::getValues(Beam *beam, std::map<std::string,std::vector<double
         }
         emod *= norm;
 
+        // Compute modulation *amplitude*
+        // Factor of 2: cos(phi) = 1/2*(exp(i*phi)+exp(-i*phi))
+        double emod_ampl = 2 * abs(emod);
+
 
         // gather info for the global variables
         g_norm += beam->current[is];
@@ -92,8 +96,8 @@ void DiagBeamUser::getValues(Beam *beam, std::map<std::string,std::vector<double
 
         // (2) Store value
         // It is good practice to check whether a given tag exists, since they can vary with filter flags, such as for global parameters
-        if (val.find("modulation") != val.end()) { val["modulation"][idx] = abs(emod); }
-        is++; // and increment slice counter (FIXME: maybe replace the outer loop by traditional 'for' loop?)
+        if (val.find("modulation") != val.end()) { val["modulation"][idx] = emod_ampl; }
+        is++; // and increment slice counter (FIXME: consider replacing the outer loop by traditional 'for' loop)
     }
 
     //-------------------------------------------------
