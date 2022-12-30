@@ -53,6 +53,7 @@ class Setup: public StringProcessing{
    //   bool   getInputFileNameField(string *);
    bool   getRootName(string *);
    void   setRootName(string *);
+   bool   RootName_to_FileName(string *, string *);
    int getCount();
    void incrementCount();
    string getLattice();
@@ -69,7 +70,7 @@ class Setup: public StringProcessing{
 
  private:
    void usage();
-   string rootname,lattice,beamline,partfile,fieldfile;
+   string rootname,outputdir,lattice,beamline,partfile,fieldfile;
    double gamma0,lambda0,delz;
    bool one4one,shotnoise;
    bool beam_global_stat, field_global_stat;

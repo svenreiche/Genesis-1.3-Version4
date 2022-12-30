@@ -76,11 +76,6 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   filter.beam.harm = bunchharm;
   if (output_step < 1) { output_step=1; }
 
-  string file;
-  setup->getRootName(&file);
-  file.append(".out.h5");
-
-
  
   Undulator *und = new Undulator;
 
@@ -137,6 +132,10 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
 
   // call to gencore to do the actual tracking.  
   Gencore core;
+  string rn, file;
+  setup->getRootName(&rn);
+  setup->RootName_to_FileName(&file, &rn);
+  file.append(".out.h5");
   core.run(file.c_str(),beam,field,und,isTime,isScan, filter);
 
 
