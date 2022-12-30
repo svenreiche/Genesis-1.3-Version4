@@ -57,7 +57,7 @@ void DiagBeamUser::getValues(Beam *beam, std::map<std::string,std::vector<double
         complex<double> emod = 0; // parameter for the energy modulation
         // loop over the particle in each slice
         for (auto const &par: slice) {
-            emod + complex<double>(par.gamma * cos(par.theta), par.gamma * sin(par.theta));
+            emod += complex<double>(par.gamma * cos(par.theta), par.gamma * sin(par.theta));
         }
 
         double norm = 1.;
