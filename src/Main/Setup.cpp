@@ -206,7 +206,7 @@ void Setup::BWF_load_defaults()
 
 /* returns true if filename for semaphore file was generated */
 bool Setup::getSemaFN(string *fnout) {
-	// user-defined filename overrides the logic to derive from rootname
+	// user-defined filename overrides the logic to derive from rootname (also a user-provided 'outputdir' parameter does not have an effect here)
 	if(! sema_file_name.empty()) {
 		*fnout = sema_file_name;
 		return(true);
@@ -215,8 +215,10 @@ bool Setup::getSemaFN(string *fnout) {
 	if(rootname.empty()) {
 		return(false);
 	}
-	*fnout = rootname;
-	*fnout += ".sema";
+	string t;
+	t = rootname;
+	t += ".sema";
+	RootName_to_FileName(fnout, &t);
 	return(true);
 }
 void Setup::setSemaFN(string fn_in) {
