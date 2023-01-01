@@ -55,6 +55,7 @@ void Output::open(string file, int s0_in, int ds_in)
   s0=s0_in;
   ds=ds_in;
 
+#if 0
   // create the file for parallel access
   hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
 
@@ -63,6 +64,9 @@ void Output::open(string file, int s0_in, int ds_in)
   }
   fid=H5Fcreate(file.c_str(),H5F_ACC_TRUNC, H5P_DEFAULT,pid);
   H5Pclose(pid);
+#else
+  create_outfile(&fid, file);
+#endif
 }
 
 
