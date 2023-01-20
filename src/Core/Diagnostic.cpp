@@ -321,7 +321,7 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
             if (val.find("xposition") != val.end()){val["xposition"][idx]=x1;}
             if (val.find("xsize") != val.end()){val["xsize"][idx]=sqrt( fabs(x2-x1*x1));}
             if (val.find("yposition") != val.end()){val["yposition"][idx]=y1;}
-            if (val.find("ysize") != val.end()){val["ysize"][idx]=sqrt( fabs(y2-y1*y1));}
+            if (val.find("xsize") != val.end()){val["ysize"][idx]=sqrt( fabs(y2-y1*y1));}
             if (val.find("pxposition") != val.end()){val["pxposition"][idx]=px1;}
             if (val.find("pyposition") != val.end()){ val["pyposition"][idx]=py1;}
         }
@@ -450,7 +450,7 @@ FFTObj::~FFTObj() {
 	delete [] out_;
 }
 
-void DiagField::cleanup_FFT_resources(void)
+void DiagField::cleanup(void)
 {
 	for(auto &[k,obj]: fftobj) {
 		delete obj;
@@ -458,7 +458,7 @@ void DiagField::cleanup_FFT_resources(void)
 	fftobj.clear();
 }
 
-int DiagField::obtain_FFT_resources(int ngrid, complex<double> **in, complex<double> **out, fftw_plan *pp)
+int DiagField::obtain(int ngrid, complex<double> **in, complex<double> **out, fftw_plan *pp)
 {
 	int rank=0;
 	bool verbose=false;
@@ -585,7 +585,7 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
     complex<double> *in  = nullptr;
     complex<double> *out = nullptr;
     fftw_plan p;
-    obtain_FFT_resources(ngrid, &in, &out, &p);
+    obtain(ngrid, &in, &out, &p);
 #endif
 
 
