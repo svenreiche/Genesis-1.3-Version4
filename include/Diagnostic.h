@@ -146,8 +146,8 @@ public:
     void getValues(Field *, std::map<std::string,std::vector<double> > &, int) ;
 
 #ifdef FFTW
-    void cleanup(void);
-    int obtain(int ngrid, complex<double> **in, complex<double> **out, fftw_plan *pp);
+    void cleanup_FFT_resources(void);
+    int obtain_FFT_resources(int ngrid, complex<double> **in, complex<double> **out, fftw_plan *pp);
 #endif
 };
 

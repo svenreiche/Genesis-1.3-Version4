@@ -450,7 +450,7 @@ FFTObj::~FFTObj() {
 	delete [] out_;
 }
 
-void DiagField::cleanup(void)
+void DiagField::cleanup_FFT_resources(void)
 {
 	for(auto &[k,obj]: fftobj) {
 		delete obj;
@@ -458,7 +458,7 @@ void DiagField::cleanup(void)
 	fftobj.clear();
 }
 
-int DiagField::obtain(int ngrid, complex<double> **in, complex<double> **out, fftw_plan *pp)
+int DiagField::obtain_FFT_resources(int ngrid, complex<double> **in, complex<double> **out, fftw_plan *pp)
 {
 	int rank=0;
 	bool verbose=false;
@@ -585,7 +585,7 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
     complex<double> *in  = nullptr;
     complex<double> *out = nullptr;
     fftw_plan p;
-    obtain(ngrid, &in, &out, &p);
+    obtain_FFT_resources(ngrid, &in, &out, &p);
 #endif
 
 
