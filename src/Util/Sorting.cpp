@@ -159,12 +159,16 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
   unsigned long long my_nbackward=pushbackward.size();
   unsigned long long my_nxfer=my_nforward+my_nbackward;
   unsigned long long global_nxfer=0;
-  MPI_Allreduce(&my_nxfer,&global_nxfer,1,MPI_UNSIGNED_LONG_LONG,MPI_SUM,MPI_COMM_WORLD);
+  unsigned long long max_nforward=0, max_nbackward=0, max_nxfer=0;
+  MPI_Allreduce(&my_nxfer,&global_nxfer,      1,MPI_UNSIGNED_LONG_LONG,MPI_SUM,MPI_COMM_WORLD);
+  MPI_Allreduce(&my_nforward,&max_nforward,   1,MPI_UNSIGNED_LONG_LONG,MPI_MAX,MPI_COMM_WORLD);
+  MPI_Allreduce(&my_nbackward,&max_nbackward, 1,MPI_UNSIGNED_LONG_LONG,MPI_MAX,MPI_COMM_WORLD);
+  max_nxfer = (max_nforward>max_nbackward) ? max_nforward : max_nbackward;
   if (global_nxfer == 0){ return; }	
 
   int maxiter=size-1;  
   while(maxiter>0){
-    if (rank==0) {cout << "Sorting: Transferring " << global_nxfer/6 << " particles to other nodes at iteration " << size-maxiter << endl;}
+    if (rank==0) {cout << "Sorting: Transferring " << global_nxfer/6 << " particles to other nodes at iteration " << size-maxiter << " (largest single transfer contains " << max_nxfer/6 << " particles)" << endl;}
 
 
 
@@ -205,7 +209,11 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
      my_nbackward=pushbackward.size();
      my_nxfer=my_nforward+my_nbackward;
      global_nxfer=0;
-     MPI_Allreduce(&my_nxfer,&global_nxfer,1,MPI_UNSIGNED_LONG_LONG,MPI_SUM,MPI_COMM_WORLD);
+     max_nforward=max_nbackward=max_nxfer=0;
+     MPI_Allreduce(&my_nxfer,&global_nxfer,      1,MPI_UNSIGNED_LONG_LONG,MPI_SUM,MPI_COMM_WORLD);
+     MPI_Allreduce(&my_nforward,&max_nforward,   1,MPI_UNSIGNED_LONG_LONG,MPI_MAX,MPI_COMM_WORLD);
+     MPI_Allreduce(&my_nbackward,&max_nbackward, 1,MPI_UNSIGNED_LONG_LONG,MPI_MAX,MPI_COMM_WORLD);
+     max_nxfer = (max_nforward>max_nbackward) ? max_nforward : max_nbackward;
      if (global_nxfer == 0){ return; }
   }
   pushforward.clear();
