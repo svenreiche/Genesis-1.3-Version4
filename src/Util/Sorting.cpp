@@ -155,19 +155,16 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
   if (size==1) { return; } // no need to transfer if only one node is used.
   
 
+  unsigned long long my_nforward=pushforward.size();
+  unsigned long long my_nbackward=pushbackward.size();
+  unsigned long long my_nxfer=my_nforward+my_nbackward;
+  unsigned long long global_nxfer=0;
+  MPI_Allreduce(&my_nxfer,&global_nxfer,1,MPI_UNSIGNED_LONG_LONG,MPI_SUM,MPI_COMM_WORLD);
+  if (global_nxfer == 0){ return; }	
+
   int maxiter=size-1;  
-  int nforward=pushforward.size();
-  int nbackward=pushbackward.size();
-  int ntotal=nforward+nbackward;
-  int nreduce=0;
-
-
-  MPI_Allreduce(&ntotal,&nreduce,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
-
-  if (nreduce == 0){ return; }	
-
   while(maxiter>0){
-    if (rank==0) {cout << "Sorting: Transferring " << nreduce/6 << " particles to other nodes at iteration " << size-maxiter << endl;}
+    if (rank==0) {cout << "Sorting: Transferring " << global_nxfer/6 << " particles to other nodes at iteration " << size-maxiter << endl;}
 
 
 
@@ -204,13 +201,12 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
      }
  
      maxiter--;
-     nforward=pushforward.size();
-     nbackward=pushbackward.size();
-     ntotal=nforward+nbackward;
-     nreduce=0;
-
-     MPI_Allreduce(&ntotal,&nreduce,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
-     if (nreduce == 0){  return; }
+     my_nforward=pushforward.size();
+     my_nbackward=pushbackward.size();
+     my_nxfer=my_nforward+my_nbackward;
+     global_nxfer=0;
+     MPI_Allreduce(&my_nxfer,&global_nxfer,1,MPI_UNSIGNED_LONG_LONG,MPI_SUM,MPI_COMM_WORLD);
+     if (global_nxfer == 0){ return; }
   }
   pushforward.clear();
   pushbackward.clear();
