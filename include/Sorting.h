@@ -29,7 +29,7 @@ class Sorting{
 
 
  private:
-
+  void update_stats(unsigned long long &, unsigned long long &);
   void fillPushVectors(vector< vector< Particle > > *);
   void localSort(vector< vector< Particle > > *);
   int centerShift(vector< vector< Particle > > *);
