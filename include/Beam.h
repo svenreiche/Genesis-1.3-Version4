@@ -49,6 +49,7 @@ class Beam{
    bool outputSpatial();
 
    void report_storage(string infotxt);
+   bool dbg_skip_shrink(void);
    void make_compact(void);
 
    vector< vector<Particle> > beam;

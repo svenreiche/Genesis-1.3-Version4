@@ -199,11 +199,33 @@ void Beam::report_storage(string infotxt)
     cout << "*** End of report ***" << endl;
   }
 }
+bool Beam::dbg_skip_shrink(void)
+{
+  const char *q = getenv("G4_TEST_NOSHRINK");
+  int rank;
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  if(q!=nullptr) {
+    if(rank==0) {
+      cout << "class Beam: skipping shrinking of vectors" << endl;
+    }
+    return(true);
+  }
+  return(false);
+}
+
 void Beam::make_compact(void)
 {
   // Controls amount of additional memory to be reserved.
-  // This ensures that we don't fall back to STL's "geometric resizing", which would immediately increase capacity to the next power of 2 (for libstdc++)
+  // This ensures that we don't fall back to STL's "geometric resizing"
+  // when the first additional element is inserted (for instance when
+  // sorting is on during the subsequent '&track').
+  // For libstdc++, this would immediately double the capacity.
   const double extra=0.05;
+
+  if(dbg_skip_shrink())
+    return;
 
   for(int k=0; k<beam.size(); k++) {
     beam[k].shrink_to_fit();
@@ -263,11 +285,13 @@ bool Beam::harmonicConversion(int harmonic, bool resample)
 
     // (1) empty the vector ...
     beam[i].clear(); 
-    // (2) ask STL to release the memory (this is not done automatically)
-    // Remarks:
-    // . This is only a *request* to the STL (depending on the implementation it can be ignored)
-    // . It is important to shrink already here a first time to reduce peak memory utilization
-    beam[i].shrink_to_fit();
+    if(!dbg_skip_shrink()) {
+      // (2) ask STL to release the memory (this is not done automatically)
+      // Remarks:
+      // . This is only a *request* to the STL (depending on the implementation it can be ignored)
+      // . It is important to shrink already here a first time to reduce peak memory utilization
+      beam[i].shrink_to_fit();
+    }
   }
 
   // updating the sorting algorithm

@@ -3,6 +3,7 @@
 extern bool MPISingle;
  
 #include <algorithm>
+#include <cstdlib> // for 'getenv'
 
 Sorting::Sorting()
 {
@@ -141,11 +142,24 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
   return;
 }
 
+// Helper function for memory management
+void Sorting::shrink_pushvectors(void)
+{
+  const char *q = getenv("G4_TEST_NOSHRINK");
 
+  if(q!=nullptr) {
+    if(rank==0) {
+      cout << "class Sorting: skipping shrinking of vectors" << endl;
+    }
+    return;
+  }
+
+  pushforward.shrink_to_fit();
+  pushbackward.shrink_to_fit();
+}
 
 // routine which moves all particles, which are misplaced in the given domain of the node to other nodes.
 // the methods is an iterative bubble sort, pushing excess particles to next node. There the fitting particles are collected the rest moved further.
-
 void Sorting::globalSort(vector <vector <Particle> > *rec)
 {
 
@@ -211,15 +225,14 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
 
      MPI_Allreduce(&ntotal,&nreduce,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
      if (nreduce == 0) {
-        pushforward.shrink_to_fit();
-        pushbackward.shrink_to_fit();
+        shrink_pushvectors();
         return;
      }
   }
   pushforward.clear();
   pushbackward.clear();
-  pushforward.shrink_to_fit();
-  pushbackward.shrink_to_fit();
+  shrink_pushvectors();
+
   return;
 }
 
