@@ -2,6 +2,8 @@
 #include "Field.h"
 #include "Sorting.h"
 
+#include <mpi.h>
+
 
 Beam::~Beam(){}
 Beam::Beam(){
@@ -164,8 +166,53 @@ void Beam::track(double delz,vector<Field *> *field, Undulator *und){
 
   solver.track(delz*0.5,this,und,true);      // apply corrector settings and track second half for transverse coordinate
   return;
+}
 
 
+
+void Beam::report_storage(string infotxt)
+{
+  const int report_rank=30;
+  int rank;
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  /* display infos only on a single rank */
+  if(rank==report_rank) {
+    cout << "*** Reporting beam storage on rank " << report_rank << " (" << infotxt << ") ***" << endl;
+    for(int k=0; k<beam.size(); k++) {
+      cout << k << " size=" << beam[k].size() << " capacity=" << beam[k].capacity() << endl;
+    }
+    cout << "End of report on rank " << report_rank << endl;
+  }
+
+  unsigned long long glbl_size=0, glbl_capacity=0;
+  unsigned long long my_tot_size=0, my_tot_capacity=0;
+  for(int k=0; k<beam.size(); k++) {
+    my_tot_size    +=beam[k].size();
+    my_tot_capacity+=beam[k].capacity();
+  }
+  MPI_Allreduce(&my_tot_size, &glbl_size, 1, MPI_UNSIGNED_LONG_LONG, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Allreduce(&my_tot_capacity, &glbl_capacity, 1, MPI_UNSIGNED_LONG_LONG, MPI_SUM, MPI_COMM_WORLD);
+  if(rank==report_rank) {
+    cout << "Totalized over all ranks: size=" << glbl_size << ", capacity=" << glbl_capacity << endl;
+    cout << "*** End of report ***" << endl;
+  }
+}
+void Beam::make_compact(void)
+{
+  // Controls amount of additional memory to be reserved.
+  // This ensures that we don't fall back to STL's "geometric resizing", which would immediately increase capacity to the next power of 2 (for libstdc++)
+  const double extra=0.05;
+
+  for(int k=0; k<beam.size(); k++) {
+    beam[k].shrink_to_fit();
+
+    unsigned long long newcap = beam[k].capacity();
+    newcap += (1 + extra*newcap);
+    //         ^ ensures that we get a 'ceil'
+    beam[k].reserve(newcap);
+  }
 }
 
 bool Beam::harmonicConversion(int harmonic, bool resample)
@@ -182,6 +229,8 @@ bool Beam::harmonicConversion(int harmonic, bool resample)
     }
   }
   if (!resample) { return true; }
+
+  report_storage("before harmonic upconversion");
 
   // blowing up the slice number
   int nsize=beam.size();
@@ -211,12 +260,24 @@ bool Beam::harmonicConversion(int harmonic, bool resample)
       p.py   =beam[i].at(j).py;
       beam[i*harmonic].push_back(p);
     }
+
+    // (1) empty the vector ...
     beam[i].clear(); 
+    // (2) ask STL to release the memory (this is not done automatically)
+    // Remarks:
+    // . This is only a *request* to the STL (depending on the implementation it can be ignored)
+    // . It is important to shrink already here a first time to reduce peak memory utilization
+    beam[i].shrink_to_fit();
   }
 
   // updating the sorting algorithm
 
   int shift=this->sort();  // sort the particles and update current
+
+  report_storage("after harmonic upconversion");
+  make_compact();
+  report_storage("after shrinking operation");
+
   return true;
 }
 

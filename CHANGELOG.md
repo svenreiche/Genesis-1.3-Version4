@@ -5,6 +5,9 @@
 Version 4.5.1 has been released. Part of it is this Change Log file, which will be updated in the future releases.
 
 ## Unreleased:
+### [4.6.1-beta] - 2023/02/07
+- improved class `Beam` to reduce memory consumption in simulations with harmonic upconversion
+
 ### [4.6.1-beta] - 2022/12/06
 - add "field_manipulator" feature, currently it can be used to scale to power of the light field
 

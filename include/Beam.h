@@ -48,6 +48,9 @@ class Beam{
    bool outputEnergy();
    bool outputSpatial();
 
+   void report_storage(string infotxt);
+   void make_compact(void);
+
    vector< vector<Particle> > beam;
    vector<double> current,eloss;
    double reflength,slicelength;   // for conversion of theta in Particle to real position
