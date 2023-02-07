@@ -210,16 +210,17 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
      nreduce=0;
 
      MPI_Allreduce(&ntotal,&nreduce,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
-     if (nreduce == 0){  return; }
+     if (nreduce == 0) {
+        pushforward.shrink_to_fit();
+        pushbackward.shrink_to_fit();
+        return;
+     }
   }
   pushforward.clear();
   pushbackward.clear();
+  pushforward.shrink_to_fit();
+  pushbackward.shrink_to_fit();
   return;
-
-
-
-  
-
 }
 
 
