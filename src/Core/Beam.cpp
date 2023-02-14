@@ -268,34 +268,20 @@ bool Beam::harmonicConversion(int harmonic, bool resample)
     beam.at(i).resize(0);    
     current.at(i)=0;
   }
-  // second copy the old slices 0,1,.. n-1 to h*0,h*1,... h*(n-1)
 
-  Particle p;
+
+  // second move the old slices 0,1,.. n-1 to h*0,h*1,... h*(n-1)
   for (int i=nsize-1; i>0; i--){  // runs down to 1 only because there is no need to copy from 0 to h*0 = 0
-    int nloc=beam[i].size();
-    for (int j=0; j<nloc; j++){
-      p.gamma=beam[i].at(j).gamma;
-      p.theta=beam[i].at(j).theta;
-      p.x    =beam[i].at(j).x;
-      p.y    =beam[i].at(j).y;
-      p.px   =beam[i].at(j).px;
-      p.py   =beam[i].at(j).py;
-      beam[i*harmonic].push_back(p);
-    }
 
-    // (1) empty the vector ...
-    beam[i].clear(); 
-    if(!dbg_skip_shrink()) {
-      // (2) ask STL to release the memory (this is not done automatically)
-      // Remarks:
-      // . This is only a *request* to the STL (depending on the implementation it can be ignored)
-      // . It is important to shrink already here a first time to reduce peak memory utilization
-      beam[i].shrink_to_fit();
+    // By ensuring that the destination slice is empty, we can be
+    // sure that the source slice is empty after the swap operation
+    if(!beam.at(i*harmonic).empty()) {
+      abort();
     }
+    std::swap(beam.at(i*harmonic), beam.at(i));
   }
 
   // updating the sorting algorithm
-
   int shift=this->sort();  // sort the particles and update current
 
   report_storage("after harmonic upconversion");
