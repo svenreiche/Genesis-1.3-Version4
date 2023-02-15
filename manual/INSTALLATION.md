@@ -13,7 +13,8 @@ Installation on macOS requires a suitable compiler and dependencies, which can b
 ```bash
 sudo port install gcc12
 sudo port select gcc mp-gcc12
-sudo port install hdf5+openmpi fftw-3
+sudo port install hdf5 +openmpi 
+sudo port install fftw-3
 ```
 
 Then build Genesis:
