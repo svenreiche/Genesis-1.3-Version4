@@ -15,7 +15,12 @@ sudo port install gcc12
 sudo port select gcc mp-gcc12
 sudo port install hdf5+openmpi fftw-3
 ```
-Then follow the instructions below for Unix
+
+Then build Genesis:
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
 
 ### Unix
 Genesis supports now the automatic configuration with CMAKE. Following commands will build Genesis from source on Linux platforms. The minimal command to compile the code from the source code root directory is:
