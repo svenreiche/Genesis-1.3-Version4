@@ -23,7 +23,7 @@
 #include "EField.h"
 
 #include "Parser.h"
-#include "Profile.h"
+#include "GenProfile.h"
 #include "Setup.h"
 #include "AlterSetup.h"
 #include "Lattice.h"
