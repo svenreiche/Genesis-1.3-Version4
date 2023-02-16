@@ -41,7 +41,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="RPreparing to release the new feature for long range space charge calculation. Updated the online manual page, the pdf-file of the manual and the change log" />
+    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Merge 1" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -309,7 +309,14 @@
       <option name="project" value="LOCAL" />
       <updated>1670342349020</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="Merge 1">
+      <created>1676542408733</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1676542408733</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -381,6 +388,7 @@
     <MESSAGE value="Worked on calculating the long range space charge fields. Added new fields in output 'wakefield' and 'LSCfield' for the individual contribution by wakefields and longitudinal space charge field. The combined effect is in the field eloss." />
     <MESSAGE value="Corrected a bug in the MPI_allgather comand" />
     <MESSAGE value="RPreparing to release the new feature for long range space charge calculation. Updated the online manual page, the pdf-file of the manual and the change log" />
-    <option name="LAST_COMMIT_MESSAGE" value="RPreparing to release the new feature for long range space charge calculation. Updated the online manual page, the pdf-file of the manual and the change log" />
+    <MESSAGE value="Merge 1" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merge 1" />
   </component>
 </project>
