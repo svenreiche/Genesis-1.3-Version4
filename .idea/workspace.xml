@@ -41,9 +41,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="RPreparing to release the new feature for long range space charge calculation. Updated the online manual page, the pdf-file of the manual and the change log">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="RPreparing to release the new feature for long range space charge calculation. Updated the online manual page, the pdf-file of the manual and the change log" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -53,6 +51,14 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Merge.Settings">
+    <option name="BRANCH" value="ZeugAusHH-cl_20221230__outputdir" />
+    <option name="OPTIONS">
+      <set>
+        <option value="NO_FF" />
+      </set>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
@@ -374,6 +380,7 @@
     <MESSAGE value="Update of CHANGELOG.md" />
     <MESSAGE value="Worked on calculating the long range space charge fields. Added new fields in output 'wakefield' and 'LSCfield' for the individual contribution by wakefields and longitudinal space charge field. The combined effect is in the field eloss." />
     <MESSAGE value="Corrected a bug in the MPI_allgather comand" />
-    <option name="LAST_COMMIT_MESSAGE" value="Corrected a bug in the MPI_allgather comand" />
+    <MESSAGE value="RPreparing to release the new feature for long range space charge calculation. Updated the online manual page, the pdf-file of the manual and the change log" />
+    <option name="LAST_COMMIT_MESSAGE" value="RPreparing to release the new feature for long range space charge calculation. Updated the online manual page, the pdf-file of the manual and the change log" />
   </component>
 </project>
