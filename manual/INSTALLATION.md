@@ -7,6 +7,23 @@
 
 ## Compilation 
 
+### macOS 
+
+Installation on macOS requires a suitable compiler and dependencies, which can be provided by [MacPorts](https://www.macports.org). With a working MacPorts, install these:
+```bash
+sudo port install gcc12
+sudo port select gcc mp-gcc12
+sudo port install hdf5 +openmpi 
+sudo port install fftw-3
+```
+
+Then build Genesis:
+```
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+### Unix
 Genesis supports now the automatic configuration with CMAKE. Following commands will build Genesis from source on Linux platforms. The minimal command to compile the code from the source code root directory is:
 
 ```
@@ -21,6 +38,10 @@ The executable is found in the build directory. For a successful build the libra
 
 To complete the installation it is recommended to install the scripts in the directory `sdds2hdf` in a directory (e.g. /bin), which is included in your search path. The files will convert Elegant output distribution into HDF5 format. More info can be found later in the manual.
 Also, the directory `xgenesis` includes some functions, which allows Matlab to parse the output file of Genesis and to plot the results. They are not required for running Genesis itself. To use them add the given folder to your Matlab Path or place the file in a directory, which is already in the search path.
+
+
+
+
 
 ## Running
 

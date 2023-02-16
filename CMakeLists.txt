@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_VERBOSE_MAKEFILE OFF)
+# set(CMAKE_INSTALL_RPATH "/usr/local/lib")
+set(CMAKE_CXX_FLAGS '-lstdc++')
 
 # developer options
 #set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -18,7 +20,12 @@ list(APPEND CMAKE_PREFIX_PATH $ENV{FFTW_ROOT})
 # container for needed librarires
 list(APPEND _libraries)
 
-if (CMAKE_CXX_COMPILER MATCHES  ".*/h5pcc")
+# Check for macOS with MacPorts
+if(EXISTS "/opt/local/bin/h5pcc")
+  set(CMAKE_CXX_COMPILER /opt/local/bin/h5pcc)
+endif()
+
+if (CMAKE_CXX_COMPILER MATCHES  "/opt/local/bin/h5pcc")
    Message(STATUS "h5pcc compiler wrapper found - No additional libraries needed")
 else()
    Message(STATUS "h5pcc not found - looking for basic compiler")
@@ -133,7 +140,7 @@ add_library(genesis13 STATIC
         src/Loading/ImportField.cpp
         src/Loading/LoadBeam.cpp
         src/Loading/LoadField.cpp
-        src/Loading/Profile.cpp
+        src/Loading/GenProfile.cpp
         src/Loading/QuietLoading.cpp
         src/Loading/Series.cpp
         src/Loading/ShotNoise.cpp
@@ -171,5 +178,3 @@ add_dependencies(genesis13 get_git_hash)
 add_executable(genesis4 src/Main/mainwrap.cpp)
 
 target_link_libraries(genesis4 genesis13 ${_libraries})
-
-

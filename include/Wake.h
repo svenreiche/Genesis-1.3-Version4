@@ -11,7 +11,7 @@
 #include "Setup.h"
 #include "GenTime.h"
 #include "Particle.h"
-#include "Profile.h"
+#include "GenProfile.h"
 
 class Beam;
 
