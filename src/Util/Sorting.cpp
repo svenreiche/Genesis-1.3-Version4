@@ -4,10 +4,18 @@ extern bool MPISingle;
  
 #include <algorithm>
 
+#include <fstream>
+#include <sstream>
+
+// #define SORT_DBG
+
 Sorting::Sorting()
 {
   dosort=false;
   doshift=false;
+
+  sort_round=0;
+  stat_max_xfer_size=0;
 }
 
 Sorting::~Sorting(){
@@ -142,32 +150,51 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
 }
 
 
+// helper function for globalSort function
+void Sorting::update_stats(unsigned long long &global_nxfer, unsigned long long &max_nxfer)
+{
+  /* numbers of doubles in transfer buffers (1 Particle corresponds to 6 doubles) */
+  unsigned long long my_nforward=pushforward.size();
+  unsigned long long my_nbackward=pushbackward.size();
+  unsigned long long my_nxfer=my_nforward+my_nbackward;
+  unsigned long long max_nforward=0, max_nbackward=0;
+
+  MPI_Allreduce(&my_nxfer,     &global_nxfer,  1,MPI_UNSIGNED_LONG_LONG,MPI_SUM,MPI_COMM_WORLD);
+  MPI_Allreduce(&my_nforward,  &max_nforward,  1,MPI_UNSIGNED_LONG_LONG,MPI_MAX,MPI_COMM_WORLD);
+  MPI_Allreduce(&my_nbackward, &max_nbackward, 1,MPI_UNSIGNED_LONG_LONG,MPI_MAX,MPI_COMM_WORLD);
+  max_nxfer = (max_nforward>max_nbackward) ? max_nforward : max_nbackward;
+}
+
+// helper function for globalSort function
+void Sorting::globalSort_completion_msg(void)
+{
+  unsigned long long global_max_xfer_size;
+  MPI_Allreduce(&stat_max_xfer_size, &global_max_xfer_size, 1,MPI_UNSIGNED_LONG_LONG,MPI_MAX,MPI_COMM_WORLD);
+  if(rank==0) {
+    cout << "Info: globalSort complete, largest transfer was " << global_max_xfer_size << " doubles" << endl;
+  }
+}
 
 // routine which moves all particles, which are misplaced in the given domain of the node to other nodes.
 // the methods is an iterative bubble sort, pushing excess particles to next node. There the fitting particles are collected the rest moved further.
-
 void Sorting::globalSort(vector <vector <Particle> > *rec)
 {
-
   this->fillPushVectors(rec);   // here is the actual sorting to fill the vectore pushforward and pushbackward
   if (rank==(size-1)) { pushforward.clear(); }        
   if (rank==0) { pushbackward.clear(); }
   if (size==1) { return; } // no need to transfer if only one node is used.
   
 
+  unsigned long long global_nxfer=0;
+  unsigned long long max_nxfer=0;
+  update_stats(global_nxfer, max_nxfer);
+  if (global_nxfer == 0){ return; }	
+
+  sort_round=0;
+  stat_max_xfer_size=0;
   int maxiter=size-1;  
-  int nforward=pushforward.size();
-  int nbackward=pushbackward.size();
-  int ntotal=nforward+nbackward;
-  int nreduce=0;
-
-
-  MPI_Allreduce(&ntotal,&nreduce,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
-
-  if (nreduce == 0){ return; }	
-
   while(maxiter>0){
-    if (rank==0) {cout << "Sorting: Transferring " << nreduce/6 << " particles to other nodes at iteration " << size-maxiter << endl;}
+     if (rank==0) {cout << "Sorting: Transferring " << global_nxfer/6 << " particles to other nodes at iteration " << size-maxiter << " (largest single transfer contains " << max_nxfer/6 << " particles)" << endl;}
 
 
 
@@ -187,6 +214,12 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
       
   // step two - pairing ranks (1,2) (3,4) etc
 
+#ifdef SORT_DBG
+     // dbg
+     update_stats(global_nxfer, max_nxfer);
+     if (rank==0) {cout << "DBG Sorting: Transferring " << global_nxfer/6 << " particles to other nodes at iteration " << size-maxiter << " (largest single transfer contains " << max_nxfer/6 << " particles)" << endl;}
+#endif // SORT_DBG
+
      transfer = true;
      if (((rank % 2) == 1) && (rank == (size -1))) { transfer = false; }  // last core for an even number
      if (rank==0) { transfer = false; }                                  // as well as first core.
@@ -203,31 +236,46 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
        }
      }
  
-     maxiter--;
-     nforward=pushforward.size();
-     nbackward=pushbackward.size();
-     ntotal=nforward+nbackward;
-     nreduce=0;
-
-     MPI_Allreduce(&ntotal,&nreduce,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
-     if (nreduce == 0){  return; }
+     maxiter--; sort_round++;
+     update_stats(global_nxfer, max_nxfer);
+     if (global_nxfer == 0) {
+       globalSort_completion_msg();
+       return;
+     }
   }
   pushforward.clear();
   pushbackward.clear();
+
+  globalSort_completion_msg();
+
   return;
-
-
-
-  
-
 }
 
 
 void Sorting::send(int target, vector<double> *data)
 {
-  int ndata=data->size();
+  unsigned long long ndata=data->size();
 
-  MPI_Send(&ndata,1,MPI_INT,target,0,MPI_COMM_WORLD);
+#ifdef SORT_DBG
+  stringstream ss;
+  ofstream ofs;
+  ss << "sortdbg." << sort_round << "." << rank;
+  ofs.open(ss.str(), ofstream::out);
+  ofs << ndata << endl;
+  ofs.close();
+#endif // SORT_DBG
+
+  // Prevent transfer sizes resulting in overflow (MPI_Send argument 'count' has data type 'int').
+  unsigned long long maxint = numeric_limits<int>::max();
+  if(ndata>maxint) {
+    cout << "Sorting::send (on rank " <<rank<< "): Number of data in send buffer is " <<ndata<< ", exceeding maximum MPI transfer size of INT_MAX (too many particles to be moved to neighboring rank), exiting." << endl;
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
+
+  if(stat_max_xfer_size<ndata)
+    stat_max_xfer_size=ndata;
+
+  MPI_Send(&ndata,1,MPI_UNSIGNED_LONG_LONG,target,0,MPI_COMM_WORLD);
     //  MPI::COMM_WORLD.Send( &ndata,1,MPI::INT,target,0);
   if (ndata == 0) {
     return;
@@ -237,18 +285,18 @@ void Sorting::send(int target, vector<double> *data)
 }
 
 
- void Sorting::recv(int source, vector <vector <Particle> > *rec ,vector<double> *olddata)
+void Sorting::recv(int source, vector <vector <Particle> > *rec ,vector<double> *olddata)
 {
-
-  double shift=slen;
-  if(globalframe){shift=0;}
+   double shift=slen;
+   if(globalframe){shift=0;}
 
    MPI_Status status;
-   int ndata=0;
+   unsigned long long ndata=0;
 
-   MPI_Recv(&ndata,1,MPI_INT,source,0,MPI_COMM_WORLD, &status);
+   MPI_Recv(&ndata,1,MPI_UNSIGNED_LONG_LONG,source,0,MPI_COMM_WORLD, &status);
    //   MPI::COMM_WORLD.Recv(&ndata,1,MPI::INT,source,0,status);
-   if (ndata==0) {  // no data received.
+   if (ndata==0) {
+     // no data transfer expected -> leave
      return;
    }
 

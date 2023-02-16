@@ -29,7 +29,8 @@ class Sorting{
 
 
  private:
-
+  void update_stats(unsigned long long &, unsigned long long &);
+  void globalSort_completion_msg(void);
   void fillPushVectors(vector< vector< Particle > > *);
   void localSort(vector< vector< Particle > > *);
   int centerShift(vector< vector< Particle > > *);
@@ -45,6 +46,8 @@ class Sorting{
   bool doshift,dosort,globalframe;
   vector<double> pushforward,pushbackward;
 
+  unsigned long long stat_max_xfer_size;
+  int sort_round; // was introduced for generation of filenames for debug info
 };
 
 
