@@ -6,6 +6,9 @@ Version 4.5.1 has been released. Part of it is this Change Log file, which will 
 
 ## Unreleased:
 
+### [4.6.2-beta] - 2022/12/30
+- added parameter "outputdir" to "&setup": allows to define directory (relative or absolute) where to store the simulation output
+
 ### [4.6.2-beta] - 2022/12/06
 - add support for self-consistent calculation of the space charge field on the scale longer than the radiation wavelength. The calculation is controlled
 with the boolean flag `longrange` in the efield namelist. It adds also the individual output dataset `LSCfield` in the `beam` group of the output file.
