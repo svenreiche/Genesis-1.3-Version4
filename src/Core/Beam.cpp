@@ -172,8 +172,12 @@ void Beam::track(double delz,vector<Field *> *field, Undulator *und){
 
 void Beam::report_storage(string infotxt)
 {
+  bool do_report=false;
   const int report_rank=30;
   int rank;
+
+  if(!do_report)
+    return;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
