@@ -44,8 +44,8 @@ void WriteFieldHDF5::write(string fileroot, vector<Field *> *field){
 void WriteFieldHDF5::writeMain(string fileroot, Field *field){
 
 
- 
 
+#if 0
   char filename[100];
   sprintf(filename,"%s.fld.h5",fileroot.c_str()); 
   if (rank == 0) { cout << "Writing field distribution to file: " <<filename << " ..." << endl;} 
@@ -56,6 +56,12 @@ void WriteFieldHDF5::writeMain(string fileroot, Field *field){
   }
   fid=H5Fcreate(filename,H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
   H5Pclose(pid);
+#else
+  string filename;
+  filename = fileroot+".fld.h5";
+  if (rank == 0) { cout << "Writing field distribution to file: " <<filename << " ..." << endl;} 
+  create_outfile(&fid, filename);
+#endif
 
   s0=rank;
   int ntotal=size*field->field.size();

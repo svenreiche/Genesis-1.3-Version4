@@ -41,14 +41,7 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Update of CHANGELOG.md">
-      <change afterPath="$PROJECT_DIR$/include/FieldManipulator.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Main/FieldManipulator.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main/GenMain.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main/GenMain.cpp" afterDir="false" />
-    </list>
+    <list default="true" id="69343f7c-ea14-439e-8472-60a88f1f7a2d" name="Default Changelist" comment="Merge 1" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -58,10 +51,18 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="Git.Merge.Settings">
+    <option name="BRANCH" value="ZeugAusHH-cl_20221230__outputdir" />
+    <option name="OPTIONS">
+      <set>
+        <option value="NO_FF" />
+      </set>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="dev" />
+        <entry key="$PROJECT_DIR$" value="ZeugAusHH-cl_20221230__outputdir" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -104,9 +105,9 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.genesis4">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="genesis13" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Genesis_1_3_Version4" TARGET_NAME="genesis13" CONFIG_NAME="Debug">
@@ -179,6 +180,8 @@
       <workItem from="1645710733905" duration="561000" />
       <workItem from="1645711362376" duration="2000" />
       <workItem from="1669218404911" duration="1812000" />
+      <workItem from="1670335989311" duration="6244000" />
+      <workItem from="1676541450201" duration="591000" />
     </task>
     <task id="LOCAL-00001" summary="Imported into CLion">
       <created>1593502139044</created>
@@ -292,7 +295,28 @@
       <option name="project" value="LOCAL" />
       <updated>1669220527044</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Worked on calculating the long range space charge fields. Added new fields in output 'wakefield' and 'LSCfield' for the individual contribution by wakefields and longitudinal space charge field. The combined effect is in the field eloss.">
+      <created>1670258880251</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1670258880251</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Corrected a bug in the MPI_allgather comand">
+      <created>1670342349020</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1670342349020</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Merge 1">
+      <created>1676542408733</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1676542408733</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -309,7 +333,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="dev" />
+                        <option value="dev-efield" />
                       </list>
                     </value>
                   </entry>
@@ -327,7 +351,17 @@
             <list>
               <RecentGroup>
                 <option name="FILTER_VALUES">
+                  <option value="dev-efield" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
                   <option value="dev" />
+                </option>
+              </RecentGroup>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="home-dev" />
                 </option>
               </RecentGroup>
             </list>
@@ -351,6 +385,10 @@
     <MESSAGE value="Reverted back CMakeLists.txt to original state" />
     <MESSAGE value="Fixed bug that harmonics couldn't be imported with importfield" />
     <MESSAGE value="Update of CHANGELOG.md" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update of CHANGELOG.md" />
+    <MESSAGE value="Worked on calculating the long range space charge fields. Added new fields in output 'wakefield' and 'LSCfield' for the individual contribution by wakefields and longitudinal space charge field. The combined effect is in the field eloss." />
+    <MESSAGE value="Corrected a bug in the MPI_allgather comand" />
+    <MESSAGE value="RPreparing to release the new feature for long range space charge calculation. Updated the online manual page, the pdf-file of the manual and the change log" />
+    <MESSAGE value="Merge 1" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merge 1" />
   </component>
 </project>

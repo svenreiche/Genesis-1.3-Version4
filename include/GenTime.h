@@ -15,7 +15,7 @@
 
 
 
-using namespace std;
+// using namespace std;
 
 
 
@@ -23,12 +23,12 @@ class Time: public StringProcessing{
  public:
    Time();
    virtual ~Time();
-   bool init(int, int, map<string,string> *, Setup *);
+   bool init(int, int, std::map<std::string,std::string> *, Setup *);
    void finishInit(Setup *);
 
    void set(double,double,int,bool);
 
-   int getPosition(vector<double> *);
+   int getPosition(std::vector<double> *);
    double getSampleRate();
    double getTimeWindowStart();
    double getTimeWindowLength();

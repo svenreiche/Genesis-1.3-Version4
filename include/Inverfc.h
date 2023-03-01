@@ -13,7 +13,7 @@
 # define __GENESIS_INVERFC__
 
 
-using namespace std;
+// using namespace std;
 
 class Inverfc {
 public:	

@@ -13,7 +13,7 @@
 #include "StringProcessing.h"
 #include "Setup.h"
 #include "GenTime.h"
-#include "Profile.h"
+#include "GenProfile.h"
 #include "GaussHermite.h"
 #include "Field.h"
 

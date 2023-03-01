@@ -4,6 +4,7 @@
 Setup::Setup()
 {
   rootname="";
+  outputdir="";
   lattice="";
   beamline="";
   partfile="";
@@ -47,6 +48,7 @@ void Setup::usage(){
   cout << "List of keywords for SETUP" << endl;
   cout << "&setup" << endl;
   cout << " string rootname = <taken from command line>" << endl;
+  cout << " string outputdir = <empty>" << endl;
   cout << " string lattice  = <taken from command line>" << endl;
   cout << " string beamline = <empty>" << endl;
   cout << " double gamma0 = 5800/0.511" << endl;
@@ -80,6 +82,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagno
   map<string,string>::iterator end=arg->end();
 
   if (arg->find("rootname")!=end){rootname = arg->at("rootname"); arg->erase(arg->find("rootname"));}
+  if (arg->find("outputdir")!=end){outputdir = arg->at("outputdir"); arg->erase(arg->find("outputdir"));}
   if (arg->find("lattice")!=end) {lattice  = arg->at("lattice");  arg->erase(arg->find("lattice"));}
   if (arg->find("beamline")!=end){beamline = arg->at("beamline"); arg->erase(arg->find("beamline"));}
   if (arg->find("lattice")!=end) {lattice  = arg->at("lattice");  arg->erase(arg->find("lattice"));}
@@ -174,6 +177,21 @@ bool Setup::getRootName(string *filename)
   }
   return true; 
 }
+bool Setup::RootName_to_FileName(string *fn_out, string *rootname)
+{
+  // If 'outputdir' parameter not specified
+  // ==> do not change string
+  if (outputdir.size()<1) {
+    *fn_out = *rootname;
+    return true;
+  }
+
+  string t;
+  t = outputdir + "/" + *rootname;
+  *fn_out = t;
+
+  return true;
+}
 
 void Setup::BWF_load_defaults()
 {
@@ -188,7 +206,7 @@ void Setup::BWF_load_defaults()
 
 /* returns true if filename for semaphore file was generated */
 bool Setup::getSemaFN(string *fnout) {
-	// user-defined filename overrides the logic to derive from rootname
+	// user-defined filename overrides the logic to derive from rootname (also a user-provided 'outputdir' parameter does not have an effect here)
 	if(! sema_file_name.empty()) {
 		*fnout = sema_file_name;
 		return(true);
@@ -197,8 +215,10 @@ bool Setup::getSemaFN(string *fnout) {
 	if(rootname.empty()) {
 		return(false);
 	}
-	*fnout = rootname;
-	*fnout += ".sema";
+	string t;
+	t = rootname;
+	t += ".sema";
+	RootName_to_FileName(fnout, &t);
 	return(true);
 }
 void Setup::setSemaFN(string fn_in) {

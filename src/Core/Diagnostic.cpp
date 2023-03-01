@@ -216,7 +216,9 @@ std::map<std::string,OutputInfo> DiagBeam::getTags(FilterDiagnostics & filter_in
     }
     if (filter_in.beam.auxiliar) {
         filter["aux"] = true;
-        tags["efield"] = {false, false, "eV/m"};
+        tags["efield"] = {false, false, "eV/m"}; // full field which changes particle energy
+        tags["wakefield"] = {false, false, "eV/m"}; // effect from wakefields
+        tags["LSCfield"] = {false, false, "eV/m"}; // effect from space charge field
     }
     if (filter_in.beam.current) {
         tags["current"] = {false, false, "A"};
@@ -319,7 +321,7 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
             if (val.find("xposition") != val.end()){val["xposition"][idx]=x1;}
             if (val.find("xsize") != val.end()){val["xsize"][idx]=sqrt( fabs(x2-x1*x1));}
             if (val.find("yposition") != val.end()){val["yposition"][idx]=y1;}
-            if (val.find("xsize") != val.end()){val["ysize"][idx]=sqrt( fabs(y2-y1*y1));}
+            if (val.find("ysize") != val.end()){val["ysize"][idx]=sqrt( fabs(y2-y1*y1));}
             if (val.find("pxposition") != val.end()){val["pxposition"][idx]=px1;}
             if (val.find("pyposition") != val.end()){ val["pyposition"][idx]=py1;}
         }
@@ -334,8 +336,10 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
             snprintf(buff, sizeof(buff), "bunchingphase%d", iharm + 1);
             if (val.find(buff) != val.end()) { val[buff][idx] = atan2(b[iharm].imag(), b[iharm].real()); }
         }
-        if (filter["auxiliar"]){
-            if (val.find("efield") != val.end()) {val["efield"][idx]=beam->eloss[is];}
+        if (filter["aux"]){
+            if (val.find("efield") != val.end()) {val["efield"][idx]=beam->eloss[is]+beam->longESC[is];}
+            if (val.find("wakefield") != val.end()) {val["wakefield"][idx]=beam->eloss[is];}
+            if (val.find("LSCfield") != val.end()) {val["LSCfield"][idx]=beam->longESC[is];}
         }
         // here are all the values which are only evaluated once at the bieginning of the run with iz = 0
         if (tags["current"].once){
@@ -418,6 +422,81 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
 //---------------------------------------------------------
 // diagnostic calculation - field
 
+FFTObj::FFTObj(int ngrid)
+{
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
+
+	// this is severe error: print on *all* ranks
+	if(ngrid<0) {
+		cerr << "Error: enforcing ngrid>0" << endl;
+		ngrid=1;
+	}
+	in_ = new complex<double>[ngrid * ngrid];
+	out_ = new complex<double>[ngrid * ngrid];
+	p_ = fftw_plan_dft_2d(ngrid, ngrid,
+	    reinterpret_cast<fftw_complex *>(in_),
+	    reinterpret_cast<fftw_complex *>(out_),
+	    FFTW_FORWARD, FFTW_ESTIMATE /* FFTW_MEASURE */);
+	ngrid_ = ngrid;
+}
+
+FFTObj::~FFTObj() {
+	if(rank_==0) {
+		cout << "~FFTObj" << endl;
+	}
+
+	fftw_destroy_plan(p_);
+	delete [] in_;
+	delete [] out_;
+}
+
+void DiagField::cleanup_FFT_resources(void)
+{
+	for(auto &[k,obj]: fftobj) {
+		delete obj;
+	}
+	fftobj.clear();
+}
+
+int DiagField::obtain_FFT_resources(int ngrid, complex<double> **in, complex<double> **out, fftw_plan *pp)
+{
+	int rank=0;
+	bool verbose=false;
+	bool exists=false;
+
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+	// see if the entry already exists
+	auto end = fftobj.end();
+	auto ele = fftobj.find(ngrid);
+	exists = (ele!=end);
+
+	if(!exists) {
+		/* set up new entry */
+		FFTObj *n = new FFTObj(ngrid);
+
+		// FIXME: 'insert' also returns iterator to newly inserted element
+		fftobj.insert({ngrid, n});
+		ele = fftobj.find(ngrid);
+
+		if(verbose && (rank==0)) {
+			cout << "created FFT obj for ngrid="<<ngrid<<endl;
+		}
+	} else {
+		if(verbose && (rank==0)) {
+			cout << "getting existing FFT obj for ngrid="<<ngrid<<endl;
+		}
+	}
+
+	// cout << "ngrid=" << ele->first << endl;
+	*in = ele->second->in_;
+	*out = ele->second->out_;
+	*pp = ele->second->p_;
+
+	return(0);
+}
+
+
 std::map<std::string,OutputInfo> DiagField::getTags(FilterDiagnostics & filter_in){
 
     tags.clear();
@@ -480,18 +559,6 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
     int is0 = 0;
     int ngrid = field->ngrid;
 
-
-#ifdef FFTW
-    if (!hasPlan) {
-        in = new complex<double>[ngrid * ngrid];
-        out = new complex<double>[ngrid * ngrid];
-        p = fftw_plan_dft_2d(ngrid, ngrid, reinterpret_cast<fftw_complex *>(in), reinterpret_cast<fftw_complex *>(out),
-                             FFTW_FORWARD, FFTW_MEASURE);
-        hasPlan = true;
-    }
-#endif
-
-
     double ks=4.*asin(1)/field->xlambda;
     double scl=field->dgrid*eev/ks;
     double scltheta=field->xlambda/ngrid/field->dgrid;
@@ -507,13 +574,20 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
     double g_y2=0;
     double g_ff=0;
     double g_inten=0;
+
 #ifdef FFTW
     double f_pow=0;
     double f_x1=0;
     double f_x2=0;
     double f_y1=0;
     double f_y2=0;
+
+    complex<double> *in  = nullptr;
+    complex<double> *out = nullptr;
+    fftw_plan p;
+    obtain_FFT_resources(ngrid, &in, &out, &p);
 #endif
+
 
     for (auto const &slice :field->field) {
         int is = (ns + is0 - field->first) % ns;

@@ -1,4 +1,4 @@
-#include "Profile.h"
+#include "GenProfile.h"
 
 
 Profile::Profile()
