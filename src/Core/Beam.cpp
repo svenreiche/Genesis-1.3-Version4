@@ -214,6 +214,7 @@ bool Beam::harmonicConversion(int harmonic, bool resample)
 
   beam.resize(harmonic*nsize);
   current.resize(harmonic*nsize);
+  eloss.resize(harmonic*nsize);
   double sl=4*asin(1.)*slicelength/reflength;
   sorting.configure(0,sl,0,sl*nsize*harmonic,0,sl*nsize*harmonic,false);   
 
@@ -291,6 +292,7 @@ bool Beam::subharmonicConversion(int harmonic, bool resample)
   }
   beam.resize(nsize/harmonic);
   current.resize(nsize/harmonic);
+  eloss.resize(nsize/harmonic);
 
   // updating the sorting algorithm
   int isz=beam.size();
