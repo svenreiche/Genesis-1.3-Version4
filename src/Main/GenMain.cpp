@@ -89,7 +89,13 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
     if (rank==0){         // the output of version and build has been moved to the wrapper mainwrap.cpp
         time(&timer);
         cout << "Starting Time: " << ctime(&timer)<< endl;
-        cout << "MPI-Comm Size: " << size << " nodes" << endl << endl;
+
+        cout << "MPI-Comm Size: " << size;
+        if (size == 1) {
+            std::cout << " node" << endl << endl;
+        } else {
+            std::cout << " nodes" << endl << endl;
+        }
     }
 
     //---------------------------------------------------------
@@ -443,11 +449,11 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
 
 	  double elapsed_Sec=double(clocknow-clockstart)/CLOCKS_PER_SEC;
 
-          time(&timer);
-          cout << endl<< "Program is terminating..." << endl;
+      time(&timer);
+      cout << endl<< "Program is terminating..." << endl;
 	  cout << "Ending Time: " << ctime(&timer);
 	  cout << "Total Wall Clock Time: " << elapsed_Sec << " seconds" << endl;
-          cout << "-------------------------------------" << endl;
+      cout << "-------------------------------------" << endl;
 
 
 	  /* tracing report

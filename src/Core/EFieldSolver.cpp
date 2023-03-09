@@ -26,7 +26,12 @@ void EFieldSolver::init(double rmax_in, int ngrid_in, int nz_in, int nphi_in, do
 }
 
 void EFieldSolver::longRange(Beam *beam, double gamma0, double aw) {
-    int nsize = beam->beam.size();
+    auto nsize = beam->beam.size();
+    // check if the beam size has been changed:
+    if (nsize != beam->longESC.size()){
+        beam->longESC.resize(nsize);
+    }
+
     for (int i =0; i < nsize; i++){
         beam->longESC[i]=0;
     }
@@ -45,8 +50,8 @@ void EFieldSolver::longRange(Beam *beam, double gamma0, double aw) {
         MPI_Comm_rank(MPI_COMM_WORLD, &MPIrank); // assign rank to node
     }
 
-    // resize if needed
-    if (fcurrent.size()==0){
+    // resize if needed also after harmonic conversion.
+    if (fcurrent.size()!=(MPIsize*nsize)){
         fcurrent.resize(MPIsize*nsize);
         fsize.resize(MPIsize*nsize);
         work1.resize(nsize);
