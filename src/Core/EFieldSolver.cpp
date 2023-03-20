@@ -63,7 +63,7 @@ void EFieldSolver::longRange(Beam *beam, double gamma0, double aw) {
     MPI_Allgather(&work1.front(),nsize,MPI_DOUBLE,&fcurrent.front(),nsize,MPI_DOUBLE, MPI_COMM_WORLD);
     MPI_Allgather(&work2.front(),nsize,MPI_DOUBLE, &fsize.front(),nsize,MPI_DOUBLE, MPI_COMM_WORLD);
 
-    double scl = beam->slicelength/2./asin(1)/3e8/2/8.85e-12;  // convert to units of electron rest mass.
+    double scl = beam->slicelength/2./asin(1)/299792458.0/2/8.85e-12;  // convert to units of electron rest mass.
 
     for (int i=0; i < nsize; i++){
         double EFld = 0;
