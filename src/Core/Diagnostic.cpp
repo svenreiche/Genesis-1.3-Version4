@@ -795,7 +795,7 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
         f_x1*=scltheta;
         f_y1*=scltheta;
 #endif
-        g_pow *=scl*scl/vacimp*field->slicelength/3e8;
+        g_pow *=scl*scl/vacimp*field->slicelength/299792458.0;
         norm = 1./static_cast<double>(size*field->field.size());
         g_inten *= norm*eev*eev/ks/ks/vacimp;
         g_ff*=norm;

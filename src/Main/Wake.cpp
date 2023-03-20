@@ -275,7 +275,7 @@ void Wake::singleWakeResistive(int rank)
  	double t = kappa/sqrt(1+kappa*kappa*gamma*gamma);
         double lambdaRe=coef*sqrt(t)*sqrt(1.-t*gamma);
   	double lambdaIm=coef*sqrt(t)*sqrt(1.+t*gamma)-kappa*kappa*radius*0.5/s0/s0;
-	double nomi=2.*kappa/(3e8*radius*s0)/(lambdaRe*lambdaRe+lambdaIm*lambdaIm);
+	double nomi=2.*kappa/(299792458.0*radius*s0)/(lambdaRe*lambdaRe+lambdaIm*lambdaIm);
 	Zre[i]=lambdaRe*nomi;
 	Zim[i]=-lambdaIm*nomi;
      }
@@ -293,7 +293,7 @@ void Wake::singleWakeResistive(int rank)
       for (int i =0; i<nk; i++){       
            double kappa=(i+1.)*kappamax/nk;  // value of kappa	 
  	   double t = kappa/sqrt(1+kappa*kappa*gamma*gamma);
-           double scale=2.*15.*kappa/(3e8*radius*s0*(2*nq-1));
+           double scale=2.*15.*kappa/(299792458.0*radius*s0*(2*nq-1));
 	   Zre[i]=0;
 	   Zim[i]=0;	 
        // integrate over q-> infty which is actually exp(30)
@@ -317,7 +317,7 @@ void Wake::singleWakeResistive(int rank)
 	  wakeres[i]+=Zre[j]*cos(phi)+Zim[j]*sin(phi);
       }
    }
-   coef=-kappamax/nk/s0*3e8/pi*(vacimp*ce/4/pi); // to scale to SI units
+   coef=-kappamax/nk/s0*299792458.0/pi*(vacimp*ce/4/pi); // to scale to SI units
    coef*=0.5;  // emperical adjustment of amplitude, needs checking!!!!!
 
    for (int i = 0; i < ns; i++){

@@ -133,7 +133,7 @@ global xgenstat
             x(i)=sqrt(xsig-xmean*xmean);
 
         end 
-        x=x*xgenstat.ds/3e8;
+        x=x*xgenstat.ds/299792458.0;
     else
         
         for i=1:nz
