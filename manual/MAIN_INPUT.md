@@ -209,7 +209,8 @@ This namelist initiate the generation of the field distribution. It differs in o
 
 ### importdistribution
 
-This namelist controls the import of an external distribution which are generated from Elegant. The file has to be in HDF5 format. In the distribution is a shell script to convert an Elegant sdds-output file into the HDF5 format. The distribution has to provide all 6 dimensions while the charge is supplied in this namelist. When imported the longitudinal position is changed so that the last particles is at $s=0$ micron.
+This namelist controls the import of an external distribution which are generated from Elegant. The file has to be in HDF5 format. In the distribution is a shell script to convert an Elegant sdds-output file into the HDF5 format. The distribution has to provide all 6 dimensions while the charge is supplied in this namelist. When imported the longitudinal position is changed so that the last particles is at $s=0$ micron. 
+
 Note that this namelist will be expanded in the future, to enable tilts and match/center to a core part of the beam
 
 - `file` (*string, \<empty>*): The file name of the distribution, including possible relative directories.
@@ -226,6 +227,17 @@ Note that this namelist will be expanded in the future, to enable tilts and matc
 - `betay` (*double, 15 or matched value*): If matching is enabled, new beta function in $y$ in meters.
 - `alphax`(*double, 0 or matched value*): If matching is enabled, new alpha function in $x$.
 - `alphay`(*double, 0 or matched value*): If matching is enabled, new alpha function in $y$.
+
+
+
+This HDF5 file `file` should have the following datasets:
+- `x` is the horizontal coordinate in meters
+- `y` is the vertical coordinate in meters
+- `xp` = $p_x$/$p_z$ is the dimensionless trace space horizontal momentum
+- `yp` = $p_y$/$p_z$ is the dimensionless trace space vertical momentum
+- `t` is the time in seconds
+- `p`  = relativistic $\gamma*\beta$, which is the total momentum divided by $m_ec$
+
 
 [Back](#supported-namelists)
 

@@ -175,7 +175,7 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   } else {
     error=true;
   }
-  dname="p";
+  dname="p"; // Note that this is gamma*beta
   hasrecord=H5Lexists(fid,dname.c_str(),H5P_DEFAULT);
   if (hasrecord>0){    
      readDouble1D(fid,dname.c_str(),&g[0],nsize,rank*nchunk);
@@ -226,7 +226,7 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
 
   for (int i=0; i<nsize; i++){
     t[i]*=-299792458.0;       // convert to positin in meters
-    g[i]+=1.;         // convert from kinetic energy to total energy
+    g[i] = sqrt(g[i]*g[i] + 1);         // convert momentum to energy
   }
 
 
