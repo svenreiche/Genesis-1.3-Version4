@@ -49,6 +49,10 @@ class Beam{
    bool outputEnergy();
    bool outputSpatial();
 
+   void report_storage(string infotxt);
+   bool dbg_skip_shrink(void);
+   void make_compact(void);
+
    vector< vector<Particle> > beam;
    vector<double> current,eloss,longESC;
 

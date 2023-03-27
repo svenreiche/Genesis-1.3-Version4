@@ -29,6 +29,7 @@ class Sorting{
 
 
  private:
+  void shrink_pushvectors(void);
   void update_stats(unsigned long long &, unsigned long long &);
   void globalSort_completion_msg(void);
   void fillPushVectors(vector< vector< Particle > > *);

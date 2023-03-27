@@ -3,6 +3,7 @@
 extern bool MPISingle;
  
 #include <algorithm>
+#include <cstdlib> // for 'getenv'
 
 #include <fstream>
 #include <sstream>
@@ -150,6 +151,22 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
 }
 
 
+// Helper function for memory management
+void Sorting::shrink_pushvectors(void)
+{
+  const char *q = getenv("G4_TEST_NOSHRINK");
+
+  if(q!=nullptr) {
+    if(rank==0) {
+      cout << "class Sorting: skipping shrinking of vectors" << endl;
+    }
+    return;
+  }
+
+  pushforward.shrink_to_fit();
+  pushbackward.shrink_to_fit();
+}
+
 // helper function for globalSort function
 void Sorting::update_stats(unsigned long long &global_nxfer, unsigned long long &max_nxfer)
 {
@@ -240,13 +257,14 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
      update_stats(global_nxfer, max_nxfer);
      if (global_nxfer == 0) {
        globalSort_completion_msg();
+       shrink_pushvectors();
        return;
      }
   }
   pushforward.clear();
   pushbackward.clear();
-
   globalSort_completion_msg();
+  shrink_pushvectors();
 
   return;
 }

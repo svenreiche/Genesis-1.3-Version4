@@ -5,6 +5,8 @@
 Version 4.5.1 has been released. Part of it is this Change Log file, which will be updated in the future releases.
 
 ## Unreleased:
+### [4.6.2-beta] - 2023/02/28
+- improved class `Beam` to reduce memory consumption in simulations with harmonic upconversion
 
 ### [4.6.2-beta] - 2022/12/30
 - added parameter "outputdir" to "&setup": allows to define directory (relative or absolute) where to store the simulation output
