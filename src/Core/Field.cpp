@@ -499,7 +499,7 @@ void Field::diagnostics(bool output)
 #endif
       }
 
-      energy[idx]=acc_power*scl*scl/vacimp*slicelength/3e8;  // energy 
+      energy[idx]=acc_power*scl*scl/vacimp*slicelength/299792458.0;  // energy 
       if (acc_power == 0){
 	acc_power=1.;
       }
