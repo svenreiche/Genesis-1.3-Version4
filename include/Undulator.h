@@ -100,7 +100,7 @@ inline bool Undulator::outstep(){
 }
 
 inline double Undulator::getz(){
-  return z[istepz]+dz[istepz];
+  return (istepz<0 ? 0. : z[istepz]+dz[istepz]);
 }
 
 inline double Undulator::getaw(){
