@@ -156,7 +156,7 @@ add_library(genesis13 STATIC
         src/Main/GenTime.cpp
         src/Main/Track.cpp
         src/Main/Wake.cpp
-        )
+        src/Loading/SeriesManager.cpp include/SeriesManager.h src/Loading/SeriesParser.cpp include/SeriesParser.h src/Loading/Sequence.cpp)
 
 
 target_include_directories(genesis13

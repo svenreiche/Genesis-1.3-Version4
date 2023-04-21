@@ -12,7 +12,6 @@
 
 #include "Sequence.h"
 
-
 #ifndef __GENESIS_RANDOMU__
 #define __GENESIS_RANDOMU__
 

@@ -14,6 +14,27 @@ field_global_stat = true
 zmatch=9.5
 &end
 
+&sequence_const
+label=test
+c0 = 1.23
+&end
+
+&sequence_power
+label=test1
+c0 = 2
+dc = 2
+n0 = 3
+alpha = 2
+&end
+
+&sequence_random
+label=test2
+c0 = 1
+dc = 0.1
+seed = 100
+normal = true
+&end
+
 #&time
 #time=false
 #slen=10e-10;

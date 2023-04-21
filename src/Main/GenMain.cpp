@@ -45,6 +45,8 @@
 #include "Diagnostic.h"
 #include "SemaFile.h"
 #include "FieldManipulator.h"
+#include "SeriesManager.h"
+#include "SeriesParser.h"
 
 #include <sstream>
 
@@ -128,6 +130,7 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
 	AlterLattice *alt=new AlterLattice;
     Lattice *lattice=new Lattice;
     Profile *profile=new Profile;
+    SeriesManager *series = new SeriesManager;
 	Series  *seq    =new Series;
     Time *timewindow=new Time;
     FilterDiagnostics filter;
@@ -202,21 +205,25 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
       //----------------------------------------------
 	  // modifying the lattice file
 
-          if (element.compare("&lattice")==0){
-            if (!alt->init(rank,size,&argument,lattice,setup,seq)){ break;}
-            continue;  
-          }  
+      if (element.compare("&lattice")==0){
+          if (!alt->init(rank,size,&argument,lattice,setup,seq)){ break;}
+          continue;
+      }
 
 
           //---------------------------------------------------
           // adding sequence elements
+          //
 
           if ((element.compare("&sequence_const")==0)||
               (element.compare("&sequence_power")==0)||
               (element.compare("&sequence_random")==0)){
-            if (!seq->init(rank,&argument,element)){ break; }
-            continue;
-	  }
+                SeriesParser *seriesparser = new SeriesParser;
+                if (!seriesparser->init(rank,&argument,element,series)) {break;}
+                delete seriesparser;
+//                if (!seq->init(rank,&argument,element)){ break; }
+                continue;
+          }
 
 
 
@@ -232,12 +239,12 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
               (element.compare("&profile_step")==0)){
             if (!profile->init(rank,&argument,element)){ break; }
             continue;
-	  }
+          }
 
           //----------------------------------------------------
           // defining the time window of simulation
 
-	  if (element.compare("&time")==0){
+	      if (element.compare("&time")==0){
             if (!timewindow->init(rank,size,&argument,setup)){ break;}
             continue;  
           }  
@@ -245,99 +252,98 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
           //----------------------------------------------------
           // internal generation of the field
 
-	  if (element.compare("&field")==0){
-	    LoadField *loadfield=new LoadField;
+	      if (element.compare("&field")==0){
+	        LoadField *loadfield=new LoadField;
             if (!loadfield->init(rank,size,&argument,&field,setup,timewindow,profile)){ break;}
-	    delete loadfield;
-            continue;  
-          }  
+	        delete loadfield;
+            continue;
+          }
 
           //----------------------------------------------------
           // field manipulation
 
-	  if (element.compare("&field_manipulator")==0){
-	    FieldManipulator *q = new FieldManipulator;
+	      if (element.compare("&field_manipulator")==0){
+	        FieldManipulator *q = new FieldManipulator;
             if (!q->init(rank,size,&argument,&field,setup,timewindow,profile)){ break;}
-	    delete q;
+	        delete q;
             continue;  
           }  
 	 
           //----------------------------------------------------
           // setup of space charge field
 
-	  if (element.compare("&efield")==0){
-   	    EField *efield=new EField;
+	      if (element.compare("&efield")==0){
+   	        EField *efield=new EField;
             if (!efield->init(rank,size,&argument,beam,setup,timewindow)){ break;}
-	    delete efield;
+	        delete efield;
             continue;  
           }  
 
           //----------------------------------------------------
           // setup of spontaneous radiation
 
-	  if (element.compare("&sponrad")==0){
+	      if (element.compare("&sponrad")==0){
             SponRad *sponrad=new SponRad;
             if (!sponrad->init(rank,size,&argument,beam)){ break;}
-	    delete sponrad;
+	        delete sponrad;
             continue;  
           }  
 
           //----------------------------------------------------
           // setup wakefield
 
-	  if (element.compare("&wake")==0){
-	    Wake *wake = new Wake;
+	      if (element.compare("&wake")==0){
+	        Wake *wake = new Wake;
             if (!wake->init(rank,size,&argument,timewindow, setup, beam,profile)){ break;}
-	    delete wake;
-	    continue;  
+	        delete wake;
+	        continue;
           }  
 
           //----------------------------------------------------
           // internal generation of beam
 
-	  if (element.compare("&beam")==0){
+	      if (element.compare("&beam")==0){
             LoadBeam *loadbeam=new LoadBeam;
             if (!loadbeam->init(rank,size,&argument,beam,setup,timewindow,profile,lattice)){ break;}
-	    delete loadbeam;
+	        delete loadbeam;
             continue;  
           }  
 
           //----------------------------------------------------
           // external generation of beam with an sdds file
 
-	  if (element.compare("&importdistribution")==0){
+          if (element.compare("&importdistribution")==0){
             SDDSBeam *sddsbeam=new SDDSBeam;
             if (!sddsbeam->init(rank,size,&argument,beam,setup,timewindow,lattice)){ break;}
-	    delete sddsbeam;
+	        delete sddsbeam;
             continue;  
           }  
 
           //----------------------------------------------------
           // tracking - the very core part of Genesis
 
-	  if (element.compare("&track")==0){
-            Track *track=new Track;
-	    if (!track->init(rank,size,&argument,beam,&field,setup,lattice,alt,timewindow,filter)){ break;}
-            delete track;
-            continue;  
-          }  
+          if (element.compare("&track")==0){
+              Track *track=new Track;
+              if (!track->init(rank,size,&argument,beam,&field,setup,lattice,alt,timewindow,filter)){ break;}
+              delete track;
+              continue;
+          }
+
+          //----------------------------------------------------
+          // write beam, field or undulator to file
+
+          if (element.compare("&sort")==0){
+              beam->sort();
+              continue;
+          }
 
 
           //----------------------------------------------------
           // write beam, field or undulator to file
 
-	  if (element.compare("&sort")==0){
-	    beam->sort();
-            continue;  
-          }  
-
-
-          //----------------------------------------------------
-          // write beam, field or undulator to file
-
-	  if (element.compare("&write")==0){
+          if (element.compare("&write")==0){
             Dump *dump=new Dump;
-	    if (!dump->init(rank,size,&argument,setup,beam,&field)){ break;}
+	        if (!dump->init(rank,size,&argument,setup,beam,&field)){ break;}
             delete dump;
             continue;  
           }  
@@ -346,9 +352,9 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
           //----------------------------------------------------
           // import beam from a particle dump
 
-	  if (element.compare("&importbeam")==0){
+	      if (element.compare("&importbeam")==0){
             ImportBeam *import=new ImportBeam;
-	    if (!import->init(rank,size,&argument,beam,setup,timewindow)){ break;}
+	        if (!import->init(rank,size,&argument,beam,setup,timewindow)){ break;}
             delete import;
             continue;  
           }  
@@ -357,9 +363,9 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
           //----------------------------------------------------
           // import field from a field dump
 
-	  if (element.compare("&importfield")==0){
+	      if (element.compare("&importfield")==0){
             ImportField *import=new ImportField;
-	    if (!import->init(rank,size,&argument,&field,setup,timewindow)){ break;}
+	        if (!import->init(rank,size,&argument,&field,setup,timewindow)){ break;}
             delete import;
             continue;  
           }  
