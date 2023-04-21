@@ -16,11 +16,13 @@ public:
     bool initConst(int, std::map<std::string,std::string> *, SeriesManager *);
     bool initPower(int, std::map<std::string,std::string> *, SeriesManager *);
     bool initRandom(int, std::map<std::string,std::string> *, SeriesManager *);
+    bool initList(int, std::map<std::string,std::string> *, SeriesManager *);
 
 private:
     void usageConst();
     void usagePower();
     void usageRandom();
+    void usageList();
 };
 
 

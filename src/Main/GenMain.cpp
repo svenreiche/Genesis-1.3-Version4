@@ -217,6 +217,7 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
 
           if ((element.compare("&sequence_const")==0)||
               (element.compare("&sequence_power")==0)||
+              (element.compare("&sequence_list")==0)||
               (element.compare("&sequence_random")==0)){
                 SeriesParser *seriesparser = new SeriesParser;
                 if (!seriesparser->init(rank,&argument,element,series)) {break;}

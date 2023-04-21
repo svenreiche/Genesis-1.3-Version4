@@ -14,6 +14,12 @@ field_global_stat = true
 zmatch=9.5
 &end
 
+&sequence_list
+label=testlist
+val = 1, 0.2, 4 , 6 ,7.5
+default = 3.5
+&end
+
 &sequence_const
 label=test
 c0 = 1.23

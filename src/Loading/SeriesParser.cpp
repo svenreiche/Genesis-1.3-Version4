@@ -3,7 +3,7 @@
 //
 #include <iostream>
 #include <stdlib.h>
-
+#include <vector>
 #include "SeriesParser.h"
 #include "Sequence.h"
 
@@ -17,6 +17,9 @@ bool SeriesParser::init(int rank, std::map<std::string,std::string> *arg, std::s
     }
     if (element.compare("&sequence_random")==0){
         return this->initRandom(rank, arg, sm);
+    }
+    if (element.compare("&sequence_list")==0){
+        return this->initList(rank, arg, sm);
     }
     return false;
 }
@@ -126,6 +129,61 @@ bool SeriesParser::initRandom(int rank, std::map<std::string,std::string> *arg, 
     return true;
 }
 
+bool SeriesParser::initList(int rank, std::map<std::string,std::string> *arg, SeriesManager *sm){
+    std::string label="";
+    double def =0;
+    std::string valstr ="";
+    std::map<std::string,std::string>::iterator end=arg->end();
+
+    if (arg->find("label")!=end){label = arg->at("label");  arg->erase(arg->find("label"));}
+    if (arg->find("default")!=end)   {def = atof(arg->at("default").c_str());  arg->erase(arg->find("default"));}
+    if (arg->find("val")!=end){valstr = arg->at("val");  arg->erase(arg->find("val"));}
+
+    std::vector<std::string> vals;
+    this->chop(valstr,&vals);
+    vector<double> fval;
+    for (auto & ele : vals){
+        if (ele.size() < 1){
+            if (rank == 0) {
+                std::cout << "*** Error: empty list element for val in &sequence_list" << std::endl;
+                this->usageList();
+            }
+            return false;
+        }
+        fval.push_back(atof(ele.c_str()));
+    }
+
+    if (fval.size() < 1) {
+        if (rank == 0) {
+            std::cout << "*** Error: empty list for val in &sequence_list" << std::endl;
+            this->usageList();
+        }
+        return false;
+    }
+
+    if (arg->size()!=0) {
+        if (rank == 0) {
+            std::cout << "*** Error: Unknown elements in &sequence_list" << std::endl;
+            this->usageList();
+        }
+        return false;
+    }
+    if (label.size()<1) {
+        if (rank==0){
+            std::cout << "*** Error: Label not defined in &sequence_list" << std::endl; this->usageConst();
+        }
+        return false;
+    }
+    if (rank==0){
+        std::cout << "Adding sequence with label: " <<label << std::endl;
+    }
+//    SequenceConst *seq = new SequenceConst;
+//    seq->init(c0);
+//    sm -> add(label,seq);
+    return true;
+}
+
+
 // the individual usages calls
 
 void SeriesParser::usageConst(){
@@ -155,6 +213,15 @@ void SeriesParser::usageRandom(){
     cout << " double dc = 0" << endl;
     cout << " int seed = 100" << endl;
     cout << " bool normal = true" << endl;
+    cout << "&end" << endl << endl;
+    return;
+}
+void SeriesParser::usageList(){
+    cout << "List of keywords for SEQUENCE_LIST" << endl;
+    cout << "&sequence_random" << endl;
+    cout << " string label = <empty>" << endl;
+    cout << " double val = [<empty>]" << endl;
+    cout << " double default = 0" << endl;
     cout << "&end" << endl << endl;
     return;
 }
