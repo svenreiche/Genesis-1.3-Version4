@@ -34,7 +34,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 
     //------------------------------------------
     // main loop
-	       	
+
 	while(und->advance(rank)){
 	  double delz=und->steplength();
 
