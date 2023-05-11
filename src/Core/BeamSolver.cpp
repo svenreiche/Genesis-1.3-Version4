@@ -49,8 +49,8 @@ void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undul
 
   for (int is=0; is<beam->beam.size(); is++){    
     // accumulate space charge field
-    double eloss = beam->longESC[is]/511000; // convert eV to units of electron rest mass
-
+    double eloss = -beam->longESC[is]/511000; // convert eV to units of electron rest mass
+                                                // note sign change since it is the energy loss not gain
     // calculating short range space charge    
     if (esc.size() < beam->beam.at(is).size()){
       esc.resize(beam->beam.at(is).size());
