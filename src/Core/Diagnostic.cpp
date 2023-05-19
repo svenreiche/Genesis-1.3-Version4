@@ -525,11 +525,11 @@ std::map<std::string,OutputInfo> DiagField::getTags(FilterDiagnostics & filter_i
         filter["intensity"] = true;
         tags["intensity-nearfield"] = {false, false, "W/m^2"};
         tags["phase-nearfield"] = {false, false, "rad"};
-        tags["intensity-farfield"] = {false, false, " "};
+        tags["intensity-farfield"] = {false, false, "W/rad^2"};
         tags["phase-farfield"] = {false, false, "rad"};
         if (global){
             tags["Global/intensity-nearfield"] = {true, false, "W/m^2"};
-            tags["Global/intensity-farfield"] = {true, false, " "};
+            tags["Global/intensity-farfield"] = {true, false, "W/rad^2"};
         }
     }
 #ifdef FFTW
@@ -678,8 +678,8 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
             fy2/=fpower;
         }
  //       std::cout << "New: fpower: " << fpower << " fx1: " << fx1 <<  " scltheta: " << scltheta << std::endl;
-	fx2=sqrt(fabs(fx2-fx1*fx1))*scltheta;
-	fy2=sqrt(fabs(fy2-fy1*fy1))*scltheta;
+	    fx2=sqrt(fabs(fx2-fx1*fx1))*scltheta;
+	    fy2=sqrt(fabs(fy2-fy1*fy1))*scltheta;
         fx1*=scltheta;
         fy1*=scltheta;
 #endif
@@ -691,7 +691,7 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
         double intenphi=atan2(loc.imag(),loc.real());
         double farfield=ff.real()*ff.real()+ff.imag()*ff.imag();
         double farfieldphi =atan2(ff.imag(),ff.real());
-
+        farfield *= field->dgrid * field->dgrid;
         if (global){
             g_ff+=farfield;
             g_inten+=inten;
