@@ -13,6 +13,7 @@
 
 #include "StringProcessing.h"
 #include "Lattice.h"
+#include "Diagnostic.h"
 
 using namespace std;
 
@@ -22,7 +23,7 @@ class Setup: public StringProcessing{
  public:
    Setup();
    virtual ~Setup();
-   bool init(int, map<string,string> *, Lattice *,string,string,int );
+   bool init(int, map<string,string> *, Lattice *, FilterDiagnostics &filter);
    //   bool writeGlobal(hid_t, double, int, int,int,int,double, double, double, bool, bool);
    double getReferenceLength();
    void   setReferenceLength(double);
@@ -40,6 +41,11 @@ class Setup: public StringProcessing{
    bool   outputEnergy();
    bool   outputAux();
    bool   outputFieldDump();
+   bool   getSemaEnStart();
+   bool   getSemaEnDone();
+   void   setSemaFN(string);
+   bool   getSemaFN(string *);
+
    int    getNpart();
    int    getNbins();
    int    getSeed();
@@ -47,6 +53,7 @@ class Setup: public StringProcessing{
    //   bool   getInputFileNameField(string *);
    bool   getRootName(string *);
    void   setRootName(string *);
+   bool   RootName_to_FileName(string *, string *);
    int getCount();
    void incrementCount();
    string getLattice();
@@ -63,7 +70,7 @@ class Setup: public StringProcessing{
 
  private:
    void usage();
-   string rootname,lattice,beamline,partfile,fieldfile;
+   string rootname,outputdir,lattice,beamline,partfile,fieldfile;
    double gamma0,lambda0,delz;
    bool one4one,shotnoise;
    bool beam_global_stat, field_global_stat;
@@ -73,6 +80,9 @@ class Setup: public StringProcessing{
    int beam_write_slices_from, beam_write_slices_to, beam_write_slices_inc;
 
    int seed, rank,npart,nbins,runcount;
+
+   bool sema_file_enabled_start, sema_file_enabled_done;
+   string sema_file_name; // user-defined name of semaphore file, if empty: file name will be derived in function getSemaFN
 };
 
 inline string Setup::getLattice(){return lattice;}
@@ -118,4 +128,7 @@ inline void   Setup::BWF_set_inc(int in)
 	}
 	beam_write_slices_inc=in;
 }
+
+inline bool   Setup::getSemaEnStart() { return sema_file_enabled_start; }
+inline bool   Setup::getSemaEnDone()  { return sema_file_enabled_done; }
 #endif

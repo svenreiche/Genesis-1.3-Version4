@@ -32,6 +32,8 @@ class Field{
    virtual ~Field();
    void initDiagnostics(int);
    void diagnostics(bool);
+   void resetSlippage();
+
    void init(int, int, double, double, double, double,int);
    bool harmonicConversion(int, bool);
    bool subharmonicConversion(int, bool);
@@ -98,6 +100,8 @@ inline void Field::setOutput(bool nofft_in, bool noSpatial_in, bool noInten_in, 
   doIntensity = !noInten_in;
   doDumpField = !noDumpField_in;
 }
+
+inline void Field::resetSlippage(){ accuslip=0; }
 
 inline void Field::disable(double conv)
 {

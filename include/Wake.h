@@ -9,9 +9,9 @@
 
 #include "StringProcessing.h"
 #include "Setup.h"
-#include "Time.h"
+#include "GenTime.h"
 #include "Particle.h"
-#include "Profile.h"
+#include "GenProfile.h"
 
 class Beam;
 

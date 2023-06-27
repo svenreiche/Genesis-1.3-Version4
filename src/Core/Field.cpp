@@ -27,6 +27,8 @@ Field::Field(){
   doSpatial=true;
   doIntensity=true;
   doDumpField=true;
+
+  accuslip = 0;
 }
 
 
@@ -285,7 +287,9 @@ void Field::diagnostics(bool output)
 
   if (!output) { return; }
 
-  double shift=-0.5*static_cast<double> (ngrid);
+//  double shift=-0.5*static_cast<double> (ngrid);
+  double shift=-0.5*static_cast<double> (ngrid-1);
+
   complex<double> loc;
   double loc2[2];
   int ds=field.size();
@@ -309,6 +313,7 @@ void Field::diagnostics(bool output)
   double ks=4.*asin(1)/xlambda;
   double scl=dgrid*eev/ks;
   double scltheta=xlambda/ngrid/dgrid;
+//  std::cout  << "old: " << scltheta << " " << xlambda << " " << ngrid << std::endl;
 
   for (int is=0; is < ds; is++){
     int islice= (is+first) % ds ;   // include the rotation due to slippage
@@ -336,7 +341,7 @@ void Field::diagnostics(bool output)
         double dx=static_cast<double>(ix)+shift;
 	int i=iy*ngrid+ix;
         loc=field.at(islice).at(i);
-	in[i]=loc;   // field for the FFT
+	    in[i]=loc;   // field for the FFT
         double wei=loc.real()*loc.real()+loc.imag()*loc.imag();
         ff+=loc;
         bpower+=wei;
@@ -371,40 +376,40 @@ void Field::diagnostics(bool output)
     if (doFFT){
       fftw_execute(p);
       for (int iy=0;iy<ngrid;iy++){
-	double dy=static_cast<double>(iy)+shift;
-	for (int ix=0;ix<ngrid;ix++){
-	  double dx=static_cast<double>(ix)+shift;
-	  int iiy=(iy+(ngrid+1)/2) % ngrid;
-	  int iix=(ix+(ngrid+1)/2) % ngrid;
-	  int ii=iiy*ngrid+iix;
-	  loc=out[ii];
-	  double wei=loc.real()*loc.real()+loc.imag()*loc.imag();
-	  fpower+=wei;
-	  fxavg+=dx*wei;
-	  fxsig+=dx*dx*wei;
-	  fyavg+=dy*wei;
-	  fysig+=dy*dy*wei;
-	}
+	    double dy=static_cast<double>(iy)+shift;
+	    for (int ix=0;ix<ngrid;ix++){
+	        double dx=static_cast<double>(ix)+shift;
+	        int iiy=(iy+(ngrid+1)/2) % ngrid;
+	        int iix=(ix+(ngrid+1)/2) % ngrid;
+	        int ii=iiy*ngrid+iix;
+	        loc=out[ii];
+	        double wei=loc.real()*loc.real()+loc.imag()*loc.imag();
+	        fpower+=wei;
+	        fxavg+=dx*wei;
+	        fxsig+=dx*dx*wei;
+	        fyavg+=dy*wei;
+	        fysig+=dy*dy*wei;
+	    }
       }
 
       if (out_global){
-	acc_tpower+=fpower;
-	acc_tx +=fxavg;
-	acc_tx2+=fxsig;   // bxsig and bysig are in this part still variances
-	acc_ty +=fyavg;
-	acc_ty2+=fysig;
+	    acc_tpower+=fpower;
+	    acc_tx +=fxavg;
+	    acc_tx2+=fxsig;   // bxsig and bysig are in this part still variances
+	    acc_ty +=fyavg;
+	    acc_ty2+=fysig;
       }
- 
 
       if (fpower>0){
-	  fxavg/=fpower;
-	  fxsig/=fpower;
-	  fyavg/=fpower;
-	  fysig/=fpower;
+	    fxavg/=fpower;
+	    fxsig/=fpower;
+	    fyavg/=fpower;
+	    fysig/=fpower;
       }
 
-      fxsig=sqrt(abs(fxsig-fxavg*fxavg));
-      fysig=sqrt(abs(fysig-fyavg*fyavg));
+  //    std::cout << "Old: fpower: " << fpower << " fx1: " << fxavg <<  " scltheta: " << scltheta << std::endl;
+      fxsig=sqrt(fabs(fxsig-fxavg*fxavg));
+      fysig=sqrt(fabs(fysig-fyavg*fyavg));
     }
 
 #endif
@@ -494,7 +499,7 @@ void Field::diagnostics(bool output)
 #endif
       }
 
-      energy[idx]=acc_power*scl*scl/vacimp*slicelength/3e8;  // energy 
+      energy[idx]=acc_power*scl*scl/vacimp*slicelength/299792458.0;  // energy 
       if (acc_power == 0){
 	acc_power=1.;
       }

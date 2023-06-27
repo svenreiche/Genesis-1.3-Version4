@@ -13,7 +13,7 @@
 #include "Undulator.h"
 #include "HDF5base.h"
 #include "Output.h"
-
+#include "Diagnostic.h"
 
 using namespace std;
 
@@ -24,7 +24,7 @@ class Control : public HDF5Base{
    void applySlippage(double, Field *);
    bool applyMarker(Beam *, vector<Field *> *, Undulator *);
    bool init(int, int, const char *, Beam *, vector<Field *> *, Undulator *,bool,bool);
-   void output(Beam *, vector<Field*> *,Undulator *);
+   void output(Beam *, vector<Field*> *,Undulator *,Diagnostic &);
 
  private:
    bool timerun,scanrun,one4one;

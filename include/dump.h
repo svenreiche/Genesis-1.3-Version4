@@ -25,10 +25,11 @@ class Dump: public StringProcessing{
    Dump();
    virtual ~Dump();
    bool init(int, int, map<string,string> *, Setup *, Beam *beam, vector<Field *> *field);
+
  private:
    void usage();
-   string dumpfield,dumpbeam;
-   int rank,size;
+   // string dumpfield,dumpbeam;
+   // int rank,size;
 };
 
 

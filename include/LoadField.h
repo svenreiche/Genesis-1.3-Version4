@@ -12,8 +12,8 @@
 
 #include "StringProcessing.h"
 #include "Setup.h"
-#include "Time.h"
-#include "Profile.h"
+#include "GenTime.h"
+#include "GenProfile.h"
 #include "GaussHermite.h"
 #include "Field.h"
 

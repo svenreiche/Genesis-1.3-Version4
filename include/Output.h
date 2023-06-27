@@ -12,6 +12,7 @@
 #include "Beam.h"
 #include "Field.h"
 #include "Undulator.h"
+#include "version.h"
 
 using namespace std;
 
@@ -32,7 +33,10 @@ class Output : public HDF5Base {
    void writeLattice(Beam *, Undulator *);
    void writeGlobal(Undulator *,double,double,double,double,bool,bool,bool,int);
    void writeMeta(Undulator *);
+   void writeGroup(std::string group,std::map<std::string,std::vector<double> >&, std::map<std::string,std::string> &, std::map<std::string,bool> &);
+   void writeDataset(hid_t,std::string, std::vector<double> &, string, bool);
    void reportDumps(hid_t, Undulator *);
+   void reportMPI(hid_t);
 
  private:
    void write(hsize_t,string,string,double *);

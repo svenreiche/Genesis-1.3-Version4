@@ -25,12 +25,13 @@ class Beam{
    void diagnosticsStart();
    void init(int, int, double,double, double,bool);
    void initSorting(int,int,bool,bool);
-   void initEField(double,int,int,int,double);
+   void initEField(double,int,int,int,double,bool,bool);
    void initIncoherent(int, int, bool,bool);
    void initWake(unsigned int, unsigned int, double, double *, double *, double *,double *, double,double, bool);
    bool harmonicConversion(int,bool);
    bool subharmonicConversion(int,bool);
    int sort();
+   double getSize(int);
    void track(double, vector<Field *> *, Undulator *);
    void setOutput(bool,bool,bool,bool);
    void setWriteFilter(bool,int,int,int);
@@ -48,8 +49,14 @@ class Beam{
    bool outputEnergy();
    bool outputSpatial();
 
+   void report_storage(string infotxt);
+   bool dbg_skip_shrink(void);
+   void make_compact(void);
+
    vector< vector<Particle> > beam;
-   vector<double> current,eloss;
+   vector<double> current,eloss,longESC;
+
+
    double reflength,slicelength;   // for conversion of theta in Particle to real position
    double s0;         // starting position of the time-window
    bool one4one;     // flag whether one4one simulation is done
@@ -88,8 +95,8 @@ inline void Beam::initIncoherent(int base, int rank, bool spread, bool loss){
   return;
 }
 
-inline void Beam::initEField(double rmax, int ngrid, int nz, int nphi, double lambda){
-  solver.initEField(rmax,ngrid,nz,nphi,lambda);
+inline void Beam::initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool lngr, bool redLR){
+  solver.initEField(rmax,ngrid,nz,nphi,lambda,lngr,redLR);
   return;
 }
 

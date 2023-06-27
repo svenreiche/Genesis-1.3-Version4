@@ -1,20 +1,36 @@
 &setup
-rootname=Benchmark
+rootname=Aramis
 lattice=Aramis.lat
 beamline=ARAMIS
 lambda0=1e-10
 gamma0=11357.82
 delz=0.045000
 shotnoise=0
+nbins = 8
+beam_global_stat = true
+field_global_stat = true
 &end
 
 &lattice
 zmatch=9.5
 &end
 
+#&time
+#time=false
+#slen=10e-10;
+#sample=2;
+#&end
 
 &field
 power=5e3
+dgrid=2.000000e-04
+ngrid=255
+waist_size=30e-6
+&end
+
+&field
+harm = 3
+power = 0
 dgrid=2.000000e-04
 ngrid=255
 waist_size=30e-6
@@ -28,5 +44,6 @@ ey=4.000000e-07
 &end
 
 &track
+bunchharm=3
 &end
 

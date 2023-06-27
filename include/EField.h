@@ -9,7 +9,7 @@
 
 #include "StringProcessing.h"
 #include "Setup.h"
-#include "Time.h"
+#include "GenTime.h"
 #include "Particle.h"
 
 class Beam;
@@ -17,7 +17,7 @@ class Beam;
 using namespace std;
 
 
-class EField{
+class EField: public StringProcessing{
  public:
    EField();
    virtual ~EField();
@@ -28,7 +28,7 @@ class EField{
    void usage();
    double rmax,dr,lambda;
    int nz,nphi,ngrid;
-
+   bool longrange,redLorentz;
 
 
 };

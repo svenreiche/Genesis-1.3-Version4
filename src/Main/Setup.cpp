@@ -4,6 +4,7 @@
 Setup::Setup()
 {
   rootname="";
+  outputdir="";
   lattice="";
   beamline="";
   partfile="";
@@ -35,6 +36,9 @@ Setup::Setup()
 
   // count of runs in conjunction of calls of altersetup
   runcount = 0;
+
+  sema_file_enabled_start=false;
+  sema_file_enabled_done=false;
 }
 
 Setup::~Setup(){}
@@ -44,6 +48,7 @@ void Setup::usage(){
   cout << "List of keywords for SETUP" << endl;
   cout << "&setup" << endl;
   cout << " string rootname = <taken from command line>" << endl;
+  cout << " string outputdir = <empty>" << endl;
   cout << " string lattice  = <taken from command line>" << endl;
   cout << " string beamline = <empty>" << endl;
   cout << " double gamma0 = 5800/0.511" << endl;
@@ -63,21 +68,21 @@ void Setup::usage(){
   cout << " bool exclude_aux_output = false" << endl;
   cout << " bool exclude_current_output = true" << endl;
   cout << " bool exclude_field_dump = false" << endl;
+  cout << " bool write_semaphore_file = false" << endl;
+  cout << " bool write_semaphore_file_done = false" << endl;
+  cout << " bool write_semaphore_file_started = false" << endl;
+  cout << " string semaphore_file_name = <derived from 'rootname'>" << endl;
   cout << "&end" << endl << endl;
   return;
 }
 
-bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstring, string outstring, int in_seed)
-{
+bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagnostics &filter){
 
   rank=inrank;
-  // initialize the values for lattice and output file from the command line arguments
-  lattice=latstring;
-  rootname=outstring;
-  seed=in_seed;
   map<string,string>::iterator end=arg->end();
 
   if (arg->find("rootname")!=end){rootname = arg->at("rootname"); arg->erase(arg->find("rootname"));}
+  if (arg->find("outputdir")!=end){outputdir = arg->at("outputdir"); arg->erase(arg->find("outputdir"));}
   if (arg->find("lattice")!=end) {lattice  = arg->at("lattice");  arg->erase(arg->find("lattice"));}
   if (arg->find("beamline")!=end){beamline = arg->at("beamline"); arg->erase(arg->find("beamline"));}
   if (arg->find("lattice")!=end) {lattice  = arg->at("lattice");  arg->erase(arg->find("lattice"));}
@@ -91,6 +96,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
   if (arg->find("shotnoise")!=end){shotnoise  = atob(arg->at("shotnoise"));  arg->erase(arg->find("shotnoise"));}
   if (arg->find("beam_global_stat")!=end)  {beam_global_stat  = atob(arg->at("beam_global_stat"));   arg->erase(arg->find("beam_global_stat"));}
   if (arg->find("field_global_stat")!=end) {field_global_stat = atob(arg->at("field_global_stat"));  arg->erase(arg->find("field_global_stat"));}
+
   if (arg->find("exclude_spatial_output")!=end)   {exclude_spatial_output  = atob(arg->at("exclude_spatial_output"));   arg->erase(arg->find("exclude_spatial_output"));}
   if (arg->find("exclude_fft_output")!=end)       {exclude_fft_output      = atob(arg->at("exclude_fft_output"));       arg->erase(arg->find("exclude_fft_output"));}
   if (arg->find("exclude_intensity_output")!=end) {exclude_intensity_output= atob(arg->at("exclude_intensity_output")); arg->erase(arg->find("exclude_intensity_output"));}
@@ -98,6 +104,18 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
   if (arg->find("exclude_aux_output")!=end)       {exclude_aux_output      = atob(arg->at("exclude_aux_output"));       arg->erase(arg->find("exclude_aux_output"));}
   if (arg->find("exclude_current_output")!=end)   {exclude_current_output  = atob(arg->at("exclude_current_output"));   arg->erase(arg->find("exclude_current_output"));}
   if (arg->find("exclude_field_dump")!=end)   {exclude_field_dump  = atob(arg->at("exclude_field_dump"));   arg->erase(arg->find("exclude_field_dump"));}
+
+  if (arg->find("write_semaphore_file")!=end)   {sema_file_enabled_done  = atob(arg->at("write_semaphore_file"));   arg->erase(arg->find("write_semaphore_file"));}
+  /* alias for write_semaphore_file */
+  if (arg->find("write_semaphore_file_done")!=end)   {sema_file_enabled_done  = atob(arg->at("write_semaphore_file_done"));   arg->erase(arg->find("write_semaphore_file_done"));}
+  if (arg->find("write_semaphore_file_started")!=end)   {sema_file_enabled_start  = atob(arg->at("write_semaphore_file_started"));   arg->erase(arg->find("write_semaphore_file_started"));}
+  if (arg->find("semaphore_file_name")!=end) {
+    // Providing a file name for the semaphore file always switches on writing the "done" semaphore file, overriding 'write_semaphore_file' flag.
+    // This allows to switch on semaphore functionality just by specifying corresponding command line argument -- no modification of G4 input file needed.
+    sema_file_enabled_done = true;
+    setSemaFN(arg->at("semaphore_file_name")); arg->erase(arg->find("semaphore_file_name"));
+  }
+  /* Note: if requested, semaphore file of type "started" is generated in GenMain after successfully returning from Setup::init */
 
   // same code also in AlterSetup.cpp
   if (arg->find("beam_write_slices_from")!=end) {
@@ -125,6 +143,16 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat,string latstr
     return false;
   }
 
+  // sort the filter flags
+  filter.beam.global = beam_global_stat;
+  filter.beam.spatial = !exclude_spatial_output;
+  filter.beam.energy = !exclude_energy_output;
+  filter.beam.current = !exclude_energy_output;
+  filter.beam.auxiliar = !exclude_aux_output;
+  filter.field.global = field_global_stat;
+  filter.field.spatial = !exclude_spatial_output;
+  filter.field.fft = !exclude_fft_output;
+  filter.field.intensity = !exclude_intensity_output;
 
   if (one4one)
   {
@@ -149,6 +177,21 @@ bool Setup::getRootName(string *filename)
   }
   return true; 
 }
+bool Setup::RootName_to_FileName(string *fn_out, string *rootname)
+{
+  // If 'outputdir' parameter not specified
+  // ==> do not change string
+  if (outputdir.size()<1) {
+    *fn_out = *rootname;
+    return true;
+  }
+
+  string t;
+  t = outputdir + "/" + *rootname;
+  *fn_out = t;
+
+  return true;
+}
 
 void Setup::BWF_load_defaults()
 {
@@ -156,4 +199,28 @@ void Setup::BWF_load_defaults()
   beam_write_slices_from=-1;
   beam_write_slices_to=-1;
   beam_write_slices_inc=1;
+}
+
+
+
+
+/* returns true if filename for semaphore file was generated */
+bool Setup::getSemaFN(string *fnout) {
+	// user-defined filename overrides the logic to derive from rootname (also a user-provided 'outputdir' parameter does not have an effect here)
+	if(! sema_file_name.empty()) {
+		*fnout = sema_file_name;
+		return(true);
+	}
+
+	if(rootname.empty()) {
+		return(false);
+	}
+	string t;
+	t = rootname;
+	t += ".sema";
+	RootName_to_FileName(fnout, &t);
+	return(true);
+}
+void Setup::setSemaFN(string fn_in) {
+	sema_file_name = fn_in;
 }

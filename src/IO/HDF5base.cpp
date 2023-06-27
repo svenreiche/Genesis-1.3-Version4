@@ -1,9 +1,50 @@
 #include "HDF5base.h"
 
+#include <mpi.h>
+
 extern bool MPISingle;
 
 HDF5Base::HDF5Base(){}
 HDF5Base::~HDF5Base(){}
+
+// from 'Output::open' (dev branch as of Dec-2022)
+bool HDF5Base::create_outfile(hid_t *fidout, string file)
+{
+  int rank;
+
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+#if 0
+  if(0==rank) {
+    cout << "HDF5Base::create_outfile for " << file << endl;
+  }
+#endif
+
+  // Here one could add code for diagnostic messages etc., such as a warning when already existing file is going to be overwritten.
+
+  // create the file for parallel access
+  hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
+
+  if (!MPISingle){
+    H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
+  }
+  hid_t fid=H5Fcreate(file.c_str(),H5F_ACC_TRUNC, H5P_DEFAULT,pid);
+  H5Pclose(pid);
+
+  // update file handle (caller sees invalid file handle)
+  *fidout = fid;
+
+#if 1
+  // report errors
+  if(fid==H5I_INVALID_HID) {
+    if(0==rank) {
+      cerr << "HDF5Base::create_outfile, error creating output file " << file << endl;
+    }
+    return(false);
+  }
+#endif
+
+  return(true);
+}
 
 
 //----------------------------

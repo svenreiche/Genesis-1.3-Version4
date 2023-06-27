@@ -3,36 +3,38 @@
 extern bool MPISingle;
 
 
-int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan)
+
+int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan, FilterDiagnostics &filter)
 {
 
 
-        //-------------------------------------------------------
-        // init MPI and get size etc.
-        //
-        int size=1;
-        int rank=0;
-
+    //-------------------------------------------------------
+    // init MPI and get size etc.
+    //
+    int size=1;
+    int rank=0;
 	if (!MPISingle){
-	  MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
-	  MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
-        }
+	    MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
+	    MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
+    }
 
 	if (rank==0) {
-          cout << endl << "Running Core Simulation..." << endl;
-        }
+        cout << endl << "Running Core Simulation..." << endl;
+    }
 
-        //-----------------------------------------
+    //-----------------------------------------
 	// init beam, field and undulator class
 
-        Control   *control=new Control;
+    Control   *control=new Control;
+    control->init(rank,size,file,beam,field,und,isTime,isScan);
 
-	control->init(rank,size,file,beam,field,und,isTime,isScan); 
+    Diagnostic diag;
+    diag.init(rank, size, und->outlength(), beam->beam.size(),field->size(),isTime,isScan,filter);
+    diag.calc(beam, field, und->getz());  // initial calculation
 
+    //------------------------------------------
+    // main loop
 
-        //------------------------------------------
-        // main loop
-	       	
 	while(und->advance(rank)){
 	  double delz=und->steplength();
 
@@ -56,7 +58,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 
 	    if (shift!=0){
 	      for (int i=0;i<field->size();i++){
-		control->applySlippage(shift, field->at(i));  
+		      control->applySlippage(shift, field->at(i));
 	      }
 	    }
 	  }
@@ -66,7 +68,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 
 	  for (int i=0; i<field->size();i++){
 	    field->at(i)->track(delz,beam,und);
-          }
+      }
 
 
 	  //-----------------------------------------
@@ -79,13 +81,15 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 	  //-------------------------------
 	  // step 6 - Calculate beam parameter stored into a buffer for output
 
-	  beam->diagnostics(und->outstep(),und->getz());
-	  for (int i=0;i<field->size();i++){
-	    field->at(i)->diagnostics(und->outstep());
-	  }
+	  //beam->diagnostics(und->outstep(),und->getz());
+	  //for (int i=0;i<field->size();i++){
+	  //  field->at(i)->diagnostics(und->outstep());
+	  //}
 
-          
-        }
+      if (und->outstep()) {
+          diag.calc(beam, field, und->getz());
+      }
+    }
      
         //---------------------------
         // end and clean-up 
@@ -98,7 +102,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 
 	    if (shift!=0){
 	      for (int i=0;i<field->size();i++){
-		control->applySlippage(shift, field->at(i));  
+		    control->applySlippage(shift, field->at(i));
 	      }
 	    }
 	}
@@ -109,16 +113,17 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
 	if (rank==0){
 	  cout << "Writing output file..." << endl;
 	}
-	
-        control->output(beam,field,und);
+
+	diag.writeToOutputFile(file, beam,field,und);
+    // control->output(beam,field,und,diag);
 
 	delete control;
       
-        if (rank==0){
+    if (rank==0){
 	  cout << endl << "Core Simulation done." << endl;
-        }
+    }
 
 
-        return 0;
+    return 0;
 
 }

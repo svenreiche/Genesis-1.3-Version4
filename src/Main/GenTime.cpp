@@ -1,4 +1,4 @@
-#include "Time.h"
+#include "GenTime.h"
 
 Time::Time()
 {
@@ -47,7 +47,6 @@ bool Time::init(int inrank, int insize, map<string,string> *arg, Setup *setup)
     if (rank==0){ cout << "*** Error: Unknown elements in &time" << endl; this->usage();}
     return false;
   }
-
   initialized=true;  
   this->finishInit(setup);
   return true;

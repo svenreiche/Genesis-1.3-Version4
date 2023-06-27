@@ -3,13 +3,12 @@
 
 
 #include <string>
-
+#include <map>
 
 #include <mpi.h>
 
 using namespace std;
 
+int genmain(string, map<string,string> &,bool);
 
-
-double genmain(string, string, string, int,bool);
 #endif

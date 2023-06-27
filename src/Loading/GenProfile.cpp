@@ -1,4 +1,4 @@
-#include "Profile.h"
+#include "GenProfile.h"
 
 
 Profile::Profile()
@@ -374,7 +374,7 @@ string ProfileFile::init(int rank, map<string,string>*arg)
 
   if (isTime){ 
     for (int i=0; i<xdat.size();i++){
-      xdat[i]*=3e8;         // scale time variable to space varial by multiplying the speed of light
+      xdat[i]*=299792458.0;         // scale time variable to space varial by multiplying the speed of light
     }  
   }
   
@@ -533,7 +533,7 @@ bool ProfileFileMulti::setup(int rank, map<string,string> *arg, map<string, Prof
 
 	if(isTime) {
 		for(unsigned j=0; j<xdata.size(); j++)
-			xdata[j]*=3e8; // using same speed_of_light value as in ProfileFile, to avoid that different results are obtained with &profile_file and &profile_file_multi
+			xdata[j]*=299792458.0; // using same speed_of_light value as in ProfileFile, to avoid that different results are obtained with &profile_file and &profile_file_multi
 	}
 	if(revert) {
 		if(rank==0)

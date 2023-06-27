@@ -221,6 +221,7 @@ ID *LatticeParser::parseID(int idx,int rank, double zin)
     fld=par[i].substr(0,pos);
     val=par[i].erase(0,pos+1);
     this->trim(fld);
+    this->trim(val);
     bool found=false;
     if (fld.compare("l")==0)    { ele->l=atof(val.c_str());  found=true; };
     if (fld.compare("lambdau")==0){ ele->lambdau=atof(val.c_str()); found=true; };

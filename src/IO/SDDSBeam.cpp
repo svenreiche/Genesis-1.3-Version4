@@ -175,7 +175,7 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   } else {
     error=true;
   }
-  dname="p";
+  dname="p"; // Note that this is gamma*beta
   hasrecord=H5Lexists(fid,dname.c_str(),H5P_DEFAULT);
   if (hasrecord>0){    
      readDouble1D(fid,dname.c_str(),&g[0],nsize,rank*nchunk);
@@ -225,8 +225,8 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
 
 
   for (int i=0; i<nsize; i++){
-    t[i]*=-3e8;       // convert to positin in meters
-    g[i]+=1.;         // convert from kinetic energy to total energy
+    t[i]*=-299792458.0;       // convert to positin in meters
+    g[i] = sqrt(g[i]*g[i] + 1);         // convert momentum to energy
   }
 
 
@@ -397,7 +397,7 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
     // step 2 - calculate the current and number of particles.
     int ncount = beam->beam.at(islice).size();
     int mpart;
-    beam->current[islice]=static_cast<double>(ncount)*dQ*3e8/dslen;
+    beam->current[islice]=static_cast<double>(ncount)*dQ*299792458.0/dslen;
     if (one4one){
       npart=static_cast<int>(round(beam->current[islice]*lambda*sample/ce));
       mpart=npart;

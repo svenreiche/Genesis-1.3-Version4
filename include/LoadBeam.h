@@ -12,8 +12,8 @@
 
 #include "StringProcessing.h"
 #include "Setup.h"
-#include "Time.h"
-#include "Profile.h"
+#include "GenTime.h"
+#include "GenProfile.h"
 #include "Lattice.h"
 #include "QuietLoading.h"
 #include "ShotNoise.h"
