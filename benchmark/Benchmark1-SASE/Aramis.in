@@ -1,44 +1,18 @@
 &setup
-rootname=Benchmark
+rootname=Aramis
 lattice=Aramis.lat
 beamline=ARAMIS
 lambda0=1e-10
 gamma0=11357.82
 delz=0.045000
 shotnoise=0
+nbins = 8
 beam_global_stat = true
 field_global_stat = true
 &end
 
 &lattice
 zmatch=9.5
-&end
-
-&sequence_list
-label=testlist
-val = 1, 0.2, 4 , 6 ,7.5
-default = 3.5
-&end
-
-&sequence_const
-label=test
-c0 = 1.23
-&end
-
-&sequence_power
-label=test1
-c0 = 2
-dc = 2
-n0 = 3
-alpha = 2
-&end
-
-&sequence_random
-label=test2
-c0 = 1
-dc = 0.1
-seed = 100
-normal = true
 &end
 
 #&time
@@ -54,14 +28,13 @@ ngrid=255
 waist_size=30e-6
 &end
 
-#&field
-#harm = 3
-#power=0
-#dgrid=2.000000e-04
-#ngrid=255
-#waist_size=30e-6
-#&end
-
+&field
+harm = 3
+power = 0
+dgrid=2.000000e-04
+ngrid=255
+waist_size=30e-6
+&end
 
 &beam
 current=3000
@@ -71,9 +44,6 @@ ey=4.000000e-07
 &end
 
 &track
-zstop=2
-#bunchharm=2
-#beam_dump_step=10
-#field_dump_step=10
+bunchharm=3
 &end
 
