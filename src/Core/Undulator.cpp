@@ -241,8 +241,13 @@ bool Undulator::advance(int rank)
   int dstepz=static_cast<int> (round(nstepz/10.*zfrac));
   if (dstepz<1){dstepz=1;}
 
-  if (((istepz % dstepz) == 0) && (istepz >0) && (rank==0)){
-    cout << "  Calculation: " <<10*istepz/dstepz << "% done" << endl;
+  // Lechner, 2023-07-27: Changed the condition to display also progress of 0%
+  // (to inform user that simulation is now running)
+  // Remark: First execution of this code block with istepz==0
+  if (((istepz % dstepz) == 0) /* && (istepz >0) */ ) {
+    if (rank==0) {
+      cout << "  Calculation: " <<10*istepz/dstepz << "% done" << endl;
+    }
   }
   return true;
 }
