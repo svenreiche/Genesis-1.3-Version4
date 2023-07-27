@@ -52,7 +52,7 @@ void GaussHermite::loadGauss(complex<double> *field, FieldSlice *slice, double d
      double y=iy*dxy-ymid;
      double Hy=this->Hn(f0*y,slice->ny);
      double y2=y*y;
-     double phiy=kx*y;
+     double phiy=ky*y;
      for(int ix=0;ix<ngrid;ix++){ // x is inner loop
 	  double x=ix*dxy-xmid;
 	  double Hx=this->Hn(f0*x,slice->nx);
