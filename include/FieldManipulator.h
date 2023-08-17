@@ -28,6 +28,14 @@ public:
 
 private:
 	void usage(void);
+
+	// functions performing field manipulations
+	bool scale(Field *, Time *, int, double);
+	bool apply_SPP(Field *, Time *, int, double, int, double);
+
+	// MPI related members
+	int rank_ {0};
+	int size_ {1};
 };
 
 #endif // __GENESIS_FIELDMANIPULATOR_H
