@@ -5,6 +5,8 @@
 #include <mpi.h>
 #include "FieldManipulator.h"
 
+#define DBG_SPP
+
 FieldManipulator::FieldManipulator() {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
 	MPI_Comm_size(MPI_COMM_WORLD, &size_);
@@ -170,6 +172,13 @@ bool FieldManipulator::apply_SPP(Field *p_fld, Time *time, int harm,
 				if ((dix!=0) || (diy!=0))
 					phi += atan2(diy,dix); // if both arguments to atan2 are zero this would give a 'domain error'
 				phi = spp_l*phi + spp_phi0;
+
+#ifdef DBG_SPP
+				// test case to check indexing and phase conventions
+				phi = 0;
+				if((dix<=0) && (diy<=0))
+					phi = 2.*atan(1.);
+#endif
 				
 				// apply phase factor to complex field in current grid cell
 				complex<double> phase_factor = polar(1., phi);
