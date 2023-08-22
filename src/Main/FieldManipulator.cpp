@@ -5,7 +5,7 @@
 #include <mpi.h>
 #include "FieldManipulator.h"
 
-#define DBG_SPP
+// #define DBG_SPP
 
 FieldManipulator::FieldManipulator() {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
@@ -109,8 +109,15 @@ bool FieldManipulator::init(int rank, int size, map<string,string> *arg, vector<
 	/*** process field ***/
 	if(do_scale)
 		scale(p_fld, time, harm, scale_P);
-	if(do_spp)
-		apply_SPP(p_fld, time, harm, spp_l, spp_nsect, spp_phi0);
+	if(do_spp) {
+		FieldManipulator_SPP_Params p;
+
+		p.harm = harm;
+		p.spp_l = spp_l;
+		p.spp_nsect = spp_nsect;
+		p.spp_phi0 = spp_phi0;
+		apply_SPP(p_fld, time, p); // harm, spp_l, spp_nsect, spp_phi0);
+	}
 
 	return(true);
 }
@@ -135,14 +142,13 @@ bool FieldManipulator::scale(Field *p_fld, Time *time, int harm, double scale_P)
 }
 
 
-bool FieldManipulator::apply_SPP(Field *p_fld, Time *time, int harm,
-	double spp_l, int spp_nsect, double spp_phi0)
+bool FieldManipulator::apply_SPP(Field *p_fld, Time *time, FieldManipulator_SPP_Params &p)
 {
 	bool dbg_dump_phi=true;
 
 	if(rank_==0) {
-		cout << "Applying SPP to field harmonic=" << harm
-		     << ", parameters: spp_l=" << spp_l << ", spp_nsect=" << spp_nsect << ", spp_phi0=" << spp_phi0 << endl;
+		cout << "Applying SPP to field harmonic=" << p.harm
+		     << ", parameters: spp_l=" << p.spp_l << ", spp_nsect=" << p.spp_nsect << ", spp_phi0=" << p.spp_phi0 << endl;
 	}
 
 	const int ngrid = p_fld->ngrid;
@@ -151,7 +157,8 @@ bool FieldManipulator::apply_SPP(Field *p_fld, Time *time, int harm,
 	assert((ngrid%2)==1); // In GENESIS, ngrid is always odd. Just to be sure.
 
 	int iy, ix;
-	for(int idslice=0; idslice < time->getNodeNSlice(); idslice++) {
+	for(int idslice=0; idslice < time->getNodeNSlice(); idslice++)
+	{
 		bool do_dump = dbg_dump_phi && (rank_==0) && (idslice==0);
 
 		ofstream ofs;
@@ -168,17 +175,7 @@ bool FieldManipulator::apply_SPP(Field *p_fld, Time *time, int harm,
 				int diy = iy-icenter;
 				
 				// determine SPP phase for current grid cell
-				double phi=0.;
-				if ((dix!=0) || (diy!=0))
-					phi += atan2(diy,dix); // if both arguments to atan2 are zero this would give a 'domain error'
-				phi = spp_l*phi + spp_phi0;
-
-#ifdef DBG_SPP
-				// test case to check indexing and phase conventions
-				phi = 0;
-				if((dix<=0) && (diy<=0))
-					phi = 2.*atan(1.);
-#endif
+				double phi = apply_SPP_getphase(dix, diy, p);
 				
 				// apply phase factor to complex field in current grid cell
 				complex<double> phase_factor = polar(1., phi);
@@ -195,4 +192,64 @@ bool FieldManipulator::apply_SPP(Field *p_fld, Time *time, int harm,
 	}
 
 	return(true);
+}
+
+double FieldManipulator::apply_SPP_getphase(int dix, int diy, FieldManipulator_SPP_Params &p)
+{
+	const double twopi = 8.*atan(1.0);
+	double phi=0.;
+
+#ifdef DBG_SPP
+	// test case to check indexing and phase conventions
+	phi = 0;
+	if((dix<=0) && (diy<=0))
+		phi = 2.*atan(1.);
+	return(phi);
+#endif
+
+	if (0==p.spp_l)
+		return(p.spp_phi0);
+
+
+
+	if ((dix!=0) || (diy!=0))
+		phi = atan2(diy,dix); // if both arguments to atan2 are zero this would give a 'domain error'
+
+	// sectorize SPP, if requested
+	if(p.spp_nsect>0) {
+		/*
+		 * Range of 'atan2' return values to expect:
+		 * For diy=0 and dix<0, we expect atan2(diy,dix)=+pi.
+		 * For diy=-1 and dix<0, we expect atan2(diy,dix)>-pi.
+		 */
+		const double phi_in = phi;
+		double tmp_phi = (0.5+phi/twopi);
+		tmp_phi *= p.spp_nsect;
+		// tmp_phi -= 1e-6; // subtract small number, shifting the boundary between neighboring sectors. This makes symmetric cases (such as nsect=4) look more "natural"
+
+		tmp_phi += p.spp_phi0*p.spp_nsect/twopi; // FIXME: divide phase change by spp_l here?
+
+		/* (i) round */
+		tmp_phi = floor(tmp_phi);
+
+		/* (ii) enforce value range (phase offsets; in addition, there could be rounding issues with 'floor' at the edges of the range) */
+		while(tmp_phi<0) {
+			tmp_phi += p.spp_nsect; // periodic
+		}
+		while(tmp_phi>p.spp_nsect) {
+			tmp_phi -= p.spp_nsect; // periodic
+		}
+
+		// transform back to original range -pi..+pi
+		tmp_phi /= p.spp_nsect;
+		phi = twopi * (tmp_phi-0.5);
+
+		phi *= p.spp_l;
+		return(phi);
+	}
+
+
+	// continuous SPP
+	phi = p.spp_l*phi + p.spp_phi0;
+	return(phi);
 }

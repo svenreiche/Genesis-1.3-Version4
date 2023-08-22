@@ -19,6 +19,14 @@
 
 using namespace std;
 
+class FieldManipulator_SPP_Params {
+public:
+	int harm	{1};
+	double spp_l	{0};
+	int spp_nsect	{0};
+	double spp_phi0	{0};
+};
+
 class FieldManipulator: public StringProcessing {
 public:
 	FieldManipulator();
@@ -31,7 +39,8 @@ private:
 
 	// functions performing field manipulations
 	bool scale(Field *, Time *, int, double);
-	bool apply_SPP(Field *, Time *, int, double, int, double);
+	bool apply_SPP(Field *, Time *, FieldManipulator_SPP_Params &);
+	double apply_SPP_getphase(int, int, FieldManipulator_SPP_Params &);
 
 	// MPI related members
 	int rank_ {0};
