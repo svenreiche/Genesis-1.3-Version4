@@ -428,6 +428,19 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
           delete field[i];
 
 
+	/*
+	 * Synchronization, without in some cases the semaphore file
+	 * can be written while some MPI processes are still processing
+	 * the final command block.
+	 */
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	/* take time stamp (I/O for generating semaphore file could skew result if file system is busy) */ 
+	//	event.push_back("end");
+	//	evtime.push_back(double(clocknow-clockstart));
+	clocknow=clock();
+
+
         /* NOW, generate the semaphore file */
         if (semafile_en) {
           if(successful_run) {
@@ -448,12 +461,7 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
         }
 
 
-	//	event.push_back("end");
-	//	evtime.push_back(double(clocknow-clockstart));
-	clocknow=clock();
-
  	if (rank==0) {
-
 	  double elapsed_Sec=double(clocknow-clockstart)/CLOCKS_PER_SEC;
 
       time(&timer);
