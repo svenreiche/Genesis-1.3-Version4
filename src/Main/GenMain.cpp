@@ -263,11 +263,21 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
           //----------------------------------------------------
           // field manipulation
 
-	      if (element.compare("&field_manipulator")==0){
-	        FieldManipulator *q = new FieldManipulator;
-            if (!q->init(rank,size,&argument,&field,setup,timewindow,profile)){ break;}
-	        delete q;
-            continue;  
+          bool do_alter_field=false;
+	  if (element.compare("&field_manipulator")==0) {
+	    do_alter_field=true;
+            if(0==rank) {
+              cout << "Warning: &field_manipulator is deprecated and will be removed in the future. Use &alter_field instead." << endl;
+	    }
+	  }
+	  if (element.compare("&alter_field")==0) {
+	    do_alter_field=true;
+	  }
+	  if(do_alter_field) {
+	    FieldManipulator *q = new FieldManipulator;
+	    if (!q->init(rank,size,&argument,&field,setup,timewindow,profile)){ break;}
+	    delete q;
+	    continue;  
           }  
 	 
           //----------------------------------------------------

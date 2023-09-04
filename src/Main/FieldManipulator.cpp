@@ -15,8 +15,8 @@ FieldManipulator::~FieldManipulator() { }
 
 
 void FieldManipulator::usage(){
-  cout << "List of keywords for FIELD_MANIPULATOR" << endl;
-  cout << "&field_manipulator" << endl;
+  cout << "List of keywords for ALTER_FIELD" << endl;
+  cout << "&alter_field" << endl;
   cout << " int harm = 1" << endl;
   cout << " double scale_power = 1.0" << endl;
   cout << " double spp_l = 0.0" << endl;
