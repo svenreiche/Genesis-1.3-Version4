@@ -3,7 +3,7 @@
 A scientific code to simulate the interaction of electrons within the magnetic field of an undulator to produce coherent radiation, based on the Free-electron Laser process.
 
 **News:**
-Version 4.5.1 has been released (11.1.2022)
+Version 4.6.2 has been released (27.6.2023)
 
 **Current Development:**
 
@@ -18,5 +18,9 @@ Version 4.5.1 has been released (11.1.2022)
 [Main Input File](manual/MAIN_INPUT.md)
 
 [Lattice File](manual/LATTICE.md)
+
+**Examples:**
+
+[Example 1 - Steady State](examples/Example1-SteadyState/Example1.md)
 
 
