@@ -80,7 +80,7 @@ which is given by the lontidutinal position mulitplied with the wavenumber of th
 With the dump of the electron phase space after every second integration step, the python script generates two animation. One for the longitudinal phase space, similar to the plot above. 
 the other is the distribution in the horizontal plane. The file are in mp4 format and it might be that they need to be downloaded first to display them.
 
-![Ani1](Plots/Animation1.mp4)
+![Ani1](Plots/Animation1.webm)
 
 Here the formation of the micro bunching can be seen with its initial modulation in energy to roughly a quarter rotation in phase space. A significant part of electrons are not modulated.
 These corresponds for electrons with large betatron amplitude, which cannot stay in resonance with the radiation field.
