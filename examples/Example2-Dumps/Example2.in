@@ -1,0 +1,36 @@
+&setup
+rootname=Example2
+lattice=Example2.lat
+beamline=FEL
+lambda0=1e-10
+gamma0=11357.82
+delz=0.045000
+shotnoise=0
+nbins = 8
+&end
+
+&lattice
+zmatch=9.5
+&end
+
+&field
+power=5e3
+dgrid=2.000000e-04
+ngrid=255
+waist_size=30e-6
+&end
+
+&beam
+current=3000
+delgam=0.100000
+ex=4.000000e-07
+ey=4.000000e-07
+&end
+
+&track
+beam_dump_step = 2
+&end
+
+&write
+field = dump
+&end

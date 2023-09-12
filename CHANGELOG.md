@@ -1,8 +1,8 @@
 # Change Log
 
-## Released:
-### [4.5.1] - 2022/01/11 
-Version 4.5.1 has been released. Part of it is this Change Log file, which will be updated in the future releases.
+### [4.6.3] - 2023/11/12
+- added output for the minimum and maximum value of the electron beam for each slice and step. This includes the parameters x,y, px, py and energy. The output is suprressed if the parameter exclude_aux_output is set to true
+- Examples have been added for a step-by-step guide on setting up input decks.
 
 ### [4.6.2] - 2023/02/28
 - improved class `Beam` to reduce memory consumption in simulations with harmonic upconversion
@@ -36,4 +36,4 @@ So I leave in the option to use this correction or not.
 - 20220218: Exit code of GENESIS binary now depends on status (0 for success, 1 in case of error)
 - 20220329: Added additional "start" semaphore file that is written after &setup block was processed
 
-## Unreleased:
+

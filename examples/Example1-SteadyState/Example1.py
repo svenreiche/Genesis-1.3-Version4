@@ -58,3 +58,5 @@ ax2.tick_params(axis='y', labelcolor=color)
 ax2.semilogy(z,b,color = color)
 ax2.set_ylim([1e-3,0.5])
 plt.show()
+
+hid.close()
