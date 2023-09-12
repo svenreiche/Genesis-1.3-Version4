@@ -80,12 +80,12 @@ which is given by the lontidutinal position mulitplied with the wavenumber of th
 With the dump of the electron phase space after every second integration step, the python script generates two animation. One for the longitudinal phase space, similar to the plot above. 
 the other is the distribution in the horizontal plane. The file are in mp4 format and it might be that they need to be downloaded first to display them.
 
-![Ani1](Plots/Animation1.png)
+![Ani1](Plots/Animation1.mp4)
 
 Here the formation of the micro bunching can be seen with its initial modulation in energy to roughly a quarter rotation in phase space. A significant part of electrons are not modulated.
 These corresponds for electrons with large betatron amplitude, which cannot stay in resonance with the radiation field.
 
-![Ani2](Plots/Animation2.png)
+![Ani2](Plots/Animation2.mp4)
 
 The breathing in the transverse size comes from the focusing of the FODO lattice. Note that electrons with large amplitude have the tendency to fall backwards quickly. They cannot stay in resonance and thus do not get modulated in energy.
 
