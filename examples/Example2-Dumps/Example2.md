@@ -85,7 +85,7 @@ the other is the distribution in the horizontal plane. The file are in mp4 forma
 Here the formation of the micro bunching can be seen with its initial modulation in energy to roughly a quarter rotation in phase space. A significant part of electrons are not modulated.
 These corresponds for electrons with large betatron amplitude, which cannot stay in resonance with the radiation field.
 
-![Ani2](Plots/Animation2.mp4)
+![Ani2](Plots/Animation2.webm)
 
 The breathing in the transverse size comes from the focusing of the FODO lattice. Note that electrons with large amplitude have the tendency to fall backwards quickly. They cannot stay in resonance and thus do not get modulated in energy.
 

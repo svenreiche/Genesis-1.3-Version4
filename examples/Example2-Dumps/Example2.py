@@ -93,7 +93,7 @@ anim.save('Animation1.mp4')
 fig = plt.figure()
 ax = plt.axes(xlim=(0,2*np.pi),ylim=(xmin,xmax))
 ax.set_xlabel(r'$\theta$ (rad)')
-ax.set_ylabel(r'$E$ (GeV)')
+ax.set_ylabel(r'$x$ ($\mu$m)')
 scat = ax.scatter([],[],s=0.2)
 
 
