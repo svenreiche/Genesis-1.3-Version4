@@ -346,8 +346,8 @@ void Lattice::unrollLattice(double delz)
           lat_ku.push_back(ku);
           lat_kx.push_back(ku*ku*und->kx);
           lat_ky.push_back(ku*ku*und->ky);
-          lat_gradx.push_back(ku*und->gradx);
-          lat_grady.push_back(ku*und->grady);
+          lat_gradx.push_back(und->gradx);
+          lat_grady.push_back(und->grady);
           lat_ax.push_back(und->ax);
           lat_ay.push_back(und->ay);
           lat_helical.push_back(static_cast<int>(und->helical));
