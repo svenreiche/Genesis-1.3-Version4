@@ -227,8 +227,8 @@ std::map<std::string,OutputInfo> DiagBeam::getTags(FilterDiagnostics & filter_in
         tags["ymax"] = {false, false, "m"};
         tags["pymin"] = {false, false, "rad"};
         tags["pymax"] = {false, false, "rad"};
-        tags["emin"] = {true, false, "mc^2"};
-        tags["emax"] = {true, false, "mc^2"};
+        tags["emin"] = {false, false, "mc^2"};
+        tags["emax"] = {false, false, "mc^2"};
     }
     if (filter_in.beam.current) {
         tags["current"] = {false, false, "A"};
@@ -371,20 +371,20 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
             snprintf(buff, sizeof(buff), "bunchingphase%d", iharm + 1);
             if (val.find(buff) != val.end()) { val[buff][idx] = atan2(b[iharm].imag(), b[iharm].real()); }
         }
-        if (filter["aux"]){
-            if (val.find("efield") != val.end()) {val["efield"][idx]=beam->eloss[is]+beam->longESC[is];}
-            if (val.find("wakefield") != val.end()) {val["wakefield"][idx]=beam->eloss[is];}
-            if (val.find("LSCfield") != val.end()) {val["LSCfield"][idx]=beam->longESC[is];}
-            if (val.find("xmin") != val.end()) {val["xmin"][idx] = xmin;}
-            if (val.find("xmax") != val.end()) {val["xmax"][idx] = xmax;}
-            if (val.find("pxmin") != val.end()) {val["pxmin"][idx] = pxmin;}
-            if (val.find("pxmax") != val.end()) {val["pxmax"][idx] = pxmax;}
-            if (val.find("ymin") != val.end()) {val["ymin"][idx] = ymin;}
-            if (val.find("ymax") != val.end()) {val["ymax"][idx] = ymax;}
-            if (val.find("pymin") != val.end()) {val["pymin"][idx] = pymin;}
-            if (val.find("pymax") != val.end()) {val["pymax"][idx] = pymax;}
-            if (val.find("emin") != val.end()) {val["emin"][idx] = gmin;}
-            if (val.find("emax") != val.end()) {val["emax"][idx] = gmax;}
+        if (filter["aux"]) {
+            if (val.find("efield") != val.end()) { val["efield"][idx] = beam->eloss[is] + beam->longESC[is]; }
+            if (val.find("wakefield") != val.end()) { val["wakefield"][idx] = beam->eloss[is]; }
+            if (val.find("LSCfield") != val.end()) { val["LSCfield"][idx] = beam->longESC[is]; }
+            if (val.find("xmin") != val.end()) { val["xmin"][idx] = xmin; }
+            if (val.find("xmax") != val.end()) { val["xmax"][idx] = xmax; }
+            if (val.find("pxmin") != val.end()) { val["pxmin"][idx] = pxmin; }
+            if (val.find("pxmax") != val.end()) { val["pxmax"][idx] = pxmax; }
+            if (val.find("ymin") != val.end()) { val["ymin"][idx] = ymin; }
+            if (val.find("ymax") != val.end()) { val["ymax"][idx] = ymax; }
+            if (val.find("pymin") != val.end()) { val["pymin"][idx] = pymin; }
+            if (val.find("pymax") != val.end()) { val["pymax"][idx] = pymax; }
+            if (val.find("emin") != val.end()) { val["emin"][idx] = gmin; }
+            if (val.find("emax") != val.end()) { val["emax"][idx] = gmax; }
         }
         // here are all the values which are only evaluated once at the beginning of the run with iz = 0
         if (tags["current"].once){
