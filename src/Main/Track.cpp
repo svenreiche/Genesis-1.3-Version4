@@ -130,13 +130,16 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
     und->reportLattice(ss.str());
   }
 
+  // propagate information about diagnostic plugins
+  und->diagpluginfield_ = setup->diagpluginfield_;
+
   // call to gencore to do the actual tracking.  
   Gencore core;
   string rn, file;
   setup->getRootName(&rn);
   setup->RootName_to_FileName(&file, &rn);
   file.append(".out.h5");
-  core.run(file.c_str(),beam,field,und,isTime,isScan, filter);
+  core.run(file.c_str(),beam,field,setup,und,isTime,isScan, filter);
 
 
   delete und;

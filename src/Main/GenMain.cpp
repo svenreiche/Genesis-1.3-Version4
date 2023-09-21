@@ -45,6 +45,7 @@
 #include "Diagnostic.h"
 #include "SemaFile.h"
 #include "FieldManipulator.h"
+#include "RegPlugin.h"
 #include "SeriesManager.h"
 #include "SeriesParser.h"
 
@@ -327,6 +328,15 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
             SDDSBeam *sddsbeam=new SDDSBeam;
             if (!sddsbeam->init(rank,size,&argument,beam,setup,timewindow,lattice)){ break;}
 	        delete sddsbeam;
+            continue;  
+          }  
+
+          //----------------------------------------------------
+          // register plugins for diagnostics (currently only for field)
+          if (element.compare("&add_plugin_fielddiag")==0){
+            AddPluginFieldDiag *d = new AddPluginFieldDiag;
+	    if (!d->init(rank,size,&argument,setup)){ break;}
+            delete d;
             continue;  
           }  
 

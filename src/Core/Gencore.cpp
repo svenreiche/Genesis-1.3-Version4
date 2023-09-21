@@ -4,7 +4,7 @@ extern bool MPISingle;
 
 
 
-int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator *und,bool isTime, bool isScan, FilterDiagnostics &filter)
+int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *setup, Undulator *und,bool isTime, bool isScan, FilterDiagnostics &filter)
 {
 
 
@@ -29,6 +29,25 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Undulator 
     control->init(rank,size,file,beam,field,und,isTime,isScan);
 
     Diagnostic diag;
+    for(int kk=0; kk<und->diagpluginfield_.size(); kk++) {
+	if(rank==0) {
+            cout << "Setting up DiagFieldHook for libfile=\"" << und->diagpluginfield_.at(kk).libfile << "\", obj_prefix=\"" << und->diagpluginfield_.at(kk).obj_prefix << "\"" << endl;
+        }
+        DiagFieldHook *pdfh = new DiagFieldHook(); /* !do not delete this instance, it will be destroyed when DiagFieldHook instance is deleted! */
+        bool diaghook_ok = pdfh->init(&und->diagpluginfield_.at(kk));
+	pdfh->set_runid(setup->getCount()); // propagate run id so that it can be used in the plugins, for instance for filename generation
+        if(diaghook_ok) {
+            diag.add_field_diag(pdfh);
+            if(rank==0) {
+                cout << "DONE: Registered DiagFieldHook" << endl;
+            }
+        } else {
+            delete pdfh;
+            if(rank==0) {
+                cout << "failed to set up DiagFieldHook, not registering" << endl;
+            }
+        }
+    }
     diag.init(rank, size, und->outlength(), beam->beam.size(),field->size(),isTime,isScan,filter);
     diag.calc(beam, field, und->getz());  // initial calculation
 

@@ -19,6 +19,7 @@
 #include "Undulator.h"
 #include "Control.h"
 #include "Diagnostic.h"
+#include "Setup.h"
 
 //extern const double vacimp;
 //extern const double eev;
@@ -29,7 +30,7 @@ class Gencore{
  public:
   Gencore(){};
   virtual ~Gencore(){};
-  int run(const char *,Beam *, vector<Field *> *, Undulator *,bool,bool, FilterDiagnostics &filter);
+  int run(const char *,Beam *, vector<Field *> *, Setup *, Undulator *, bool, bool, FilterDiagnostics &filter);
 };
 
 

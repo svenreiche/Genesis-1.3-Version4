@@ -14,6 +14,7 @@
 #include "StringProcessing.h"
 #include "Lattice.h"
 #include "Diagnostic.h"
+#include "DiagnosticHookS.h"
 
 using namespace std;
 
@@ -67,6 +68,9 @@ class Setup: public StringProcessing{
    void   BWF_set_to(int);
    int    BWF_get_inc();
    void   BWF_set_inc(int);
+
+   // FIXME: make this 'private' and implement functions for access
+   std::vector<DiagFieldPluginCfg> diagpluginfield_;
 
  private:
    void usage();
