@@ -20,9 +20,7 @@ Version 4.6.2 has been released (27.6.2023)
 [Lattice File](manual/LATTICE.md)
 
 **Examples:**
-
-[Example 1 - Steady State](examples/Example1-SteadyState/Example1.md)
-
-[Example 2 - Field and Particle Dumps](examples/Example2-Dumps/Example2.md)
+* [Example 1 - Steady State](examples/Example1-SteadyState/)
+* [Example 2 - Field and Particle Dumps](examples/Example2-Dumps/)
 
 
