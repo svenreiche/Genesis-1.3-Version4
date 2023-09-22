@@ -22,7 +22,9 @@
 #include "Undulator.h"
 
 #include "DiagnosticBase.h"
-#include "DiagnosticHook.h"
+#ifdef USE_DPI
+  #include "DiagnosticHook.h"
+#endif
 
 //------------------------------------
 // genesis official class for beam diagnostics

@@ -29,6 +29,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *set
     control->init(rank,size,file,beam,field,und,isTime,isScan);
 
     Diagnostic diag;
+#ifdef USE_DPI
     for(int kk=0; kk<und->diagpluginfield_.size(); kk++) {
 	if(rank==0) {
             cout << "Setting up DiagFieldHook for libfile=\"" << und->diagpluginfield_.at(kk).libfile << "\", obj_prefix=\"" << und->diagpluginfield_.at(kk).obj_prefix << "\"" << endl;
@@ -48,6 +49,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *set
             }
         }
     }
+#endif
     diag.init(rank, size, und->outlength(), beam->beam.size(),field->size(),isTime,isScan,filter);
     diag.calc(beam, field, und->getz());  // initial calculation
 

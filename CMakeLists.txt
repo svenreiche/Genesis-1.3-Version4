@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 project(Genesis_1_3_Version4 CXX C)
 
+option(USE_DPI "Use diagnostic plugin interface" OFF)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -9,8 +11,8 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_CXX_FLAGS '-lstdc++')
 
 # developer options
-# set(CMAKE_VERBOSE_MAKEFILE ON)
-# add_compile_options(-Wall -Wextra)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
+#add_compile_options(-Wall -Wextra)
 
 # OpenMPI: preprocessor macro to disable C++ interface (then we don't have to link libmpi_cxx)
 add_compile_definitions(OMPI_SKIP_MPICXX)
@@ -67,6 +69,11 @@ if (TARGET PkgConfig::FFTW)
 else()
         message(STATUS "FFTW not found")
         message(STATUS "Excluding FFTW specific source code")
+endif()
+
+
+if(USE_DPI)
+   set(SRC_DPI src/Main/RegPlugin.cpp src/Core/DiagnosticHook.cpp)
 endif()
 
 
@@ -130,7 +137,6 @@ add_library(genesis13 STATIC
         src/Core/Undulator.cpp
         src/Core/Diagnostic.cpp
         src/Core/DiagnosticUser.cpp
-        src/Core/DiagnosticHook.cpp
         src/IO/HDF5base.cpp
         src/IO/Output.cpp
         src/IO/readBeamHDF5.cpp
@@ -153,13 +159,13 @@ add_library(genesis13 STATIC
         src/Main/GenMain.cpp
         src/Main/mainwrap.cpp
         src/Main/Parser.cpp
-        src/Main/RegPlugin.cpp
         src/Main/Setup.cpp
         src/Main/SponRad.cpp
         src/Main/GenTime.cpp
         src/Main/Track.cpp
         src/Main/Wake.cpp
-        src/Loading/SeriesManager.cpp include/SeriesManager.h src/Loading/SeriesParser.cpp include/SeriesParser.h src/Loading/Sequence.cpp)
+        src/Loading/SeriesManager.cpp include/SeriesManager.h src/Loading/SeriesParser.cpp include/SeriesParser.h src/Loading/Sequence.cpp
+	${SRC_DPI})
 
 
 target_include_directories(genesis13
@@ -168,11 +174,14 @@ target_include_directories(genesis13
 )
 
 
-# add optional macro definition
-
+# add optional macro definitions
 if (TARGET PkgConfig::FFTW)
     message(STATUS "Defining the macro FFTW in the source code")
     target_compile_definitions(genesis13 PRIVATE FFTW=1)
+endif()
+
+if(USE_DPI)
+   target_compile_definitions(genesis13 PRIVATE USE_DPI)
 endif()
 
 
