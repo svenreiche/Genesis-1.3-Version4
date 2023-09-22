@@ -1,6 +1,6 @@
 # Examples
 ## Example 1
-In [Example 1](Example1-SteadyState/), we start from scratch with a steady-state simulation. The evolution of selected beam and field parameters is studied. 
+In [Example 1](Example1-SteadyState/), we start from scratch with a steady-state simulation. The evolution of selected beam and field parameters is plotted. 
 
 ![Example 1, Fig 3](Example1-SteadyState/Plots/Figure_3.png)
 
