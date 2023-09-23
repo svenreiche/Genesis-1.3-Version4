@@ -47,7 +47,12 @@ bool Dump::init(int inrank, int insize, map<string,string> *arg, Setup *setup, B
 
    string completefn;
    setup->RootName_to_FileName(&completefn, &dumpbeam);
-   dump.write(completefn,beam);
+   if(!dump.write(completefn,beam)) {
+     if(inrank==0) {
+       cout << "   write operation was not successful!" << endl;
+     }
+     return(false);
+   }
   }
 
   return(true);

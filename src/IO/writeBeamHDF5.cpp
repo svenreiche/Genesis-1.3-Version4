@@ -7,16 +7,11 @@ extern bool MPISingle;
 #define SLICESELECT_IGNORE  0
 
 // constructor destructor
-WriteBeamHDF5::WriteBeamHDF5()
-{
-}
-
-WriteBeamHDF5::~WriteBeamHDF5()
-{
-}
+WriteBeamHDF5::WriteBeamHDF5()  {}
+WriteBeamHDF5::~WriteBeamHDF5() {}
 
 
-void WriteBeamHDF5::write(string fileroot, Beam *beam)
+bool WriteBeamHDF5::write(string fileroot, Beam *beam)
 {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
   MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
@@ -25,23 +20,12 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam)
     rank=0;
   }
 
-#if 0
-  char filename[100];
-  sprintf(filename,"%s.par.h5",fileroot.c_str()); 
-  if (rank == 0) { cout << "Writing particle distribution to file: " <<filename << " ..." << endl;} 
-
-  hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
-  if (size>1){
-    H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
-  }
-  fid=H5Fcreate(filename,H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
-  H5Pclose(pid);
-#else
   string filename;
   filename = fileroot+".par.h5";
   if (rank == 0) { cout << "Writing particle distribution to file: " <<filename << " ..." << endl;} 
-  create_outfile(&fid, filename);
-#endif
+  if(!create_outfile(&fid, filename)) {
+    return(false);
+  }
 
   s0=rank;
   int ntotal=size*beam->beam.size();
@@ -150,7 +134,7 @@ void WriteBeamHDF5::write(string fileroot, Beam *beam)
     }
   }
 
-  return;
+  return(true);
 }
 
 // void WriteBeamHDF5::writeGlobal(int nbins,bool one4one, double reflen, double slicelen, double s0, int count)
