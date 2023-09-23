@@ -3,16 +3,11 @@
 extern bool MPISingle;
 
 // constructor destructor
-WriteFieldHDF5::WriteFieldHDF5()
+WriteFieldHDF5::WriteFieldHDF5() {}
+WriteFieldHDF5::~WriteFieldHDF5() {}
+
+bool WriteFieldHDF5::write(string fileroot, vector<Field *> *field)
 {
-}
-
-WriteFieldHDF5::~WriteFieldHDF5()
-{
-}
-
-void WriteFieldHDF5::write(string fileroot, vector<Field *> *field){
-
   string file;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
@@ -22,6 +17,7 @@ void WriteFieldHDF5::write(string fileroot, vector<Field *> *field){
     rank=0;
   }
 
+  // loop over all fields (= all harmonics)
   for (int i=0; i<field->size();i++){
     int harm=field->at(i)->harm;
     char charm[10];
@@ -31,49 +27,37 @@ void WriteFieldHDF5::write(string fileroot, vector<Field *> *field){
     } else {
       file=fileroot+string(charm);
     }
-    this->writeMain(file,field->at(i));
+    bool ok=this->writeMain(file,field->at(i));
+    if(!ok)
+      return(false);
   }
 
-  return;
+  return(true);
 }
 
 
 
 
 
-void WriteFieldHDF5::writeMain(string fileroot, Field *field){
-
-
-
-#if 0
-  char filename[100];
-  sprintf(filename,"%s.fld.h5",fileroot.c_str()); 
-  if (rank == 0) { cout << "Writing field distribution to file: " <<filename << " ..." << endl;} 
-
-  hid_t pid = H5Pcreate(H5P_FILE_ACCESS);
-  if (size>1){
-    H5Pset_fapl_mpio(pid,MPI_COMM_WORLD,MPI_INFO_NULL);
-  }
-  fid=H5Fcreate(filename,H5F_ACC_TRUNC, H5P_DEFAULT,pid); 
-  H5Pclose(pid);
-#else
+bool WriteFieldHDF5::writeMain(string fileroot, Field *field)
+{
   string filename;
   filename = fileroot+".fld.h5";
   if (rank == 0) { cout << "Writing field distribution to file: " <<filename << " ..." << endl;} 
-  create_outfile(&fid, filename);
-#endif
+  if (!create_outfile(&fid, filename)) {
+    return(false);
+  }
+
 
   s0=rank;
   int ntotal=size*field->field.size();
+  int smin=rank*field->field.size();
+  int smax=smin+field->field.size();
 
   // write global data
   this->writeGlobal(field->xlambda,field->slicelength,field->s0,field->dgrid,field->ngrid,ntotal);
 
-  // loop through slices
-  
-  int smin=rank*field->field.size();
-  int smax=smin+field->field.size();
-
+  /*** if enabled, dump complex field data to file ***/
   int ngrid=field->ngrid;
   vector<double> work;
   work.resize(ngrid*ngrid);
@@ -81,10 +65,11 @@ void WriteFieldHDF5::writeMain(string fileroot, Field *field){
   double ks=4.*asin(1)/field->xlambda;
   double scl=field->dgrid*eev/ks/sqrt(vacimp);
 
-  /*** if enabled, dump complex field data to file ***/
   if(field->dumpFieldEnabled())
   {
-    for (int i=0; i<ntotal;i++){
+    // loop through slices
+    for (int i=0; i<ntotal;i++)
+    {
       s0=-1;
       char name[16];
       sprintf(name,"slice%6.6d",i+1);
@@ -178,7 +163,7 @@ void WriteFieldHDF5::writeMain(string fileroot, Field *field){
   H5Fclose(fid);
 
  
-  return;
+  return(true); // success
 }
 
 
