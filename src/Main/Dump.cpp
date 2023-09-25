@@ -24,7 +24,7 @@ bool Dump::init(int inrank, int insize, map<string,string> *arg, Setup *setup, B
   if (arg->find("beam")!=end) {dumpbeam =arg->at("beam");  arg->erase(arg->find("beam"));}
   if (arg->size()!=0){
     if (inrank==0){ cout << "*** Error: Unknown elements in &write" << endl; this->usage();}
-    return false;
+    return(false);
   }
 
   
@@ -32,7 +32,12 @@ bool Dump::init(int inrank, int insize, map<string,string> *arg, Setup *setup, B
    WriteFieldHDF5 dump;
    string completefn;
    setup->RootName_to_FileName(&completefn, &dumpfield);
-   dump.write(completefn,field);
+   if(!dump.write(completefn,field)) {
+     if(inrank==0) {
+       cout << "   write operation was not successful!" << endl;
+     }
+     return(false);
+   }
   }
   if (dumpbeam.size()>0){
    WriteBeamHDF5 dump;
@@ -42,8 +47,13 @@ bool Dump::init(int inrank, int insize, map<string,string> *arg, Setup *setup, B
 
    string completefn;
    setup->RootName_to_FileName(&completefn, &dumpbeam);
-   dump.write(completefn,beam);
+   if(!dump.write(completefn,beam)) {
+     if(inrank==0) {
+       cout << "   write operation was not successful!" << endl;
+     }
+     return(false);
+   }
   }
 
-  return true;
+  return(true);
 }

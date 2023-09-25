@@ -20,7 +20,7 @@ class WriteBeamHDF5 : public HDF5Base {
  public:
   WriteBeamHDF5();
   virtual ~WriteBeamHDF5();
-  void write(string, Beam *);
+  bool write(string, Beam *);
  
 
  private:

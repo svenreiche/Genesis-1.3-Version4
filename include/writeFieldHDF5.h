@@ -24,11 +24,11 @@ class WriteFieldHDF5 : public HDF5Base {
  public:
   WriteFieldHDF5();
   virtual ~WriteFieldHDF5();
-  void write(string fileroot, vector<Field *> *field);
+  bool write(string fileroot, vector<Field *> *field);
 
 
  private:
-  void writeMain(string fileroot, Field *field);
+  bool writeMain(string fileroot, Field *field);
   void writeGlobal(double, double, double, double, int, int);
   void writeBufferD(hid_t, string, string, vector<double> *, vector<hsize_t> *, vector<hsize_t> *);
   hid_t fid;
