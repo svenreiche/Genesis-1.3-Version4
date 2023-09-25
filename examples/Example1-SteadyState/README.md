@@ -200,6 +200,7 @@ Around 40 m the FEL process reaches saturation and the radiaiton field starts to
 #### Radiation Power and Bunching
 
 ![Plots3](Plots/Figure_3.png)
+
 In this log plot one can see the growth of the radiation power and bunching factor till saturation is reached around 40 m.
 Note that the little dip in power at around 5 m could be optimize by tuning the FEL. This canbe done either by **gamma0** in the setup namelist
 or the value for **aw** in the lattice file.
