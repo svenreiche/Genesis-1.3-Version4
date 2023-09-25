@@ -9,6 +9,7 @@
 
 #include "HDF5base.h"
 #include "BesselJ.h"
+#include "DiagnosticHookS.h"
 
 using namespace std;
 
@@ -65,6 +66,8 @@ class Undulator: public HDF5Base{
    vector<int>    fielddumps_intstep;
    vector<string> beamdumps_filename;
    vector<int>    beamdumps_intstep;
+
+   std::vector<DiagFieldPluginCfg> diagpluginfield_;
 
 
  private: 

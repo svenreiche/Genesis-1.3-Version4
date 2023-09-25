@@ -4,9 +4,39 @@
 
 #include <iostream>
 #include <complex>
+#include <mpi.h>
 
 #include "Diagnostic.h"
 #include "Output.h"
+
+Diagnostic::~Diagnostic()
+{
+	int rank;
+
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+	if(rank==0) {
+		cout << "Diagnostic::~Diagnostic()" << endl;
+	}
+
+	for(auto &d: dfield) {
+		delete d;
+	}
+
+	// FIXME: implement cleanup also for beam diagnostics
+}
+
+// Finally, instances of diagnostic class are to be deleted by this class
+bool Diagnostic::add_field_diag(DiagFieldBase *pd)
+{
+	// stop if vectors holding the instances of diagnostic classes are locked
+	if(!diag_can_add)
+		return(false);
+
+	dfield.push_back(pd);
+
+	return(true);
+}
 
 //----------------------------------------------------------
 // main class which manage all the calculation on the beam, field or undulator.
@@ -15,6 +45,9 @@
 
 // routine to register the output parameters and to allocate memory
 void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool isTime, bool isScan, FilterDiagnostics &filter){
+
+    // lock the vectors holding the instances of diagnostic classes
+    diag_can_add=false;
 
  //   FilterDiagnostics filter;
     nz = nz_in;
@@ -53,6 +86,13 @@ void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool is
     for (int ifld=0; ifld<nfld;ifld++){
         for (auto group : dfield){
             for (auto const &tag : group->getTags(filter)){
+                auto end = units.at(3+ifld).end();
+                if(units.at(3+ifld).find(tag.first) != end) {
+                    if(rank==0) {
+                        // note: warning is generated for every Field
+                        cout << "Diagnostic::init: warning: key " << tag.first << " already existing in map (possible reason: multiple plugins with same obj_prefix)" << endl;
+                    }
+                }
                 units.at(3+ifld)[tag.first] = tag.second.units;   // accumulate all units
                 single.at(3+ifld)[tag.first] = tag.second.global;   // accumulate all units
 
@@ -76,6 +116,8 @@ void Diagnostic::addOutput(int groupID, std::string key, std::string unit, std::
 // adds some output and lfushes everything to a file
 void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> *field, Undulator *und)
 {
+    // lock the vectors holding the instances of diagnostic classes
+    diag_can_add=false;
 
     Output *out=new Output;
 //    string file=root.append(".test");
@@ -155,6 +197,9 @@ void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> 
 
 // wrapper to do all the diagnostics calculation at a given integration step iz.
 void Diagnostic::calc(Beam* beam,std::vector<Field*> *field,double z) {
+    // lock the vectors holding the instances of diagnostic classes
+    diag_can_add=false;
+
     zout[iz]=z;
     for (auto group: dbeam){
         group->getValues(beam,val[2],iz);

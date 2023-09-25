@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 project(Genesis_1_3_Version4 CXX C)
 
+option(USE_DPI "Use diagnostic plugin interface" OFF)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -67,6 +69,11 @@ if (TARGET PkgConfig::FFTW)
 else()
         message(STATUS "FFTW not found")
         message(STATUS "Excluding FFTW specific source code")
+endif()
+
+
+if(USE_DPI)
+   set(SRC_DPI src/Main/RegPlugin.cpp src/Core/DiagnosticHook.cpp)
 endif()
 
 
@@ -157,7 +164,8 @@ add_library(genesis13 STATIC
         src/Main/GenTime.cpp
         src/Main/Track.cpp
         src/Main/Wake.cpp
-        src/Loading/SeriesManager.cpp include/SeriesManager.h src/Loading/SeriesParser.cpp include/SeriesParser.h src/Loading/Sequence.cpp)
+        src/Loading/SeriesManager.cpp include/SeriesManager.h src/Loading/SeriesParser.cpp include/SeriesParser.h src/Loading/Sequence.cpp
+	${SRC_DPI})
 
 
 target_include_directories(genesis13
@@ -166,11 +174,14 @@ target_include_directories(genesis13
 )
 
 
-# add optional macro definition
-
+# add optional macro definitions
 if (TARGET PkgConfig::FFTW)
     message(STATUS "Defining the macro FFTW in the source code")
     target_compile_definitions(genesis13 PRIVATE FFTW=1)
+endif()
+
+if(USE_DPI)
+   target_compile_definitions(genesis13 PRIVATE USE_DPI)
 endif()
 
 

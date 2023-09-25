@@ -45,6 +45,9 @@
 #include "Diagnostic.h"
 #include "SemaFile.h"
 #include "FieldManipulator.h"
+#ifdef USE_DPI
+  #include "RegPlugin.h"
+#endif
 #include "SeriesManager.h"
 #include "SeriesParser.h"
 
@@ -328,6 +331,22 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
             if (!sddsbeam->init(rank,size,&argument,beam,setup,timewindow,lattice)){ break;}
 	        delete sddsbeam;
             continue;  
+          }  
+
+          //----------------------------------------------------
+          // register plugins for diagnostics (currently only for field)
+          if (element.compare("&add_plugin_fielddiag")==0){
+#ifdef USE_DPI
+            AddPluginFieldDiag *d = new AddPluginFieldDiag;
+	    if (!d->init(rank,size,&argument,setup)){ break;}
+            delete d;
+            continue;  
+#else
+            if(rank==0) {
+              cout << "*** Error: This binary does not support the element " << element << endl;
+            }
+            break;
+#endif
           }  
 
           //----------------------------------------------------
