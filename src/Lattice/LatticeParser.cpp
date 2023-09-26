@@ -199,7 +199,7 @@ ID *LatticeParser::parseID(int idx,int rank, double zin)
   ele->gradx=0;
   ele->grady=0;
   ele->helical=false;
-
+  // current unused
   ele->paw=0;
   ele->pkx=0;
   ele->pky=1;
@@ -210,6 +210,7 @@ ID *LatticeParser::parseID(int idx,int rank, double zin)
 
   vector <string> par;
   string fld,val;
+  bool haskx = false;
 
   this->chop(argument[idx],&par);
   for (int i=0;i<par.size();i++){
@@ -228,8 +229,8 @@ ID *LatticeParser::parseID(int idx,int rank, double zin)
     if (fld.compare("aw")==0)   { ele->aw=atof(val.c_str()); found=true; };
     if (fld.compare("aw_perp")==0)  { ele->paw=atof(val.c_str()); found=true; };
     if (fld.compare("nwig")==0) { ele->nwig=atof(val.c_str()); found=true; };
-    if (fld.compare("kx")==0)   { ele->kx=atof(val.c_str()); found=true; };
-    if (fld.compare("ky")==0)   { ele->ky=atof(val.c_str()); found=true; };
+    if (fld.compare("kx")==0)   { ele->kx=atof(val.c_str()); found=true; haskx = true;};
+    if (fld.compare("ky")==0)   { ele->ky=atof(val.c_str()); found=true; haskx = true;};
     if (fld.compare("kx_perp")==0)  { ele->pkx=atof(val.c_str()); found=true; };
     if (fld.compare("ky_perp")==0)  { ele->pky=atof(val.c_str()); found=true; };
     if (fld.compare("ax")==0)   { ele->ax=atof(val.c_str()); found=true; };
@@ -241,10 +242,19 @@ ID *LatticeParser::parseID(int idx,int rank, double zin)
     if (fld.compare("phase_perp")==0){ ele->phase=atof(val.c_str()); found=true; };
     if (fld.compare("helical")==0)   { ele->helical=atob(val.c_str()); found=true; };
     if (found==false){
-      if (rank==0){cout << "*** Warning: Ignoring unknow parameter: " << fld << " for element " << label[idx]<< endl;}
+      if (rank==0){cout << "*** Warning: Ignoring unknown parameter: " << fld << " for element " << label[idx]<< endl;}
     }
   }
   ele->l=ele->lambdau*ele->nwig;
+  if (!haskx){
+      if (ele->helical){
+          ele->kx = 0.5;
+          ele->ky = 0.5;
+      } else {
+          ele->kx =0;
+          ele->ky = 1;
+      }
+  }
   return ele;
 }
 
@@ -277,7 +287,7 @@ Corrector *LatticeParser::parseCorrector(int idx,int rank, double zin)
     if (fld.compare("cx")==0)   { ele->cx=atof(val.c_str()); found=true; };
     if (fld.compare("cy")==0)   { ele->cy=atof(val.c_str()); found=true; };
     if (found==false){
-      if (rank==0){cout << "*** Warning: Ignoring unknow parameter: " << fld << " for element " << label[idx]<< endl;}
+      if (rank==0){cout << "*** Warning: Ignoring unknown parameter: " << fld << " for element " << label[idx]<< endl;}
     }
   }
   return ele;
@@ -314,7 +324,7 @@ Chicane *LatticeParser::parseChicane(int idx,int rank, double zin)
     if (fld.compare("lb")==0)   { ele->lb=atof(val.c_str()); found=true; };
     if (fld.compare("ld")==0)   { ele->ld=atof(val.c_str()); found=true; };
     if (found==false){
-      if (rank==0){cout << "*** Warning: Ignoring unknow parameter: " << fld << " for element " << label[idx]<< endl;}
+      if (rank==0){cout << "*** Warning: Ignoring unknown parameter: " << fld << " for element " << label[idx]<< endl;}
     }
   }
   return ele;
@@ -350,7 +360,7 @@ Marker *LatticeParser::parseMarker(int idx,int rank, double zin)
     if (fld.compare("sort")==0){ele->action|=4*tag;found=true;}
     if (fld.compare("stop")==0){ele->action|=8*tag;found=true;}
     if (found==false){
-      if (rank==0){cout << "*** Warning: Ignoring unknow parameter: " << fld << " for element " << label[idx]<< endl;}
+      if (rank==0){cout << "*** Warning: Ignoring unknown parameter: " << fld << " for element " << label[idx]<< endl;}
     }
   }
   return ele;
@@ -382,7 +392,7 @@ Drift *LatticeParser::parseDrift(int idx,int rank, double zin)
     bool found=false;
     if (fld.compare("l")==0) { ele->l=atof(val.c_str());  found=true; };
     if (found==false){
-      if (rank==0){cout << "*** Warning: Ignoring unknow parameter: " << fld << " for element " << label[idx]<< endl;}
+      if (rank==0){cout << "*** Warning: Ignoring unknown parameter: " << fld << " for element " << label[idx]<< endl;}
     }
   }
   return ele;
@@ -419,7 +429,7 @@ Quadrupole *LatticeParser::parseQuad(int idx,int rank, double zin)
     if (fld.compare("dx")==0){ ele->dx=atof(val.c_str()); found=true; };
     if (fld.compare("dy")==0){ ele->dy=atof(val.c_str()); found=true; };
     if (found==false){
-      if (rank==0){cout << "*** Warning: Ignoring unknow parameter: " << fld << " for element " << label[idx]<< endl;}
+      if (rank==0){cout << "*** Warning: Ignoring unknown parameter: " << fld << " for element " << label[idx]<< endl;}
     }
   }
   return ele;
@@ -452,7 +462,7 @@ Phaseshifter *LatticeParser::parsePhaseshifter(int idx,int rank, double zin)
     if (fld.compare("l")==0) { ele->l=atof(val.c_str());  found=true; };
     if (fld.compare("phi")==0){ele->phi=atof(val.c_str());found=true; };
     if (found==false){
-      if (rank==0){cout << "*** Warning: Ignoring unknow parameter: " << fld << " for element " << label[idx]<< endl;}
+      if (rank==0){cout << "*** Warning: Ignoring unknown parameter: " << fld << " for element " << label[idx]<< endl;}
     }
   }
   return ele;
