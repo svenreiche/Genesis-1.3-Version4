@@ -8,10 +8,13 @@
 #include "Particle.h"
 
 /*
- * version number included in data structured used for information exchange.
- * Increment it if there is a change to the definitions and then recompile GENESIS and the shared libraries.
+ * Version number included in data structured used for information exchange.
+ * Increment it if there is a change to the definitions and then
+ * recompile GENESIS and the shared libraries.
+ * Shared libs reject information with different struct version.
  */
-#define DIAGFIELD_DATA_STRUCTVERSION 4
+//                                   YYYYMMDDVV
+#define DIAGFIELD_DATA_STRUCTVERSION 2023092701
 
 /* header file with the data structures/classes */
 
