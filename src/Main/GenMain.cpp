@@ -333,8 +333,8 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
             continue;  
           }  
 
-          //----------------------------------------------------
-          // register plugins for diagnostics (currently only for field)
+          //-----------------------------------
+          // register plugins for diagnostics
           if (element.compare("&add_plugin_fielddiag")==0){
 #ifdef USE_DPI
             AddPluginFieldDiag *d = new AddPluginFieldDiag;
@@ -348,6 +348,19 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
             break;
 #endif
           }  
+          if (element.compare("&add_plugin_beamdiag")==0){
+#ifdef USE_DPI
+            AddPluginBeamDiag *d = new AddPluginBeamDiag;
+	    if (!d->init(rank,size,&argument,setup)){ break;}
+            delete d;
+            continue;  
+#else
+            if(rank==0) {
+              cout << "*** Error: This binary does not support the element " << element << endl;
+            }
+            break;
+#endif
+          }
 
           //----------------------------------------------------
           // tracking - the very core part of Genesis

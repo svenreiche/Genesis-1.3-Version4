@@ -22,8 +22,20 @@ Diagnostic::~Diagnostic()
 	for(auto &d: dfield) {
 		delete d;
 	}
+	for(auto &d: dbeam) {
+		delete d;
+	}
+}
 
-	// FIXME: implement cleanup also for beam diagnostics
+bool Diagnostic::add_beam_diag(DiagBeamBase *pd)
+{
+	// stop if vectors holding the instances of diagnostic classes are locked
+	if(!diag_can_add)
+		return(false);
+
+	dbeam.push_back(pd);
+
+	return(true);
 }
 
 // Finally, instances of diagnostic class are to be deleted by this class

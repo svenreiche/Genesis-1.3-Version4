@@ -1,3 +1,9 @@
+/*
+ * Interface for plugins (field diagnostics)
+ *
+ * Initial code by C. Lechner, EuXFEL
+ */
+
 #include <vector>
 #include <sstream>
 #include <iostream>

@@ -1,3 +1,9 @@
+/*
+ * Interface for plugins (field diagnostics)
+ *
+ * Initial code by C. Lechner, EuXFEL
+ */
+
 #include <vector>
 #include <sstream>
 #include <iostream>
@@ -10,7 +16,7 @@
 #include "DiagnosticHookS.h"
 
 
-// sources:
+// some info sources:
 // https://stackoverflow.com/questions/496664/c-dynamic-shared-library-on-linux/497158#497158
 // https://tldp.org/HOWTO/C++-dlopen/thesolution.html
 // https://0x00sec.org/t/c-dynamic-loading-of-shared-objects-at-runtime/1498

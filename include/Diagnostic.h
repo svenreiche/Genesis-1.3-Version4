@@ -101,6 +101,7 @@ public:
     std::vector<std::map<std::string, bool> > single;
     std::vector<double> zout;
 
+    bool add_beam_diag(DiagBeamBase *);
     bool add_field_diag(DiagFieldBase *);
 
 private:

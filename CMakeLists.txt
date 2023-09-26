@@ -73,7 +73,7 @@ endif()
 
 
 if(USE_DPI)
-   set(SRC_DPI src/Main/RegPlugin.cpp src/Core/DiagnosticHook.cpp)
+   set(SRC_DPI src/Main/RegPlugin.cpp src/Core/DiagnosticHook.cpp src/Core/DiagnosticHookBeam.cpp src/Core/DiagnosticHookLI.cpp)
 endif()
 
 
