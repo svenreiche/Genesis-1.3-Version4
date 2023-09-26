@@ -10,7 +10,7 @@
 #include "FFTObj.h"
 
 using namespace std;
-
+#ifdef FFTW
 FFTObj::FFTObj(int ngrid)
 {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank_);
@@ -38,4 +38,4 @@ FFTObj::~FFTObj() {
 	delete [] in_;
 	delete [] out_;
 }
-
+#endif
