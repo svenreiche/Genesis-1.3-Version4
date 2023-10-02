@@ -1,6 +1,10 @@
 # Change Log
-
-### [4.6.3] - 2023/11/12
+### [4.6.4] - 2023/10/02
+- bug fixed which didn't allow to compile Genesis without the FFTW3 library
+- bug fixed for default behaviour of the undulator roll-off parameter kx and ky when only the type helical is defined in lattice file
+- bug fix for accesing the vector for the z position when parsing the markers in the lattice file.
+  
+### [4.6.3] - 2023/09/12
 - added output for the minimum and maximum value of the electron beam for each slice and step. This includes the parameters x,y, px, py and energy. The output is suprressed if the parameter exclude_aux_output is set to true
 - Examples have been added for a step-by-step guide on setting up input decks.
 
