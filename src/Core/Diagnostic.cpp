@@ -406,60 +406,59 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
         // save into the allocated memory space
         int idx = iz*ns+is;         // index for saving the data
         if (filter["energy"]){
-            if (val.find("energy") != val.end()) {val["energy"][idx]=g1;}
-            if (val.find("energyspread") != val.end()) {val["energyspread"][idx]=sqrt(fabs(g2-g1*g1));}
+            this->storeValue(val,"energy",idx,g1);
+            this->storeValue(val,"energyspread",idx,sqrt(fabs(g2-g1*g1)));
         }
         if (filter["spatial"]){
-            if (val.find("xposition") != val.end()){val["xposition"][idx]=x1;}
-            if (val.find("xsize") != val.end()){val["xsize"][idx]=sqrt( fabs(x2-x1*x1));}
-            if (val.find("yposition") != val.end()){val["yposition"][idx]=y1;}
-            if (val.find("ysize") != val.end()){val["ysize"][idx]=sqrt( fabs(y2-y1*y1));}
-            if (val.find("pxposition") != val.end()){val["pxposition"][idx]=px1;}
-            if (val.find("pyposition") != val.end()){ val["pyposition"][idx]=py1;}
+            this->storeValue(val,"xposition",idx,x1);
+            this->storeValue(val,"xsize",idx,sqrt(fabs(x2-x1*x1)));
+            this->storeValue(val,"yposition",idx,y1);
+            this->storeValue(val,"ysize",idx,sqrt(fabs(y2-y1*y1)));
+            this->storeValue(val,"pxposition",idx,px1);
+            this->storeValue(val,"pyposition",idx,py1);
         }
-
-        if (val.find("bunching") != val.end()) {val["bunching"][idx] =std::abs(b[0]);}
-        if (val.find("bunchingphase") != val.end()) {val["bunchingphase"][idx] =atan2(b[0].imag(),b[0].real());}
-
+        this->storeValue(val,"bunching",idx,std::abs(b[0]));
+        this->storeValue(val,"bunchingphase",idx,atan2(b[0].imag(),b[0].real()));
         char buff[100];
         for (int iharm = 1; iharm < nharm; iharm++) {
             snprintf(buff, sizeof(buff), "bunching%d", iharm + 1);
-            if (val.find(buff) != val.end()) { val[buff][idx] = std::abs(b[iharm]); }
+            this->storeValue(val,buff,idx,std::abs(b[iharm]));
             snprintf(buff, sizeof(buff), "bunchingphase%d", iharm + 1);
-            if (val.find(buff) != val.end()) { val[buff][idx] = atan2(b[iharm].imag(), b[iharm].real()); }
+            this->storeValue(val,buff,idx,atan2(b[iharm].imag(),b[iharm].real()));
         }
         if (filter["aux"]) {
-            if (val.find("efield") != val.end()) { val["efield"][idx] = beam->eloss[is] + beam->longESC[is]; }
-            if (val.find("wakefield") != val.end()) { val["wakefield"][idx] = beam->eloss[is]; }
-            if (val.find("LSCfield") != val.end()) { val["LSCfield"][idx] = beam->longESC[is]; }
-            if (val.find("xmin") != val.end()) { val["xmin"][idx] = xmin; }
-            if (val.find("xmax") != val.end()) { val["xmax"][idx] = xmax; }
-            if (val.find("pxmin") != val.end()) { val["pxmin"][idx] = pxmin; }
-            if (val.find("pxmax") != val.end()) { val["pxmax"][idx] = pxmax; }
-            if (val.find("ymin") != val.end()) { val["ymin"][idx] = ymin; }
-            if (val.find("ymax") != val.end()) { val["ymax"][idx] = ymax; }
-            if (val.find("pymin") != val.end()) { val["pymin"][idx] = pymin; }
-            if (val.find("pymax") != val.end()) { val["pymax"][idx] = pymax; }
-            if (val.find("emin") != val.end()) { val["emin"][idx] = gmin; }
-            if (val.find("emax") != val.end()) { val["emax"][idx] = gmax; }
+            this->storeValue(val,"efield",idx,beam->eloss[is] + beam->longESC[is]);
+            this->storeValue(val,"wakefield",idx,beam->eloss[is]);
+            this->storeValue(val,"LSCfield",idx,beam->longESC[is]);
+            this->storeValue(val,"xmin",idx,xmin);
+            this->storeValue(val,"xmax",idx,xmax);
+            this->storeValue(val,"pxmin",idx,pxmin);
+            this->storeValue(val,"pxmax",idx,pxmax);
+            this->storeValue(val,"ymin",idx,ymin);
+            this->storeValue(val,"ymax",idx,ymax);
+            this->storeValue(val,"pymin",idx,pymin);
+            this->storeValue(val,"pymax",idx,pymax);
+            this->storeValue(val,"emin",idx,gmin);
+            this->storeValue(val,"emax",idx,gmax);
         }
         // here are all the values which are only evaluated once at the beginning of the run with iz = 0
         if (tags["current"].once){
-            if ((iz ==0) and (val.find("current") != val.end())) { val["current"][is] = beam->current[is]; }
+            if (iz ==0) {
+                this->storeValue(val,"current",idx,beam->current[is]);
+            }
         } else {
-            if (val.find("current") != val.end()) { val["current"][idx] = beam->current[is]; }
+            this->storeValue(val,"current",idx,beam->current[is]);
         }
         if (iz == 0) {
-            if (val.find("current") != val.end()) { val["current"][is] = beam->current[is]; }
             // because genesis works with momenta and not divergence, the emittance does not need energy
             double ex=sqrt(fabs((x2-x1*x1)*(px2-px1*px1)-(xpx-x1*px1)*(xpx-x1*px1)));
             double ey=sqrt(fabs((y2-y1*y1)*(py2-py1*py1)-(ypy-y1*py1)*(ypy-y1*py1)));
-            if (val.find("emitx") != val.end()) { val["emitx"][is] = ex; }
-            if (val.find("emity") != val.end()) { val["emity"][is] = ey; }
-            if (val.find("betax") != val.end()) { val["betax"][is] = (x2-x1*x1)/ex*g1; }
-            if (val.find("betay") != val.end()) { val["betay"][is] = (y2-y1*y1)/ey*g1; }
-            if (val.find("alphax") != val.end()) { val["alphax"][is] = -(xpx-x1*px1)/ex;}
-            if (val.find("alphay") != val.end()) { val["alphay"][is] = -(ypy-y1*py1)/ey; }
+            this->storeValue(val,"emitx",is,ex);
+            this->storeValue(val,"emity",is,ey);
+            this->storeValue(val,"betax",is,(x2-x1*x1)/ex*g1);
+            this->storeValue(val,"betay",is,(y2-y1*y1)/ey*g1);
+            this->storeValue(val,"alphax",is,-(xpx-x1*px1)/ex);
+            this->storeValue(val,"alphay",is,-(ypy-y1*py1)/ey);
         }
         //-------------------------------------------------------------------------
         // gather moments for all slices with current as weighting factor
@@ -509,14 +508,14 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
 
 
         if (filter["energy"]){
-            if (val.find("Global/energy") != val.end()) {val["Global/energy"][iz]=g_g1;}
-            if (val.find("Global/energyspread") != val.end()) {val["Global/energyspread"][iz]=sqrt(fabs(g_g2-g_g1*g_g1));}
+            this->storeValue(val,"Global/energy",iz,g_g1);
+            this->storeValue(val,"Global/energyspread",iz,sqrt(fabs(g_g2-g_g1*g_g1)));
         }
         if (filter["spatial"]){
-            if (val.find("Global/xposition") != val.end()){val["Global/xposition"][iz]=g_x1;}
-            if (val.find("Global/xsize") != val.end()){val["Global/xsize"][iz]=sqrt( fabs(g_x2-g_x1*g_x1));}
-            if (val.find("Global/yposition") != val.end()){val["Global/yposition"][iz]=g_y1;}
-            if (val.find("Global/xsize") != val.end()){val["Global/ysize"][iz]=sqrt( fabs(g_y2-g_y1*g_y1));}
+            this->storeValue(val,"Global/xposition",iz,g_x1);
+            this->storeValue(val,"Global/xsize",iz,sqrt( fabs(g_x2-g_x1*g_x1)));
+            this->storeValue(val,"Global/yposition",iz,g_y1);
+            this->storeValue(val,"Global/ysize",iz,sqrt( fabs(g_y2-g_y1*g_y1))) ;
         }
     }
 }
@@ -525,8 +524,10 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
 // diagnostic calculation - field
 
 // lechner, 2023-09-04: implementation of class FFTObj moved to its own file
+#ifdef FFTW
 void DiagField::cleanup_FFT_resources(void)
 {
+
 	for(auto &[k,obj]: fftobj) {
 		delete obj;
 	}
@@ -538,7 +539,6 @@ int DiagField::obtain_FFT_resources(int ngrid, complex<double> **in, complex<dou
 	int rank=0;
 	bool verbose=false;
 	bool exists=false;
-
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 	// see if the entry already exists
@@ -570,7 +570,7 @@ int DiagField::obtain_FFT_resources(int ngrid, complex<double> **in, complex<dou
 
 	return(0);
 }
-
+#endif
 
 std::map<std::string,OutputInfo> DiagField::getTags(FilterDiagnostics & filter_in){
 
@@ -784,25 +784,25 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
 
         // save the data into the provided arrays
         int idx = iz*ns+is;         // index for saving the data
-        if (val.find("power") != val.end()) { val["power"][idx] = power; }
+        this->storeValue(val,"power",idx,power);
         if (filter["spatial"]){
-            if (val.find("xposition") != val.end()){val["xposition"][idx]=x1;}
-            if (val.find("xsize") != val.end()){val["xsize"][idx]=x2;}
-            if (val.find("yposition") != val.end()){val["yposition"][idx]=y1;}
-            if (val.find("ysize") != val.end()){val["ysize"][idx]=y2;}
+            this->storeValue(val,"xposition",idx,x1);
+            this->storeValue(val,"xsize",idx,x2);
+            this->storeValue(val,"yposition",idx,y1);
+            this->storeValue(val,"ysize",idx,y2);
         }
         if (filter["intensity"]){
-            if (val.find("intensity-nearfield") != val.end()){val["intensity-nearfield"][idx]=inten;}
-            if (val.find("phase-nearfield") != val.end()){val["phase-nearfield"][idx]=intenphi;}
-            if (val.find("intensity-farfield") != val.end()){val["intensity-farfield"][idx]=farfield;}
-            if (val.find("phase-farfield") != val.end()){val["phase-farfield"][idx]=farfieldphi;}
+            this->storeValue(val,"intensity-nearfield",idx,inten);
+            this->storeValue(val,"phase-nearfield",idx,intenphi);
+            this->storeValue(val,"intensity-farfield",idx,farfield);
+            this->storeValue(val,"phase-farfield",idx,farfieldphi);
         }
 #ifdef FFTW
         if (filter["fft"]){
-            if (val.find("xpointing") != val.end()){val["xpointing"][idx]=fx1;}
-            if (val.find("xdivergence") != val.end()){val["xdivergence"][idx]=fx2;}
-            if (val.find("ypointing") != val.end()){val["ypointing"][idx]=fy1;}
-            if (val.find("ydivergence") != val.end()){val["ydivergence"][idx]=fy2;}
+            this->storeValue(val,"xpointing",idx,fx1);
+            this->storeValue(val,"xdivergence",idx,fx2);
+            this->storeValue(val,"ypointing",idx,fy1);
+            this->storeValue(val,"ydivergence",idx,fy2);
         }
 #endif
         // increase the slice counter
@@ -874,30 +874,31 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
         norm = 1./static_cast<double>(size*field->field.size());
         g_inten *= norm*eev*eev/ks/ks/vacimp;
         g_ff*=norm;
-        if (val.find("Global/energy") != val.end()) { val["Global/energy"][iz] = g_pow; }
+        this->storeValue(val,"Global/energy",iz,g_pow);
         if (filter["spatial"]) {
-            if (val.find("Global/xposition") != val.end()) { val["Global/xposition"][iz] = g_x1; }
-            if (val.find("Global/xsize") != val.end()) { val["Global/xsize"][iz] = g_x2; }
-            if (val.find("Global/yposition") != val.end()) { val["Global/yposition"][iz] = g_y1; }
-            if (val.find("Global/xsize") != val.end()) { val["Global/ysize"][iz] = g_y2; }
+            this->storeValue(val,"Global/xposition",iz,g_x1);
+            this->storeValue(val,"Global/xsize",iz,g_x2);
+            this->storeValue(val,"Global/yposition",iz,g_y1);
+            this->storeValue(val,"Global/ysize",iz,g_y2);
         }
 
         if (filter["intensity"]) {
-            if (val.find("Global/intensity-nearfield") !=
-                val.end()) { val["Global/intensity-nearfield"][iz] = g_inten; }
-            if (val.find("Global/intensity-farfield") != val.end()) { val["Global/intensity-farfield"][iz] = g_ff; }
+            this->storeValue(val,"Global/intensity-nearfield",iz,g_inten);
+            this->storeValue(val,"Global/intensity-farfield",iz,g_ff);
         }
 #ifdef FFTW
         if (filter["fft"]) {
-            if (val.find("Global/xpointing") != val.end()) { val["Global/xpointing"][iz] = f_x1; }
-            if (val.find("Global/xdivergence") != val.end()) { val["Global/xdivergence"][iz] = f_x2;}
-            if (val.find("Global/ypointing") != val.end()) { val["Global/ypointing"][iz] = f_y1; }
-            if (val.find("Global/ydivergence") != val.end()) {val["Global/ydivergence"][iz] = f_y2;}
+            this->storeValue(val,"Global/xpointing",iz,f_x1);
+            this->storeValue(val,"Global/xdivergence",iz,f_x2);
+            this->storeValue(val,"Global/ypointing",iz,f_y1);
+            this->storeValue(val,"Global/ydivergence",iz,f_y2);
         }
 #endif
     }
-    if ((iz == 0) && (val.find("dgrid") != val.end())) { val["dgrid"][0] = field->dgrid; }
-    if ((iz == 0) && (val.find("ngrid") != val.end())) { val["ngrid"][0] = static_cast<double> (ngrid); }
+    if (iz ==0){
+        this->storeValue(val,"dgrid",0,field->dgrid);
+        this->storeValue(val,"ngrid",0,static_cast<double> (ngrid));
+    }
 
     return;
 }

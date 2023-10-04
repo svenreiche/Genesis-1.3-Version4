@@ -61,12 +61,23 @@ struct FilterDiagnostics{
 //---------------------------------------
 // base class for diagnostics
 
+class DiagBase{
+protected:
+    void storeValue(std::map<std::string,std::vector<double> >&val, std::string, unsigned long, double);
+};
 
-class DiagBeamBase{
+inline void DiagBase::storeValue(std::map<std::string,std::vector<double> >&container,std::string field, unsigned long index, double value)
+{
+    if (container.find(field) != container.end()){container[field].at(index)=value;}
+}
+
+
+class DiagBeamBase : public DiagBase{
 protected:
     std::map<std::string, OutputInfo>  tags;  // holds a map with tags and units
     std::map<std::string,bool> filter;        // general map to store the selected flags
     bool global {false};
+
 public:
     virtual ~DiagBeamBase() = default;
     DiagBeamBase() = default; // this is needed since the harmonics can be changed
@@ -74,7 +85,7 @@ public:
     virtual void getValues(Beam *, std::map<std::string,std::vector<double> > &, int) =0;
 };
 
-class DiagFieldBase{
+class DiagFieldBase : public DiagBase{
 protected:
     std::map<std::string, OutputInfo>  tags;  // holds a map with tags and units
     std::map<std::string,bool> filter;        // general map to store the selected flags
@@ -89,5 +100,9 @@ public:
     virtual std::map<std::string,OutputInfo> getTags(FilterDiagnostics &filter) =0;
     virtual void getValues(Field *, std::map<std::string,std::vector<double> > &, int) =0;
 };
+
+
+
+
 
 #endif //GENESIS_1_3_VERSION4_DIAGNOSTICBASE_H

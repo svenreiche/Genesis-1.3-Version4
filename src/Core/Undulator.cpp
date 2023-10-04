@@ -40,27 +40,29 @@ void Undulator::updateMarker(int nfld, int npar, int nsort, double zstop_in)
         zfrac = zstop / z[nstepz - 1];
     }
 
-  for (int i=0; i<marker.size();i++){
-    if (nfld > 0){  // field dump
-     if ((i % nfld) == 0) {
-      marker[i]|=1;
-     }
+    for (int i=0; i<marker.size();i++) {
+      if (nfld > 0) {  // field dump
+          if ((i % nfld) == 0) {
+              marker.at(i) |= 1;
+          }
+      }
+      if (npar > 0) {    // particle dump
+          if ((i % npar) == 0) {
+              marker.at(i) |= 2;
+          }
+      }
+      if (nsort > 0) {    // sorting
+          if ((i % nsort) == 0) {
+              marker.at(i) |= 4;
+          }
+      }
     }
-    if (npar > 0){    // particle dump
-     if ((i % npar) == 0) {
-      marker[i]|=2;
-     }
+    for (int i=0; i<z.size();i++) {
+        if (z.at(i) > zstop) {  // stop calculation
+            marker.at(i)|=8;
+        }
     }
-    if (nsort > 0){    // sorting
-     if ((i % nsort) == 0) {
-      marker[i]|=4;
-     }
-    }
-    if (z[i]>zstop) {  // stop calculation
-      marker[i]|=8;
-    }
-  }
-  return;
+    return;
 }
 
 // Field dumps at the exit of the undulator (one dump for each undulator

@@ -106,6 +106,7 @@ public:
 
 private:
     void addOutput(int groupID, std::string key, std::string unit, std::vector<double> &data);
+
     bool time,scan;
 
     bool diag_can_add {true};

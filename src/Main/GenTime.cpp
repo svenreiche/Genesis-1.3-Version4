@@ -47,7 +47,13 @@ bool Time::init(int inrank, int insize, map<string,string> *arg, Setup *setup)
     if (rank==0){ cout << "*** Error: Unknown elements in &time" << endl; this->usage();}
     return false;
   }
-  initialized=true;  
+  initialized=true;
+  if (sample < 1){
+      if (rank==0){
+          cout << "*** Error: Value for sample in TIME namelist has to be 1 or larger" << endl;
+      }
+      return false;
+  }
   this->finishInit(setup);
   return true;
 
