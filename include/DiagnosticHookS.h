@@ -7,14 +7,7 @@
 // FIXME: see how this include can be removed (it is needed to build the plugin modules)
 #include "Particle.h"
 
-/*
- * Version number included in data structured used for information exchange.
- * Increment it if there is a change to the definitions and then
- * recompile GENESIS and the shared libraries.
- * Shared libs reject information with different struct version.
- */
-//                                   YYYYMMDDVV
-#define DIAGFIELD_DATA_STRUCTVERSION 2023092701
+#include "DiagnosticHook_V.h"
 
 /* header file with the data structures/classes */
 

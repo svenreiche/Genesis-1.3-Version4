@@ -1,5 +1,5 @@
 /*
- * Interface for plugins (field diagnostics)
+ * Interface for plugins (library interface)
  *
  * Initial code by C. Lechner, EuXFEL
  */
