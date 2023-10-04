@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.12)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+# set(CMAKE_VERBOSE_MAKEFILE OFF)
 # set(CMAKE_INSTALL_RPATH "/usr/local/lib")
 set(CMAKE_CXX_FLAGS '-lstdc++')
 
@@ -20,9 +20,12 @@ add_compile_definitions(OMPI_SKIP_MPICXX)
 # END
 
 project(demo VERSION 1.0.0 DESCRIPTION "diagdemo")
-
-add_library(${PROJECT_NAME} SHARED
+add_library(demo SHARED
 	DiagFieldPowerDemo.cc
 	DiagUtil.cc
 )
 
+#project(beamdemo VERSION 1.0.0 DESCRIPTION "diagbeamdemo")
+add_library(beamdemo SHARED
+	DiagBeamHookedDemo.cc
+)
