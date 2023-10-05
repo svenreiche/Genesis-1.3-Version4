@@ -30,12 +30,12 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *set
 
     Diagnostic diag;
 #ifdef USE_DPI
-    for(int kk=0; kk<und->diagpluginfield_.size(); kk++) {
+    for(int kk=0; kk<setup->diagpluginfield_.size(); kk++) {
 	if(rank==0) {
-            cout << "Setting up DiagFieldHook for libfile=\"" << und->diagpluginfield_.at(kk).libfile << "\", obj_prefix=\"" << und->diagpluginfield_.at(kk).obj_prefix << "\"" << endl;
+            cout << "Setting up DiagFieldHook for libfile=\"" << setup->diagpluginfield_.at(kk).libfile << "\", obj_prefix=\"" << setup->diagpluginfield_.at(kk).obj_prefix << "\"" << endl;
         }
         DiagFieldHook *pdfh = new DiagFieldHook(); /* !do not delete this instance, it will be destroyed when DiagFieldHook instance is deleted! */
-        bool diaghook_ok = pdfh->init(&und->diagpluginfield_.at(kk));
+        bool diaghook_ok = pdfh->init(&setup->diagpluginfield_.at(kk));
 	pdfh->set_runid(setup->getCount()); // propagate run id so that it can be used in the plugins, for instance for filename generation
         if(diaghook_ok) {
             diag.add_field_diag(pdfh);
@@ -49,6 +49,26 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *set
             }
         }
     }
+
+	for(int kk=0; kk<setup->diagpluginbeam_.size(); kk++) {
+		if(rank==0) {
+			cout << "Setting up DiagBeamHook for libfile=\"" << setup->diagpluginbeam_.at(kk).libfile << "\", obj_prefix=\"" << setup->diagpluginbeam_.at(kk).obj_prefix << "\"" << endl;
+		}
+		DiagBeamHook *pdbh = new DiagBeamHook(); /* !do not delete this instance, it will be destroyed when DiagBeamHook instance is deleted! */
+		bool diaghook_ok = pdbh->init(&setup->diagpluginbeam_.at(kk));
+		pdbh->set_runid(setup->getCount()); // propagate run id so that it can be used in the plugins, for instance for filename generation
+		if(diaghook_ok) {
+			diag.add_beam_diag(pdbh);
+			if(rank==0) {
+				cout << "DONE: Registered DiagBeamHook" << endl;
+			}
+		} else {
+			delete pdbh;
+			if(rank==0) {
+				cout << "failed to set up DiagBeamHook, not registering" << endl;
+			}
+		}
+	}
 #endif
     diag.init(rank, size, und->outlength(), beam->beam.size(),field->size(),isTime,isScan,filter);
     diag.calc(beam, field, und->getz());  // initial calculation

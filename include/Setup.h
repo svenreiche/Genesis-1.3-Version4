@@ -71,6 +71,7 @@ class Setup: public StringProcessing{
 
    // FIXME: make this 'private' and implement functions for access
    std::vector<DiagFieldPluginCfg> diagpluginfield_;
+   std::vector<DiagBeamPluginCfg> diagpluginbeam_;
 
  private:
    void usage();

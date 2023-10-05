@@ -7,15 +7,86 @@
 
 #include "DiagnosticBase.h"
 
+class DiagBeamHookedBase;
+class DiagBeamPluginCfg;
 class DiagFieldHookedBase;
 class DiagFieldHookInfos;
 class DiagFieldPluginCfg;
 
-// data type for factory and destructor (not C++ destrcutor)
-typedef DiagFieldHookedBase* (*fptr_f)();
-typedef void (*fptr_d)(DiagFieldHookedBase *);
+// data type for factory and destructor (not C++ destructor)
+typedef DiagFieldHookedBase* (*fptr_ff)();
+typedef void (*fptr_df)(DiagFieldHookedBase *);
+typedef DiagBeamHookedBase* (*fptr_fb)();
+typedef void (*fptr_db)(DiagBeamHookedBase *);
 
 typedef void* h_dynamic_lib;
+
+class LibraryInterface {
+public:
+	LibraryInterface(void);
+	
+	bool init_lib(std::string);
+	void close_lib(void);
+	bool is_libok(void);
+	bool supports_multimode(void);
+
+	DiagFieldHookedBase *pdiagfield_ {nullptr};
+	DiagBeamHookedBase  *pdiagbeam_ {nullptr};
+	std::vector<std::string> obj_names_;
+
+	std::string parameter_;
+
+private:
+	bool get_shared_lib_diag(bool, const char *);
+	bool get_shared_lib(h_dynamic_lib *);
+	bool get_shared_lib_objs(h_dynamic_lib *);
+	void report_infos(DiagFieldHookInfos *);
+	void clone_obj_names(const std::vector<const char *> *);
+	// void clone_obj_names(DiagFieldHookInfos *);
+
+	
+	bool libok_ {false};
+	std::string libfile_;
+	h_dynamic_lib h_lib_;
+	fptr_ff factory_ {nullptr};
+	fptr_df destroyer_ {nullptr};
+	fptr_fb beamdiag_factory_ {nullptr};
+	fptr_db beamdiag_destroyer_ {nullptr};
+	bool is_field_ {true};
+	bool multimode_ {false};
+	
+	int my_rank_, comm_size_;
+};
+
+
+
+class DiagBeamHook: public DiagBeamBase {
+public:
+	DiagBeamHook();
+	~DiagBeamHook();
+
+	std::map<std::string,OutputInfo> getTags(FilterDiagnostics &);
+	void getValues(Beam *, std::map<std::string,std::vector<double> >&, int);
+
+	bool init(DiagBeamPluginCfg *);
+	void set_runid(int);
+
+private:
+	bool update_data(std::map<std::string,std::vector<double> > &, std::string, size_t, double);
+	
+	void getValues_worker(Beam *, std::map<std::string,std::vector<double> >&, int);
+	void getValues_multiworker(Beam *, std::map<std::string,std::vector<double> >&, int);
+
+	int my_rank_, comm_size_;
+
+	int runid_ {1};
+
+	std::string obj_prefix_;
+	bool lib_verbose_ {false};
+	bool interface_verbose_ {false};
+	
+	LibraryInterface li_;
+};
 
 class DiagFieldHook: public DiagFieldBase {
 public:
@@ -29,11 +100,6 @@ public:
 	void set_runid(int);
 
 private:
-	bool get_shared_lib_diag(bool, const char *);
-	bool get_shared_lib(h_dynamic_lib *);
-	bool get_shared_lib_objs(h_dynamic_lib *);
-	void report_infos(DiagFieldHookInfos *);
-	void clone_obj_names(DiagFieldHookInfos *);
 	bool update_data(std::map<std::string,std::vector<double> > &, std::string, size_t, double);
 	
 	void getValues_worker(Field *, std::map<std::string,std::vector<double> >&, int);
@@ -43,20 +109,11 @@ private:
 
 	int runid_ {1};
 
-	bool libok {false};
-	std::string libfile_;
-	h_dynamic_lib h_lib_;
-	fptr_f factory_ {nullptr};
-	fptr_d destroyer_ {nullptr};
-	DiagFieldHookedBase *pdiag_ {nullptr};
-	std::vector<std::string> obj_names_;
-	bool multimode_ {false};
-
-
 	std::string obj_prefix_;
-	std::string parameter_;
 	bool lib_verbose_ {false};
 	bool interface_verbose_ {false};
+	
+	LibraryInterface li_;
 };
 
 

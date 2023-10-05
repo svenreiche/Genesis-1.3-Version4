@@ -130,9 +130,6 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
     und->reportLattice(ss.str());
   }
 
-  // propagate information about diagnostic plugins
-  und->diagpluginfield_ = setup->diagpluginfield_;
-
   // call to gencore to do the actual tracking.  
   Gencore core;
   string rn, file;
