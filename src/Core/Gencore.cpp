@@ -1,5 +1,9 @@
 #include "Gencore.h"
 
+#ifdef USE_DPI
+  #include "DiagnosticHookS.h"
+#endif
+
 extern bool MPISingle;
 
 

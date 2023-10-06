@@ -1,15 +1,16 @@
 #ifndef GENESIS_1_3_VERSION4__DIAGHOOKS_H
 #define GENESIS_1_3_VERSION4__DIAGHOOKS_H
 
+/* header file with the data structures/classes */
+
 #include <complex>
 #include <vector>
 
 // FIXME: see how this include can be removed (it is needed to build the plugin modules)
 #include "Particle.h"
 
+// version number included in structures used for data exchange
 #include "DiagnosticHook_V.h"
-
-/* header file with the data structures/classes */
 
 /* class holding configuration parameters extracted from input file */
 class DiagBeamPluginCfg {
@@ -30,7 +31,7 @@ public:
 	bool interface_verbose;
 };
 
-class DiagBeamHookInfos {
+class DiagCommonHookInfos {
 public:
 	// version number: increment if there is change to this definition and recompile GENESIS and the shared libraries
 	int version;
@@ -48,22 +49,14 @@ public:
 	int mpi_rank, mpi_size;
 };
 
-class DiagFieldHookInfos {
+class DiagBeamHookInfos: public DiagCommonHookInfos {
 public:
-	// version number: increment if there is change to this definition and recompile GENESIS and the shared libraries
-	int version;
+	/* identical to parent class */
+};
 
-	const char *info_txt;
-	const std::vector<const char *> *obj_names;
-	std::string parameter;
-	
-	// If true, the plugin processes all slices at once:
-	// useful for plugins that need all slices at the same time,
-	// such as spectral analysis.
-	bool do_multi {false};
-
-	// not really configuration parameters, but handy for debug msgs
-	int mpi_rank, mpi_size;
+class DiagFieldHookInfos: public DiagCommonHookInfos {
+public:
+	/* identical to parent class */
 };
 
 
