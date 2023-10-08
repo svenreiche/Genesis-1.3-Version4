@@ -15,9 +15,11 @@ Diagnostic::~Diagnostic()
 
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+#if 0
 	if(rank==0) {
 		cout << "Diagnostic::~Diagnostic()" << endl;
 	}
+#endif
 
 	for(auto &d: dfield) {
 		delete d;
