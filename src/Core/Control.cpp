@@ -20,8 +20,10 @@ Control::~Control()
 }
 
 
-bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und)
+bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und, bool& error_IO)
 {
+  error_IO = false; /* error_IO==true signals error during a requested dump */
+
   bool sort=false;
   int marker=und->getMarker();
 
@@ -35,24 +37,38 @@ bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und)
 
   if ((marker & 1) != 0){
     WriteFieldHDF5 dump;
-    dump.write(basename,field);
-
-    /* register field dump => it will be reported in list of dumps generated during current "&track" command */
-    string fn;
-    fn = basename + ".fld.h5"; /* file extension as added in WriteFieldHDF5::write (TODO: need to implement proper handling of harmonic field dumping) */
-    und->fielddumps_filename.push_back(fn);
-    und->fielddumps_intstep.push_back(istepz);
+    if(dump.write(basename,field))
+    {
+      /* register field dump => it will be reported in list of dumps generated during current "&track" command */
+      string fn;
+      fn = basename + ".fld.h5"; /* file extension as added in WriteFieldHDF5::write (TODO: need to implement proper handling of harmonic field dumping) */
+      und->fielddumps_filename.push_back(fn);
+      und->fielddumps_intstep.push_back(istepz);
+    } else {
+      /* IO error: do not add filename to list of dumps */
+      error_IO = true;
+      if(rank==0) {
+        cout << "   write operation was not successful!" << endl;
+      }
+    }
   }
   
   if ((marker & 2) != 0){
     WriteBeamHDF5 dump;
-    dump.write(basename,beam);
-
-    /* register beam dump => it will be reported in list of dumps generated during current "&track" command */
-    string fn;
-    fn = basename + ".par.h5"; /* file extension as added in WriteBeamHDF5::write */
-    und->beamdumps_filename.push_back(fn);
-    und->beamdumps_intstep.push_back(istepz);
+    if(dump.write(basename,beam))
+    {
+      /* register beam dump => it will be reported in list of dumps generated during current "&track" command */
+      string fn;
+      fn = basename + ".par.h5"; /* file extension as added in WriteBeamHDF5::write */
+      und->beamdumps_filename.push_back(fn);
+      und->beamdumps_intstep.push_back(istepz);
+    } else {
+      /* IO error: do not add filename to list of dumps */
+      error_IO = true;
+      if(rank==0) {
+        cout << "   write operation was not successful!" << endl;
+      }
+    }
   }
   
   if ((marker & 4) != 0){
@@ -60,7 +76,6 @@ bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und)
   }
 
   // bit value 8 is checked in und->advance()
-  
 
   return sort;
 }

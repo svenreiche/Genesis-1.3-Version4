@@ -2,9 +2,7 @@
 
 extern bool MPISingle;
 
-
-
-int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *setup, Undulator *und,bool isTime, bool isScan, FilterDiagnostics &filter)
+bool Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *setup, Undulator *und,bool isTime, bool isScan, FilterDiagnostics &filter)
 {
 
 
@@ -73,16 +71,20 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *set
     diag.init(rank, size, und->outlength(), beam->beam.size(),field->size(),isTime,isScan,filter);
     diag.calc(beam, field, und->getz());  // initial calculation
 
-    //------------------------------------------
-    // main loop
-
-	while(und->advance(rank)){
+	/*************/
+	/* MAIN LOOP */
+	/*************/
+	while(und->advance(rank))
+	{
 	  double delz=und->steplength();
 
 	  // ----------------------------------------
 	  // step 1 - apply most marker action  (always at beginning of a step)
-
-	  bool sort=control->applyMarker(beam, field, und);
+	  bool error_IO=false;
+	  bool sort=control->applyMarker(beam, field, und, error_IO);
+	  if(error_IO) {
+	    return(false);
+	  }
 
 
 	  // ---------------------------------------
@@ -109,7 +111,7 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *set
 
 	  for (int i=0; i<field->size();i++){
 	    field->at(i)->track(delz,beam,und);
-      }
+	  }
 
 
 	  //-----------------------------------------
@@ -127,17 +129,20 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *set
 	  //  field->at(i)->diagnostics(und->outstep());
 	  //}
 
-      if (und->outstep()) {
-          diag.calc(beam, field, und->getz());
-      }
-    }
+	  if (und->outstep()) {
+	    diag.calc(beam, field, und->getz());
+	  }
+	}
      
         //---------------------------
         // end and clean-up 
 
 	// perform last marker action
-
-	bool sort=control->applyMarker(beam, field, und);
+        bool error_IO=false;
+	bool sort=control->applyMarker(beam, field, und, error_IO);
+	if(error_IO) {
+	  return(false);
+	}
 	if (sort){
 	    int shift=beam->sort();
 
@@ -163,8 +168,5 @@ int Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *set
     if (rank==0){
 	  cout << endl << "Core Simulation done." << endl;
     }
-
-
-    return 0;
-
+    return(true);
 }
