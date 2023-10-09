@@ -30,7 +30,7 @@ class Gencore{
  public:
   Gencore(){};
   virtual ~Gencore(){};
-  int run(const char *,Beam *, vector<Field *> *, Setup *, Undulator *, bool, bool, FilterDiagnostics &filter);
+  bool run(const char *,Beam *, vector<Field *> *, Setup *, Undulator *, bool, bool, FilterDiagnostics &filter);
 };
 
 

@@ -22,7 +22,7 @@ class Control : public HDF5Base{
    Control();
    virtual ~Control();
    void applySlippage(double, Field *);
-   bool applyMarker(Beam *, vector<Field *> *, Undulator *);
+   bool applyMarker(Beam *, vector<Field *> *, Undulator *, bool&);
    bool init(int, int, const char *, Beam *, vector<Field *> *, Undulator *,bool,bool);
    void output(Beam *, vector<Field*> *,Undulator *,Diagnostic &);
 
