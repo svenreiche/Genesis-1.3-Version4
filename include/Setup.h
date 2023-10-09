@@ -14,7 +14,10 @@
 #include "StringProcessing.h"
 #include "Lattice.h"
 #include "Diagnostic.h"
-#include "DiagnosticHookS.h"
+#ifdef USE_DPI
+  class DiagFieldPluginCfg;
+  class DiagBeamPluginCfg;
+#endif
 
 using namespace std;
 
@@ -69,9 +72,11 @@ class Setup: public StringProcessing{
    int    BWF_get_inc();
    void   BWF_set_inc(int);
 
+#ifdef USE_DPI
    // FIXME: make this 'private' and implement functions for access
    std::vector<DiagFieldPluginCfg> diagpluginfield_;
    std::vector<DiagBeamPluginCfg> diagpluginbeam_;
+#endif
 
  private:
    void usage();

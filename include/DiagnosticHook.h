@@ -7,7 +7,9 @@
 
 #include "DiagnosticBase.h"
 
+class DiagCommonHookInfos;
 class DiagBeamHookedBase;
+class DiagBeamHookInfos;
 class DiagBeamPluginCfg;
 class DiagFieldHookedBase;
 class DiagFieldHookInfos;
@@ -40,9 +42,11 @@ private:
 	bool get_shared_lib_diag(bool, const char *);
 	bool get_shared_lib(h_dynamic_lib *);
 	bool get_shared_lib_objs(h_dynamic_lib *);
+
+	void report_common_infos(DiagCommonHookInfos *);
 	void report_infos(DiagFieldHookInfos *);
+	void report_infos(DiagBeamHookInfos *);
 	void clone_obj_names(const std::vector<const char *> *);
-	// void clone_obj_names(DiagFieldHookInfos *);
 
 	
 	bool libok_ {false};

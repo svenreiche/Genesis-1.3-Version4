@@ -1,5 +1,8 @@
 #include <sstream>
 #include "Setup.h"
+#ifdef USE_DPI
+  #include "DiagnosticHookS.h"
+#endif
 
 Setup::Setup()
 {

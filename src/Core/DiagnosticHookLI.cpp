@@ -126,7 +126,7 @@ bool LibraryInterface::get_shared_lib(h_dynamic_lib *hout)
 	return(true);
 }
 
-void LibraryInterface::report_infos(DiagFieldHookInfos *pi)
+void LibraryInterface::report_common_infos(DiagCommonHookInfos *pi)
 {
 	cout << "Rank " << my_rank_ << ": Got class instance" << endl;
 	cout << "   info_txt=\"" << pi->info_txt << "\"" << endl;
@@ -146,6 +146,17 @@ void LibraryInterface::report_infos(DiagFieldHookInfos *pi)
 		}
 	}
 }
+
+/* As of now these functions just call the function reporting common parameters. Keep them because in the future beam/field specific stuff might be added here */
+void LibraryInterface::report_infos(DiagFieldHookInfos *pi)
+{
+	report_common_infos(pi);
+}
+void LibraryInterface::report_infos(DiagBeamHookInfos *pi)
+{
+	report_common_infos(pi);
+}
+
 
 //void LibraryInterface::clone_obj_names(DiagFieldHookInfos *pi)
 void LibraryInterface::clone_obj_names(const vector<const char *> *p)
@@ -244,8 +255,7 @@ bool LibraryInterface::get_shared_lib_objs(h_dynamic_lib *h)
 		multimode_ = infos.do_multi;
 		clone_obj_names(infos.obj_names);
 		if(my_rank_==0) {
-			// report_infos(&infos);
-			cout << "Info: Reporting for beam plugins to be implemented" << endl;
+			report_infos(&infos);
 		}
 	}
 
