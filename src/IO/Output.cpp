@@ -292,16 +292,17 @@ void Output::writeGroup(std::string group, std::map<std::string,std::vector<doub
     return;
 }
 
-void Output::writeDataset(hid_t gid, string path, std::vector<double> &val, std::string unit, bool single){
-
+void Output::writeDataset(hid_t gid, string path, std::vector<double> &val, std::string unit, bool single)
+{
     std::size_t pos = path.find("/");
     if (pos == std::string::npos) {
         if (single) {
             this->writeSingleNode(gid, path.c_str(),unit.c_str(), &val);
         } else {
-            this->writeBuffer(gid, path.c_str(), unit. c_str(), &val);
+            this->writeBuffer(gid, path.c_str(), unit.c_str(), &val);
         }
     }  else {
+        /* recursive procedure: split path of HDF5 obj to write and (1) open/create first part, then (2) continue (and split again, if needed) */
         string group = path.substr(0,pos);
         hid_t gsub;
         if (this->groupExists(gid,group)){

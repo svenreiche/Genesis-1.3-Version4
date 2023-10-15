@@ -195,14 +195,12 @@ void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> 
     out->writeGroup("Global",val[1], units[1],single[1]);
     out->writeGroup("Beam",val[2], units[2],single[2]);
     for (int i=3; i<val.size();i++){
-        int h=field->at(i-3)->harm;
-        if (h==1){
-            out->writeGroup("Field",val[i], units[i],single[i]);
-        } else {
-            char buff[30];
-            snprintf(buff, sizeof(buff), "Field%d", h);
-            out->writeGroup(buff,val[i], units[i],single[i]);
+        const int h = field->at(i-3)->harm;
+        char objname[30] = "Field"; // default for harmonic==1
+        if (h!=1){
+            snprintf(objname, sizeof(objname), "Field%d", h);
         }
+        out->writeGroup(objname,val[i], units[i],single[i]);
     }
     out->close();
     delete out;
