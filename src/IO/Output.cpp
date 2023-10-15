@@ -72,12 +72,15 @@ void Output::open(string file, int s0_in, int ds_in)
 
 void Output::writeMeta(Undulator *und)
 {
+  hid_t gid=H5Gcreate(fid,"Meta",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  writeMetaWorker(und, gid);
+  H5Gclose(gid);
+}
+void Output::writeMetaWorker(Undulator *und, hid_t gid)
+{
   VersionInfo vi;
-  hid_t gid,gidsub;
-  vector<double> tmp;
-  tmp.resize(1);
-
-  gid=H5Gcreate(fid,"Meta",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  hid_t gidsub;
+  vector<double> tmp(1,0);
 
   gidsub=H5Gcreate(gid,"Version",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
   tmp[0]=vi.Major();
@@ -143,9 +146,8 @@ void Output::writeMeta(Undulator *und)
   inFile2.close();
 
   reportDumps(gid, und);
+  reportPlugins(gid, und);
   reportMPI(gid);
-
-  H5Gclose(gid);
 }
 
 void Output::writeGlobal(Undulator *und, double gamma, double lambda, double sample, double slen, bool one4one, bool time, bool scan, int ntotal)
@@ -238,6 +240,24 @@ void Output::reportDumps(hid_t gid, Undulator *und)
     writeSingleNodeInt(gid_dr, objname.str(), &tmp); */
   }
   H5Gclose(gid_dr);
+}
+
+void Output::reportPlugins(hid_t gid, Undulator *und)
+{
+  size_t nplugins=und->plugin_info_txt.size();
+  if(nplugins==0)
+    return;
+
+  hid_t gid_sub=H5Gcreate(gid,"Plugins",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  for(int kk=0; kk<nplugins; kk++) {
+    stringstream objname;
+    objname << "info_txt." << (kk+1);
+    writeSingleNodeString(gid_sub, objname.str(), &und->plugin_info_txt.at(kk));
+    objname.str(""); objname.clear();
+    objname << "prefix." << (kk+1);
+    writeSingleNodeString(gid_sub, objname.str(), &und->plugin_hdf5_prefix.at(kk));
+  }
+  H5Gclose(gid_sub);
 }
 
 void Output::reportMPI(hid_t gid)

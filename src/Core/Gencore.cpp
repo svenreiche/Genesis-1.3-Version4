@@ -32,6 +32,8 @@ bool Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *se
 
     Diagnostic diag;
 #ifdef USE_DPI
+    und->plugin_info_txt.clear();
+
     for(int kk=0; kk<setup->diagpluginfield_.size(); kk++) {
 	if(rank==0) {
             cout << "Setting up DiagFieldHook for libfile=\"" << setup->diagpluginfield_.at(kk).libfile << "\", obj_prefix=\"" << setup->diagpluginfield_.at(kk).obj_prefix << "\"" << endl;
@@ -40,10 +42,13 @@ bool Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *se
         bool diaghook_ok = pdfh->init(&setup->diagpluginfield_.at(kk));
         if(diaghook_ok) {
 	    pdfh->set_runid(setup->getCount()); // propagate run id so that it can be used in the plugins, for instance for filename generation
-	    string xx = pdfh->get_info_txt();
-	    if(rank==0) {
-	        cout << "info_txt: " << xx << endl;
-	    }
+
+	    string tmp_infotxt = pdfh->get_info_txt();
+	    und->plugin_info_txt.push_back(tmp_infotxt);
+	    stringstream tmp_prefix;
+	    tmp_prefix << "/Field/" << setup->diagpluginfield_.at(kk).obj_prefix;
+	    und->plugin_hdf5_prefix.push_back(tmp_prefix.str());
+
             diag.add_field_diag(pdfh);
             if(rank==0) {
                 cout << "DONE: Registered DiagFieldHook" << endl;
@@ -64,10 +69,13 @@ bool Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *se
 		bool diaghook_ok = pdbh->init(&setup->diagpluginbeam_.at(kk));
 		if(diaghook_ok) {
 			pdbh->set_runid(setup->getCount()); // propagate run id so that it can be used in the plugins, for instance for filename generation
-			string xx = pdbh->get_info_txt();
-			if(rank==0) {
-				cout << "info_txt: " << xx << endl;
-			}
+
+			string tmp_infotxt = pdbh->get_info_txt();
+			und->plugin_info_txt.push_back(tmp_infotxt);
+			stringstream tmp_prefix;
+			tmp_prefix << "/Beam/" << setup->diagpluginbeam_.at(kk).obj_prefix;
+			und->plugin_hdf5_prefix.push_back(tmp_prefix.str());
+
 			diag.add_beam_diag(pdbh);
 			if(rank==0) {
 				cout << "DONE: Registered DiagBeamHook" << endl;

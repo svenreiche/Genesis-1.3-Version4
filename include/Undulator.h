@@ -66,6 +66,10 @@ class Undulator: public HDF5Base{
    vector<string> beamdumps_filename;
    vector<int>    beamdumps_intstep;
 
+   // for plugin interface: used to retain information obtained at the beginning of tracking run for later storage in .out.h5 file (class instance is provided to output::writeMeta) 
+   vector<string> plugin_info_txt;
+   vector<string> plugin_hdf5_prefix;
+
 
  private: 
 
