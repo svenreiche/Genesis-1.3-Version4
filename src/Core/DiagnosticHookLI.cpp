@@ -237,7 +237,10 @@ bool LibraryInterface::get_shared_lib_objs(h_dynamic_lib *h)
 			cout << "Rank 0: Calling get_infos" << endl;
 		}
 		pdiagfield_->get_infos(&infos);
+
+		// store and report library infos
 		multimode_ = infos.do_multi;
+		info_txt_ = infos.info_txt;
 		clone_obj_names(infos.obj_names);
 		if(my_rank_==0) {
 			report_infos(&infos);
@@ -252,7 +255,10 @@ bool LibraryInterface::get_shared_lib_objs(h_dynamic_lib *h)
 			cout << "Rank 0: Calling get_infos" << endl;
 		}
 		pdiagbeam_->get_infos(&infos);
+
+		// store and report library infos
 		multimode_ = infos.do_multi;
+		info_txt_ = infos.info_txt;
 		clone_obj_names(infos.obj_names);
 		if(my_rank_==0) {
 			report_infos(&infos);
@@ -292,4 +298,9 @@ bool LibraryInterface::supports_multimode(void)
 bool LibraryInterface::is_libok(void)
 {
 	return(libok_);
+}
+
+const string& LibraryInterface::get_info_txt() const
+{
+	return(info_txt_);
 }

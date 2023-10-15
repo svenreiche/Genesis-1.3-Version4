@@ -54,6 +54,10 @@ void DiagBeamHook::set_runid(int runid_in)
 {
 	runid_ = runid_in;
 }
+const std::string& DiagBeamHook::get_info_txt() const
+{
+	return(li_.get_info_txt());
+}
 
 bool DiagBeamHook::update_data(std::map<std::string,std::vector<double> > &val, string key, size_t idx, double v)
 {

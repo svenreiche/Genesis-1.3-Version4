@@ -38,8 +38,12 @@ bool Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *se
         }
         DiagFieldHook *pdfh = new DiagFieldHook(); /* !do not delete this instance, it will be destroyed when DiagFieldHook instance is deleted! */
         bool diaghook_ok = pdfh->init(&setup->diagpluginfield_.at(kk));
-	pdfh->set_runid(setup->getCount()); // propagate run id so that it can be used in the plugins, for instance for filename generation
         if(diaghook_ok) {
+	    pdfh->set_runid(setup->getCount()); // propagate run id so that it can be used in the plugins, for instance for filename generation
+	    string xx = pdfh->get_info_txt();
+	    if(rank==0) {
+	        cout << "info_txt: " << xx << endl;
+	    }
             diag.add_field_diag(pdfh);
             if(rank==0) {
                 cout << "DONE: Registered DiagFieldHook" << endl;
@@ -58,8 +62,12 @@ bool Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *se
 		}
 		DiagBeamHook *pdbh = new DiagBeamHook(); /* !do not delete this instance, it will be destroyed when DiagBeamHook instance is deleted! */
 		bool diaghook_ok = pdbh->init(&setup->diagpluginbeam_.at(kk));
-		pdbh->set_runid(setup->getCount()); // propagate run id so that it can be used in the plugins, for instance for filename generation
 		if(diaghook_ok) {
+			pdbh->set_runid(setup->getCount()); // propagate run id so that it can be used in the plugins, for instance for filename generation
+			string xx = pdbh->get_info_txt();
+			if(rank==0) {
+				cout << "info_txt: " << xx << endl;
+			}
 			diag.add_beam_diag(pdbh);
 			if(rank==0) {
 				cout << "DONE: Registered DiagBeamHook" << endl;
