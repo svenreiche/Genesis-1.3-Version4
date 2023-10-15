@@ -8,6 +8,7 @@ extern bool MPISingle;
 
 bool Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *setup, Undulator *und,bool isTime, bool isScan, FilterDiagnostics &filter)
 {
+    // function returns 'true' if everything is ok
 
 
     //-------------------------------------------------------
@@ -20,7 +21,7 @@ bool Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *se
 	    MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
     }
 
-	if (rank==0) {
+    if (rank==0) {
         cout << endl << "Running Core Simulation..." << endl;
     }
 
@@ -159,13 +160,14 @@ bool Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *se
 
 
 	// write out diagnostic arrays
-
 	if (rank==0){
 	  cout << "Writing output file..." << endl;
 	}
-
-	diag.writeToOutputFile(file, beam,field,und);
-    // control->output(beam,field,und,diag);
+	// control->output(beam,field,und,diag);
+	if(!diag.writeToOutputFile(file, beam,field,und)) {
+	  delete control;
+	  return(false);
+	}
 
 	delete control;
       

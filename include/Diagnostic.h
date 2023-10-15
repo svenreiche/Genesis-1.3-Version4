@@ -90,12 +90,12 @@ class Diagnostic{
 
 
 public:
-    Diagnostic() = default;
+    Diagnostic();
     // virtual ~Diagnostic() = default;
     virtual ~Diagnostic();
     void init(int,int, int, int,int,bool,bool, FilterDiagnostics &);
     void calc(Beam *, std::vector<Field*> *,double);
-    void writeToOutputFile(std:: string, Beam *, vector<Field*> *, Undulator *);
+    bool writeToOutputFile(std:: string, Beam *, vector<Field*> *, Undulator *);
     std::vector<std::map<std::string,std::vector<double> > > val;
     std::vector<std::map<std::string,std::string > >units;
     std::vector<std::map<std::string, bool> > single;
@@ -110,6 +110,8 @@ private:
     bool time,scan;
 
     bool diag_can_add {true};
+
+    int my_rank_;
 };
 
 

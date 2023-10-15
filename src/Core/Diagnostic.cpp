@@ -9,14 +9,15 @@
 #include "Diagnostic.h"
 #include "Output.h"
 
+Diagnostic::Diagnostic()
+{
+	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank_);
+}
+
 Diagnostic::~Diagnostic()
 {
-	int rank;
-
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
 #if 0
-	if(rank==0) {
+	if(my_rank_==0) {
 		cout << "Diagnostic::~Diagnostic()" << endl;
 	}
 #endif
@@ -58,8 +59,8 @@ bool Diagnostic::add_field_diag(DiagFieldBase *pd)
 // diagnostics classes are only concern with the actual calculation.
 
 // routine to register the output parameters and to allocate memory
-void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool isTime, bool isScan, FilterDiagnostics &filter){
-
+void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool isTime, bool isScan, FilterDiagnostics &filter)
+{
     // lock the vectors holding the instances of diagnostic classes
     diag_can_add=false;
 
@@ -68,7 +69,7 @@ void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool is
     ns = ns_in;
     time = isTime;
     scan = isScan;
-    noff =rank*ns;
+    noff =rank*ns; // CL, 2023-10-15: kept caller-provided MPI rank here (for the time being)
     ntotal = ns * size;
     val.clear();
     units.clear();
@@ -102,7 +103,7 @@ void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool is
             for (auto const &tag : group->getTags(filter)){
                 auto end = units.at(3+ifld).end();
                 if(units.at(3+ifld).find(tag.first) != end) {
-                    if(rank==0) {
+                    if(my_rank_==0) {
                         // note: warning is generated for every Field
                         cout << "Diagnostic::init: warning: key " << tag.first << " already existing in map (possible reason: multiple plugins with same obj_prefix)" << endl;
                     }
@@ -127,8 +128,8 @@ void Diagnostic::addOutput(int groupID, std::string key, std::string unit, std::
     single.at(groupID)[key]=true;
 }
 
-// adds some output and lfushes everything to a file
-void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> *field, Undulator *und)
+// adds some output and flushes everything to a file
+bool Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> *field, Undulator *und)
 {
     // lock the vectors holding the instances of diagnostic classes
     diag_can_add=false;
@@ -189,7 +190,13 @@ void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> 
     }
     this->addOutput(1,"frequency","ev",global);
 
-    out->open(root,noff,ns);
+    if(!out->open(root,noff,ns)) {
+      if(my_rank_==0) {
+        cout << "   unable to open output file" << endl;
+      }
+      delete out;
+      return(false);
+    }
     out->writeMeta(und);
     out->writeGroup("Lattice",val[0], units[0],single[0]);
     out->writeGroup("Global",val[1], units[1],single[1]);
@@ -206,7 +213,7 @@ void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> 
     }
     out->close();
     delete out;
-    return;
+    return(true);
 }
 
 // wrapper to do all the diagnostics calculation at a given integration step iz.
@@ -529,7 +536,6 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
 #ifdef FFTW
 void DiagField::cleanup_FFT_resources(void)
 {
-
 	for(auto &[k,obj]: fftobj) {
 		delete obj;
 	}
