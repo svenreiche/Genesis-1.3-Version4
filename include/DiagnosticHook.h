@@ -30,6 +30,8 @@ public:
 	bool init_lib(std::string);
 	void close_lib(void);
 	bool is_libok(void);
+	bool is_plugintype_field(void);
+	bool is_plugintype_beam(void);
 	bool supports_multimode(void);
 	const std::string& get_info_txt() const;
 

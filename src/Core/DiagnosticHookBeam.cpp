@@ -33,7 +33,7 @@ bool DiagBeamHook::init(DiagBeamPluginCfg *pin)
 	if(my_rank_==0) {
 		cout << "DiagBeamHook::init" << endl;
 	}
-#if 1
+
 	/* Copy all needed infos from the configuration data */
 	// li_.libfile_           = pin->libfile;
 	//li_.obj_prefix_        = pin->obj_prefix;
@@ -46,8 +46,12 @@ bool DiagBeamHook::init(DiagBeamPluginCfg *pin)
 	lib_verbose_       = pin->lib_verbose;
 	interface_verbose_ = pin->interface_verbose;
 	
-	return(li_.init_lib(pin->libfile));
-#endif
+	bool res_init = li_.init_lib(pin->libfile);
+	bool is_beam  = li_.is_plugintype_beam(); // current implementation of function signals false if load was unsuccessful
+	if((!is_beam) && (my_rank_==0)) {
+		cout << "ERROR: This appears not to be a beam plugin" << endl;
+	}
+	return(res_init && is_beam);
 }
 
 void DiagBeamHook::set_runid(int runid_in)

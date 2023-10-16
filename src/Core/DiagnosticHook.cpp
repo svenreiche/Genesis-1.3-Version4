@@ -47,7 +47,12 @@ bool DiagFieldHook::init(DiagFieldPluginCfg *pin)
 	lib_verbose_       = pin->lib_verbose;
 	interface_verbose_ = pin->interface_verbose;
 	
-	return(li_.init_lib(pin->libfile));
+	bool res_init = li_.init_lib(pin->libfile);
+	bool is_field = li_.is_plugintype_field(); // current implementation of function signals false if load was unsuccessful
+	if((!is_field) && (my_rank_==0)) {
+		cout << "ERROR: This appears not to be a field plugin" << endl;
+	}
+	return(res_init && is_field);
 }
 
 void DiagFieldHook::set_runid(int runid_in)

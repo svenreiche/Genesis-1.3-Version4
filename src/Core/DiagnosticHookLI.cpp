@@ -299,6 +299,22 @@ bool LibraryInterface::is_libok(void)
 {
 	return(libok_);
 }
+bool LibraryInterface::is_plugintype_field(void)
+{
+	// if library is not OK, we don't know if it is of field type (consider changing this if needed)
+	if(!libok_)
+		return(false);
+
+	return(is_field_);
+}
+bool LibraryInterface::is_plugintype_beam(void)
+{
+	// if library is not OK, we don't know if it is of field type (consider changing this if needed)
+	if(!libok_)
+		return(false);
+
+	return(!is_field_); // currently there are only two types of plugins: field and beam
+}
 
 const string& LibraryInterface::get_info_txt() const
 {
