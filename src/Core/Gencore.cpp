@@ -174,13 +174,18 @@ bool Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *se
 	}
 
 
-	// write out diagnostic arrays
-
+	/* write out diagnostic arrays */
 	if (rank==0){
 	  cout << "Writing output file..." << endl;
 	}
 
-	diag.writeToOutputFile(file, beam,field,und);
+	// generate file name for optional file with copy of metadata (this is a copy of the corresponding code block in Track.cpp)
+	string rn, fnout_meta;
+	setup->getRootName(&rn);
+	setup->RootName_to_FileName(&fnout_meta, &rn);
+	fnout_meta.append(".meta.h5");
+
+	diag.writeToOutputFile(file, fnout_meta, beam,field,und, setup->get_write_meta_file());
     // control->output(beam,field,und,diag);
 
 	delete control;

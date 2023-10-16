@@ -49,6 +49,7 @@ class Setup: public StringProcessing{
    bool   getSemaEnDone();
    void   setSemaFN(string);
    bool   getSemaFN(string *);
+   bool   get_write_meta_file();
 
    int    getNpart();
    int    getNbins();
@@ -91,6 +92,7 @@ class Setup: public StringProcessing{
 
    int seed, rank,npart,nbins,runcount;
 
+   bool write_meta_file;
    bool sema_file_enabled_start, sema_file_enabled_done;
    string sema_file_name; // user-defined name of semaphore file, if empty: file name will be derived in function getSemaFN
 };
@@ -141,4 +143,6 @@ inline void   Setup::BWF_set_inc(int in)
 
 inline bool   Setup::getSemaEnStart() { return sema_file_enabled_start; }
 inline bool   Setup::getSemaEnDone()  { return sema_file_enabled_done; }
+
+inline bool   Setup::get_write_meta_file(){ return write_meta_file;}
 #endif

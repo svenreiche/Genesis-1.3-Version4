@@ -128,13 +128,11 @@ void Diagnostic::addOutput(int groupID, std::string key, std::string unit, std::
 }
 
 // adds some output and lfushes everything to a file
-void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> *field, Undulator *und)
+void Diagnostic::writeToOutputFile(string fnout, string fnmeta, Beam *beam, vector<Field*> *field, Undulator *und, bool write_meta_file)
 {
     // lock the vectors holding the instances of diagnostic classes
     diag_can_add=false;
 
-    Output *out=new Output;
-//    string file=root.append(".test");
     this->addOutput(0,"zplot","m", zout);
     this->addOutput(0,"z","m", und->z);
     this->addOutput(0,"dz","m", und->dz);
@@ -189,7 +187,13 @@ void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> 
     }
     this->addOutput(1,"frequency","ev",global);
 
-    out->open(root,noff,ns);
+
+
+
+
+    Output *out=new Output;
+//    string file=root.append(".test");
+    out->open(fnout,noff,ns);
     out->writeMeta(und);
     out->writeGroup("Lattice",val[0], units[0],single[0]);
     out->writeGroup("Global",val[1], units[1],single[1]);
@@ -204,7 +208,15 @@ void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> 
     }
     out->close();
     delete out;
-    return;
+
+    if(write_meta_file) {
+        Output out_meta;
+        out_meta.open(fnmeta,
+            noff /* controls which node is writing the strings to the hdf5 file */,
+            ns);
+        out_meta.writeMeta(und);
+        out_meta.close();
+    }
 }
 
 // wrapper to do all the diagnostics calculation at a given integration step iz.
