@@ -26,7 +26,7 @@ class Output : public HDF5Base {
  public:
    Output();
    virtual ~Output();
-   void open(string,int,int);
+   bool open(string,int,int);
    void close();
    void writeFieldBuffer(Field *);
    void writeBeamBuffer(Beam *);

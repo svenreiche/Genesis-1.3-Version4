@@ -45,9 +45,8 @@ void Output::close(){
 }
 
 
-void Output::open(string file, int s0_in, int ds_in)
+bool Output::open(string file, int s0_in, int ds_in)
 {
-
   // s0 = slice number of first slice for a given node
   // ds = number of slices, which are kept by a given node
 
@@ -65,7 +64,7 @@ void Output::open(string file, int s0_in, int ds_in)
   fid=H5Fcreate(file.c_str(),H5F_ACC_TRUNC, H5P_DEFAULT,pid);
   H5Pclose(pid);
 #else
-  create_outfile(&fid, file);
+  return(create_outfile(&fid, file));
 #endif
 }
 
