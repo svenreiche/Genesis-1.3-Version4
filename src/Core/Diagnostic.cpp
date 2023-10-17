@@ -189,6 +189,7 @@ bool Diagnostic::writeToOutputFile(string fnout, string fnmeta, Beam *beam, vect
     this->addOutput(1,"frequency","ev",global);
 
 
+
     Output *out=new Output;
 //    string file=root.append(".test"); // CL, 2023-10-16: variable 'root' was renamed
     if(!out->open(fnout,noff,ns)) {
@@ -198,8 +199,6 @@ bool Diagnostic::writeToOutputFile(string fnout, string fnmeta, Beam *beam, vect
       delete out;
       return(false);
     }
-
-
     out->writeMeta(und);
     out->writeGroup("Lattice",val[0], units[0],single[0]);
     out->writeGroup("Global",val[1], units[1],single[1]);
@@ -216,11 +215,18 @@ bool Diagnostic::writeToOutputFile(string fnout, string fnmeta, Beam *beam, vect
     delete out;
 
 
-    if(write_meta_file) {
+    if(write_meta_file)
+    {
         Output out_meta;
-        out_meta.open(fnmeta,
-            noff /* controls which node is writing the strings to the hdf5 file */,
-            ns);
+        if(!out_meta.open(fnmeta,
+               noff /* controls which node is writing the strings to the hdf5 file */,
+               ns))
+        {
+            if(my_rank_==0) {
+                cout << "   unable to open output file" << endl;
+            }
+            return(false);
+        }
         out_meta.writeMeta(und);
         out_meta.close();
     }
