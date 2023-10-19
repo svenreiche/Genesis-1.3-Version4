@@ -69,9 +69,9 @@ bool MPISingle;  // global variable to do mpic or not
 //vector<double> evtime;
 //double evt0;
 
-int genmain (string mainstring, map<string,string> &comarg, bool split) {
-
-    meta_inputfile=mainstring;
+int genmain (string inputfile, map<string,string> &comarg, bool split)
+{
+    meta_inputfile=inputfile;
     int ret=0;
     MPISingle=split;
 	int rank,size;
@@ -140,7 +140,11 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
 
     //-----------------------------------------------------------
     // main loop for parsing
-    parser.open(mainstring,rank);
+    parser.open(inputfile,rank);
+    if(0==rank) {
+        cout << "Opened input file " << inputfile << endl;
+    }
+
 
         while(true){
           bool parser_result = parser.parse(&element,&argument);
