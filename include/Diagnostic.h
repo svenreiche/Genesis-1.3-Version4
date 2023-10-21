@@ -17,14 +17,19 @@
 #include "FFTObj.h"
 #endif
 
-#include "Field.h"
-#include "Beam.h"
-#include "Undulator.h"
+//#include "Field.h"
+//#include "Beam.h"
+//#include "Undulator.h"
+class Beam;
+class Field;
+class Undulator;
+class Setup;
 
 #include "DiagnosticBase.h"
 #ifdef USE_DPI
   #include "DiagnosticHook.h"
 #endif
+
 
 //------------------------------------
 // genesis official class for beam diagnostics
@@ -95,7 +100,7 @@ public:
     virtual ~Diagnostic();
     void init(int,int, int, int,int,bool,bool, FilterDiagnostics &);
     void calc(Beam *, std::vector<Field*> *,double);
-    bool writeToOutputFile(std::string, std::string, Beam *, vector<Field*> *, Undulator *, bool);
+    bool writeToOutputFile(Beam *, vector<Field*> *, Setup *, Undulator *);
 
     std::vector<std::map<std::string,std::vector<double> > > val;
     std::vector<std::map<std::string,std::string > >units;

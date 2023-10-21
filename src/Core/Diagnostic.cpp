@@ -8,6 +8,7 @@
 
 #include "Diagnostic.h"
 #include "Output.h"
+#include "Setup.h"
 
 Diagnostic::Diagnostic()
 {
@@ -82,7 +83,7 @@ void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool is
 
     // loop through the different class for registration and allocate memory
 
-    // undulator group (val.at(0) will be defined later in this->writeOutputFile
+    // undulator group (val.at(0) will be defined later in this->writeToOutputFile
 
     // beam
     for (auto group : dbeam){
@@ -129,10 +130,22 @@ void Diagnostic::addOutput(int groupID, std::string key, std::string unit, std::
 }
 
 // adds some output and flushes everything to a file
-bool Diagnostic::writeToOutputFile(string fnout, string fnmeta, Beam *beam, vector<Field*> *field, Undulator *und, bool write_meta_file)
+bool Diagnostic::writeToOutputFile(Beam *beam, vector<Field*> *field, Setup *setup, Undulator *und)
 {
     // lock the vectors holding the instances of diagnostic classes
     diag_can_add=false;
+
+    string rn, fnout;
+    setup->getRootName(&rn);
+    setup->RootName_to_FileName(&fnout, &rn);
+    fnout.append(".out.h5");
+
+    bool write_meta_file = setup->get_write_meta_file();
+    // generate file name for optional file with copy of metadata (this is a copy of the corresponding code block in Track.cpp)
+    string fnmeta;
+    setup->RootName_to_FileName(&fnmeta, &rn);
+    fnmeta.append(".meta.h5");
+
 
     this->addOutput(0,"zplot","m", zout);
     this->addOutput(0,"z","m", und->z);

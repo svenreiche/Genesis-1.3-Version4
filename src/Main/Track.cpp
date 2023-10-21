@@ -132,11 +132,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
 
   // call to gencore to do the actual tracking.  
   Gencore core;
-  string rn, file;
-  setup->getRootName(&rn);
-  setup->RootName_to_FileName(&file, &rn);
-  file.append(".out.h5");
-  if(!core.run(file.c_str(),beam,field,setup,und,isTime,isScan, filter)) {
+  if(!core.run(beam,field,setup,und,isTime,isScan, filter)) {
     /* execution of simulation was not successful, for instance because of IO error during a file write triggered by marker */
     if  (rank==0) { cout << "End of Track (after error)" << endl;}
     return(false);
