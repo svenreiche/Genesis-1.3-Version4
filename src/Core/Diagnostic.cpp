@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <sstream>
 #include <complex>
 #include <mpi.h>
 
@@ -140,7 +141,6 @@ bool Diagnostic::writeToOutputFile(Beam *beam, vector<Field*> *field, Setup *set
     setup->RootName_to_FileName(&fnout, &rn);
     fnout.append(".out.h5");
 
-    bool write_meta_file = setup->get_write_meta_file();
     // generate file name for optional file with copy of metadata (this is a copy of the corresponding code block in Track.cpp)
     string fnmeta;
     setup->RootName_to_FileName(&fnmeta, &rn);
@@ -203,32 +203,43 @@ bool Diagnostic::writeToOutputFile(Beam *beam, vector<Field*> *field, Setup *set
 
 
 
-    Output *out=new Output;
+    if(setup->get_do_write_outfile())
+    {
+        Output out;
 //    string file=root.append(".test"); // CL, 2023-10-16: variable 'root' was renamed
-    if(!out->open(fnout,noff,ns)) {
-      if(my_rank_==0) {
-        cout << "   unable to open output file" << endl;
-      }
-      delete out;
-      return(false);
-    }
-    out->writeMeta(und);
-    out->writeGroup("Lattice",val[0], units[0],single[0]);
-    out->writeGroup("Global",val[1], units[1],single[1]);
-    out->writeGroup("Beam",val[2], units[2],single[2]);
-    for (int i=3; i<val.size();i++){
-        const int h = field->at(i-3)->harm;
-        char objname[30] = "Field"; // default for harmonic==1
-        if (h!=1){
-            snprintf(objname, sizeof(objname), "Field%d", h);
+        if(!out.open(fnout,noff,ns)) {
+          if(my_rank_==0) {
+            cout << "   unable to open output file" << endl;
+          }
+          return(false);
         }
-        out->writeGroup(objname,val[i], units[i],single[i]);
+        out.writeMeta(und);
+        out.writeGroup("Lattice",val[0], units[0],single[0]);
+        out.writeGroup("Global",val[1], units[1],single[1]);
+        out.writeGroup("Beam",val[2], units[2],single[2]);
+        for (int i=3; i<val.size();i++){
+            const int h = field->at(i-3)->harm;
+            char objname[30] = "Field"; // default for harmonic==1
+            if (h!=1){
+                snprintf(objname, sizeof(objname), "Field%d", h);
+            }
+            out.writeGroup(objname,val[i], units[i],single[i]);
+        }
+        out.close();
+    } else {
+       /* debug option to suppress .out.h5 file is ON: generate info file instead */
+       if(my_rank_==0) {
+           stringstream ss;
+           ofstream ofs;
+           ss << fnout << ".suppressed";
+           ofs.open(ss.str(), ofstream::out);
+           ofs.close();
+           cout << "   INFO: debug option to suppress writing of .out.h5 file is set" << endl;
+       }
     }
-    out->close();
-    delete out;
 
 
-    if(write_meta_file)
+    if(setup->get_write_meta_file())
     {
         Output out_meta;
         if(!out_meta.open(fnmeta,
