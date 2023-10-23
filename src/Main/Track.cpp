@@ -27,7 +27,7 @@ void Track::usage(){
   cout << " int sort_step = 0" << endl;
   cout << " int bunchharm = 1" << endl;
   cout << "&end" << endl << endl;
-  /* currently undocumented debugging option: dbg_report_lattice */
+  /* currently undocumented debugging options: dbg_report_lattice, dbg_suppress_outfile */
 
   return;
 }
@@ -47,7 +47,9 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   bunchharm=1; //reset to default for each tracking
 
   bool dbg_report_lattice=false;  
+  bool dbg_no_outfile=false;
   bool dumpFieldUE=false;
+
   bool isTime=time->isTime();
   bool isScan=time->isScan();
   double sample=time->getSampleRate();
@@ -67,6 +69,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   if (arg->find("sort_step")!=end)   {sort_step= atoi(arg->at("sort_step").c_str());  arg->erase(arg->find("sort_step"));}
   if (arg->find("bunchharm")!=end)   {bunchharm= atoi(arg->at("bunchharm").c_str());  arg->erase(arg->find("bunchharm"));}
   if (arg->find("dbg_report_lattice")!=end) {dbg_report_lattice = atob(arg->at("dbg_report_lattice")); arg->erase(arg->find("dbg_report_lattice"));}
+  if (arg->find("dbg_suppress_outfile")!=end) {dbg_no_outfile = atob(arg->at("dbg_suppress_outfile")); arg->erase(arg->find("dbg_suppress_outfile"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &track" << endl; this->usage();}
@@ -88,7 +91,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
 
   beam->setBunchingHarmonicOutput(bunchharm);
 
-  // controling the output
+  // controlling the output
 
   bool ssrun=true;    
   if ((size > 1) or (beam->beam.size()>1)){
@@ -113,6 +116,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
        setup->outputFieldDump());
   }
   beam->setOutput(setup->outputCurrent(),setup->outputEnergy(),setup->outputSpatial(),setup->outputAux());
+  setup->set_do_write_outfile(!dbg_no_outfile); // this debug option only suppresses generation of .out.h5 file (NOT dumps triggered by markers)
 
   // propagate beam dump settings (the tracking process can generate beam dumps)
   beam->setWriteFilter(setup->BWF_get_enabled(), setup->BWF_get_from(), setup->BWF_get_to(), setup->BWF_get_inc());
@@ -132,11 +136,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
 
   // call to gencore to do the actual tracking.  
   Gencore core;
-  string rn, file;
-  setup->getRootName(&rn);
-  setup->RootName_to_FileName(&file, &rn);
-  file.append(".out.h5");
-  if(!core.run(file.c_str(),beam,field,setup,und,isTime,isScan, filter)) {
+  if(!core.run(beam,field,setup,und,isTime,isScan, filter)) {
     /* execution of simulation was not successful, for instance because of IO error during a file write triggered by marker */
     if  (rank==0) { cout << "End of Track (after error)" << endl;}
     return(false);

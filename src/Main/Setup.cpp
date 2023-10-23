@@ -32,6 +32,7 @@ Setup::Setup()
   exclude_aux_output=false;
   exclude_current_output=true;
   exclude_field_dump=false;
+  do_write_outfile=true;
 
   // filtering of beam slices during dump process (information is forwarded into active instance of Beam class when actually needed there)
   BWF_set_enabled(false);

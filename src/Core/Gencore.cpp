@@ -6,7 +6,7 @@
 
 extern bool MPISingle;
 
-bool Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *setup, Undulator *und,bool isTime, bool isScan, FilterDiagnostics &filter)
+bool Gencore::run(Beam *beam, vector<Field*> *field, Setup *setup, Undulator *und,bool isTime, bool isScan, FilterDiagnostics &filter)
 {
     // function returns 'true' if everything is ok
 
@@ -28,8 +28,11 @@ bool Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *se
     //-----------------------------------------
 	// init beam, field and undulator class
 
+    string rn, fnbase;
+    setup->getRootName(&rn);
+    setup->RootName_to_FileName(&fnbase, &rn); // includes .RunX. if not the first &track command
     Control   *control=new Control;
-    control->init(rank,size,file,beam,field,und,isTime,isScan);
+    control->init(rank,size,fnbase,beam,field,und,isTime,isScan);
 
     Diagnostic diag;
 #ifdef USE_DPI
@@ -180,14 +183,8 @@ bool Gencore::run(const char *file, Beam *beam, vector<Field*> *field, Setup *se
 	  cout << "Writing output file..." << endl;
 	}
 
-	// generate file name for optional file with copy of metadata (this is a copy of the corresponding code block in Track.cpp)
-	string rn, fnout_meta;
-	setup->getRootName(&rn);
-	setup->RootName_to_FileName(&fnout_meta, &rn);
-	fnout_meta.append(".meta.h5");
-
 	// control->output(beam,field,und,diag);
-	if(!diag.writeToOutputFile(file, fnout_meta, beam,field,und, setup->get_write_meta_file())) {
+	if(!diag.writeToOutputFile(beam, field, setup, und)) {
 	  delete control;
 	  return(false);
 	}
