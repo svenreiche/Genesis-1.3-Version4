@@ -18,16 +18,19 @@ void ReadBeamHDF5::close(){
 
 bool ReadBeamHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time *time, bool dotime)
 {
-
-
   isOpen=false;
+  double reflen=-1.;
+  int nbins=-1,one4one=-1;
+
+
+  if ((fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT)) == H5I_INVALID_HID) {
+    if(0==rank) {
+      cout << "*** Error: unable to open file " << file << endl;
+    }
+    return(false);
+  }
+
   // read global data
-
-  double reflen;
-  int nbins,one4one;
-
-
-  fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);  
   readDataDouble(fid,(char *)"refposition",&s0,1);
   readDataDouble(fid,(char *)"slicelength",&reflen,1);
   readDataDouble(fid,(char *)"slicespacing",&slicelen,1);
