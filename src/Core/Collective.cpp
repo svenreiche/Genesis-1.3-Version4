@@ -5,6 +5,7 @@
 
 #include "Collective.h"
 #include "Beam.h"
+#include "Undulator.h"
 
 Collective::Collective()
 {
@@ -31,6 +32,10 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
       size=1;
   }
 
+  if(0==rank) {
+    cout << "in Collective::initWake"<<endl;
+  }
+
   
   ns=ns_in;  // full number of slices with highest resolution
   ds=ds_in;
@@ -44,8 +49,13 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
 
   wakeext = new double[nsNode];  // global wake, explicityle defined in input deck (e.g. constant energy loss)
   wakeint = new double[nsNode];  // wake, internally calculated when updating the wake potential (e.g. sorting)
-  cur     = new double[ncur+1];    // array to hold current profile with simulation resolution.
   count   = new int [nsNode];
+
+  // array to hold current profile with simulation resolution.
+  // cur     = new double[ncur+1];
+  cur.resize(ncur+1);
+  for(int kk=0; kk<ncur+1; kk++)
+    cur[kk]=0;
 
 
   wake    = new double[ns];
@@ -110,13 +120,22 @@ void Collective::apply(Beam *beam, Undulator *und, double delz)
 
 void Collective::update(Beam *beam, double zpos)
 {  
+  // ---------------
+  // step 0 - checks
+  int nsNode=beam->current.size();
+  // the following access with 'at' deterministically crashes the program before the MPI_Allgather operation if destination array is too small
+  cur.at(ncur)=0; // used for interpolation
 
+  // check if the total number of slices used to prepare global current buffer has changed
+  if(nsNode*size!=ncur)
+    abort();
   
   // ---------------------------
   // step 1 - gather current profile from all nodes
-
-  int nsNode=beam->current.size();
-  MPI_Allgather(&beam->current[0],nsNode,MPI_DOUBLE,cur,nsNode,MPI_DOUBLE,MPI_COMM_WORLD);
+  MPI_Allgather(
+     &beam->current[0],nsNode,MPI_DOUBLE,
+     cur.data(),       nsNode,MPI_DOUBLE,
+     MPI_COMM_WORLD);
   cur[ncur]=0;   // used for interpolation
 
 
