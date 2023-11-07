@@ -32,9 +32,11 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
       size=1;
   }
 
+#if 0
   if(0==rank) {
     cout << "in Collective::initWake"<<endl;
   }
+#endif
 
   
   ns=ns_in;  // full number of slices with highest resolution
