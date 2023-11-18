@@ -130,11 +130,11 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
     //-------------------------------------------
     // instances of main classes
     Setup *setup=new Setup;
-	AlterLattice *alt=new AlterLattice;
+    AlterLattice *alt=new AlterLattice;
     Lattice *lattice=new Lattice;
     Profile *profile=new Profile;
     SeriesManager *series = new SeriesManager;
-	Series  *seq    =new Series;
+    Series  *seq    =new Series;
     Time *timewindow=new Time;
     FilterDiagnostics filter;
 
@@ -174,7 +174,7 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
               }
               argument[key] = val;
           }
-          if (!setup->init(rank,&argument,lattice, filter)){ break;}
+          if (!setup->init(rank,&argument,lattice, series, filter)){ break;}
           meta_latfile=setup->getLattice();
 
           /* successfully processed "&setup" block => generate start semaphore file if requested to do so by user */
@@ -200,7 +200,7 @@ int genmain (string mainstring, map<string,string> &comarg, bool split) {
 
       if (element.compare("&alter_setup")==0){
 	    AlterSetup *altersetup= new AlterSetup;
-        if (!altersetup->init(rank,&argument,setup,lattice,timewindow,beam,&field)){ break;}
+        if (!altersetup->init(rank,&argument,setup,lattice,timewindow,beam,&field, series)){ break;}
         delete altersetup;
         continue;
       }

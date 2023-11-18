@@ -1,4 +1,5 @@
 #include "LatticeParser.h"
+#include "SeriesManager.h"
 
 LatticeParser::LatticeParser()
 {
@@ -10,7 +11,7 @@ LatticeParser::~LatticeParser()
 }
 
 
-bool LatticeParser::parse(string file, string line, int rank, vector<Element *> &lat)
+bool LatticeParser::parse(string file, string line, int rank, vector<Element *> &lat, SeriesManager *sm)
 {
 
   istringstream input;
@@ -167,7 +168,7 @@ bool LatticeParser::parse(string file, string line, int rank, vector<Element *> 
     idx=this->findIndex(&label,sequence[i]);
     //    cout << "Element: " << sequence[i] << " Type: " << type[idx] << " Pos:" << z << " Offset: " << zoff[i] << endl; 
     if (type[idx].compare("quad")==0){ error=false; lat.push_back(this->parseQuad(idx,rank,z));}
-    if (type[idx].compare("undu")==0){ error=false; lat.push_back(this->parseID(idx,rank,z)); }
+    if (type[idx].compare("undu")==0){ error=false; lat.push_back(this->parseID(idx,rank,z,sm)); }
     if (type[idx].compare("drif")==0){ error=false; lat.push_back(this->parseDrift(idx,rank,z));}
     if (type[idx].compare("corr")==0){ error=false; lat.push_back(this->parseCorrector(idx,rank,z));}
     if (type[idx].compare("chic")==0){ error=false; lat.push_back(this->parseChicane(idx,rank,z)); }
@@ -182,7 +183,7 @@ bool LatticeParser::parse(string file, string line, int rank, vector<Element *> 
 }
 
 
-ID *LatticeParser::parseID(int idx,int rank, double zin)
+ID *LatticeParser::parseID(int idx,int rank, double zin, SeriesManager *sm)
 {
   ID *ele=new ID;
   
@@ -235,9 +236,9 @@ ID *LatticeParser::parseID(int idx,int rank, double zin)
       if(!this_aw_refname.empty()) {
         // we got a reference to a sequence, query it
         if(0==rank) {
-          cout << "*** Ref ***" << endl;
+          cout << "*** Ref to series " << this_aw_refname << " ***" << endl;
         }
-        this_aw=2.59910; // sligh deviation from the 'aw' in the lat file to signal that ref. was detected
+        this_aw=sm->getElement(this_aw_refname);
       }
       ele->aw=this_aw; // atof(val.c_str());
       found=true;

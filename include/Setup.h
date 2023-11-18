@@ -22,12 +22,13 @@
 using namespace std;
 
 class Lattice;
+class SeriesManager;
 
 class Setup: public StringProcessing{
  public:
    Setup();
    virtual ~Setup();
-   bool init(int, map<string,string> *, Lattice *, FilterDiagnostics &filter);
+   bool init(int, map<string,string> *, Lattice *, SeriesManager *sm, FilterDiagnostics &filter);
    //   bool writeGlobal(hid_t, double, int, int,int,int,double, double, double, bool, bool);
    double getReferenceLength();
    void   setReferenceLength(double);
