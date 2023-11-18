@@ -1,4 +1,5 @@
 #include "LatticeParser.h"
+#include <algorithm> // for std::find
 
 LatticeParser::LatticeParser()
 {
@@ -108,10 +109,18 @@ bool LatticeParser::parse(string file, string line, int rank, vector<Element *> 
     content[i].erase(pos,content[i].size());
     inargument=content[i];
     this->trim(inargument);
-    label.push_back(inlabel);
     type.push_back(intype.substr(0,4));
     argument.push_back(inargument);
-    
+
+    if(std::find(label.begin(), label.end(), inlabel)!=label.end()) {
+      // name of this lattice element was already defined -> error
+      if(0==rank) {
+        cout << "*** Error in lattice: Label " << inlabel << " redefined" << endl;
+        error=true;
+        continue;
+      }
+    }
+    label.push_back(inlabel);
   }
 
   if (error){ return false; }
@@ -165,7 +174,8 @@ bool LatticeParser::parse(string file, string line, int rank, vector<Element *> 
       z=lat[zref[i]]->z+lat[zref[i]]->l+zoff[i];
     } 
     idx=this->findIndex(&label,sequence[i]);
-    //    cout << "Element: " << sequence[i] << " Type: " << type[idx] << " Pos:" << z << " Offset: " << zoff[i] << endl; 
+    // //    cout << "Element: " << sequence[i] << " Type: " << type[idx] << " Pos:" << z << " Offset: " << zoff[i] << endl;
+    // cout << "Element " << i << " Type: " << type[idx] << endl;
     if (type[idx].compare("quad")==0){ error=false; lat.push_back(this->parseQuad(idx,rank,z));}
     if (type[idx].compare("undu")==0){ error=false; lat.push_back(this->parseID(idx,rank,z)); }
     if (type[idx].compare("drif")==0){ error=false; lat.push_back(this->parseDrift(idx,rank,z));}
