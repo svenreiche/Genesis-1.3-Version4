@@ -14,12 +14,14 @@ class SeriesParser : public StringProcessing{
 public:
     bool init(int, std::map<std::string,std::string> *, std::string, SeriesManager *);
     bool initConst(int, std::map<std::string,std::string> *, SeriesManager *);
+    bool initPolynom(int, std::map<std::string,std::string> *, SeriesManager *);
     bool initPower(int, std::map<std::string,std::string> *, SeriesManager *);
     bool initRandom(int, std::map<std::string,std::string> *, SeriesManager *);
     bool initList(int, std::map<std::string,std::string> *, SeriesManager *);
 
 private:
     void usageConst();
+    void usagePolynom();
     void usagePower();
     void usageRandom();
     void usageList();

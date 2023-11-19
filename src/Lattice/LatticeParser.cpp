@@ -235,10 +235,10 @@ ID *LatticeParser::parseID(int idx,int rank, double zin, SeriesManager *sm)
       this->reference(val, &this_aw, &this_aw_refname);
       if(!this_aw_refname.empty()) {
         // we got a reference to a sequence, query it
-        if(0==rank) {
-          cout << "*** Ref to series " << this_aw_refname << " ***" << endl;
-        }
         this_aw=sm->getElement(this_aw_refname);
+        if(0==rank) {
+          cout << "*** Ref to series " << this_aw_refname << ", result is: " << this_aw << " ***" << endl;
+        }
       }
       ele->aw=this_aw; // atof(val.c_str());
       found=true;

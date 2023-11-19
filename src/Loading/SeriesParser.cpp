@@ -12,6 +12,9 @@ bool SeriesParser::init(int rank, std::map<std::string,std::string> *arg, std::s
     if (element.compare("&sequence_const")==0){
         return this->initConst(rank, arg, sm);
     }
+    if (element.compare("&sequence_polynom")==0){
+        return this->initPolynom(rank, arg, sm);
+    }
     if (element.compare("&sequence_power")==0){
         return this->initPower(rank, arg, sm);
     }
@@ -50,6 +53,40 @@ bool SeriesParser::initConst(int rank, std::map<std::string,std::string> *arg, S
     }
     SequenceConst *seq = new SequenceConst;
     seq->init(c0);
+    sm -> add(label,seq);
+    return true;
+}
+
+bool SeriesParser::initPolynom(int rank, std::map<std::string,std::string> *arg, SeriesManager *sm){
+    std::string label="";
+    double c0=0,c1=0,c2=0,c3=0,c4=0;
+    std::map<std::string,std::string>::iterator end=arg->end();
+
+    if (arg->find("label")!=end){label = arg->at("label");  arg->erase(arg->find("label"));}
+    if (arg->find("c0")!=end)   {c0    = atof(arg->at("c0").c_str());  arg->erase(arg->find("c0"));}
+    if (arg->find("c1")!=end)   {c1    = atof(arg->at("c1").c_str());  arg->erase(arg->find("c1"));}
+    if (arg->find("c2")!=end)   {c2    = atof(arg->at("c2").c_str());  arg->erase(arg->find("c2"));}
+    if (arg->find("c3")!=end)   {c3    = atof(arg->at("c3").c_str());  arg->erase(arg->find("c3"));}
+    if (arg->find("c4")!=end)   {c4    = atof(arg->at("c4").c_str());  arg->erase(arg->find("c4"));}
+
+    if (arg->size()!=0) {
+        if (rank == 0) {
+            std::cout << "*** Error: Unknown elements in &sequence_polynom" << std::endl;
+            this->usageConst();
+        }
+        return false;
+    }
+    if (label.size()<1) {
+        if (rank==0){
+            std::cout << "*** Error: Label not defined in &sequence_polynom" << std::endl; this->usagePolynom();
+        }
+        return false;
+    }
+    if (rank==0){
+        std::cout << "Adding sequence with label: " <<label << std::endl;
+    }
+    SequencePolynom *seq = new SequencePolynom;
+    seq->init(c0,c1,c2,c3,c4);
     sm -> add(label,seq);
     return true;
 }
@@ -191,6 +228,18 @@ void SeriesParser::usageConst(){
     cout << "&sequence_const" << endl;
     cout << " string label = <empty>" << endl;
     cout << " double c0 = 0" << endl;
+    cout << "&end" << endl << endl;
+    return;
+}
+void SeriesParser::usagePolynom(){
+    cout << "List of keywords for SEQUENCE_POLYNOM" << endl;
+    cout << "&sequence_polynom" << endl;
+    cout << " string label = <empty>" << endl;
+    cout << " double c0 = 0" << endl;
+    cout << " double c1 = 0" << endl;
+    cout << " double c2 = 0" << endl;
+    cout << " double c3 = 0" << endl;
+    cout << " double c4 = 0" << endl;
     cout << "&end" << endl << endl;
     return;
 }
