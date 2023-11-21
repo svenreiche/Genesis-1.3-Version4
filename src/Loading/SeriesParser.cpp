@@ -72,13 +72,14 @@ bool SeriesParser::initPolynom(int rank, std::map<std::string,std::string> *arg,
     if (arg->size()!=0) {
         if (rank == 0) {
             std::cout << "*** Error: Unknown elements in &sequence_polynom" << std::endl;
-            this->usageConst();
+            this->usagePolynom();
         }
         return false;
     }
     if (label.size()<1) {
         if (rank==0){
-            std::cout << "*** Error: Label not defined in &sequence_polynom" << std::endl; this->usagePolynom();
+            std::cout << "*** Error: Label not defined in &sequence_polynom" << std::endl;
+            this->usagePolynom();
         }
         return false;
     }
