@@ -1,5 +1,6 @@
-#include "LatticeParser.h"
 #include <algorithm> // for std::find
+#include "LatticeParser.h"
+#include "SeriesManager.h"
 
 LatticeParser::LatticeParser()
 {
@@ -11,7 +12,7 @@ LatticeParser::~LatticeParser()
 }
 
 
-bool LatticeParser::parse(string file, string line, int rank, vector<Element *> &lat)
+bool LatticeParser::parse(string file, string line, int rank, vector<Element *> &lat, SeriesManager *sm)
 {
 
   istringstream input;
@@ -177,7 +178,7 @@ bool LatticeParser::parse(string file, string line, int rank, vector<Element *> 
     // //    cout << "Element: " << sequence[i] << " Type: " << type[idx] << " Pos:" << z << " Offset: " << zoff[i] << endl;
     // cout << "Element " << i << " Type: " << type[idx] << endl;
     if (type[idx].compare("quad")==0){ error=false; lat.push_back(this->parseQuad(idx,rank,z));}
-    if (type[idx].compare("undu")==0){ error=false; lat.push_back(this->parseID(idx,rank,z)); }
+    if (type[idx].compare("undu")==0){ error=false; lat.push_back(this->parseID(idx,rank,z,sm)); }
     if (type[idx].compare("drif")==0){ error=false; lat.push_back(this->parseDrift(idx,rank,z));}
     if (type[idx].compare("corr")==0){ error=false; lat.push_back(this->parseCorrector(idx,rank,z));}
     if (type[idx].compare("chic")==0){ error=false; lat.push_back(this->parseChicane(idx,rank,z)); }
@@ -192,7 +193,7 @@ bool LatticeParser::parse(string file, string line, int rank, vector<Element *> 
 }
 
 
-ID *LatticeParser::parseID(int idx,int rank, double zin)
+ID *LatticeParser::parseID(int idx,int rank, double zin, SeriesManager *sm)
 {
   ID *ele=new ID;
   
@@ -236,7 +237,22 @@ ID *LatticeParser::parseID(int idx,int rank, double zin)
     bool found=false;
     if (fld.compare("l")==0)    { ele->l=atof(val.c_str());  found=true; };
     if (fld.compare("lambdau")==0){ ele->lambdau=atof(val.c_str()); found=true; };
-    if (fld.compare("aw")==0)   { ele->aw=atof(val.c_str()); found=true; };
+    if (fld.compare("aw")==0) {
+      /* determine aw value of this undulator */
+      double this_aw=-1.;
+      string this_aw_refname;
+      // if the value string begins with "@", we assume it is a reference to a sequence
+      this->reference(val, &this_aw, &this_aw_refname);
+      if(!this_aw_refname.empty()) {
+        // we got a reference to a sequence, query it
+        this_aw=sm->getElement(this_aw_refname);
+        if(0==rank) {
+          cout << "*** Ref to series " << this_aw_refname << ", result is: " << this_aw << " ***" << endl;
+        }
+      }
+      ele->aw=this_aw; // atof(val.c_str());
+      found=true;
+    }
     if (fld.compare("aw_perp")==0)  { ele->paw=atof(val.c_str()); found=true; };
     if (fld.compare("nwig")==0) { ele->nwig=atof(val.c_str()); found=true; };
     if (fld.compare("kx")==0)   { ele->kx=atof(val.c_str()); found=true; haskx = true;};

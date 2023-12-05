@@ -31,7 +31,7 @@ void AlterSetup::usage(){
   return;
 }
 
-bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice *lat, Time *time, Beam *beam, vector<Field *> *field)
+bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice *lat, Time *time, Beam *beam, vector<Field *> *field, SeriesManager *sm)
 {
   beamline="";  // clear beamline name for multiple calls of altersetup
   lattice=setup->getLattice();
@@ -116,7 +116,7 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
 
   // step one: Select new lattice if selected
   if (beamline!="") {
-    bool status = lat->parse(lattice,beamline,rank);
+    bool status = lat->parse(lattice,beamline,rank,sm);
      if (status==false) { return status ; }
   }
 
