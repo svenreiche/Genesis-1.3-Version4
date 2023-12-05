@@ -226,6 +226,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split)
               (element.compare("&sequence_polynom")==0)||
               (element.compare("&sequence_power")==0)||
               (element.compare("&sequence_list")==0)||
+              (element.compare("&sequence_filelist")==0) ||
               (element.compare("&sequence_random")==0)){
                 SeriesParser *seriesparser = new SeriesParser;
                 if (!seriesparser->init(rank,&argument,element,series)) {break;}

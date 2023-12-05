@@ -2,6 +2,8 @@
 // Created by reiche on 4/21/23.
 //
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <stdlib.h>
 #include <vector>
 #include "SeriesParser.h"
@@ -21,8 +23,12 @@ bool SeriesParser::init(int rank, std::map<std::string,std::string> *arg, std::s
     if (element.compare("&sequence_random")==0){
         return this->initRandom(rank, arg, sm);
     }
+    // CL, 2023-12-05: sequence_list is not complete as of now
     if (element.compare("&sequence_list")==0){
         return this->initList(rank, arg, sm);
+    }
+    if (element.compare("&sequence_filelist")==0){
+        return this->initFileList(rank, arg, sm);
     }
     return false;
 }
@@ -222,6 +228,90 @@ bool SeriesParser::initList(int rank, std::map<std::string,std::string> *arg, Se
 }
 
 
+
+bool SeriesParser::initFileList(int rank, std::map<std::string,std::string> *arg, SeriesManager *sm)
+{
+    std::string label="";
+    std::string filename="";
+    vector<double> data;
+    std::map<std::string,std::string>::iterator end=arg->end();
+
+    if (arg->find("label")!=end){label   = arg->at("label"); arg->erase(arg->find("label"));}
+    if (arg->find("file")!=end){filename = arg->at("file");  arg->erase(arg->find("file"));}
+
+    if (arg->size()!=0) {
+        if (rank == 0) {
+            std::cout << "*** Error: Unknown elements in &sequence_filelist" << std::endl;
+            this->usageFileList();
+        }
+        return false;
+    }
+    if (label.empty()) {
+        if (rank==0){
+            std::cout << "*** Error: Label not defined in &sequence_filelist" << std::endl; this->usageFileList();
+        }
+        return false;
+    }
+    if (filename.empty()) {
+        if (rank==0){
+            std::cout << "*** Error: Filename not defined in &sequence_filelist" << std::endl; this->usageFileList();
+        }
+        return false;
+    }
+    
+    if(!readfile(filename, data, rank)) {
+		if(rank==0) {
+			cout << "*** Error while loading data from file in &sequence_filelist" << endl;
+		}
+		return(false);
+	}
+    if (rank==0){
+        std::cout << "Adding sequence with label: " << label << ", data file: " << filename << ", length of data set is: " << data.size() << endl;
+    }
+    SequenceList *seq = new SequenceList(data);
+    sm->add(label,seq);
+
+    return true;
+}
+bool SeriesParser::readfile(const string fn, vector<double> &v, int rank)
+{
+	ifstream ifs;
+
+	ifs.open(fn);
+	if(!ifs) {
+		if(rank==0) {
+			cout << "Error: cannot open file " << fn << " for read access" << endl;
+		}
+		return(false);
+	}
+	if(rank==0) {
+		cout << "Reading data from file " << fn << endl;
+	}
+
+	unsigned int linecntr=0;
+	string linebuf;
+	while(getline(ifs,linebuf))
+	{
+		linecntr++;
+
+		stringstream ss(linebuf);
+		double data=-1.;
+		if (!(ss >> data)) {
+			if(rank==0) {
+				cout << "Issue parsing line " << linecntr << endl;
+			}
+			return(false);
+		}
+		v.push_back(data);
+		// cout << "buf=" << linebuf << ", data=" << data << endl;
+	}
+
+	ifs.close();
+	return(true);
+}
+
+
+
 // the individual usages calls
 
 void SeriesParser::usageConst(){
@@ -268,10 +358,18 @@ void SeriesParser::usageRandom(){
 }
 void SeriesParser::usageList(){
     cout << "List of keywords for SEQUENCE_LIST" << endl;
-    cout << "&sequence_random" << endl;
+    cout << "&sequence_list" << endl;
     cout << " string label = <empty>" << endl;
     cout << " double val = [<empty>]" << endl;
     cout << " double default = 0" << endl;
+    cout << "&end" << endl << endl;
+    return;
+}
+void SeriesParser::usageFileList(){
+    cout << "List of keywords for SEQUENCE_FILELIST" << endl;
+    cout << "&sequence_filelist" << endl;
+    cout << " string label = <empty>" << endl;
+    cout << " double file = [<empty>]" << endl;
     cout << "&end" << endl << endl;
     return;
 }

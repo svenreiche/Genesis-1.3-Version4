@@ -164,7 +164,7 @@ add_library(genesis13 STATIC
         src/Main/GenTime.cpp
         src/Main/Track.cpp
         src/Main/Wake.cpp
-        src/Loading/SeriesManager.cpp include/SeriesManager.h src/Loading/SeriesParser.cpp include/SeriesParser.h src/Loading/Sequence.cpp
+        src/Loading/SeriesManager.cpp include/SeriesManager.h src/Loading/SeriesParser.cpp include/SeriesParser.h src/Loading/Sequence.cpp src/Loading/Seq2.cpp
 	${SRC_DPI})
 
 

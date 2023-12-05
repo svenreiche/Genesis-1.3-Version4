@@ -8,10 +8,12 @@
 #define __GENESIS_SEQUENCE__
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 //#include "RandomU.h"
 #include "Inverfc.h"
 
+// base class
 class Sequence
 {
 public:
@@ -22,8 +24,9 @@ public:
 
 class RandomU;
 
-// derived sequences
-
+/*************************/
+/*** derived sequences ***/
+/*************************/
 class SequenceConst : public Sequence{
 public:
     ~SequenceConst() {};
@@ -105,5 +108,19 @@ private:
     Inverfc erf;
 };
 
+
+class SequenceList: public Sequence
+{
+public:
+	SequenceList(std::vector<double> &);
+	~SequenceList() = default;
+	double getElement();
+	void set(unsigned int) {};
+	
+private:
+	std::vector<double> v_;
+	double default_value_ {0.}; // value to return if vector is exhausted
+	int pos_ {0};
+};
 
 #endif 
