@@ -8,10 +8,9 @@
 #include <math.h>
 
 #include <mpi.h>
-#include "Particle.h"
-#include "Undulator.h"
 
 class Beam;
+class Undulator;
 
 extern bool MPISingle; 
 extern const double ce;   
@@ -20,7 +19,7 @@ using namespace std;
 
 
 class Collective{
- public:
+public:
    Collective();
    virtual ~Collective();
    //   void initWake(unsigned int, double, double *, double *, double *, double, double, bool);
@@ -29,13 +28,15 @@ class Collective{
    void update(Beam *, double);
    void forceUpdate();
 
- private:
+private:
    bool transient,hasWake,needsUpdate;
    double ztrans,radius;
    double ds,dscur;
    unsigned int ns;
    int size,rank,ncur;
-   double *wakeext, *wakeint, *wakeres, *wakegeo, *wakerou, *wake, *current, *dcurrent, *cur;
+   double *wakeext, *wakeint, *wakeres, *wakegeo, *wakerou, *wake, *current, *dcurrent;
+   // double *cur;
+   std::vector<double> cur;
    int *count;
 };
 
