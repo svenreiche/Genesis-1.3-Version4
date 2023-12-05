@@ -42,6 +42,9 @@ bool DiagFieldHookedDemo::get_infos(DiagFieldHookInfos *pi)
 
 void DiagFieldHookedDemo::doit(DiagFieldHookData *pd)
 {
+	/* ALWAYS AS FIRST STEP: check version of data structure (and if the data layout is what we expect). This crashes the program if there is a mismatch. */
+	verify_datastructure(pd);
+
 	if((pd->verbose) && (pd->mpi_rank==0)) {
 		cout << "DiagFieldHookedDemo: "
 		     << "iz=" << pd->iz

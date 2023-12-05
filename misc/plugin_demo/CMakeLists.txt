@@ -28,4 +28,5 @@ add_library(demo SHARED
 #project(beamdemo VERSION 1.0.0 DESCRIPTION "diagbeamdemo")
 add_library(beamdemo SHARED
 	DiagBeamHookedDemo.cc
+	DiagUtil.cc
 )

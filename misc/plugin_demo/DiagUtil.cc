@@ -1,5 +1,38 @@
+#include <cmath>
+#include <cstdlib>
+#include <iostream>
+
 #include "DiagUtil.h"
 #include "DiagnosticHookS.h"
+
+using namespace std;
+
+bool DiagUtil::verify_datastructure(DiagBeamHookData *pd)
+{
+	/* verify if version number provided by interface compiled into "GENESIS 1.3" v4 matches */
+	if (pd->version!=DIAGFIELD_DATA_STRUCTVERSION) {
+		cout << "Plugin: Mismatch of version numbers in data structure: GENESIS provided="
+		     << pd->version << " , plugin expects=" << DIAGFIELD_DATA_STRUCTVERSION
+		     << ". This is fatal." << endl;
+
+		// crash the program (and produce core dump if user has it enabled)
+		abort();
+	}
+	return(true);
+}
+bool DiagUtil::verify_datastructure(DiagFieldHookData *pd)
+{
+	/* verify if version number provided by interface compiled into "GENESIS 1.3" v4 matches */
+	if (pd->version!=DIAGFIELD_DATA_STRUCTVERSION) {
+		cout << "Plugin: Mismatch of version numbers in data structure: GENESIS provided="
+		     << pd->version << " , plugin expects=" << DIAGFIELD_DATA_STRUCTVERSION
+		     << ". This is fatal." << endl;
+
+		// crash the program (and produce core dump if user has it enabled)
+		abort();
+	}
+	return(true);
+}
 
 int DiagUtil::xlat(int ngrid, int ix, int iy)
 {

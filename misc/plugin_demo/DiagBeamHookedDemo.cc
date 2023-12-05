@@ -35,6 +35,9 @@ bool DiagBeamHookedDemo::get_infos(DiagBeamHookInfos *pi)
 
 void DiagBeamHookedDemo::doit(DiagBeamHookData *pd)
 {
+	/* ALWAYS AS FIRST STEP: check version of data structure (and if the data layout is what we expect). This crashes the program if there is a mismatch. */
+	verify_datastructure(pd);
+
 	if((pd->verbose) && (pd->mpi_rank==0)) {
 		cout << "DiagBeamHookedDemo: "
 		     << "iz=" << pd->iz
