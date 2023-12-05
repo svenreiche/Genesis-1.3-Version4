@@ -30,7 +30,8 @@ class LatticeParser : public StringProcessing {
    Chicane *parseChicane(int,int,double);
    Corrector *parseCorrector(int,int,double);
    ID *parseID(int,int,double, SeriesManager *);
-   Phaseshifter *parsePhaseshifter(int,int,double);
+   Phaseshifter *parsePhaseshifter(int,int,double, SeriesManager *);
+   bool extractParameterValue(string, string, SeriesManager *, int, string, double *);
 
    int findIndex(vector<string> *,string);
    bool unroll(int, int,int);
