@@ -28,7 +28,7 @@ bool Lattice::parse(string filename, string beamline, int rank)
   LatticeParser parser;
   matched=false;
 
-  if (rank == 0) { cout << "Parsing lattice file..." << endl; }
+  if (rank == 0) { cout << "Parsing lattice file " << filename << " ..." << endl; }
   bool err=parser.parse(filename,beamline,rank, lat);
   if (err==false) { 
     return err; 

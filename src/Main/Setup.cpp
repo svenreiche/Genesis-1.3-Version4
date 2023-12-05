@@ -32,6 +32,7 @@ Setup::Setup()
   exclude_aux_output=false;
   exclude_current_output=true;
   exclude_field_dump=false;
+  do_write_outfile=true;
 
   // filtering of beam slices during dump process (information is forwarded into active instance of Beam class when actually needed there)
   BWF_set_enabled(false);
@@ -40,6 +41,7 @@ Setup::Setup()
   // count of runs in conjunction of calls of altersetup
   runcount = 0;
 
+  write_meta_file=false;
   sema_file_enabled_start=false;
   sema_file_enabled_done=false;
 }
@@ -71,6 +73,7 @@ void Setup::usage(){
   cout << " bool exclude_aux_output = false" << endl;
   cout << " bool exclude_current_output = true" << endl;
   cout << " bool exclude_field_dump = false" << endl;
+  cout << " bool write_meta_file = false" << endl;
   cout << " bool write_semaphore_file = false" << endl;
   cout << " bool write_semaphore_file_done = false" << endl;
   cout << " bool write_semaphore_file_started = false" << endl;
@@ -108,6 +111,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagno
   if (arg->find("exclude_current_output")!=end)   {exclude_current_output  = atob(arg->at("exclude_current_output"));   arg->erase(arg->find("exclude_current_output"));}
   if (arg->find("exclude_field_dump")!=end)   {exclude_field_dump  = atob(arg->at("exclude_field_dump"));   arg->erase(arg->find("exclude_field_dump"));}
 
+  if (arg->find("write_meta_file")!=end)   {write_meta_file = atob(arg->at("write_meta_file"));   arg->erase(arg->find("write_meta_file"));}
   if (arg->find("write_semaphore_file")!=end)   {sema_file_enabled_done  = atob(arg->at("write_semaphore_file"));   arg->erase(arg->find("write_semaphore_file"));}
   /* alias for write_semaphore_file */
   if (arg->find("write_semaphore_file_done")!=end)   {sema_file_enabled_done  = atob(arg->at("write_semaphore_file_done"));   arg->erase(arg->find("write_semaphore_file_done"));}

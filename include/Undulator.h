@@ -59,12 +59,16 @@ class Undulator: public HDF5Base{
    vector<double> qf,qx,qy,z,dz,slip,phaseshift; 
    vector<double> chic_angle,chic_lb,chic_ld,chic_lt; 
    vector<double> paw,pkx,pky,pgradx,pgrady,pphase; // perpendicular undulator parameters
-   vector<int> helical,marker;
+   vector<int>    helical,marker;
 
    vector<string> fielddumps_filename;
    vector<int>    fielddumps_intstep;
    vector<string> beamdumps_filename;
    vector<int>    beamdumps_intstep;
+
+   // for plugin interface: used to retain information obtained at the beginning of tracking run for later storage in .out.h5 file (class instance is provided to output::writeMeta) 
+   vector<string> plugin_info_txt;
+   vector<string> plugin_hdf5_prefix;
 
 
  private: 

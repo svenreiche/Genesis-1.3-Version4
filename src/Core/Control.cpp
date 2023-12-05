@@ -81,10 +81,9 @@ bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und, bool
 }
 
 
+#if 0 // .out.h5 file is now written in class Diagnostic
 void Control::output(Beam *beam, vector<Field*> *field, Undulator *und, Diagnostic &diag)
 {
-
-  
   Output *out=new Output;
 
   string file=root.append(".out.h5");
@@ -102,21 +101,15 @@ void Control::output(Beam *beam, vector<Field*> *field, Undulator *und, Diagnost
  
   delete out;
   return;
-
-
-
 }
+#endif
 
 
-bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<Field*> *field, Undulator *und, bool inTime, bool inScan)
+bool Control::init(int inrank, int insize, const string in_rootname, Beam *beam, vector<Field*> *field, Undulator *und, bool inTime, bool inScan)
 {
-
   rank=inrank;
   size=insize;
-
-  stringstream sroot(file);
-  root=sroot.str();
-  root.resize(root.size()-7);  // remove the extension ".h5"
+  root = in_rootname;
 
   one4one=beam->one4one;
   reflen=beam->reflength;
