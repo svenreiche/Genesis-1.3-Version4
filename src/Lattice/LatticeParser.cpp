@@ -173,7 +173,7 @@ bool LatticeParser::parse(string file, string line, int rank, vector<Element *> 
     if (type[idx].compare("corr")==0){ error=false; lat.push_back(this->parseCorrector(idx,rank,z));}
     if (type[idx].compare("chic")==0){ error=false; lat.push_back(this->parseChicane(idx,rank,z)); }
     if (type[idx].compare("mark")==0){ error=false; lat.push_back(this->parseMarker(idx,rank,z)); }
-    if (type[idx].compare("phas")==0){ error=false; lat.push_back(this->parsePhaseshifter(idx,rank,z)); }
+    if (type[idx].compare("phas")==0){ error=false; lat.push_back(this->parsePhaseshifter(idx,rank,z,sm)); }
     if (error) { 
       if (rank==0) {cout << "*** Error: Unknown element type " << type[idx] << " in lattice" << endl;}
       return false;
@@ -227,6 +227,7 @@ ID *LatticeParser::parseID(int idx,int rank, double zin, SeriesManager *sm)
     bool found=false;
     if (fld.compare("l")==0)    { ele->l=atof(val.c_str());  found=true; };
     if (fld.compare("lambdau")==0){ ele->lambdau=atof(val.c_str()); found=true; };
+#if 0
     if (fld.compare("aw")==0) {
       /* determine aw value of this undulator */
       double this_aw=-1.;
@@ -243,6 +244,8 @@ ID *LatticeParser::parseID(int idx,int rank, double zin, SeriesManager *sm)
       ele->aw=this_aw; // atof(val.c_str());
       found=true;
     }
+#endif
+    if(extractParameterValue(fld,val,sm,rank, "aw", &ele->aw)) {found=true;}
     if (fld.compare("aw_perp")==0)  { ele->paw=atof(val.c_str()); found=true; };
     if (fld.compare("nwig")==0) { ele->nwig=atof(val.c_str()); found=true; };
     if (fld.compare("kx")==0)   { ele->kx=atof(val.c_str()); found=true; haskx = true;};
@@ -451,7 +454,7 @@ Quadrupole *LatticeParser::parseQuad(int idx,int rank, double zin)
   return ele;
 }
 
-Phaseshifter *LatticeParser::parsePhaseshifter(int idx,int rank, double zin)
+Phaseshifter *LatticeParser::parsePhaseshifter(int idx,int rank, double zin, SeriesManager *sm)
 {
   Phaseshifter *ele=new Phaseshifter;
 
@@ -476,7 +479,8 @@ Phaseshifter *LatticeParser::parsePhaseshifter(int idx,int rank, double zin)
     this->trim(fld);
     bool found=false;
     if (fld.compare("l")==0) { ele->l=atof(val.c_str());  found=true; };
-    if (fld.compare("phi")==0){ele->phi=atof(val.c_str());found=true; };
+    // if (fld.compare("phi")==0){ele->phi=atof(val.c_str());found=true; };
+    if (extractParameterValue(fld,val,sm,rank, "phi", &ele->phi)) {found=true;}
     if (found==false){
       if (rank==0){cout << "*** Warning: Ignoring unknown parameter: " << fld << " for element " << label[idx]<< endl;}
     }
@@ -641,4 +645,27 @@ int LatticeParser::findIndex(vector<string> *list, string element){
     if (list->at(i).compare(element)==0) { return i; }
   }
     return -1;
+}
+
+// The data value 'pv' points to is only changed in case of success
+bool LatticeParser::extractParameterValue(string fld, string val, SeriesManager *sm, int rank, string parameterName, double *pv)
+{
+   if (fld.compare(parameterName)!=0)
+     return(false); // this is not the parameter we are looking for
+
+   /* determine parameter value */
+   double q=0.;
+   string refname;
+   // if the value string begins with "@", we assume it is a reference to a sequence
+   this->reference(val, &q, &refname);
+   if(!refname.empty()) {
+     // we got a reference to a sequence, query it
+     q=sm->getElement(refname);
+     if(0==rank) {
+       cout << "*** Ref to series " << refname << ", result is: " << parameterName<<"="<< q << " ***" << endl;
+     }
+   }
+   *pv = q;
+   // ele->aw=this_aw; // atof(val.c_str());
+   return(true);
 }
