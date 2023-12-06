@@ -20,7 +20,7 @@ The following describes all supported namelist with their variables, including i
     - [profile_step](#profile_step)
     - [profile_polynom](#profile_polynom)
     - [profile_file](#profile_file)
-  - [sequence](#profiles)
+  - [sequence](#sequences)
     - [sequence_const](#sequence_const)
     - [sequence_polynom](#sequence_polynom)
     - [sequence_power](#psequence_power)
