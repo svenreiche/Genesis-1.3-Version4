@@ -8,6 +8,7 @@
 #define __GENESIS_SEQUENCE__
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 //#include "RandomU.h"
 #include "Inverfc.h"
@@ -88,6 +89,35 @@ inline double SequencePower::getElement() {
     }
     return c + dc * pow(static_cast<double>(i - n), alpha);
 }
+
+
+class SequenceList : public Sequence{
+public:
+    ~SequenceList() {};
+    double getElement();
+    void set(unsigned int) {};
+    void init(std::vector<double> &, double);
+private:
+    std::vector<double> val;
+    double def;
+    int  i;
+};
+
+inline void SequenceList::init(std::vector<double> &val_in, double def_in)
+{
+    i = 0;
+    val = val_in;
+}
+
+inline double SequenceList::getElement() {
+    i++;
+    if (i > val.size()) {
+        return def;
+    }
+    return val.at(i - 1);
+}
+
+
 
 class SequenceRandom : public Sequence
 {

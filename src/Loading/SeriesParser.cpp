@@ -215,9 +215,9 @@ bool SeriesParser::initList(int rank, std::map<std::string,std::string> *arg, Se
     if (rank==0){
         std::cout << "Adding sequence with label: " <<label << std::endl;
     }
-//    SequenceConst *seq = new SequenceConst;
-//    seq->init(c0);
-//    sm -> add(label,seq);
+    SequenceList *seq = new SequenceList;
+    seq->init(fval,def);
+    sm -> add(label,seq);
     return true;
 }
 
