@@ -15,22 +15,23 @@
 
 using namespace std;
 
-
+class SeriesManager;
 
 class LatticeParser : public StringProcessing {
  public:
    LatticeParser();
    virtual ~LatticeParser();
-   bool parse(string,string, int, vector<Element *> &);
- private:
+   bool parse(string,string, int, vector<Element *> &, SeriesManager *);
 
+ private:
    Quadrupole *parseQuad(int,int,double);
    Drift *parseDrift(int,int,double);
    Marker *parseMarker(int,int,double);
    Chicane *parseChicane(int,int,double);
    Corrector *parseCorrector(int,int,double);
-   ID *parseID(int,int,double);
-   Phaseshifter *parsePhaseshifter(int,int,double);
+   ID *parseID(int,int,double, SeriesManager *);
+   Phaseshifter *parsePhaseshifter(int,int,double, SeriesManager *);
+   bool extractParameterValue(string, string, SeriesManager *, int, string, double *);
 
    int findIndex(vector<string> *,string);
    bool unroll(int, int,int);

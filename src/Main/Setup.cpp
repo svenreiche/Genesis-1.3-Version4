@@ -82,7 +82,7 @@ void Setup::usage(){
   return;
 }
 
-bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagnostics &filter){
+bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, SeriesManager *sm, FilterDiagnostics &filter){
 
   rank=inrank;
   map<string,string>::iterator end=arg->end();
@@ -166,7 +166,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagno
     nbins = 1;
   }
 
-  return lat->parse(lattice,beamline,rank);
+  return lat->parse(lattice,beamline,rank,sm);
 }
 
 
