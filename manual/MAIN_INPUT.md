@@ -20,6 +20,11 @@ The following describes all supported namelist with their variables, including i
     - [profile_step](#profile_step)
     - [profile_polynom](#profile_polynom)
     - [profile_file](#profile_file)
+  - [sequence](#profiles)
+    - [sequence_const](#sequence_const)
+    - [sequence_polynom](#sequence_polynom)
+    - [sequence_power](#psequence_power)
+    - [sequence_random](#profile_random)
   - [beam](#beam)
   - [field](#field)
   - [importdistribution](#importdistribution)
@@ -152,6 +157,53 @@ Profiles are defining a dependence on the position in the time frame, which then
 - `ydata` (*string, \<empty>*): Same as y data but for the function values of the look-up table.
 - `isTime` (*bool, false*): If true the `s`-position is a time variable and therefore multiplied with the speed of light `c` to get the position in meters.
 - `reverse`(*bool, false*): if true the order in the look-up table is reverse. This is sometimes needed because time and spatial coordinates differ sometimes by a minus sign.
+
+[Back](#supported-namelists)
+
+
+<div style="page-break-after: always; visibility: hidden"> \pagebreak </div>
+
+### sequences
+
+Sequences act similar to profiles that they define a series of values which can be used to control dependence of certain parameters. While for profiles these are mostly properties of the electorn beam and radiation field, sequences are used for 
+occurences of beamline elements for specific parameters. Examples are applying a taper gradiant to the undulator offset or add random offsets to the quadrupole positions.
+All sequences have in common that they have to have a label with which they are referred to in the lattice. 
+To indicate the reference to a sequence and thus allows to distinguish Genesis between normal numbers 
+the label name must have the additional character ’@’ in front. E.g. 
+if the name of the label is `taper` then in the parameter list of the modulator element 
+it is referred to by `aw = @taper`. A sequence is evoked for each occurence of the reference. As an example
+in a line which is 6 times a Fodo Cell which each space between the quadrupoles hosting an undulator, a reference by the undulator field will evoke the first 12 elements of the sequence.
+
+#### sequence_const
+
+- `label` (*string, \<empty>*): Name of the sequence, which is used to refer to it in the lattice
+- `c0` (*double, 0*): constant value to be used.
+
+#### sequence_polynom
+
+- `label` (*string, \<empty>*): Name of the sequence, which is used to refer to it in the lattice
+- `c0`(*double, 0*): Constant term
+- `c1`(*double, 0*): Term proportional to s
+- `c2`(*double, 0*): Term proportional to s^2
+- `c3`(*double, 0*): Term proportional to s^3
+- `c4`(*double, 0*): Term proportional to s^4
+
+#### sequence_power
+
+- `label`(*string, \<empty>*): Name of the sequence, which is used to refer to it in the lattice
+- `c0` (*double, 0*): Constant term
+- `dc` (*double, 0*): Term scaling the growing power series before added to the constant term
+- `alpha` (*double, 0*): power of the series
+- `n0` (*integer, 1*): starting index of power growth. Otherwise the sequence uses only the constant term
+- 
+#### sequence_random
+
+- `label`(*string, \<empty>*): Name of the sequence, which is used to refer to it in the lattice
+- `c0` (*double, 0*): Mean value
+- `dc` (*double, 0*): Amplitude of the error, either the standard division for normal distribution or the min and max value for uniform distribution.
+- `seed` (*integer, 100*): seed for the random number generator
+- `normal` (*bool, true*): Flag for Gaussian distribution. If set to false a uniform distribution is used.
+
 
 [Back](#supported-namelists)
 
