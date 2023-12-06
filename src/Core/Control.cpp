@@ -55,7 +55,7 @@ bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und, bool
   
   if ((marker & 2) != 0){
     WriteBeamHDF5 dump;
-    if(dump.write(basename,beam))
+    if(dump.write(basename,beam,1))   // use stride of 1 -> all particles are dump
     {
       /* register beam dump => it will be reported in list of dumps generated during current "&track" command */
       string fn;

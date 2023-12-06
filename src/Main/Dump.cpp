@@ -11,6 +11,7 @@ void Dump::usage(){
   cout << "&write" << endl;
   cout << " string field = <empty>" << endl;
   cout << " string beam  = <empty>" << endl;
+  cout << " int stride = 1 " << endl;
   cout << "&end" << endl << endl;
   return;
 }
@@ -20,8 +21,10 @@ bool Dump::init(int inrank, int insize, map<string,string> *arg, Setup *setup, B
   string dumpfield, dumpbeam;
   map<string,string>::iterator end=arg->end();
 
+  int stride = 1;
   if (arg->find("field")!=end){dumpfield=arg->at("field"); arg->erase(arg->find("field"));}
   if (arg->find("beam")!=end) {dumpbeam =arg->at("beam");  arg->erase(arg->find("beam"));}
+  if (arg->find("stride")!=end)  {stride = atoi(arg->at("stride").c_str());  arg->erase(arg->find("stride"));}
   if (arg->size()!=0){
     if (inrank==0){ cout << "*** Error: Unknown elements in &write" << endl; this->usage();}
     return(false);
@@ -29,6 +32,7 @@ bool Dump::init(int inrank, int insize, map<string,string> *arg, Setup *setup, B
 
   
   if (dumpfield.size()>0){
+
    WriteFieldHDF5 dump;
    string completefn;
    setup->RootName_to_FileName(&completefn, &dumpfield);
@@ -44,10 +48,11 @@ bool Dump::init(int inrank, int insize, map<string,string> *arg, Setup *setup, B
 
    // propagate beam dump settings before initiating writing procedure
    beam->setWriteFilter(setup->BWF_get_enabled(), setup->BWF_get_from(), setup->BWF_get_to(), setup->BWF_get_inc());
+   if (stride < 1) { stride = 1; }
 
    string completefn;
    setup->RootName_to_FileName(&completefn, &dumpbeam);
-   if(!dump.write(completefn,beam)) {
+   if(!dump.write(completefn,beam,stride)) {
      if(inrank==0) {
        cout << "   write operation was not successful!" << endl;
      }

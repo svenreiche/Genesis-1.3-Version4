@@ -330,6 +330,7 @@ With this name list the field or particle distributions are dumped.
 
 - `field` (*string,\<empty>*): if a filename is defined, Genesis writes out the field distribution of all harmonics. The harmonics are indicated by the suffix ’.hxxx.’ where xxx is the harmonic number. The filename gets the extension.fld.h5 automatically
 - `beam` (*string, \<empty>*): if a filename is defined, Genesis writes out the particle distribution. The filename gets the `extension.par.h5` automatically
+- `stride` (*integer,1*): For values larger than 1 the amount of particles written to the file is reduced by only writing each *stride*th particle to the dump file.
 
 [Back](#supported-namelists)
 
