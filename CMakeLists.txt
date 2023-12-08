@@ -144,6 +144,7 @@ add_library(genesis13 STATIC
         src/IO/SDDSBeam.cpp
         src/IO/writeBeamHDF5.cpp
         src/IO/writeFieldHDF5.cpp
+        src/IO/readMapHDF5.cpp
         src/Loading/ImportBeam.cpp
         src/Loading/ImportField.cpp
         src/Loading/LoadBeam.cpp
@@ -164,8 +165,9 @@ add_library(genesis13 STATIC
         src/Main/GenTime.cpp
         src/Main/Track.cpp
         src/Main/Wake.cpp
-        src/Loading/SeriesManager.cpp include/SeriesManager.h src/Loading/SeriesParser.cpp include/SeriesParser.h src/Loading/Sequence.cpp
-	${SRC_DPI})
+        src/Loading/SeriesManager.cpp
+        src/Loading/SeriesParser.cpp
+        src/Loading/Sequence.cpp)
 
 
 target_include_directories(genesis13

@@ -40,6 +40,7 @@
 #include "ImportField.h"
 #include "writeBeamHDF5.h"
 #include "writeFieldHDF5.h"
+#include "readMapHDF5.h"
 #include "Collective.h"
 #include "Wake.h"
 #include "Diagnostic.h"
@@ -83,6 +84,10 @@ int genmain (string inputfile, map<string,string> &comarg, bool split)
 	  size=1;
     }
 
+    // test reading of element
+    ReadMapHDF5 reader;
+    reader.read(rank,"data.h5","dat1","dat2");
+    reader.read(rank,"data.h5","dat2","dat3");
 
     time_t timer;
 	clock_t clocknow;
