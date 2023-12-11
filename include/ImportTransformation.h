@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 #include <map>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "Beam.h"
 #include "Setup.h"

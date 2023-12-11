@@ -12,8 +12,29 @@ ReadMapHDF5::~ReadMapHDF5()
     if (nwork>0){ delete [] work; }
 }
 
+void ReadMapHDF5::close() const{
+    if (isOpen){ H5Fclose(fid); }
+}
 
-bool ReadMapHDF5::readVector(const std::string& dset, bool isVector) {
+bool ReadMapHDF5::open(int rank_in, const std::string& file_in) {
+    rank = rank_in;
+    file = file_in;
+    if ((fid = H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT)) == H5I_INVALID_HID) {
+        if (rank == 0) {
+            std::cout << "*** Error: unable to open file " << file << endl;
+        }
+        return (false);
+    }
+    isOpen = true;
+    return true;
+}
+
+bool ReadMapHDF5::readDataset(const std::string& dset, std::vector<double> &data, bool isVector) {
+
+    if (dset.empty()){
+        data.resize(0);
+        return true;
+    }
 
     std::vector<int> shape = {0, 0, 0};
     bool status = getFullDatasetSize(fid, dset.c_str(), shape);
@@ -47,33 +68,10 @@ bool ReadMapHDF5::readVector(const std::string& dset, bool isVector) {
         return (this->reportShape(dset, isVector));
     }
 
-    int nsize = 6*shape[0];
+    nsize = 6*shape[0];
     if (!isVector) { nsize *=6;}
-
-    if (nsize>nwork){ // allocate extra work array to hold field
-        if (nwork>0) {delete [] work;}
-        nwork=nsize;
-        work=new double [nwork];
-    }
-    std::cout << "Reading: "  << dset << " with size " << nsize << std::endl;
-    readDataDouble(fid, const_cast<char *>(dset.c_str()), work, nsize);
+    data.resize(nsize);
+    readDataDouble(fid, const_cast<char *>(dset.c_str()), &data[0], nsize);
     return true;
 }
 
-bool ReadMapHDF5::read(int rank_in, const std::string& file_in, const std::string& dset_rvec, const std::string& dset_rmat) {
-
-    rank = rank_in;
-    file = file_in;
-
-    if ((fid = H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT)) == H5I_INVALID_HID) {
-        if (rank == 0) {
-            std::cout << "*** Error: unable to open file " << file << endl;
-        }
-        return (false);
-    }
-    auto status = this->readVector(dset_rvec,true);
-    if (!status) { return false; }
-    auto status2 = this->readVector(dset_rmat,false);
-    if (!status2) { return false; }
-    return true;
-}

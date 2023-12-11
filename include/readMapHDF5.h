@@ -15,18 +15,21 @@ class ReadMapHDF5 : public HDF5Base {
 public:
     ReadMapHDF5();
     ~ReadMapHDF5() override;
-    bool read(int, const std::string&, const std::string&, const std::string&);
+    bool readDataset(const std::string &name, std::vector<double> &data, bool isVector);
+    bool open(int rank_in, const string &file_in);
+    void close() const;
 
 private:
     hid_t fid {-1};
     std::string file;
     int rank {0};
     int nwork {0};
+    int nsize {0};
+    bool isOpen {false};
     double *work {nullptr};
 
     // member functions
     bool reportShape(const std::string &dset, bool isVector);
-    bool readVector(const string &dset, bool isVector);
 };
 
 inline bool ReadMapHDF5::reportShape(const std::string& dset, bool isVector){
