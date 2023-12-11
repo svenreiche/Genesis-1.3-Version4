@@ -222,7 +222,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
 
         if (element.compare("&importtransformation") == 0) {
             ImportTransformation *transf = new ImportTransformation;
-            if (!transf->init(rank, size, &argument)) { break; }
+            if (!transf->init(rank, size, &argument,beam,setup)) { break; }
             continue;
         }
 

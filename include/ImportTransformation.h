@@ -8,12 +8,16 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <stdlib.h>
+
+#include "Beam.h"
+#include "Setup.h"
 
 class ImportTransformation {
 public:
     ImportTransformation();
     virtual ~ImportTransformation();
-    bool init(int, int, std::map<std::string,std::string> *);
+    bool init(int, int, std::map<std::string,std::string> *,Beam *,Setup *);
 
 private:
     static void usage();
