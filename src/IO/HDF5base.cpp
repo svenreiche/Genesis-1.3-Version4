@@ -365,7 +365,7 @@ void HDF5Base::readDataInt(hid_t fid, char *name, int *data, int size)
   return;
 }
 
-std::vector<int> HDF5Base::getFullDatasetSize(hid_t fid, const char *name)
+bool HDF5Base::getFullDatasetSize(hid_t fid, const char *name, std::vector<int> &shape)
 {
     hsize_t dims[3],maxdims[3];
     for (int i = 0 ; i < 3; i++){
@@ -375,18 +375,18 @@ std::vector<int> HDF5Base::getFullDatasetSize(hid_t fid, const char *name)
     hid_t  dsid=H5Dopen(fid,name,H5P_DEFAULT);
     if (dsid == H5I_INVALID_HID)
     {
-        return {-1,-1,-1};
+        return false;
     }
 
     hid_t spaceid=H5Dget_space(dsid);
     H5Sget_simple_extent_dims(spaceid,dims,maxdims);
     H5Dclose(dsid);
 
-    std::vector<int> shape;
+    shape.resize(3);
     for (int i = 0 ; i < 3 ; i++){
-        shape.push_back(dims[i]);
+        shape.at(i) = static_cast<int>(dims[i]);
     }
-    return shape;
+    return true;
 }
 
 

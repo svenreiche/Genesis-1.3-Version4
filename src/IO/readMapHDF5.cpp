@@ -5,108 +5,75 @@
 #include "readMapHDF5.h"
 
 ReadMapHDF5::ReadMapHDF5()
-{
-    isOpen=false;
-    nwork=-1;
-}
+= default;
 
 ReadMapHDF5::~ReadMapHDF5()
 {
     if (nwork>0){ delete [] work; }
 }
 
-void ReadMapHDF5::close(){
-    if (isOpen){ H5Fclose(fid); }
-}
 
+bool ReadMapHDF5::readVector(const std::string& dset, bool isVector) {
 
-bool ReadMapHDF5::read(int rank, std::string file, std::string dset_rvec, std::string dset_rmat){
-
-    if ((fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT)) == H5I_INVALID_HID) {
-        if(0==rank) {
-            std::cout << "*** Error: unable to open file " << file << endl;
+    std::vector<int> shape = {0, 0, 0};
+    bool status = getFullDatasetSize(fid, dset.c_str(), shape);
+    if (!status) {
+        if (rank == 0) {
+            std::cout << "*** Error: unable to open dataset " << dset << " in " << file << std::endl;
         }
-        return(false);
+        return status;
     }
 
-    auto shapevec=getFullDatasetSize(fid, dset_rvec.c_str());
-    if (shapevec[0] <0) {
-        if(0==rank) {
-            std::cout << "*** Error: unable to open dataset " << dset_rvec << " in " << file << endl;
+    // check for matrix
+    if (!isVector) {
+        if (shape[2] == 0) {
+            shape[2] = shape[1];
+            shape[1] = shape[0];
+            shape[0] = 1;
         }
-        return(false);
+    } else { // or vector
+        shape[2] = 0;
+        if (shape[1] == 0) {
+            shape[1] = shape[0];
+            shape[0] = 1;
+        }
     }
 
-
-
-
-
-    auto shapemat=getFullDatasetSize(fid, dset_rmat.c_str());
-    if (shapemat[0] <0){
-        if(0==rank) {
-            std::cout << "*** Error: unable to open dataset " << dset_rmat << " in " << file << endl;
-        }
-        return(false);
+    // check if all elements were defined
+    if (shape[1] != 6) {
+        return (this->reportShape(dset, isVector));
     }
-    std::cout << dset_rvec << " - size 1st dim " << shapevec.at(0) << endl;
-    std::cout << dset_rmat << " - size 1st dim " << shapemat.at(0) << endl;
+    if ((!isVector) && (shape[2] != 6)) {
+        return (this->reportShape(dset, isVector));
+    }
 
-    /*
- *
+    int nsize = 6*shape[0];
+    if (!isVector) { nsize *=6;}
+
     if (nsize>nwork){ // allocate extra work array to hold field
         if (nwork>0) {delete [] work;}
         nwork=nsize;
-        if (nwork<1){
-            nwork=1;    // catch the error that the first slice can have no particles in one4one simulations
-        }
         work=new double [nwork];
     }
-
-
-    // allocate data in the beam record
-    slice->resize(nsize);
-
-    // get current
-    sprintf(name,"slice%6.6d/current",islice);
-    readDataDouble(fid,name,current,1);
-    *current*=wei;
-
-    sprintf(name,"slice%6.6d/gamma",islice);
-    readDataDouble(fid,name,work,nsize);
-    for (int i=0;i<nsize;i++){
-        slice->at(i).gamma=work[i];
-    }
-
-    sprintf(name,"slice%6.6d/theta",islice);
-    readDataDouble(fid,name,work,nsize);
-    for (int i=0;i<nsize;i++){
-        slice->at(i).theta=work[i];
-    }
-
-    sprintf(name,"slice%6.6d/x",islice);
-    readDataDouble(fid,name,work,nsize);
-    for (int i=0;i<nsize;i++){
-        slice->at(i).x=work[i]*wei;
-    }
-
-    sprintf(name,"slice%6.6d/y",islice);
-    readDataDouble(fid,name,work,nsize);
-    for (int i=0;i<nsize;i++){
-        slice->at(i).y=work[i]*wei;
-    }
-
-    sprintf(name,"slice%6.6d/px",islice);
-    readDataDouble(fid,name,work,nsize);
-    for (int i=0;i<nsize;i++){
-        slice->at(i).px=work[i]*wei;
-    }
-
-    sprintf(name,"slice%6.6d/py",islice);
-    readDataDouble(fid,name,work,nsize);
-    for (int i=0;i<nsize;i++){
-        slice->at(i).py=work[i]*wei;
-    }
-*/
+    std::cout << "Reading: "  << dset << " with size " << nsize << std::endl;
+    readDataDouble(fid, const_cast<char *>(dset.c_str()), work, nsize);
     return true;
 }
 
+bool ReadMapHDF5::read(int rank_in, const std::string& file_in, const std::string& dset_rvec, const std::string& dset_rmat) {
+
+    rank = rank_in;
+    file = file_in;
+
+    if ((fid = H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT)) == H5I_INVALID_HID) {
+        if (rank == 0) {
+            std::cout << "*** Error: unable to open file " << file << endl;
+        }
+        return (false);
+    }
+    auto status = this->readVector(dset_rvec,true);
+    if (!status) { return false; }
+    auto status2 = this->readVector(dset_rmat,false);
+    if (!status2) { return false; }
+    return true;
+}

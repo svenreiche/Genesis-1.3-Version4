@@ -153,6 +153,10 @@ add_library(genesis13 STATIC
         src/Loading/QuietLoading.cpp
         src/Loading/Series.cpp
         src/Loading/ShotNoise.cpp
+        src/Loading/SeriesManager.cpp
+        src/Loading/SeriesParser.cpp
+        src/Loading/Sequence.cpp
+        src/Loading/ImportTransformation.cpp
         src/Main/AlterSetup.cpp
         src/Main/Dump.cpp
         src/Main/EField.cpp
@@ -164,10 +168,8 @@ add_library(genesis13 STATIC
         src/Main/SponRad.cpp
         src/Main/GenTime.cpp
         src/Main/Track.cpp
-        src/Main/Wake.cpp
-        src/Loading/SeriesManager.cpp
-        src/Loading/SeriesParser.cpp
-        src/Loading/Sequence.cpp)
+        src/Main/Wake.cpp)
+
 
 
 target_include_directories(genesis13

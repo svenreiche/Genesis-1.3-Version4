@@ -38,6 +38,7 @@
 #include "dump.h"
 #include "ImportBeam.h"
 #include "ImportField.h"
+#include "ImportTransformation.h"
 #include "writeBeamHDF5.h"
 #include "writeFieldHDF5.h"
 #include "readMapHDF5.h"
@@ -70,35 +71,29 @@ bool MPISingle;  // global variable to do mpic or not
 //vector<double> evtime;
 //double evt0;
 
-int genmain (string inputfile, map<string,string> &comarg, bool split)
-{
-    meta_inputfile=inputfile;
-    int ret=0;
-    MPISingle=split;
-	int rank,size;
+int genmain (string inputfile, map<string,string> &comarg, bool split) {
+    meta_inputfile = inputfile;
+    int ret = 0;
+    MPISingle = split;
+    int rank, size;
 
     MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
     MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
-	if (MPISingle){
-	  rank=0;
-	  size=1;
+    if (MPISingle) {
+        rank = 0;
+        size = 1;
     }
 
-    // test reading of element
-    ReadMapHDF5 reader;
-    reader.read(rank,"data.h5","dat1","dat2");
-    reader.read(rank,"data.h5","dat2","dat3");
-
     time_t timer;
-	clock_t clocknow;
-	clock_t clockstart = clock();
-	//	evt0 = double(clockstart);
-	//	event.push_back("start");
-	//	evtime.push_back(0);
+    clock_t clocknow;
+    clock_t clockstart = clock();
+    //	evt0 = double(clockstart);
+    //	event.push_back("start");
+    //	evtime.push_back(0);
 
-    if (rank==0){         // the output of version and build has been moved to the wrapper mainwrap.cpp
+    if (rank == 0) {         // the output of version and build has been moved to the wrapper mainwrap.cpp
         time(&timer);
-        cout << "Starting Time: " << ctime(&timer)<< endl;
+        cout << "Starting Time: " << ctime(&timer) << endl;
 
         cout << "MPI-Comm Size: " << size;
         if (size == 1) {
@@ -112,7 +107,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split)
     // Instance of beam and field class to carry the distribution
 
     vector<Field *> field;   // vector of various field components (harmonics, vertical/horizonthal components)
-    Beam  *beam =new Beam;
+    Beam *beam = new Beam;
 
 
     //----------------------------------------------------------
@@ -121,364 +116,374 @@ int genmain (string inputfile, map<string,string> &comarg, bool split)
     // It is assumed that (except for a few well-defined reasons)
     // the loop is only left if there is an error while processing
     // the input file.
-    bool successful_run=false; // successful simulation run?
+    bool successful_run = false; // successful simulation run?
     Parser parser;
     string element;
-    map<string,string> argument;
+    map<string, string> argument;
 
     // some dummy argument used earlier
-    string latstring="";
-    string outstring="";
-    int in_seed=0;
+    string latstring = "";
+    string outstring = "";
+    int in_seed = 0;
 
 
     //-------------------------------------------
     // instances of main classes
-    Setup *setup=new Setup;
-    AlterLattice *alt=new AlterLattice;
-    Lattice *lattice=new Lattice;
-    Profile *profile=new Profile;
+    Setup *setup = new Setup;
+    AlterLattice *alt = new AlterLattice;
+    Lattice *lattice = new Lattice;
+    Profile *profile = new Profile;
     SeriesManager *series = new SeriesManager;
-    Series  *seq    =new Series;
-    Time *timewindow=new Time;
+    Series *seq = new Series;
+    Time *timewindow = new Time;
     FilterDiagnostics filter;
 
     //-----------------------------------------------------------
     // main loop for parsing
-    parser.open(inputfile,rank);
-    if(0==rank) {
+    parser.open(inputfile, rank);
+    if (0 == rank) {
         cout << "Opened input file " << inputfile << endl;
     }
 
 
-        while(true){
-          bool parser_result = parser.parse(&element,&argument);
-          if(parser_result==false) {
+    while (true) {
+        bool parser_result = parser.parse(&element, &argument);
+        if (parser_result == false) {
             // parser returned 'false', analyse reason
-            if(parser.fail()) {
-              successful_run=false;
+            if (parser.fail()) {
+                successful_run = false;
             } else {
-              successful_run=true; // probably reached eof (nothing was parsed, but also no parsing error detected) => FIXME: implement more analysis
+                successful_run = true; // probably reached eof (nothing was parsed, but also no parsing error detected) => implement more analysis
             }
             break;
-          }
+        }
 
-	  //----------------------------------------------
-	  // log event
-	  //	  clocknow=clock();
-	  //	  event.push_back(element);
-	  //	  evtime.push_back(double(clocknow-clockstart));
+        //----------------------------------------------
+        // log event
+        //	  clocknow=clock();
+        //	  event.push_back(element);
+        //	  evtime.push_back(double(clocknow-clockstart));
 
-      //----------------------------------------------
-	  // setup & parsing the lattice file
+        //----------------------------------------------
+        // setup & parsing the lattice file
 
-      if (element.compare("&setup")==0){
-          // overwriting from the commandline input
-          for (const auto &[key,val] :comarg){
-              // consistency check: display info message if new element is added to argument map (it may fail in Setup::init)
-              if(argument.find(key)==argument.end()) {
-                  if(rank==0) {
-                      cout << "info message: adding parameter '"<<key<<"' to &setup" << endl;
-                  }
-              }
-              argument[key] = val;
-          }
-          if (!setup->init(rank,&argument,lattice, series, filter)){ break;}
-          meta_latfile=setup->getLattice();
-
-          /* successfully processed "&setup" block => generate start semaphore file if requested to do so by user */
-          if (setup->getSemaEnStart()) {
-            string semafile_fn_started;
-            SemaFile sema;
-            if (rank==0) {
-              if(setup->getSemaFN(&semafile_fn_started)) {
-                semafile_fn_started+="start"; // "started"-type semaphore file have additional filename suffix
-                sema.put(semafile_fn_started);
-                cout << endl << "generating 'start' semaphore file " << semafile_fn_started << endl << endl;
-              } else {
-                cout << endl << "error: not writing 'start' semaphore file, filename not defined" << endl << endl;
-              }
+        if (element.compare("&setup") == 0) {
+            // overwriting from the commandline input
+            for (const auto &[key, val]: comarg) {
+                // consistency check: display info message if new element is added to argument map (it may fail in Setup::init)
+                if (argument.find(key) == argument.end()) {
+                    if (rank == 0) {
+                        cout << "info message: adding parameter '" << key << "' to &setup" << endl;
+                    }
+                }
+                argument[key] = val;
             }
-          }
+            if (!setup->init(rank, &argument, lattice, series, filter)) { break; }
+            meta_latfile = setup->getLattice();
 
-          continue;
-      }
+            /* successfully processed "&setup" block => generate start semaphore file if requested to do so by user */
+            if (setup->getSemaEnStart()) {
+                string semafile_fn_started;
+                SemaFile sema;
+                if (rank == 0) {
+                    if (setup->getSemaFN(&semafile_fn_started)) {
+                        semafile_fn_started += "start"; // "started"-type semaphore file have additional filename suffix
+                        sema.put(semafile_fn_started);
+                        cout << endl << "generating 'start' semaphore file " << semafile_fn_started << endl << endl;
+                    } else {
+                        cout << endl << "error: not writing 'start' semaphore file, filename not defined" << endl
+                             << endl;
+                    }
+                }
+            }
+            continue;
+        }
 
-      //----------------------------------------------
-	  // modifying run
+        //----------------------------------------------
+        // modifying run
 
-      if (element.compare("&alter_setup")==0){
-	    AlterSetup *altersetup= new AlterSetup;
-        if (!altersetup->init(rank,&argument,setup,lattice,timewindow,beam,&field, series)){ break;}
-        delete altersetup;
-        continue;
-      }
+        if (element.compare("&alter_setup") == 0) {
+            AlterSetup *altersetup = new AlterSetup;
+            if (!altersetup->init(rank, &argument, setup, lattice, timewindow, beam, &field, series)) { break; }
+            delete altersetup;
+            continue;
+        }
 
-      //----------------------------------------------
-	  // modifying the lattice file
+        //----------------------------------------------
+        // modifying the lattice file
 
-      if (element.compare("&lattice")==0){
-          if (!alt->init(rank,size,&argument,lattice,setup,seq)){ break;}
-          continue;
-      }
+        if (element.compare("&lattice") == 0) {
+            if (!alt->init(rank, size, &argument, lattice, setup, seq)) { break; }
+            continue;
+        }
 
+        //----------------------------------------------
+        // modifying the particle distribution
 
-          //---------------------------------------------------
-          // adding sequence elements
-          //
+        if (element.compare("&importtransformation") == 0) {
+            ImportTransformation *transf = new ImportTransformation;
+            if (!transf->init(rank, size, &argument)) { break; }
+            continue;
+        }
 
-          if ((element.compare("&sequence_const")==0)||
-              (element.compare("&sequence_polynom")==0)||
-              (element.compare("&sequence_power")==0)||
-              (element.compare("&sequence_list")==0)||
-              (element.compare("&sequence_random")==0)){
-                SeriesParser *seriesparser = new SeriesParser;
-                if (!seriesparser->init(rank,&argument,element,series)) {break;}
-                delete seriesparser;
+        //---------------------------------------------------
+        // adding sequence elements
+        //
+
+        if ((element.compare("&sequence_const") == 0) ||
+            (element.compare("&sequence_polynom") == 0) ||
+            (element.compare("&sequence_power") == 0) ||
+            (element.compare("&sequence_list") == 0) ||
+            (element.compare("&sequence_random") == 0)) {
+            SeriesParser *seriesparser = new SeriesParser;
+            if (!seriesparser->init(rank, &argument, element, series)) { break; }
+            delete seriesparser;
 //                if (!seq->init(rank,&argument,element)){ break; }
-                continue;
-          }
-
-
-
-
-          //---------------------------------------------------
-          // adding profile elements
-
-          if ((element.compare("&profile_const")==0)||
-              (element.compare("&profile_gauss")==0)||
-              (element.compare("&profile_file")==0)||
-              (element.compare("&profile_file_multi")==0) ||
-              (element.compare("&profile_polynom")==0)||
-              (element.compare("&profile_step")==0)){
-            if (!profile->init(rank,&argument,element)){ break; }
             continue;
-          }
+        }
 
-          //----------------------------------------------------
-          // defining the time window of simulation
 
-	      if (element.compare("&time")==0){
-            if (!timewindow->init(rank,size,&argument,setup)){ break;}
-            continue;  
-          }  
 
-          //----------------------------------------------------
-          // internal generation of the field
 
-	      if (element.compare("&field")==0){
-	        LoadField *loadfield=new LoadField;
-            if (!loadfield->init(rank,size,&argument,&field,setup,timewindow,profile)){ break;}
-	        delete loadfield;
+        //---------------------------------------------------
+        // adding profile elements
+
+        if ((element.compare("&profile_const") == 0) ||
+            (element.compare("&profile_gauss") == 0) ||
+            (element.compare("&profile_file") == 0) ||
+            (element.compare("&profile_file_multi") == 0) ||
+            (element.compare("&profile_polynom") == 0) ||
+            (element.compare("&profile_step") == 0)) {
+            if (!profile->init(rank, &argument, element)) { break; }
             continue;
-          }
+        }
 
-          //----------------------------------------------------
-          // field manipulation
+        //----------------------------------------------------
+        // defining the time window of simulation
 
-          bool do_alter_field=false;
-	  if (element.compare("&field_manipulator")==0) {
-	    do_alter_field=true;
-            if(0==rank) {
-              cout << "Warning: &field_manipulator is deprecated and will be removed in the future. Use &alter_field instead." << endl;
-	    }
-	  }
-	  if (element.compare("&alter_field")==0) {
-	    do_alter_field=true;
-	  }
-	  if(do_alter_field) {
-	    FieldManipulator *q = new FieldManipulator;
-	    if (!q->init(rank,size,&argument,&field,setup,timewindow,profile)){ break;}
-	    delete q;
-	    continue;  
-          }  
-	 
-          //----------------------------------------------------
-          // setup of space charge field
+        if (element.compare("&time") == 0) {
+            if (!timewindow->init(rank, size, &argument, setup)) { break; }
+            continue;
+        }
 
-	      if (element.compare("&efield")==0){
-   	        EField *efield=new EField;
-            if (!efield->init(rank,size,&argument,beam,setup,timewindow)){ break;}
-	        delete efield;
-            continue;  
-          }  
+        //----------------------------------------------------
+        // internal generation of the field
 
-          //----------------------------------------------------
-          // setup of spontaneous radiation
+        if (element.compare("&field") == 0) {
+            LoadField *loadfield = new LoadField;
+            if (!loadfield->init(rank, size, &argument, &field, setup, timewindow, profile)) { break; }
+            delete loadfield;
+            continue;
+        }
 
-	      if (element.compare("&sponrad")==0){
-            SponRad *sponrad=new SponRad;
-            if (!sponrad->init(rank,size,&argument,beam)){ break;}
-	        delete sponrad;
-            continue;  
-          }  
+        //----------------------------------------------------
+        // field manipulation
 
-          //----------------------------------------------------
-          // setup wakefield
+        bool do_alter_field = false;
+        if (element.compare("&field_manipulator") == 0) {
+            do_alter_field = true;
+            if (0 == rank) {
+                cout
+                        << "Warning: &field_manipulator is deprecated and will be removed in the future. Use &alter_field instead."
+                        << endl;
+            }
+        }
+        if (element.compare("&alter_field") == 0) {
+            do_alter_field = true;
+        }
+        if (do_alter_field) {
+            FieldManipulator *q = new FieldManipulator;
+            if (!q->init(rank, size, &argument, &field, setup, timewindow, profile)) { break; }
+            delete q;
+            continue;
+        }
 
-	      if (element.compare("&wake")==0){
-	        Wake *wake = new Wake;
-            if (!wake->init(rank,size,&argument,timewindow, setup, beam,profile)){ break;}
-	        delete wake;
-	        continue;
-          }  
+        //----------------------------------------------------
+        // setup of space charge field
 
-          //----------------------------------------------------
-          // internal generation of beam
+        if (element.compare("&efield") == 0) {
+            EField *efield = new EField;
+            if (!efield->init(rank, size, &argument, beam, setup, timewindow)) { break; }
+            delete efield;
+            continue;
+        }
 
-	      if (element.compare("&beam")==0){
-            LoadBeam *loadbeam=new LoadBeam;
-            if (!loadbeam->init(rank,size,&argument,beam,setup,timewindow,profile,lattice)){ break;}
-	        delete loadbeam;
-            continue;  
-          }  
+        //----------------------------------------------------
+        // setup of spontaneous radiation
 
-          //----------------------------------------------------
-          // external generation of beam with an sdds file
+        if (element.compare("&sponrad") == 0) {
+            SponRad *sponrad = new SponRad;
+            if (!sponrad->init(rank, size, &argument, beam)) { break; }
+            delete sponrad;
+            continue;
+        }
 
-          if (element.compare("&importdistribution")==0){
-            SDDSBeam *sddsbeam=new SDDSBeam;
-            if (!sddsbeam->init(rank,size,&argument,beam,setup,timewindow,lattice)){ break;}
-	        delete sddsbeam;
-            continue;  
-          }  
+        //----------------------------------------------------
+        // setup wakefield
 
-          //-----------------------------------
-          // register plugins for diagnostics
-          if (element.compare("&add_plugin_fielddiag")==0){
+        if (element.compare("&wake") == 0) {
+            Wake *wake = new Wake;
+            if (!wake->init(rank, size, &argument, timewindow, setup, beam, profile)) { break; }
+            delete wake;
+            continue;
+        }
+
+        //----------------------------------------------------
+        // internal generation of beam
+
+        if (element.compare("&beam") == 0) {
+            LoadBeam *loadbeam = new LoadBeam;
+            if (!loadbeam->init(rank, size, &argument, beam, setup, timewindow, profile, lattice)) { break; }
+            delete loadbeam;
+            continue;
+        }
+
+        //----------------------------------------------------
+        // external generation of beam with an sdds file
+
+        if (element.compare("&importdistribution") == 0) {
+            SDDSBeam *sddsbeam = new SDDSBeam;
+            if (!sddsbeam->init(rank, size, &argument, beam, setup, timewindow, lattice)) { break; }
+            delete sddsbeam;
+            continue;
+        }
+
+        //-----------------------------------
+        // register plugins for diagnostics
+        if (element.compare("&add_plugin_fielddiag") == 0) {
 #ifdef USE_DPI
             AddPluginFieldDiag *d = new AddPluginFieldDiag;
-	    if (!d->init(rank,size,&argument,setup)){ break;}
+        if (!d->init(rank,size,&argument,setup)){ break;}
             delete d;
-            continue;  
+            continue;
 #else
-            if(rank==0) {
-              cout << "*** Error: This binary does not support the element " << element << endl;
+            if (rank == 0) {
+                cout << "*** Error: This binary does not support the element " << element << endl;
             }
             break;
 #endif
-          }  
-          if (element.compare("&add_plugin_beamdiag")==0){
+        }
+        if (element.compare("&add_plugin_beamdiag") == 0) {
 #ifdef USE_DPI
             AddPluginBeamDiag *d = new AddPluginBeamDiag;
-	    if (!d->init(rank,size,&argument,setup)){ break;}
+        if (!d->init(rank,size,&argument,setup)){ break;}
             delete d;
-            continue;  
+            continue;
 #else
-            if(rank==0) {
-              cout << "*** Error: This binary does not support the element " << element << endl;
+            if (rank == 0) {
+                cout << "*** Error: This binary does not support the element " << element << endl;
             }
             break;
 #endif
-          }
+        }
 
-          //----------------------------------------------------
-          // tracking - the very core part of Genesis
+        //----------------------------------------------------
+        // tracking - the very core part of Genesis
 
-          if (element.compare("&track")==0){
-              Track *track=new Track;
-              if (!track->init(rank,size,&argument,beam,&field,setup,lattice,alt,timewindow,filter)){ break;}
-              delete track;
-              continue;
-          }
+        if (element.compare("&track") == 0) {
+            Track *track = new Track;
+            if (!track->init(rank, size, &argument, beam, &field, setup, lattice, alt, timewindow, filter)) { break; }
+            delete track;
+            continue;
+        }
 
-          //----------------------------------------------------
-          // write beam, field or undulator to file
+        //----------------------------------------------------
+        // write beam, field or undulator to file
 
-          if (element.compare("&sort")==0){
-              beam->sort();
-              continue;
-          }
+        if (element.compare("&sort") == 0) {
+            beam->sort();
+            continue;
+        }
 
 
-          //----------------------------------------------------
-          // write beam, field or undulator to file
+        //----------------------------------------------------
+        // write beam, field or undulator to file
 
-          if (element.compare("&write")==0){
-            Dump *dump=new Dump;
-	        if (!dump->init(rank,size,&argument,setup,beam,&field)){ break;}
+        if (element.compare("&write") == 0) {
+            Dump *dump = new Dump;
+            if (!dump->init(rank, size, &argument, setup, beam, &field)) { break; }
             delete dump;
-            continue;  
-          }  
+            continue;
+        }
 
 
-          //----------------------------------------------------
-          // import beam from a particle dump
+        //----------------------------------------------------
+        // import beam from a particle dump
 
-	      if (element.compare("&importbeam")==0){
-            ImportBeam *import=new ImportBeam;
-	        if (!import->init(rank,size,&argument,beam,setup,timewindow)){ break;}
+        if (element.compare("&importbeam") == 0) {
+            ImportBeam *import = new ImportBeam;
+            if (!import->init(rank, size, &argument, beam, setup, timewindow)) { break; }
             delete import;
-            continue;  
-          }  
+            continue;
+        }
 
 
-          //----------------------------------------------------
-          // import field from a field dump
+        //----------------------------------------------------
+        // import field from a field dump
 
-	      if (element.compare("&importfield")==0){
-            ImportField *import=new ImportField;
-	        if (!import->init(rank,size,&argument,&field,setup,timewindow)){ break;}
+        if (element.compare("&importfield") == 0) {
+            ImportField *import = new ImportField;
+            if (!import->init(rank, size, &argument, &field, setup, timewindow)) { break; }
             delete import;
-            continue;  
-          }  
+            continue;
+        }
 
 
-          //----------------------------------------------------
-          // stop execution of input file here (useful for debugging)
+        //----------------------------------------------------
+        // stop execution of input file here (useful for debugging)
 
-          if (element.compare("&stop")==0) {
-            if (rank==0) {
-              cout << endl << "*** &stop element: User requested end of simulation ***" << endl;
+        if (element.compare("&stop") == 0) {
+            if (rank == 0) {
+                cout << endl << "*** &stop element: User requested end of simulation ***" << endl;
             }
-            successful_run=true; // we reached "stop" command without error
+            successful_run = true; // we reached "stop" command without error
             break;
-          }
-
-
-
-          //-----------------------------------------------------
-          // error because the element typ is not defined
-
-          if (rank==0){
-            cout << "*** Error: Unknown element in input file: " << element << endl; 
-	  }
-          break;
         }
 
-        /*
-         * Semaphore file: Decide now what to do in the end (and prepare the needed information)
-         * -> if requested by user (filename is provided by user *or* derived from rootname)
-         * -> if run was successful
-         *
-         * Actual file generation is delayed until the very end as the
-         * simulation could still crash when free-ing objects.
-         */
-        bool semafile_en=false;
-        string semafile_fn;
-        bool semafile_fn_valid=false;
-        if ((semafile_en=setup->getSemaEnDone())) {
-          if(successful_run) {
-            if(setup->getSemaFN(&semafile_fn)) {
-              semafile_fn_valid=true;
+
+
+        //-----------------------------------------------------
+        // error because the element typ is not defined
+
+        if (rank == 0) {
+            cout << "*** Error: Unknown element in input file: " << element << endl;
+        }
+        break;
+    }
+
+    /*
+     * Semaphore file: Decide now what to do in the end (and prepare the needed information)
+     * -> if requested by user (filename is provided by user *or* derived from rootname)
+     * -> if run was successful
+     *
+     * Actual file generation is delayed until the very end as the
+     * simulation could still crash when free-ing objects.
+     */
+    bool semafile_en = false;
+    string semafile_fn;
+    bool semafile_fn_valid = false;
+    if ((semafile_en = setup->getSemaEnDone())) {
+        if (successful_run) {
+            if (setup->getSemaFN(&semafile_fn)) {
+                semafile_fn_valid = true;
             }
-          }
         }
+    }
 
 
-        /*** clean up ***/
-        delete timewindow;
-        delete seq;
-        delete profile;
-        delete lattice;
-        delete alt;
-        delete setup;
-        delete beam;
+    /*** clean up ***/
+    delete timewindow;
+    delete seq;
+    delete profile;
+    delete lattice;
+    delete alt;
+    delete setup;
+    delete beam;
 
-        // release memory allocated for fields
-        for(int i=0; i<field.size(); i++)
-          delete field[i];
-
+    // release memory allocated for fields
+    for (int i = 0; i < field.size(); i++) {
+    delete field[i];
+}
 
 	/*
 	 * Synchronization, without in some cases the semaphore file
