@@ -16,13 +16,13 @@ public:
     ReadMapHDF5();
     ~ReadMapHDF5() override;
     bool readDataset(const std::string &name, std::vector<double> &data, bool isVector);
-    bool open(int rank_in, const string &file_in);
+    bool open(unsigned long rank_in, const string &file_in);
     void close() const;
 
 private:
     hid_t fid {-1};
     std::string file;
-    int rank {0};
+    unsigned long rank {0};
     int nwork {0};
     int nsize {0};
     bool isOpen {false};

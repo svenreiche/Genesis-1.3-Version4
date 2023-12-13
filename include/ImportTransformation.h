@@ -17,10 +17,18 @@ class ImportTransformation {
 public:
     ImportTransformation();
     virtual ~ImportTransformation();
-    bool init(int, int, std::map<std::string,std::string> *,Beam *,Setup *);
+    bool init(int, std::map<std::string,std::string> *,Beam *,Setup *);
 
 private:
     static void usage();
+    void applyVector(vector<vector<Particle>> &beam);
+    void applyMatrix(vector<vector<Particle>> &beam);
+
+    double lambda{0},kr{0},gamma{0},dslice{0}, slen{0};
+    unsigned long nslice{0};
+    std::vector<double> rvec,rmat;
+    unsigned long nvec{0},nmat{0},rank{0};
+
 };
 
 

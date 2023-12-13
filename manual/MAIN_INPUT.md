@@ -30,6 +30,7 @@ The following describes all supported namelist with their variables, including i
   - [importdistribution](#importdistribution)
   - [importbeam](#importbeam)
   - [importfield](#importfield)
+  - [importtransformation](#importtransformation)
   - [efield](#efield)
   - [sponrad](#sponrad)
   - [wake](#wake)
@@ -305,7 +306,7 @@ The modules controls the import of a Genesis 1.3 particle file to replace the in
 [Back](#supported-namelists)
 
 <div style="page-break-after: always; visibility: hidden"> \pagebreak </div>
-./g 
+
 ### importfield
 
 The modules controls the import of a Genesis 1.3 field file to replace the internal generation of the field distribution (note that the module `field` should only be called afterwards with the `accumulate`-option enabled). The routine defines also the parameter for a time-dependent run if the `time`-namelist hasn’t been defined yet.
@@ -315,6 +316,25 @@ The modules controls the import of a Genesis 1.3 field file to replace the inter
 - `time` (*bool, true*): If the time window hasn’t be defined it allows to run Genesis with the imported distribution in scan mode, when set to `false`. This would disable all slippage and long-range collective effects in the simulation
 
 [Back](#supported-namelists)
+
+
+### importtransformation
+
+Once an electron distribution is generated the namelist can be used to manipulate the distribution by shifting the particle by the vector dr or applying the transport matrix R. The applied transformation is `r1 = R*r0+dr`, where
+`r0` is the initial particle vector and `r1` the final one. The transformation assumes the standard 6D vector of `(x,x',y,y',s,delta)`.
+the supplied vector and matrix must have the corresponding shape (6 or 6x6). 
+The user can supply more than one vector or matrix, e.g. sampling at various positions `s`. Then the transformation used interpolated values.
+Note that in the case of transport matrices and interpolated matrix does not preserve the emittance. In this case a high sample rate should be supplied to reduce this effect to a minimum.
+Genesis will check the shape of the transport vector and matrices. If the rank is higher than needed (e.g. 2x6x6 for a transport matrix) then it assumes the first index
+refers to the sample along the `s`-axis. In this case the sample distance `slen` should be also specified. In the case that `n=1` or `slen=0` only a global transformation is applied.
+
+- `file` (*string, \<empty>*): File name of a hdf5 compliant datafile to contain the vector and matrix informations
+- `vector` (*string, \<empty>*) Name of the dataset which contains the vector information. The shape must be either (6) or (n,6)
+- `matrix` (*string, \<empty>*) Name of the dataset which contains the matrix information. The shape must be either (6,6) or (n,6,6)
+- `slen` (*double, 0*): The length in meters between adjacent sample points (n>1), needed for the interpolation. If the value is zero only a global transformation is applied using the first entry.
+[Back](#supported-namelists)
+
+
 
 <div style="page-break-after: always; visibility: hidden"> \pagebreak </div>
 

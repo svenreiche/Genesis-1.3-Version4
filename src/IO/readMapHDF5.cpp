@@ -16,7 +16,7 @@ void ReadMapHDF5::close() const{
     if (isOpen){ H5Fclose(fid); }
 }
 
-bool ReadMapHDF5::open(int rank_in, const std::string& file_in) {
+bool ReadMapHDF5::open(unsigned long rank_in, const std::string& file_in) {
     rank = rank_in;
     file = file_in;
     if ((fid = H5Fopen(file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT)) == H5I_INVALID_HID) {
@@ -60,6 +60,7 @@ bool ReadMapHDF5::readDataset(const std::string& dset, std::vector<double> &data
         }
     }
 
+
     // check if all elements were defined
     if (shape[1] != 6) {
         return (this->reportShape(dset, isVector));
@@ -71,7 +72,28 @@ bool ReadMapHDF5::readDataset(const std::string& dset, std::vector<double> &data
     nsize = 6*shape[0];
     if (!isVector) { nsize *=6;}
     data.resize(nsize);
+
     readDataDouble(fid, const_cast<char *>(dset.c_str()), &data[0], nsize);
+    /*
+     * Debugging: Output of HDF5 file content
+
+    if (rank == 0){
+        if (isVector) {
+            std::cout << "Reading Vector" << std::endl;
+        } else {
+            std::cout << "Reading Matrix" << std::endl;
+        }
+        std::cout << "Dataset: " << dset <<  " size: " << nsize << " shape: " << shape[0] << " " << shape[1] << " " << shape[2] << endl;
+        int idx = 0;
+        int jmax = nsize/6;
+        for (int i = 0; i < jmax; i++){
+            for (int j=0;j<6;j++){
+                std::cout << " " << data.at(idx++);
+            }
+            std::cout << std::endl;
+        }
+    }
+    */
     return true;
 }
 
