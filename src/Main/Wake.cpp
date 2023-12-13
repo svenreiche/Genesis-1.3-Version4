@@ -117,9 +117,10 @@ bool Wake::init(int rank, int size, map<string,string> *arg,  Time *time, Setup 
   // transfer wakes into beam class
   beam->initWake(ns,nsNode, ds,wakeext,wakeres,wakegeo,wakerou,ztrans,radius,transient);
 
-  delete[] wakeres,wakegeo,wakerou,wakeext;
-
-  
+  delete[] wakeres;
+  delete[] wakegeo;
+  delete[] wakerou;
+  delete[] wakeext;
 
   return true;
 
