@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 #include <complex>
-#include <math.h>
+#include <cmath>
 
 #include <mpi.h>
 
@@ -24,9 +24,11 @@ public:
    virtual ~Collective();
    //   void initWake(unsigned int, double, double *, double *, double *, double, double, bool);
    void initWake(unsigned int, unsigned int, double, double *, double *, double *, double *, double, double, bool);
+   void clearWake();
    void apply(Beam *,Undulator *, double );
    void update(Beam *, double);
    void forceUpdate();
+   [[nodiscard]] bool hasWakeDefined() const;
 
 private:
    bool transient,hasWake,needsUpdate;
@@ -38,9 +40,13 @@ private:
    // double *cur;
    std::vector<double> cur;
    int *count;
+
+
 };
 
-
+inline bool Collective::hasWakeDefined() const{
+    return hasWake;
+}
 inline void Collective::forceUpdate()
 {
   needsUpdate=true;

@@ -139,6 +139,9 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
     }
     time->finishInit(setup);
     // step 3.2 - beam
+    if ((resample) && (beam->hasWake())){
+        if (rank==0) {cout << "*** Warning: Subharmonic conversion will discard existing wakefield definition" << endl;}
+    }
     if (!beam->subharmonicConversion(subharmonic,resample)){ 
       if (rank==0) {cout << "*** Error: Cannot convert beam distribution to lower harmonic" << endl;}
       return false;
@@ -174,6 +177,9 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
     time->finishInit(setup);
 
     // step 4.2 - beam
+    if ((resample) && (beam->hasWake())){
+        if (rank==0) {cout << "*** Warning: Harmonic conversion will discard existing wakefield definition" << endl;}
+    }
     if (!beam->harmonicConversion(harmonic,resample)){ 
       if (rank==0) {cout << "*** Error: Cannot convert beam distribution to higher harmonic" << endl;}
       return false;

@@ -156,7 +156,6 @@ void Beam::initSorting(int rank,int size,bool doshift,bool dosort)
   double sl=4*asin(1.)*slicelength/reflength;
   sorting.init(rank,size,doshift,dosort);
   sorting.configure(0,sl,0,sl*isz,0,sl*isz,false); 
-  return;
 }
 
 int Beam::sort()
@@ -190,9 +189,7 @@ void Beam::track(double delz,vector<Field *> *field, Undulator *und){
 
   solver.applyR56(this,und,reflength);    // apply the longitudinal phase shift due to R56 if a chicane is selected.
 
-  solver.track(delz*0.5,this,und,true);      // apply corrector settings and track second half for transverse coordinate
-  return;
-}
+  solver.track(delz*0.5,this,und,true);      }
 
 
 
@@ -282,6 +279,7 @@ bool Beam::harmonicConversion(int harmonic, bool resample)
   }
   if (!resample) { return true; }
 
+  col.clearWake();  // clear the wake definitions. Needs an explicit wake commando in input deck
   report_storage("before harmonic upconversion");
 
   // blowing up the slice number
@@ -341,8 +339,8 @@ bool Beam::subharmonicConversion(int harmonic, bool resample)
   }
   if (!resample) { return true; }
 
-  
 
+  col.clearWake();  // clear the wake definitions. Needs an explicit wake commando in input deck
 
 // prepare to copy everyting into the first slice
   int nsize=beam.size();

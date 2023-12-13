@@ -39,7 +39,7 @@ class Beam{
    int  get_WriteFilter_from();
    int  get_WriteFilter_to();
    int  get_WriteFilter_inc();
-
+   bool hasWake();
    void setBunchingHarmonicOutput(int harm_in);
    int getBunchingHarmonics();
    void set_global_stat(bool);
@@ -83,6 +83,8 @@ class Beam{
 
    bool beam_write_filter;
    int beam_write_slices_from, beam_write_slices_to, beam_write_slices_inc;
+
+
 };
 
 inline bool Beam::outputCurrent(){ return doCurrent;}
@@ -104,6 +106,9 @@ inline void Beam::initWake(unsigned int ns, unsigned int nsNode, double ds, doub
   col.initWake(ns, nsNode, ds, wakeext, wakeres, wakegeo, wakerou, ztrans, radius, transient);
 }
 
+inline bool Beam::hasWake(){
+    return col.hasWakeDefined();
+}
 
 inline void Beam::setBunchingHarmonicOutput(int harm_in){bharm=harm_in;}
 inline int Beam::getBunchingHarmonics(){return bharm;}
