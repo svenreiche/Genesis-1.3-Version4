@@ -261,8 +261,19 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------------
         // defining the time window of simulation
 
-        if (element.compare("&time") == 0) {
-            if (!timewindow->init(rank, size, &argument, setup)) { break; }
+        if (element == "&time") {
+            // check if beam or field is already defined
+            auto defined = !beam->beam.empty();
+            for (auto fld : field ) {
+                defined |= !fld->field.empty();
+            }
+            if (defined){
+                if (rank == 0){
+                    std::cout << "*** Warning: Beam and/or Field already defined. Ignoring &time namelist" << std::endl;
+                }
+            } else {
+                if (!timewindow->init(rank, size, &argument, setup)) { break; }
+            }
             continue;
         }
 

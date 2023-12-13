@@ -3,6 +3,7 @@
 ### [4.6.5] - 2023/12/06
 - added the ability to reduce the amount of particles when writing to a beam dump
 - added the baility to apply bema shifts or matrix transformation to the electron beam by supplying the corresponding vectors and matrices by an HDF5 file 
+- added a check that the time namelist is not evoked once a beam or field has been defined. A warning is printed.
 
 ### [4.6.4] - 2023/10/02
 - bug fixed which didn't allow to compile Genesis without the FFTW3 library
