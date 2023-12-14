@@ -5,6 +5,7 @@
 - added the baility to apply bema shifts or matrix transformation to the electron beam by supplying the corresponding vectors and matrices by an HDF5 file 
 - added a check that the time namelist is not evoked once a beam or field has been defined. A warning is printed.
 - Catch bug with wakefield if the beam is resampled. In this case the wake definition will be discarded
+- Added support for placeholder when writing field and particle dumps.
 
 ### [4.6.4] - 2023/10/02
 - bug fixed which didn't allow to compile Genesis without the FFTW3 library

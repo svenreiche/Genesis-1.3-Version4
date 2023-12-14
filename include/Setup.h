@@ -83,7 +83,7 @@ class Setup: public StringProcessing{
 #endif
 
  private:
-   void usage();
+   static void usage();
    string rootname,outputdir,lattice,beamline,partfile,fieldfile;
    double gamma0,lambda0,delz;
    bool one4one,shotnoise;

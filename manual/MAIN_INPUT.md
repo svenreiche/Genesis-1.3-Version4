@@ -398,7 +398,7 @@ An empty namelist with no variables. It initiates the sorting and redistribution
 
 ### write
 
-With this name list the field or particle distributions are dumped.
+With this name list the field or particle distributions are dumped. The placeholder character `@` can be used to refer to the rootname of the simulation run, e.g. `field = @.final`
 
 - `field` (*string,\<empty>*): if a filename is defined, Genesis writes out the field distribution of all harmonics. The harmonics are indicated by the suffix ’.hxxx.’ where xxx is the harmonic number. The filename gets the extension.fld.h5 automatically
 - `beam` (*string, \<empty>*): if a filename is defined, Genesis writes out the particle distribution. The filename gets the `extension.par.h5` automatically
