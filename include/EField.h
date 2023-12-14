@@ -25,10 +25,10 @@ class EField: public StringProcessing{
 
 
  private:
-   void usage();
-   double rmax,dr,lambda;
-   int nz,nphi,ngrid;
-   bool longrange,redLorentz;
+   static void usage();
+   double rmax{},dr{},lambda{};
+   int nz{},nphi{},ngrid{};
+   bool longrange{},redLorentz{};
 
 
 };

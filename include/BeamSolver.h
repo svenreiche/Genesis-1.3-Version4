@@ -25,25 +25,22 @@ class BeamSolver{
    BeamSolver();
    virtual ~BeamSolver();
 
-   void initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool longr, bool redLF);
+   void initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool longr);
 
    void advance(double, Beam *, vector< Field *> *, Undulator *);
    void track(double, Beam *, Undulator *,bool);
    void applyR56(Beam *, Undulator *, double);
 
  private:
- 
    complex <double> cpart;
-
    vector< double > rharm;
    vector< complex <double > > rpart;
-   vector<double> esc;
    
-   double ez;
-   double xks,xku;
+   double ez{};
+   double xks{},xku{};
 
-   double theta,gamma,btpar;
-   double k2gg,k2pp,k3gg,k3pp;
+   double theta{},gamma{},btpar{};
+   double k2gg{},k2pp{},k3gg{},k3pp{};
 
    bool onlyFundamental;
  
@@ -57,21 +54,18 @@ class BeamSolver{
 };
 
 
-inline void BeamSolver::initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool longr, bool redLF){
-  efield.init(rmax,ngrid,nz,nphi,lambda,longr,redLF);
-  return;
+inline void BeamSolver::initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool longr){
+  efield.init(rmax,ngrid,nz,nphi,lambda,longr);
 }
 
 
 inline void BeamSolver::track(double dz, Beam *beam, Undulator *und, bool last)
 {
   tracker.track(dz,beam,und,last);
-  return;
 }
 
 inline void BeamSolver::applyR56(Beam *beam, Undulator *und, double reflen){
   tracker.applyR56(beam,und,reflen);
-  return;
 }
 
 #endif

@@ -1,28 +1,53 @@
 #include "EFieldSolver.h"
 #include "Beam.h"
 
-extern bool MPISingle;
 
-EFieldSolver::EFieldSolver(){
-  nz=0;
-  nphi=0;
-  ngrid_ref=0;
-  longrange=false;
-  fcurrent.clear();
-
+EFieldSolver::EFieldSolver() {
+    nz = 0;
+    nphi = 0;
+    ngrid = 0;
+    rmax = 1;
+    ks = 1;
+    xcen = 0;
+    ycen = 0;
+    dr = 1;
+    rbound =1;
+    longrange = false;
+    fcurrent.clear();
+    fsize.clear();
 }
 
-EFieldSolver::~EFieldSolver(){}
+EFieldSolver::~EFieldSolver()= default;
 
-void EFieldSolver::init(double rmax_in, int ngrid_in, int nz_in, int nphi_in, double lambda, bool longr_in, bool red_in){
+void EFieldSolver::init(double rmax_in, int ngrid_in, int nz_in, int nphi_in, double lambda, bool longr_in) {
 
-  rmax_ref=rmax_in;
-  ngrid_ref=ngrid_in;
-  nz=nz_in;
-  nphi=nphi_in;
-  ks = 4*asin(1)/lambda;
-  longrange=longr_in;
-  reducedLF=red_in;
+    rmax = rmax_in;
+    ngrid = ngrid_in;
+    nz = nz_in;
+    nphi = nphi_in;
+    ks = 4 * asin(1) / lambda;
+    longrange = longr_in;
+
+    // adjust working arrays
+    if (ngrid != csrc.size()) {
+        csource.resize(ngrid*nz*(2*nphi+1));
+        cfield.resize(ngrid*nz*(2*nphi+1));
+        for (unsigned long i ; i < ngrid*nz*(2*nphi+1); i ++){
+            cfield[i] = complex<double>(0,0);
+        }
+        vol.resize(ngrid);
+        lmid.resize(ngrid);
+        llow.resize(ngrid);
+        lupp.resize(ngrid);
+        celm.resize(ngrid);
+        csrc.resize(ngrid);
+        clow.resize(ngrid);
+        cmid.resize(ngrid);
+        cupp.resize(ngrid);
+        gam.resize(ngrid);
+        rlog.resize(ngrid);
+    }
+
 }
 
 void EFieldSolver::longRange(Beam *beam, double gamma0, double aw) {
@@ -38,10 +63,7 @@ void EFieldSolver::longRange(Beam *beam, double gamma0, double aw) {
     if (!longrange) {
         return;
     }
-    double gamma = gamma0;
-    if (reducedLF){
-        gamma/=sqrt(1+aw*aw);
-    }
+    double gamma = gamma0/sqrt(1+aw*aw);
 
     int MPIsize=1;
     int MPIrank=0;
@@ -72,13 +94,13 @@ void EFieldSolver::longRange(Beam *beam, double gamma0, double aw) {
 
     for (int i=0; i < nsize; i++){
         double EFld = 0;
-        int isplit = nsize*MPIrank+i;
+        auto isplit = nsize*MPIrank+i;
         for (int j = 0; j < isplit; j++) {
             double ds = static_cast<double>(j - isplit) * beam->slicelength*gamma;
             double coef = 1 +ds/sqrt(ds*ds+fsize[j]); // ds is negative
             EFld += coef*scl*fcurrent[j]/fsize[j];
         }
-        for (int j = isplit+1; j < MPIsize*nsize; j++) {
+        for (auto j = isplit+1; j < MPIsize*nsize; j++) {
             double ds = static_cast<double>(j - isplit) * beam->slicelength*gamma;
             double coef = 1 -ds/sqrt(ds*ds+fsize[j]); // ds is negative
             EFld -= coef*scl*fcurrent[j]/fsize[j];
@@ -87,144 +109,149 @@ void EFieldSolver::longRange(Beam *beam, double gamma0, double aw) {
     }
 }
 
+auto EFieldSolver::analyseBeam(vector<Particle> *beam){
+/*
+ *  calculates the center of the beam slice and its extension (3 times rms radius to construct the space charge grid
+ */
+    auto npart = beam->size();
+    if (npart <1) {return npart;}
 
-void EFieldSolver::shortRange(vector<Particle> *beam,vector<double> &ez, double current, double gammaz){
-
-  double npart=beam->size();
-  double rmax=rmax_ref;
-  int ngrid=ngrid_ref;
-
-  double pi=2.*asin(1);
-
-  // gammaz = gamma/sqrt(1+aw^2)
-  double gz2=gammaz*gammaz;
-  double xcuren=current;
-
-
-
-  if ((nz==0)||(npart==0)||(ngrid<2)) {return;}
-  
-  // adjust working arrays
-  if (npart>idx.size()){
-    idx.resize(npart);
-    azi.resize(npart);
-  }
-  
-
-  // calculate center of beam slice
-  double xcen=0;
-  double ycen=0;
-  for (int i=0; i<npart; i++){
-    xcen+=beam->at(i).x;
-    ycen+=beam->at(i).y; 
-  }
-  xcen/=static_cast<double>(npart);
-  ycen/=static_cast<double>(npart);
-
-  // calculate radial grid point position
-
-  double dr=rmax/(ngrid-1);
-  double rbound=0;
-
-  for (int i=0; i<npart; i++){
-    double tx=beam->at(i).x-xcen;
-    double ty=beam->at(i).y-ycen;
-    double r=sqrt(tx*tx + ty*ty);
-    if (r>rbound) { rbound=r; }
-    idx[i]=static_cast<int> (floor(r/dr));
-    azi[i]=atan2(ty,tx);
-  }
-  
-  // check for beam sizes not fitting in the radial grid.
-  if (2*rbound>rmax){
-    ngrid=static_cast<int> (floor(2*rbound/dr))+1;
-    rmax=(ngrid-1)*dr;
-  }
-
-  // adjust working arrays
-  if (ngrid!=csrc.size()){
-   vol.resize(ngrid);
-   lmid.resize(ngrid);
-   llow.resize(ngrid);
-   lupp.resize(ngrid);
-   celm.resize(ngrid);
-   csrc.resize(ngrid);
-   clow.resize(ngrid);
-   cmid.resize(ngrid);
-   cupp.resize(ngrid);
-   gam.resize(ngrid);
-   rlog.resize(ngrid);
-  }
-
-
-
-  // r_j are the center grid points. The boundaries are given +/-dr/2. Thus r_j=(j+1/2)*dr
-  for (int j=0;j<ngrid;j++){
-    vol[j]=dr*dr*(2*j+1);
-    lupp[j]=2*(j+1)/vol[j];  // Eq 3.30 of my thesis
-    llow[j]=2*j/vol[j];      // Eq 3.29
-    if (j==0){
-      rlog[j]=0;
-    }else{
-      rlog[j]=2*log((j+1)/j)/vol[j];  // Eq. 3.31
+    // calculate center of beam slice
+    xcen = 0;
+    ycen = 0;
+    for (int i = 0; i < npart; i++) {
+        xcen += beam->at(i).x;
+        ycen += beam->at(i).y;
     }
-  }
-  lupp[ngrid-1]=0;
+    xcen /= static_cast<double>(npart);
+    ycen /= static_cast<double>(npart);
 
-
-
-  for (int l=1;l<nz+1;l++){                 // loop over longitudinal modes
-       for (int i=1; i<ngrid; i++){
-           lmid[i]=-llow[i]-lupp[i]-l*l*ks*ks/gz2; // construct the diagonal terms for m=0
-           csrc[i]=complex<double> (0,0);           // clear source term 
-       }
-       
-
-       // normalize source term       
-       double coef=vacimp/eev*xcuren/static_cast<double>(npart)/pi;
-
-       // add the azimuthal dependence
-       for (int m=-nphi;m<=nphi;m++){
-	 // construct the source term
-
-	 for (int i=0;i<ngrid;i++){
-	   csrc[i]=complex<double> (0,0);
-	   cmid[i]=lmid[i]-rlog[i]*m*m;
-	 }
-
-         for (int i=0; i<npart; i++){
-	   double phi=l*beam->at(i).theta+m*azi[i];	   
-	   csrc[idx[i]]+=complex<double>(cos(phi),-sin(phi));
-         }
-
-	 for (int i=0;i<ngrid;i++){
-	   csrc[i]*=complex<double> (0,coef/vol[i]);
-	 }
-
-	 // solve tridiag(clow,cmid,cupp,csrc,celm,ngrid);
-
-	 complex<double> bet=cmid[0];
-	 celm[0]=csrc[0]/bet;
-	 for (int i=1;i<ngrid;i++){
-	   gam[i]=cupp[i-1]/bet;
-	   bet=cmid[i]-clow[i]*gam[i];
-	   celm[i]=(csrc[i]-clow[i]*celm[i-1])/bet;
-	 }
-	 for (int i=ngrid-2;i>-1;i--){
-	   celm[i]=celm[i]-gam[i+1]*celm[i+1];
-	 }
-
-
-         // calculate the field at the electron bposition
-	 for (int i=0;i<npart;i++){
-	    double phi=l*beam->at(i).theta+m*azi[i];	   
-	    complex<double> ctmp=celm[idx[i]]*complex<double>(cos(phi),sin(phi));
-	    ez[i]+=2*ctmp.real();
-	 }
-       }
-       
-  }
-  
-  return;
-
+    // calculate radial extension of particle distribution
+    rbound = 0;
+    for (int i = 0; i < npart; i++) {
+        double tx = beam->at(i).x - xcen;
+        double ty = beam->at(i).y - ycen;
+        rbound  += tx * tx + ty * ty;
+    }
+    rbound = sqrt(rbound/static_cast<double>(npart))*3; // calculating the rms radius and then assume 3 sigma for full beam
+    return npart;
 }
+
+void EFieldSolver::constructLaplaceOperator(){
+    // r_j are the center grid points. The boundaries are given +/-dr/2. Thus r_j=(j+1/2)*dr
+    for (int j = 0; j < ngrid; j++) {
+        vol[j] = dr * dr * (2 * j + 1);
+        lupp[j] = 2 * (j + 1) / vol[j];  // Eq 3.30 of my thesis
+        llow[j] = 2 * j / vol[j];      // Eq 3.29
+        if (j == 0) {
+            rlog[j] = 0;
+        } else {
+            rlog[j] = 2 * log((j + 1) / j) / vol[j];  // Eq. 3.31
+        }
+    }
+    lupp[ngrid - 1] = 0;
+}
+
+
+double EFieldSolver::getEField(double x,double y,double theta) {
+
+    double ez = 0;
+    if (!this->hasShortRange()) {
+        return ez;
+    }
+    auto tx = x - xcen;
+    auto ty = y - ycen;
+    auto r = sqrt(tx * tx + ty * ty);
+    if (r > rmax * rbound) {
+        return ez;
+    }
+    auto phi = atan2(ty, tx);
+    auto ir = static_cast<unsigned long>(floor(r / dr));
+
+    for (int l = 1 ; l < nz+1; l++) {
+        for (int m = -nphi; m<=nphi; m++){
+            auto phase = l * theta + m * phi;
+            unsigned long idx = (l-1)*ngrid*(2*nphi+1)+(m+nphi)*ngrid;
+            auto ctmp = cfield[idx+ir] * complex<double>(cos(phase), sin(phase));
+            ez += 2 * ctmp.real();
+        }
+    }
+    return ez;
+}
+
+
+
+
+void EFieldSolver::shortRange(vector<Particle> *beam, double current, double gz2) {
+
+    // calculate center of beam slice and its extension
+    auto npart = this->analyseBeam(beam);
+    if (npart == 0) { return; }
+    if (!this->hasShortRange()) { return; }
+
+    // get radial grid spacing
+    dr = rmax * rbound / (ngrid - 1); // calculate grid spacing
+    this->constructLaplaceOperator(); // calculates the tri-diagonal laplace matrix of space charge field equation
+
+    // construct source term
+    double pi = 2. * asin(1);
+    double xcuren = current;
+    double coef = vacimp / eev * xcuren / static_cast<double>(npart) / pi;
+    unsigned long nnphi = 2 * nphi + 1;
+    // clear source term first
+    for (unsigned long i; i < nz * nnphi * ngrid; i++) {
+        csource[i] = complex<double>(0, 0);
+    }
+
+    for (auto part: *beam) {
+        auto tx = part.x - xcen;
+        auto ty = part.y - ycen;
+        auto r = sqrt(tx * tx + ty * ty);
+        if (r < rmax * rbound) {
+            auto phi = atan2(ty, tx);
+            auto ir = static_cast<unsigned long>(floor(r / dr));
+            auto theta = part.theta;
+            for (int l = 1; l < nz + 1; l++) {
+                unsigned int idx0 = (l - 1) * nnphi * ngrid;
+                for (int m = -nphi; m <= nphi; m++) {
+                    auto idx = idx0 + (m + nphi) * ngrid +
+                               ir;  // getting index of radial grid nested in loop over azimuthal angle phi and longitudinal harmonics
+                    auto phase = l * theta + m * phi;
+                    csource[idx] += complex<double>(cos(phase), -sin(phase));
+                }
+            }
+        }
+    }
+    for (unsigned long j = 0; j < nz * nnphi; j++) {
+        for (unsigned long i = 0; i < ngrid; i++) {
+            csource[i + j * ngrid] *= complex<double>(0, coef / vol[i]);
+        }
+    }
+
+    // solving field equation
+
+    for (int l = 1; l < nz + 1; l++) {                 // loop over longitudinal modes
+        for (int i = 1; i < ngrid; i++) {
+            lmid[i] = -llow[i] - lupp[i] - l * l * ks * ks / gz2; // construct the diagonal terms for m=0
+        }
+        // solve tridiag(clow,cmid,cupp,csrc,celm,ngrid);
+        for (int m = -nphi; m <= nphi; m++) {
+            complex<double> bet = cmid[0];
+            celm[0] = csrc[0] / bet;
+            for (int i = 1; i < ngrid; i++) {
+                gam[i] = cupp[i - 1] / bet;
+                bet = cmid[i] - clow[i] * gam[i];
+                celm[i] = (csrc[i] - clow[i] * celm[i - 1]) / bet;
+            }
+            for (int i = ngrid - 2; i > -1; i--) {
+                celm[i] = celm[i] - gam[i + 1] * celm[i + 1];
+            }
+
+            auto idx = ((l - 1) * (2 * nphi + 1) + (m + nphi)) * ngrid;
+            for (int i = 0; i < ngrid; i++) {
+                cfield[idx + i] = celm[i];
+            }
+        }
+    }
+}
+

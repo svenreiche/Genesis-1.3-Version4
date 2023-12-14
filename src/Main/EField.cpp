@@ -1,8 +1,8 @@
 #include "EField.h"
 #include "Beam.h"
 
-EField::EField(){}
-EField::~EField(){}
+EField::EField()= default;
+EField::~EField()= default;
 
 void EField::usage(){
 
@@ -14,7 +14,6 @@ void EField::usage(){
   cout << " int ngrid = 100" << endl;
   cout << " bool longrange = False" << endl;
   cout << "&end" << endl << endl;
-  return;
 }
 
 bool EField::init(int rank, int size, map<string,string> *arg,  Beam *beam, Setup *setup, Time *time)
@@ -25,7 +24,7 @@ bool EField::init(int rank, int size, map<string,string> *arg,  Beam *beam, Setu
   longrange=false;
   redLorentz=true;
 
-  map<string,string>::iterator end=arg->end();
+  auto end=arg->end();
 
   if (arg->find("rmax")!=end)  {rmax  = atof(arg->at("rmax").c_str()); arg->erase(arg->find("rmax"));}
   if (arg->find("ngrid")!=end) {ngrid = atoi(arg->at("ngrid").c_str());  arg->erase(arg->find("ngrid"));}
@@ -33,12 +32,12 @@ bool EField::init(int rank, int size, map<string,string> *arg,  Beam *beam, Setu
   if (arg->find("nphi")!=end)  {nphi  = atoi(arg->at("nphi").c_str());  arg->erase(arg->find("nphi"));}
   if (arg->find("longrange")!=end)  {longrange = atob(arg->at("longrange").c_str()); arg->erase(arg->find("longrange"));}
 
-  if (arg->size()!=0){
+  if (!arg->empty()){
     if (rank==0){ cout << "*** Error: Unknown elements in &efield" << endl; this->usage();}
     return false;
   }
 
-  beam->initEField(rmax,ngrid,nz,nphi,lambda,longrange,redLorentz);
+  beam->initEField(rmax,ngrid,nz,nphi,lambda,longrange);
   return true;
 }
  

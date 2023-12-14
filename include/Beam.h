@@ -25,7 +25,7 @@ class Beam{
    void diagnosticsStart();
    void init(int, int, double,double, double,bool);
    void initSorting(int,int,bool,bool);
-   void initEField(double,int,int,int,double,bool,bool);
+   void initEField(double,int,int,int,double,bool);
    void initIncoherent(int, int, bool,bool);
    void initWake(unsigned int, unsigned int, double, double *, double *, double *,double *, double,double, bool);
    bool harmonicConversion(int,bool);
@@ -94,12 +94,10 @@ inline bool Beam::outputAux(){ return doAux;}
 
 inline void Beam::initIncoherent(int base, int rank, bool spread, bool loss){
   incoherent.init(base,rank,spread,loss);
-  return;
 }
 
-inline void Beam::initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool lngr, bool redLR){
-  solver.initEField(rmax,ngrid,nz,nphi,lambda,lngr,redLR);
-  return;
+inline void Beam::initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool lngr){
+  solver.initEField(rmax,ngrid,nz,nphi,lambda,lngr);
 }
 
 inline void Beam::initWake(unsigned int ns, unsigned int nsNode, double ds, double *wakeext, double *wakeres, double *wakegeo,double *wakerou, double ztrans, double radius, bool transient){
