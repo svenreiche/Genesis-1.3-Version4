@@ -31,21 +31,24 @@ public:
     void init(double, int, int, int, double, bool);
     void shortRange(vector<Particle> *, double, double);
     void longRange(Beam *beam, double gamma, double aw);
-    double getEField(double x, double y, double theta);
-    [[nodiscard]] bool hasShortRange() const;
+    double getEField(unsigned long i);
+    bool hasShortRange() const;
     double diagField();
 private:
-    auto analyseBeam(vector<Particle> *beam);
+    void analyseBeam(vector<Particle> *beam);
     void constructLaplaceOperator();
+    void tridiag();
 
-    vector<double> work1, work2, fcurrent, fsize;
-    vector<complex<double> > csrc, clow, cmid, cupp, celm, gam;
-    vector<complex<double> > csource,cfield;
-    vector<double> lupp, lmid, llow, rlog, vol;
+    vector<double> work1, work2, fcurrent, fsize;  // used for long range calculation
+    vector<complex<double> > csource, cfield, cwork;
+    vector<int> idxr;
+    vector<double> lmid, rlog, vol, ldig;
+    vector<complex<double> > csrc, clow, cmid, cupp, celm, gam; // used for tridiag routine
+    vector<double> ez;
+
     int nz, nphi, ngrid;
-    double rmax, ks, xcen, ycen, dr, rbound;
+    double rmax, ks, xcen, ycen, dr;
     bool longrange;
-
 
 };
 
@@ -54,7 +57,7 @@ inline bool EFieldSolver::hasShortRange() const{
 }
 
 inline double EFieldSolver::diagField() {
-    return std::abs(cfield[nphi*ngrid]);
+   return std::abs(cfield[0]);
 }
 
 #endif

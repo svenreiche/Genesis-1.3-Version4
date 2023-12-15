@@ -49,7 +49,6 @@ void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undul
     for (int is = 0; is < beam->beam.size(); is++) {
         // accumulate space charge field
         double eloss = -beam->longESC[is] / 511000; // convert eV to units of electron rest mass
-
         efield.shortRange(&beam->beam.at(is), beam->current.at(is), gammaz2);
 
         for (int ip = 0; ip < beam->beam.at(is).size(); ip++) {
@@ -62,8 +61,7 @@ void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undul
             double awloc = und->faw(x, y);                 // get the transverse dependence of the undulator field
             btpar = 1 + px * px + py * py + aw * aw * awloc * awloc;
 
-//            ez = efield.getEField(x,y,theta) + eloss;  // adding global long range space charge field to each particle
-            ez = eloss;
+            ez = efield.getEField(ip) + eloss;  // adding global long range space charge field to each particle
             cpart = 0;
             double wx, wy;
             int idx;

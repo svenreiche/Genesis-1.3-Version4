@@ -32,6 +32,7 @@ class Beam{
    bool subharmonicConversion(int,bool);
    int sort();
    double getSize(int);
+   double getSCField();
    void track(double, vector<Field *> *, Undulator *);
    void setOutput(bool,bool,bool,bool);
    void setWriteFilter(bool,int,int,int);
@@ -85,6 +86,7 @@ class Beam{
    int beam_write_slices_from, beam_write_slices_to, beam_write_slices_inc;
 
 
+
 };
 
 inline bool Beam::outputCurrent(){ return doCurrent;}
@@ -104,9 +106,8 @@ inline void Beam::initWake(unsigned int ns, unsigned int nsNode, double ds, doub
   col.initWake(ns, nsNode, ds, wakeext, wakeres, wakegeo, wakerou, ztrans, radius, transient);
 }
 
-inline bool Beam::hasWake(){
-    return col.hasWakeDefined();
-}
+inline bool Beam::hasWake(){return col.hasWakeDefined();}
+inline double Beam::getSCField(){return solver.getSCField();}
 
 inline void Beam::setBunchingHarmonicOutput(int harm_in){bharm=harm_in;}
 inline int Beam::getBunchingHarmonics(){return bharm;}

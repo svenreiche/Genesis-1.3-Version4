@@ -20,36 +20,34 @@ class Field;
 using namespace std;
 
 
-class BeamSolver{
- public:
-   BeamSolver();
-   virtual ~BeamSolver();
+class BeamSolver {
+public:
+    BeamSolver();
+    virtual ~BeamSolver();
+    void initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool longr);
+    void advance(double, Beam *, vector<Field *> *, Undulator *);
+    void track(double, Beam *, Undulator *, bool);
+    void applyR56(Beam *, Undulator *, double);
+    double getSCField();
 
-   void initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool longr);
+private:
+    complex<double> cpart;
+    vector<double> rharm;
+    vector<complex<double> > rpart;
 
-   void advance(double, Beam *, vector< Field *> *, Undulator *);
-   void track(double, Beam *, Undulator *,bool);
-   void applyR56(Beam *, Undulator *, double);
+    double ez{};
+    double xks{}, xku{};
 
- private:
-   complex <double> cpart;
-   vector< double > rharm;
-   vector< complex <double > > rpart;
-   
-   double ez{};
-   double xks{},xku{};
+    double theta{}, gamma{}, btpar{};
+    double k2gg{}, k2pp{}, k3gg{}, k3pp{};
 
-   double theta{},gamma{},btpar{};
-   double k2gg{},k2pp{},k3gg{},k3pp{};
+    bool onlyFundamental;
 
-   bool onlyFundamental;
- 
+    void RungeKutta(double);
+    void ODE(double, double);
 
-   void RungeKutta(double);
-   void ODE(double,double);
-
-   EFieldSolver efield;
-   TrackBeam tracker;
+    EFieldSolver efield;
+    TrackBeam tracker;
 
 };
 
@@ -66,6 +64,10 @@ inline void BeamSolver::track(double dz, Beam *beam, Undulator *und, bool last)
 
 inline void BeamSolver::applyR56(Beam *beam, Undulator *und, double reflen){
   tracker.applyR56(beam,und,reflen);
+}
+
+inline double BeamSolver::getSCField(){
+    return efield.diagField();
 }
 
 #endif
