@@ -50,7 +50,7 @@ private:
 };
 
 inline double EFieldSolver::getSCField(int islice) {
-    return efield[islice];
+    return efield[islice]*511000;  // convert from Lorent mass unit to eV /m
 }
 
 inline bool EFieldSolver::hasShortRange() const{
