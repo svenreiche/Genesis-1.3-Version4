@@ -28,7 +28,8 @@ public:
     void advance(double, Beam *, vector<Field *> *, Undulator *);
     void track(double, Beam *, Undulator *, bool);
     void applyR56(Beam *, Undulator *, double);
-    double getSCField();
+    double getSCField(int);
+    void checkAllocation(unsigned long i);
 
 private:
     complex<double> cpart;
@@ -51,6 +52,9 @@ private:
 
 };
 
+inline double BeamSolver::getSCField(int islice){
+    return efield.getSCField(islice);
+}
 
 inline void BeamSolver::initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool longr){
   efield.init(rmax,ngrid,nz,nphi,lambda,longr);
@@ -66,8 +70,5 @@ inline void BeamSolver::applyR56(Beam *beam, Undulator *und, double reflen){
   tracker.applyR56(beam,und,reflen);
 }
 
-inline double BeamSolver::getSCField(){
-    return efield.diagField();
-}
 
 #endif

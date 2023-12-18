@@ -31,7 +31,6 @@ void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undul
         }
     }
 
-
     xku = und->getku();
     if (xku ==
         0) {   // in the case of drifts - the beam stays in phase if it has the reference energy // this requires that the phase slippage is not applied
@@ -49,8 +48,7 @@ void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undul
     for (int is = 0; is < beam->beam.size(); is++) {
         // accumulate space charge field
         double eloss = -beam->longESC[is] / 511000; // convert eV to units of electron rest mass
-        efield.shortRange(&beam->beam.at(is), beam->current.at(is), gammaz2);
-
+        efield.shortRange(&beam->beam.at(is), beam->current.at(is), gammaz2, is);
         for (int ip = 0; ip < beam->beam.at(is).size(); ip++) {
             gamma = beam->beam.at(is).at(ip).gamma;
             theta = beam->beam.at(is).at(ip).theta + autophase; // add autophase here
@@ -60,13 +58,11 @@ void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undul
             double py = beam->beam.at(is).at(ip).py;
             double awloc = und->faw(x, y);                 // get the transverse dependence of the undulator field
             btpar = 1 + px * px + py * py + aw * aw * awloc * awloc;
-
             ez = efield.getEField(ip) + eloss;  // adding global long range space charge field to each particle
             cpart = 0;
             double wx, wy;
             int idx;
             for (int ifld = 0; ifld < nfld.size(); ifld++) {
-
                 auto islice = (is + field->at(nfld[ifld])->first) % field->at(nfld[ifld])->field.size();
 
                 if (field->at(nfld[ifld])->getLLGridpoint(x, y, &wx, &wy, &idx)) { // check whether particle is on grid
@@ -164,5 +160,9 @@ void BeamSolver::ODE(double tgam,double tthet) {
 #endif
     k2pp += xks * (1. - 1. / btpar0) + xku;             //dtheta/dz
     k2gg += ctmp.imag() / btpar0 / tgam - ez;         //dgamma/dz
+}
+
+void BeamSolver::checkAllocation(unsigned long nslice) {
+    efield.allocateForOutput(nslice);
 }
 

@@ -342,11 +342,9 @@ refers to the sample along the `s`-axis. In this case the sample distance `slen`
 
 This namelist controls the long and short range space charge fields. The long range corresponds to any length scale longer than the slice length of the simulation, while the short range is on the resonant wavelength scale. Numerically they are treated differently.
 The calculation for the short range is done on a radial-azimuthal grid, centered to the centroid position of the electron slice, while the long range is the sum of the space charge field in the rest frame where each slice is treated as a uniform disk.
-At the moment the short range field is disabled but will be reenabled in upcoming versions of Genesis 1.3
 
 - `longrange` (*bool, false*): Flag to enable the calculation of the long range space charge field.
-- `reducedLF` (*bool, false*): Flag to do the Lorentz correction for the motion in the undulator field so that the effective relativistic factor is scaled by sqrt(1+aw^2).
-- `rmax` (*double, 0*): Scaling factor to define the grid size for the short range space charge field, which is given by the product of `rmax` and the maximum offset of the macro particles from its centroid
+- `rmax` (*double, 0*): Size of radial grid in meters. If the beam size gets larger than the grid the size is automatically adjusted to the maximum radius of the electrons with an additional 50% extension. When the mesh size is adjusted a message will be printed on screen.
 - `nz` (*int, 0*): Number of longitudinal Fourier component of the short range space charge field. Note that this should be not in conflict with the beamlet size.
 - `nphi` (*int, 0*): Number of azimuthal modes in the calculation of the short range space charge field.
 - `ngrid` (*int, 100*): Number of grid points of the radial grid for the short range space charge field.

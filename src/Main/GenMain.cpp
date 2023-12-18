@@ -148,7 +148,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
 
     while (true) {
         bool parser_result = parser.parse(&element, &argument);
-        if (parser_result == false) {
+        if (!parser_result) {
             // parser returned 'false', analyse reason
             if (parser.fail()) {
                 successful_run = false;
@@ -167,7 +167,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------
         // setup & parsing the lattice file
 
-        if (element.compare("&setup") == 0) {
+        if (element == "&setup") {
             // overwriting from the commandline input
             for (const auto &[key, val]: comarg) {
                 // consistency check: display info message if new element is added to argument map (it may fail in Setup::init)
@@ -202,8 +202,8 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------
         // modifying run
 
-        if (element.compare("&alter_setup") == 0) {
-            AlterSetup *altersetup = new AlterSetup;
+        if (element == "&alter_setup") {
+            auto *altersetup = new AlterSetup;
             if (!altersetup->init(rank, &argument, setup, lattice, timewindow, beam, &field, series)) { break; }
             delete altersetup;
             continue;
@@ -212,7 +212,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------
         // modifying the lattice file
 
-        if (element.compare("&lattice") == 0) {
+        if (element == "&lattice") {
             if (!alt->init(rank, size, &argument, lattice, setup, seq)) { break; }
             continue;
         }
@@ -220,8 +220,8 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------
         // modifying the particle distribution
 
-        if (element.compare("&importtransformation") == 0) {
-            ImportTransformation *transf = new ImportTransformation;
+        if (element == "&importtransformation") {
+            auto *transf = new ImportTransformation;
             if (!transf->init(rank, &argument,beam,setup)) { break; }
             continue;
         }
@@ -280,8 +280,8 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------------
         // internal generation of the field
 
-        if (element.compare("&field") == 0) {
-            LoadField *loadfield = new LoadField;
+        if (element == "&field") {
+            auto *loadfield = new LoadField;
             if (!loadfield->init(rank, size, &argument, &field, setup, timewindow, profile)) { break; }
             delete loadfield;
             continue;
@@ -291,7 +291,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         // field manipulation
 
         bool do_alter_field = false;
-        if (element.compare("&field_manipulator") == 0) {
+        if (element == "&field_manipulator") {
             do_alter_field = true;
             if (0 == rank) {
                 cout
@@ -299,11 +299,11 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
                         << endl;
             }
         }
-        if (element.compare("&alter_field") == 0) {
+        if (element == "&alter_field") {
             do_alter_field = true;
         }
         if (do_alter_field) {
-            FieldManipulator *q = new FieldManipulator;
+            auto *q = new FieldManipulator;
             if (!q->init(rank, size, &argument, &field, setup, timewindow, profile)) { break; }
             delete q;
             continue;
@@ -312,9 +312,9 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------------
         // setup of space charge field
 
-        if (element.compare("&efield") == 0) {
-            EField *efield = new EField;
-            if (!efield->init(rank, size, &argument, beam, setup, timewindow)) { break; }
+        if (element == "&efield") {
+            auto *efield = new EField;
+            if (!efield->init(rank, &argument, beam, setup)) { break; }
             delete efield;
             continue;
         }
@@ -322,8 +322,8 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------------
         // setup of spontaneous radiation
 
-        if (element.compare("&sponrad") == 0) {
-            SponRad *sponrad = new SponRad;
+        if (element == "&sponrad") {
+            auto *sponrad = new SponRad;
             if (!sponrad->init(rank, size, &argument, beam)) { break; }
             delete sponrad;
             continue;
@@ -332,7 +332,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------------
         // setup wakefield
 
-        if (element.compare("&wake") == 0) {
+        if (element == "&wake") {
             Wake *wake = new Wake;
             if (!wake->init(rank, size, &argument, timewindow, setup, beam, profile)) { break; }
             delete wake;
@@ -342,8 +342,8 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------------
         // internal generation of beam
 
-        if (element.compare("&beam") == 0) {
-            LoadBeam *loadbeam = new LoadBeam;
+        if (element == "&beam") {
+            auto *loadbeam = new LoadBeam;
             if (!loadbeam->init(rank, size, &argument, beam, setup, timewindow, profile, lattice)) { break; }
             delete loadbeam;
             continue;
@@ -352,8 +352,8 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------------
         // external generation of beam with an sdds file
 
-        if (element.compare("&importdistribution") == 0) {
-            SDDSBeam *sddsbeam = new SDDSBeam;
+        if (element == "&importdistribution") {
+            auto *sddsbeam = new SDDSBeam;
             if (!sddsbeam->init(rank, size, &argument, beam, setup, timewindow, lattice)) { break; }
             delete sddsbeam;
             continue;

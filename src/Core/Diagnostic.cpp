@@ -328,6 +328,7 @@ std::map<std::string,OutputInfo> DiagBeam::getTags(FilterDiagnostics & filter_in
         tags["efield"] = {false, false, "eV/m"}; // full field which changes particle energy
         tags["wakefield"] = {false, false, "eV/m"}; // effect from wakefields
         tags["LSCfield"] = {false, false, "eV/m"}; // effect from space charge field
+        tags["SSCfield"] = {false, false, "eV/m"}; // effect from space charge field
         tags["xmin"] = {false, false, "m"};
         tags["xmax"] = {false, false, "m"};
         tags["pxmin"] = {false, false, "rad"};
@@ -482,6 +483,7 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
             this->storeValue(val,"efield",idx,beam->eloss[is] + beam->longESC[is]);
             this->storeValue(val,"wakefield",idx,beam->eloss[is]);
             this->storeValue(val,"LSCfield",idx,beam->longESC[is]);
+            this->storeValue(val,"SSCfield",idx,beam->getSCField(is));
             this->storeValue(val,"xmin",idx,xmin);
             this->storeValue(val,"xmax",idx,xmax);
             this->storeValue(val,"pxmin",idx,pxmin);

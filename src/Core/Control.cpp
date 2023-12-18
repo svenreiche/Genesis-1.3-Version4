@@ -141,23 +141,11 @@ bool Control::init(int inrank, int insize, const string in_rootname, Beam *beam,
     }
   }
 
-  for (unsigned int i=0; i<field->size();i++){
-      field->at(i)->resetSlippage();
+  for (auto & fld : *field){
+      fld->resetSlippage();
   }
 
-    // initial diagnostic
-
-  if (rank==0) { cout << "Initial analysis of electron beam and radiation field..."  << endl; }
-
-  /*
-  beam->initDiagnostics(und->outlength());
-  beam->diagnostics(true,0);
-  beam->diagnosticsStart();
-  for (unsigned int i=0; i<field->size();i++){
-      field->at(i)->initDiagnostics(und->outlength());
-      field->at(i)->diagnostics(true);  // initial values
-  }	
-  */
+  beam->checkBeforeTracking();
   return true;  
 }
 

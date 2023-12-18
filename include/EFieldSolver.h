@@ -8,11 +8,6 @@
 #include <cmath>
 #include <mpi.h>
 
-//#include "readfieldHDF5.h"
-//#include "Undulator.h"
-//#include "FieldSolver.h"
-
-
 #include "Particle.h"
 
 class Beam;
@@ -29,35 +24,37 @@ public:
     EFieldSolver();
     virtual ~EFieldSolver();
     void init(double, int, int, int, double, bool);
-    void shortRange(vector<Particle> *, double, double);
+    void shortRange(vector<Particle> *, double, double, int);
     void longRange(Beam *beam, double gamma, double aw);
     double getEField(unsigned long i);
     bool hasShortRange() const;
-    double diagField();
+    void allocateForOutput(unsigned long nslice);
+    double getSCField(int);
+
 private:
     void analyseBeam(vector<Particle> *beam);
     void constructLaplaceOperator();
     void tridiag();
 
     vector<double> work1, work2, fcurrent, fsize;  // used for long range calculation
-    vector<complex<double> > csource, cfield, cwork;
+    vector<complex<double> > cwork;
     vector<int> idxr;
     vector<double> lmid, rlog, vol, ldig;
     vector<complex<double> > csrc, clow, cmid, cupp, celm, gam; // used for tridiag routine
-    vector<double> ez;
+    vector<double> ez,efield;
 
-    int nz, nphi, ngrid;
+    int nz, nphi, ngrid, rank;
     double rmax, ks, xcen, ycen, dr;
     bool longrange;
 
 };
 
-inline bool EFieldSolver::hasShortRange() const{
-    return (nz>0) & (ngrid > 2);
+inline double EFieldSolver::getSCField(int islice) {
+    return efield[islice];
 }
 
-inline double EFieldSolver::diagField() {
-   return std::abs(cfield[0]);
+inline bool EFieldSolver::hasShortRange() const{
+    return (nz>0) & (ngrid > 2);
 }
 
 #endif
