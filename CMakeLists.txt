@@ -168,7 +168,9 @@ add_library(genesis13 STATIC
         src/Main/SponRad.cpp
         src/Main/GenTime.cpp
         src/Main/Track.cpp
-        src/Main/Wake.cpp)
+        src/Main/Wake.cpp
+        ${SRC_DPI}
+)
 
 
 
