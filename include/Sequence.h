@@ -107,6 +107,7 @@ inline void SequenceList::init(std::vector<double> &val_in, double def_in)
 {
     i = 0;
     val = val_in;
+    def = def_in;
 }
 
 inline double SequenceList::getElement() {
