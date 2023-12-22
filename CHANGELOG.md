@@ -1,8 +1,10 @@
 # Change Log
 
 ### [4.6.5] - 2023/12/06
+- added sequence from external file
+- enable short range space charge
 - added the ability to reduce the amount of particles when writing to a beam dump
-- added the baility to apply bema shifts or matrix transformation to the electron beam by supplying the corresponding vectors and matrices by an HDF5 file 
+- added the ability to apply beam shifts or matrix transformation to the electron beam by supplying the corresponding vectors and matrices by an HDF5 file 
 - added a check that the time namelist is not evoked once a beam or field has been defined. A warning is printed.
 - Catch bug with wakefield if the beam is resampled. In this case the wake definition will be discarded
 - Added support for placeholder when writing field and particle dumps.
