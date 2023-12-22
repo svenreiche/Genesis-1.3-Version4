@@ -15,7 +15,7 @@ message(STATUS "Git hash is ${GIT_HASH}")
 set(_GENESIS_VERSION_MAJOR "4")
 set(_GENESIS_VERSION_MINOR "6")
 set(_GENESIS_VERSION_REV "5")
-set(_GENESIS_VERSION_BETA "true")
+set(_GENESIS_VERSION_BETA "false")
 execute_process(
         COMMAND
             whoami
