@@ -18,13 +18,17 @@ public:
     bool initPower(int, std::map<std::string,std::string> *, SeriesManager *);
     bool initRandom(int, std::map<std::string,std::string> *, SeriesManager *);
     bool initList(int, std::map<std::string,std::string> *, SeriesManager *);
+    bool initFileList(int, std::map<std::string,std::string> *, SeriesManager *);
 
 private:
+	bool readfile(const std::string, std::vector<double> &, int);
+
     void usageConst();
     void usagePolynom();
     void usagePower();
     void usageRandom();
     void usageList();
+    void usageFileList();
 };
 
 
