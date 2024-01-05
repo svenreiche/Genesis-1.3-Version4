@@ -44,6 +44,13 @@ jobs:
             manual/MAIN_INPUT.md
             manual/LATTICE.md
             manual/XGENESIS.md
+            -V 'mainfont:SansSerif.ttf' 
+            -V geometry:margin=1in 
+            -V colorlinks=true 
+            -V linkcolor=blue 
+            -V urlcolor=red 
+            -V toccolor=gray
+            -s
       - name: Upload PDF artifact
         uses: actions/upload-artifact@v3
         with:
