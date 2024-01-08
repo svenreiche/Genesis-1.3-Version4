@@ -1,5 +1,6 @@
 # Change Log
 ### [4.6.6] 
+- fixed: exclude_current_output switch in &setup had no effect
 - nothing yet
 
 ### [4.6.5] - 2023/12/06

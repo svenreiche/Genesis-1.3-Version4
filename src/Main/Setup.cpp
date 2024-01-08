@@ -152,7 +152,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, SeriesManage
   filter.beam.global = beam_global_stat;
   filter.beam.spatial = !exclude_spatial_output;
   filter.beam.energy = !exclude_energy_output;
-  filter.beam.current = !exclude_energy_output;
+  filter.beam.current = !exclude_current_output;
   filter.beam.auxiliar = !exclude_aux_output;
   filter.field.global = field_global_stat;
   filter.field.spatial = !exclude_spatial_output;
