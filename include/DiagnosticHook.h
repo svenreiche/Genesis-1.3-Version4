@@ -30,7 +30,10 @@ public:
 	bool init_lib(std::string);
 	void close_lib(void);
 	bool is_libok(void);
+	bool is_plugintype_field(void);
+	bool is_plugintype_beam(void);
 	bool supports_multimode(void);
+	const std::string& get_info_txt() const;
 
 	DiagFieldHookedBase *pdiagfield_ {nullptr};
 	DiagBeamHookedBase  *pdiagbeam_ {nullptr};
@@ -58,6 +61,7 @@ private:
 	fptr_db beamdiag_destroyer_ {nullptr};
 	bool is_field_ {true};
 	bool multimode_ {false};
+	std::string info_txt_;
 	
 	int my_rank_, comm_size_;
 };
@@ -74,6 +78,7 @@ public:
 
 	bool init(DiagBeamPluginCfg *);
 	void set_runid(int);
+	const std::string& get_info_txt() const;
 
 private:
 	bool update_data(std::map<std::string,std::vector<double> > &, std::string, size_t, double);
@@ -102,6 +107,7 @@ public:
 
 	bool init(DiagFieldPluginCfg *);
 	void set_runid(int);
+	const std::string& get_info_txt() const;
 
 private:
 	bool update_data(std::map<std::string,std::vector<double> > &, std::string, size_t, double);

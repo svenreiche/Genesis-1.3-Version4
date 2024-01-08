@@ -11,7 +11,7 @@ WriteBeamHDF5::WriteBeamHDF5()  {}
 WriteBeamHDF5::~WriteBeamHDF5() {}
 
 
-bool WriteBeamHDF5::write(string fileroot, Beam *beam)
+bool WriteBeamHDF5::write(string fileroot, Beam *beam, int stride)
 {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
   MPI_Comm_size(MPI_COMM_WORLD, &size); // assign rank to node
@@ -65,10 +65,12 @@ bool WriteBeamHDF5::write(string fileroot, Beam *beam)
     s0=-1;
     if ((i>=smin) && (i<smax)){
       s0=0;    // select the slice which is writing
-      npart=beam->beam.at(islice).size();
+      for (int icount = 0; icount < beam->beam.at(islice).size(); icount += stride){
+          npart++;
+      }
     }
 
-    int root = i /beam->beam.size();  // the current rank which sends the informationof a slice
+    int root = i /beam->beam.size();  // the current rank which sends the information of a slice
     if (size>1){
       MPI_Bcast(&npart,1,MPI_INT,root,MPI_COMM_WORLD);
     }
@@ -87,32 +89,32 @@ bool WriteBeamHDF5::write(string fileroot, Beam *beam)
 
     //    if (nwork > 0 ){
       if (s0==0) {
-	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).gamma;}
+	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip*stride).gamma;}
       }
       this->writeSingleNode(gid,"gamma"  ," ", &work);
 
       if (s0==0) {
-	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).theta;}
+	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip*stride).theta;}
       }
       this->writeSingleNode(gid,"theta"  ,"rad", &work);
 
       if (s0==0) {
-	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).x;}
+	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip*stride).x;}
       }
       this->writeSingleNode(gid,"x"  ,"m",&work);
 
       if (s0==0) {
-	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).y;}
+	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip*stride).y;}
       }
       this->writeSingleNode(gid,"y"  ,"m",&work);
 
       if (s0==0) {
-	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).px;}
+	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip*stride).px;}
       }
       this->writeSingleNode(gid,"px"  ,"rad",&work);
 
       if (s0==0) {
-	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip).py;}
+	for (int ip=0; ip<npart;ip++){work[ip]=beam->beam.at(islice).at(ip*stride).py;}
       }
       this->writeSingleNode(gid,"py"  ,"rad",&work);
 

@@ -6,14 +6,13 @@
 
 extern bool MPISingle;
 
-Beam::~Beam(){}
+Beam::~Beam()= default;
 Beam::Beam(){
       do_global_stat=false;
       doCurrent=false;
       doSpatial=true;
       doEnergy=true;
       doAux=true;
-
       beam_write_filter=false;
       beam_write_slices_from=-1;
       beam_write_slices_to=-1;
@@ -36,9 +35,7 @@ void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, d
         eloss[i] = 0;
         longESC[i] = 0;
     }
-
     beam.resize(nsize);
-    return;
 }
 
 
@@ -69,94 +66,16 @@ double Beam::getSize(int is) {  // a calculation of the rms sizes needed for spa
     return sqrt(std::abs(x2-x1*x1))*sqrt(std::abs(y2-y1*y1));
 }
 
-void Beam::initDiagnostics(int nz)
-{
-  
-  idx=0;
-  int ns=current.size();
-  zpos.resize(nz);
-  if (doSpatial){
-    xavg.resize(nz*ns);
-    xsig.resize(nz*ns);
-    yavg.resize(nz*ns);
-    ysig.resize(nz*ns);
-    pxavg.resize(nz*ns);
-    pyavg.resize(nz*ns);
-  } else {
-    xavg.resize(0);
-    xsig.resize(0);
-    yavg.resize(0);
-    ysig.resize(0);
-    pxavg.resize(0);
-    pyavg.resize(0);
-  }
-  if (doEnergy) {
-    gavg.resize(nz*ns);
-    gsig.resize(nz*ns);
-  } else {
-    gavg.resize(0);
-    gsig.resize(0);
-  }
-  bunch.resize(nz*ns); 
-  bphi.resize(nz*ns);
-  if (doAux){
-    efld.resize(nz*ns);
-  } else {
-    efld.resize(0);
-  }
 
-  bx.resize(ns);
-  by.resize(ns);
-  ax.resize(ns);
-  ay.resize(ns);
-  ex.resize(ns);
-  ey.resize(ns);
-  if (doCurrent) {
-    cu.resize(ns*nz);
-  } else {
-    cu.resize(ns);
-  }
-  
-  bh.clear();
-  ph.clear();
-  if (bharm>1){
-    bh.resize(bharm-1);
-    ph.resize(bharm-1);
-    for (int i=0;i<(bharm-1);i++){
-      bh[i].resize(nz*ns);
-      ph[i].resize(nz*ns);
-    }
-  }
-  if (doEnergy){ 
-    tgavg.resize(nz);
-    tgsig.resize(nz);
-  } else {
-    tgavg.resize(0);
-    tgsig.resize(0);
-  }
-  if (doSpatial){
-    txavg.resize(nz);
-    txsig.resize(nz);
-    tyavg.resize(nz);
-    tysig.resize(nz);
-  } else {
-    txavg.resize(0);
-    txsig.resize(0);
-    tyavg.resize(0);
-    tysig.resize(0);
-  }
-  tbun.resize(nz);
-}
 
 // initialize the sorting routine
 // reference position is in ponderomotive phase. The valid bucket size is from 0 to 2 pi*sample
 void Beam::initSorting(int rank,int size,bool doshift,bool dosort)
 {
-  int isz=beam.size();
+  auto isz=beam.size();
   double sl=4*asin(1.)*slicelength/reflength;
   sorting.init(rank,size,doshift,dosort);
   sorting.configure(0,sl,0,sl*isz,0,sl*isz,false); 
-  return;
 }
 
 int Beam::sort()
@@ -177,8 +96,8 @@ int Beam::sort()
 
 void Beam::track(double delz,vector<Field *> *field, Undulator *und){
 
-  for (int i=0; i<field->size();i++){
-    field->at(i)->setStepsize(delz);
+  for (auto & ifld : *field){
+    ifld->setStepsize(delz);
   }
 
   solver.track(delz*0.5,this,und,false);   // track transverse coordinates first half of integration step
@@ -190,9 +109,7 @@ void Beam::track(double delz,vector<Field *> *field, Undulator *und){
 
   solver.applyR56(this,und,reflength);    // apply the longitudinal phase shift due to R56 if a chicane is selected.
 
-  solver.track(delz*0.5,this,und,true);      // apply corrector settings and track second half for transverse coordinate
-  return;
-}
+  solver.track(delz*0.5,this,und,true);      }
 
 
 
@@ -229,7 +146,7 @@ void Beam::report_storage(string infotxt)
     cout << "*** End of report ***" << endl;
   }
 }
-bool Beam::dbg_skip_shrink(void)
+bool Beam::dbg_skip_shrink()
 {
   const char *q = getenv("G4_TEST_NOSHRINK");
   int rank;
@@ -245,7 +162,7 @@ bool Beam::dbg_skip_shrink(void)
   return(false);
 }
 
-void Beam::make_compact(void)
+void Beam::make_compact()
 {
   // Controls amount of additional memory to be reserved.
   // This ensures that we don't fall back to STL's "geometric resizing"
@@ -269,7 +186,7 @@ void Beam::make_compact(void)
 
 bool Beam::harmonicConversion(int harmonic, bool resample)
 {
-  if ((resample==true) && (one4one==false)) { return false;}  // resampling requires one4one
+  if (resample && !one4one) { return false;}  // resampling requires one4one
  
   reflength=reflength/static_cast<double>(harmonic);
   if (resample){ 
@@ -282,6 +199,7 @@ bool Beam::harmonicConversion(int harmonic, bool resample)
   }
   if (!resample) { return true; }
 
+  col.clearWake();  // clear the wake definitions. Needs an explicit wake commando in input deck
   report_storage("before harmonic upconversion");
 
   // blowing up the slice number
@@ -325,7 +243,7 @@ bool Beam::harmonicConversion(int harmonic, bool resample)
 
 bool Beam::subharmonicConversion(int harmonic, bool resample)
 {
-  if ((resample==true) && (one4one==false)) { return false;}
+  if (resample && !one4one) { return false;}
    
  
   reflength=reflength*static_cast<double>(harmonic);
@@ -341,8 +259,8 @@ bool Beam::subharmonicConversion(int harmonic, bool resample)
   }
   if (!resample) { return true; }
 
-  
 
+  col.clearWake();  // clear the wake definitions. Needs an explicit wake commando in input deck
 
 // prepare to copy everyting into the first slice
   int nsize=beam.size();
@@ -381,246 +299,6 @@ bool Beam::subharmonicConversion(int harmonic, bool resample)
 }
 
 
-void Beam::diagnostics(bool output, double z)
-{
-
-  if (!output) { return; }
-
-  double acc_cur,acc_g,acc_g2,acc_x,acc_x2,acc_y,acc_y2;
-  // complex<double> acc_b=(0,0);
-  acc_cur=0;
-  acc_g=0;
-  acc_g2=0;
-  acc_x=0;
-  acc_x2=0;
-  acc_y=0;
-  acc_y2=0;
-
-  zpos[idx]=z;
-
-  int ds=beam.size();
-  int ioff=idx*ds; 
-
-  for (int is=0; is < ds; is++){
-    double bgavg=0;
-    double bgsig=0;
-    double bxavg=0;
-    double bxsig=0;
-    double byavg=0;
-    double bysig=0;
-    double bpxavg=0;
-    double bpyavg=0;
-    double br=0;
-    double bi=0;
-    double bbavg=0;
-    double bbphi=0;
-
-    unsigned int nsize=beam.at(is).size();
-    for (int i=0;i < nsize;i++){
-      double xtmp=beam.at(is).at(i).x;
-      double ytmp=beam.at(is).at(i).y;
-      double pxtmp=beam.at(is).at(i).px;
-      double pytmp=beam.at(is).at(i).py;
-      double gtmp=beam.at(is).at(i).gamma;
-      double btmp=beam.at(is).at(i).theta;
-      bxavg +=xtmp;
-      byavg +=ytmp;
-      bpxavg+=pxtmp;
-      bpyavg+=pytmp;
-      bgavg +=gtmp;
-      bgsig +=gtmp*gtmp;
-      bxsig +=xtmp*xtmp;
-      bysig +=ytmp*ytmp;
-      br+=cos(btmp);
-      bi+=sin(btmp);
-    }
-    
-
-    double scl=1;
-    if (nsize>0){
-      scl=1./static_cast<double>(nsize);
-    }
-
-    bgavg*=scl;
-    bxavg*=scl;
-    byavg*=scl;
-    bgsig*=scl;
-    bxsig*=scl;
-    bysig*=scl;
-    bpxavg*=scl;
-    bpyavg*=scl;
- 
-    if (do_global_stat){
-      acc_cur+=current[is];
-      acc_g+= bgavg*current[is];
-      acc_g2+=bgsig*current[is];
-      acc_x+= bxavg*current[is];
-      acc_x2+=bxsig*current[is];
-      acc_y+= byavg*current[is];
-      acc_y2+=bysig*current[is];
-    }
-
-    bbavg=sqrt(bi*bi+br*br)*scl;
-    bbphi=atan2(bi,br);
-    bgsig=sqrt(fabs(bgsig-bgavg*bgavg));
-    bxsig=sqrt(fabs(bxsig-bxavg*bxavg));
-    bysig=sqrt(fabs(bysig-byavg*byavg));
-
-    if (doCurrent){
-      cu[ioff+is]=current[is];
-    }
-    if (doEnergy){
-      gavg[ioff+is]=bgavg;
-      gsig[ioff+is]=bgsig;
-    }
-    if (doSpatial){
-      xavg[ioff+is]=bxavg;
-      xsig[ioff+is]=bxsig;
-      yavg[ioff+is]=byavg;
-      ysig[ioff+is]=bysig;
-      pxavg[ioff+is]=bpxavg;
-      pyavg[ioff+is]=bpyavg;
-    }
-    bunch[ioff+is]=bbavg;
-    bphi[ioff+is]=bbphi;
-    if (doAux){
-       efld[ioff+is]=eloss[is];  
-    }
-    //    partcount[ioff+is]=nsize;
-
-    for (int ih=1; ih<bharm;ih++){   // calculate the harmonics of the bunching
-      br=0;
-      bi=0;
-      for (int i=0;i < nsize;i++){
-        double btmp=static_cast<double>(ih+1)*beam.at(is).at(i).theta;
-        br+=cos(btmp);
-        bi+=sin(btmp);
-      }
-      bh[ih-1][ioff+is]=sqrt(bi*bi+br*br)*scl;
-      ph[ih-1][ioff+is]=atan2(bi,br);
-    }
-  }
 
 
-  // accumulate all data fromt eh cores
-  double temp=0;
-  int size;      
-  if(do_global_stat) {
-      MPI_Comm_size(MPI_COMM_WORLD, &size);
-      if (size>1){
-	MPI_Allreduce(&acc_cur, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-	acc_cur=temp;
-	MPI_Allreduce(&acc_g, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-	acc_g=temp;
-	MPI_Allreduce(&acc_g2, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-	acc_g2=temp;
-	MPI_Allreduce(&acc_x, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-	acc_x=temp;
-	MPI_Allreduce(&acc_x2, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-	acc_x2=temp;
-	MPI_Allreduce(&acc_y, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-	acc_y=temp;
-	MPI_Allreduce(&acc_y2, &temp, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-	acc_y2=temp;
-      }
-      if (acc_cur==0){
-         acc_cur=1.; 
-      }
-      acc_g/= acc_cur;
-      acc_g2/=acc_cur;
-      acc_x/= acc_cur;
-      acc_x2/=acc_cur;
-      acc_y/= acc_cur;
-      acc_y2/=acc_cur;
-      acc_g2=sqrt(abs(acc_g2-acc_g*acc_g));
-      acc_x2=sqrt(abs(acc_x2-acc_x*acc_x));
-      acc_y2=sqrt(abs(acc_y2-acc_y*acc_y));
-      if (doEnergy){
-        tgavg[idx]=acc_g;
-	tgsig[idx]=acc_g2;
-      }
-      if (doSpatial){
-        txavg[idx]=acc_x;
-        txsig[idx]=acc_x2;
-        tyavg[idx]=acc_y;
-        tysig[idx]=acc_y2;
-     }
-  }
-
-  idx++;
-}
-
-
-void Beam::diagnosticsStart()
-{
-  double gx,gy,gammax,gammay;
-  double x1,y1,x2,y2,px1,py1,px2,py2,g1,xpx,ypy;
-
-  int ds=beam.size();
-
-
-  for (int is=0; is<ds;is++){
-    if (!doCurrent){
-      cu[is]=current[is];
-    }
-    x1=0;
-    x2=0;
-    px1=0;
-    px2=0;
-    y1=0;
-    y2=0;
-    py1=0;
-    py2=0;
-    xpx=0;
-    ypy=0;
-    g1=0;
-    unsigned int nsize=beam.at(is).size();
-    for (int i=0;i < nsize;i++){
-      double xtmp=beam.at(is).at(i).x;
-      double ytmp=beam.at(is).at(i).y;
-      double pxtmp=beam.at(is).at(i).px;
-      double pytmp=beam.at(is).at(i).py;
-      double gtmp=beam.at(is).at(i).gamma;
-      x1+=xtmp;
-      y1+=ytmp;
-      px1+=pxtmp;
-      py1+=pytmp;
-      g1+=gtmp; 
-      x2+=xtmp*xtmp;
-      y2+=ytmp*ytmp;
-      px2+=pxtmp*pxtmp;
-      py2+=pytmp*pytmp;
-      xpx+=xtmp*pxtmp;
-      ypy+=ytmp*pytmp;
-    }
-    double norm=1.;
-    if (nsize>0){ norm=1./static_cast<double>(nsize);}
-    x1*=norm;
-    x2*=norm;
-    y1*=norm;
-    y2*=norm;
-    px1*=norm;
-    px2*=norm;
-    py1*=norm;
-    py2*=norm;
-    g1*=norm;
-    xpx*=norm;
-    ypy*=norm;
-    
-    // because genesis works with momenta and not divergence, the emittance does not need energy
-    ex[is]=sqrt(fabs((x2-x1*x1)*(px2-px1*px1)-(xpx-x1*px1)*(xpx-x1*px1)));
-    ey[is]=sqrt(fabs((y2-y1*y1)*(py2-py1*py1)-(ypy-y1*py1)*(ypy-y1*py1)));
-    bx[is]=(x2-x1*x1)/ex[is]*g1;
-    by[is]=(y2-y1*y1)/ey[is]*g1;
-    ax[is]=-(xpx-x1*px1)/ex[is];
-    ay[is]=-(ypy-y1*py1)/ey[is];
-     
-    gx=(1+ax[is]*ax[is])/bx[is];
-    gy=(1+ay[is]*ay[is])/by[is];
-
-  }
-
-
-  return;
-}
 

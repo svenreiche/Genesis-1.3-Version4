@@ -21,12 +21,13 @@
 using namespace std;
 
 class Lattice;
+class SeriesManager;
 
 class AlterSetup: public StringProcessing, public HDF5Base {
  public:
    AlterSetup();
    virtual ~AlterSetup();
-   bool init(int, map<string,string> *, Setup *, Lattice *, Time *, Beam *,vector<Field *> *);
+   bool init(int, map<string,string> *, Setup *, Lattice *, Time *, Beam *,vector<Field *> *, SeriesManager *);
 
 
  private:

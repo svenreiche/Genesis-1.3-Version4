@@ -32,6 +32,7 @@ Setup::Setup()
   exclude_aux_output=false;
   exclude_current_output=true;
   exclude_field_dump=false;
+  do_write_outfile=true;
 
   // filtering of beam slices during dump process (information is forwarded into active instance of Beam class when actually needed there)
   BWF_set_enabled(false);
@@ -39,12 +40,12 @@ Setup::Setup()
 
   // count of runs in conjunction of calls of altersetup
   runcount = 0;
-
+  write_meta_file=false;
   sema_file_enabled_start=false;
   sema_file_enabled_done=false;
 }
 
-Setup::~Setup(){}
+Setup::~Setup()= default;
 
 void Setup::usage(){
 
@@ -71,18 +72,18 @@ void Setup::usage(){
   cout << " bool exclude_aux_output = false" << endl;
   cout << " bool exclude_current_output = true" << endl;
   cout << " bool exclude_field_dump = false" << endl;
+  cout << " bool write_meta_file = false" << endl;
   cout << " bool write_semaphore_file = false" << endl;
   cout << " bool write_semaphore_file_done = false" << endl;
   cout << " bool write_semaphore_file_started = false" << endl;
   cout << " string semaphore_file_name = <derived from 'rootname'>" << endl;
   cout << "&end" << endl << endl;
-  return;
 }
 
-bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagnostics &filter){
+bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, SeriesManager *sm, FilterDiagnostics &filter){
 
   rank=inrank;
-  map<string,string>::iterator end=arg->end();
+  auto end=arg->end();
 
   if (arg->find("rootname")!=end){rootname = arg->at("rootname"); arg->erase(arg->find("rootname"));}
   if (arg->find("outputdir")!=end){outputdir = arg->at("outputdir"); arg->erase(arg->find("outputdir"));}
@@ -108,6 +109,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagno
   if (arg->find("exclude_current_output")!=end)   {exclude_current_output  = atob(arg->at("exclude_current_output"));   arg->erase(arg->find("exclude_current_output"));}
   if (arg->find("exclude_field_dump")!=end)   {exclude_field_dump  = atob(arg->at("exclude_field_dump"));   arg->erase(arg->find("exclude_field_dump"));}
 
+  if (arg->find("write_meta_file")!=end)   {write_meta_file = atob(arg->at("write_meta_file"));   arg->erase(arg->find("write_meta_file"));}
   if (arg->find("write_semaphore_file")!=end)   {sema_file_enabled_done  = atob(arg->at("write_semaphore_file"));   arg->erase(arg->find("write_semaphore_file"));}
   /* alias for write_semaphore_file */
   if (arg->find("write_semaphore_file_done")!=end)   {sema_file_enabled_done  = atob(arg->at("write_semaphore_file_done"));   arg->erase(arg->find("write_semaphore_file_done"));}
@@ -141,7 +143,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagno
     arg->erase(arg->find("beam_write_slices_filter"));
   }
 
-  if (arg->size()!=0){
+  if (!arg->empty()){
     if (rank==0){ cout << "*** Error: Unknown elements in &setup" << endl; this->usage();}
     return false;
   }
@@ -162,14 +164,14 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, FilterDiagno
     nbins = 1;
   }
 
-  return lat->parse(lattice,beamline,rank);
+  return lat->parse(lattice,beamline,rank,sm);
 }
 
 
 
 bool Setup::getRootName(string *filename)
 {
-  if (rootname.size()<1){
+  if (rootname.empty()){
     return false;
   }
   *filename=rootname;
@@ -180,17 +182,25 @@ bool Setup::getRootName(string *filename)
   }
   return true; 
 }
-bool Setup::RootName_to_FileName(string *fn_out, string *rootname)
+
+bool Setup::RootName_to_FileName(string *fn_out, string *filename)
 {
+    // replace placeholder symbol @ with rootname
+    std::string placeholder("@");
+    int pos;
+    while ((pos = filename->find(placeholder)) != std::string::npos)
+        filename->replace(pos, placeholder.length(),rootname);
+
   // If 'outputdir' parameter not specified
   // ==> do not change string
-  if (outputdir.size()<1) {
-    *fn_out = *rootname;
+
+  if (outputdir.empty()) {
+    *fn_out = *filename;
     return true;
   }
 
   string t;
-  t = outputdir + "/" + *rootname;
+  t = outputdir + "/" + *filename;
   *fn_out = t;
 
   return true;
@@ -198,7 +208,7 @@ bool Setup::RootName_to_FileName(string *fn_out, string *rootname)
 
 void Setup::BWF_load_defaults()
 {
-  // note: only loading defaults, not diabling the filter (if desired, this has to be done in addition)
+  // note: only loading defaults, not disabling the filter (if desired, this has to be done in addition)
   beam_write_slices_from=-1;
   beam_write_slices_to=-1;
   beam_write_slices_inc=1;

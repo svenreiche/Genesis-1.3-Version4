@@ -5,13 +5,8 @@
 #include <iostream>
 #include <string>
 #include <complex>
-#include <math.h>
+#include <cmath>
 #include <mpi.h>
-
-//#include "readfieldHDF5.h"
-//#include "Undulator.h"
-//#include "FieldSolver.h"
-
 
 #include "Particle.h"
 
@@ -24,25 +19,42 @@ extern const double eev;
 
 
 
-class EFieldSolver{
- public:
-   EFieldSolver();
-   virtual ~EFieldSolver();
-   void init(double,int,int,int, double, bool,bool);
-   void shortRange(vector<Particle> *,vector<double> &, double, double);
-   void longRange(Beam *beam, double gamma, double aw);
- private:
-    vector<double> fcurrent,fsize;
-    vector<double> work1,work2;
-    vector<int> idx;
-    vector<double> azi;
-    vector< complex< double > > csrc,clow,cmid,cupp,celm,gam;
-    vector<double> lupp,lmid,llow,rlog,vol;
+class EFieldSolver {
+public:
+    EFieldSolver();
+    virtual ~EFieldSolver();
+    void init(double, int, int, int, double, bool);
+    void shortRange(vector<Particle> *, double, double, int);
+    void longRange(Beam *beam, double gamma, double aw);
+    double getEField(unsigned long i);
+    bool hasShortRange() const;
+    void allocateForOutput(unsigned long nslice);
+    double getSCField(int);
 
-    int nz,nphi,ngrid_ref;
-    double rmax_ref,ks;
-    bool longrange,reducedLF;
+private:
+    void analyseBeam(vector<Particle> *beam);
+    void constructLaplaceOperator();
+    void tridiag();
+
+    vector<double> work1, work2, fcurrent, fsize;  // used for long range calculation
+    vector<complex<double> > cwork;
+    vector<int> idxr;
+    vector<double> lmid, rlog, vol, ldig;
+    vector<complex<double> > csrc, clow, cmid, cupp, celm, gam; // used for tridiag routine
+    vector<double> ez,efield;
+
+    int nz, nphi, ngrid, rank;
+    double rmax, ks, xcen, ycen, dr;
+    bool longrange;
 
 };
+
+inline double EFieldSolver::getSCField(int islice) {
+    return efield[islice]*511000;  // convert from Lorent mass unit to eV /m
+}
+
+inline bool EFieldSolver::hasShortRange() const{
+    return (nz>0) & (ngrid > 2);
+}
 
 #endif

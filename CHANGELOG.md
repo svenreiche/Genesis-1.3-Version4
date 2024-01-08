@@ -1,6 +1,22 @@
 # Change Log
+### [4.6.6] 
+- nothing yet
 
-### [4.6.3] - 2023/11/12
+### [4.6.5] - 2023/12/06
+- added sequence from external file
+- enable short range space charge
+- added the ability to reduce the amount of particles when writing to a beam dump
+- added the ability to apply beam shifts or matrix transformation to the electron beam by supplying the corresponding vectors and matrices by an HDF5 file 
+- added a check that the time namelist is not evoked once a beam or field has been defined. A warning is printed.
+- Catch bug with wakefield if the beam is resampled. In this case the wake definition will be discarded
+- Added support for placeholder when writing field and particle dumps.
+
+### [4.6.4] - 2023/10/02
+- bug fixed which didn't allow to compile Genesis without the FFTW3 library
+- bug fixed for default behaviour of the undulator roll-off parameter kx and ky when only the type helical is defined in lattice file
+- bug fix for accesing the vector for the z position when parsing the markers in the lattice file.
+
+### [4.6.3] - 2023/09/12
 - added output for the minimum and maximum value of the electron beam for each slice and step. This includes the parameters x,y, px, py and energy. The output is suprressed if the parameter exclude_aux_output is set to true
 - Examples have been added for a step-by-step guide on setting up input decks.
 

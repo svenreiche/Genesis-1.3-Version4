@@ -20,58 +20,55 @@ class Field;
 using namespace std;
 
 
-class BeamSolver{
- public:
-   BeamSolver();
-   virtual ~BeamSolver();
+class BeamSolver {
+public:
+    BeamSolver();
+    virtual ~BeamSolver();
+    void initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool longr);
+    void advance(double, Beam *, vector<Field *> *, Undulator *);
+    void track(double, Beam *, Undulator *, bool);
+    void applyR56(Beam *, Undulator *, double);
+    double getSCField(int);
+    void checkAllocation(unsigned long i);
 
-   void initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool longr, bool redLF);
+private:
+    complex<double> cpart;
+    vector<double> rharm;
+    vector<complex<double> > rpart;
 
-   void advance(double, Beam *, vector< Field *> *, Undulator *);
-   void track(double, Beam *, Undulator *,bool);
-   void applyR56(Beam *, Undulator *, double);
+    double ez{};
+    double xks{}, xku{};
 
- private:
- 
-   complex <double> cpart;
+    double theta{}, gamma{}, btpar{};
+    double k2gg{}, k2pp{}, k3gg{}, k3pp{};
 
-   vector< double > rharm;
-   vector< complex <double > > rpart;
-   vector<double> esc;
-   
-   double ez;
-   double xks,xku;
+    bool onlyFundamental;
 
-   double theta,gamma,btpar;
-   double k2gg,k2pp,k3gg,k3pp;
+    void RungeKutta(double);
+    void ODE(double, double);
 
-   bool onlyFundamental;
- 
-
-   void RungeKutta(double);
-   void ODE(double,double);
-
-   EFieldSolver efield;
-   TrackBeam tracker;
+    EFieldSolver efield;
+    TrackBeam tracker;
 
 };
 
+inline double BeamSolver::getSCField(int islice){
+    return efield.getSCField(islice);
+}
 
-inline void BeamSolver::initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool longr, bool redLF){
-  efield.init(rmax,ngrid,nz,nphi,lambda,longr,redLF);
-  return;
+inline void BeamSolver::initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool longr){
+  efield.init(rmax,ngrid,nz,nphi,lambda,longr);
 }
 
 
 inline void BeamSolver::track(double dz, Beam *beam, Undulator *und, bool last)
 {
   tracker.track(dz,beam,und,last);
-  return;
 }
 
 inline void BeamSolver::applyR56(Beam *beam, Undulator *und, double reflen){
   tracker.applyR56(beam,und,reflen);
-  return;
 }
+
 
 #endif

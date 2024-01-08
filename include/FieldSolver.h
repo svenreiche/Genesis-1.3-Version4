@@ -25,8 +25,8 @@ class FieldSolver{
    void advance(double, Field *, Beam *, Undulator *);
 
  private:
-   int ngrid;
-   double delz_save;
+   int ngrid {0};
+   double delz_save {0};
    complex<double> cstep;
    vector< complex< double > > r,c,cbet,cwet,crsource;
 

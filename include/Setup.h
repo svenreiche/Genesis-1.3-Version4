@@ -22,12 +22,13 @@
 using namespace std;
 
 class Lattice;
+class SeriesManager;
 
 class Setup: public StringProcessing{
  public:
    Setup();
    virtual ~Setup();
-   bool init(int, map<string,string> *, Lattice *, FilterDiagnostics &filter);
+   bool init(int, map<string,string> *, Lattice *, SeriesManager *sm, FilterDiagnostics &filter);
    //   bool writeGlobal(hid_t, double, int, int,int,int,double, double, double, bool, bool);
    double getReferenceLength();
    void   setReferenceLength(double);
@@ -49,6 +50,9 @@ class Setup: public StringProcessing{
    bool   getSemaEnDone();
    void   setSemaFN(string);
    bool   getSemaFN(string *);
+   bool   get_write_meta_file();
+   void   set_do_write_outfile(bool);
+   bool   get_do_write_outfile();
 
    int    getNpart();
    int    getNbins();
@@ -80,18 +84,20 @@ class Setup: public StringProcessing{
 #endif
 
  private:
-   void usage();
+   static void usage();
    string rootname,outputdir,lattice,beamline,partfile,fieldfile;
    double gamma0,lambda0,delz;
    bool one4one,shotnoise;
    bool beam_global_stat, field_global_stat;
    bool exclude_spatial_output, exclude_fft_output, exclude_intensity_output, exclude_energy_output, exclude_aux_output, exclude_current_output, exclude_field_dump;
+   bool do_write_outfile;
 
    bool beam_write_filter;
    int beam_write_slices_from, beam_write_slices_to, beam_write_slices_inc;
 
    int seed, rank,npart,nbins,runcount;
 
+   bool write_meta_file;
    bool sema_file_enabled_start, sema_file_enabled_done;
    string sema_file_name; // user-defined name of semaphore file, if empty: file name will be derived in function getSemaFN
 };
@@ -119,6 +125,8 @@ inline bool   Setup::outputEnergy(){ return exclude_energy_output;}
 inline bool   Setup::outputCurrent(){ return exclude_current_output;}
 inline bool   Setup::outputAux(){ return exclude_aux_output;}
 inline bool   Setup::outputFieldDump() { return exclude_field_dump;}
+inline void   Setup::set_do_write_outfile(bool v) {do_write_outfile=v;}
+inline bool   Setup::get_do_write_outfile()       {return do_write_outfile;}
 
 inline bool   Setup::BWF_get_enabled()    { return beam_write_filter; }
 inline void   Setup::BWF_set_enabled(bool in) { beam_write_filter=in; }
@@ -143,4 +151,5 @@ inline void   Setup::BWF_set_inc(int in)
 inline bool   Setup::getSemaEnStart() { return sema_file_enabled_start; }
 inline bool   Setup::getSemaEnDone()  { return sema_file_enabled_done; }
 inline void   Setup::getOutputdir(string *q) {*q = outputdir;}
+inline bool   Setup::get_write_meta_file(){ return write_meta_file;}
 #endif

@@ -2,6 +2,8 @@
 // Created by reiche on 4/21/23.
 //
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <stdlib.h>
 #include <vector>
 #include "SeriesParser.h"
@@ -12,6 +14,9 @@ bool SeriesParser::init(int rank, std::map<std::string,std::string> *arg, std::s
     if (element.compare("&sequence_const")==0){
         return this->initConst(rank, arg, sm);
     }
+    if (element.compare("&sequence_polynom")==0){
+        return this->initPolynom(rank, arg, sm);
+    }
     if (element.compare("&sequence_power")==0){
         return this->initPower(rank, arg, sm);
     }
@@ -20,6 +25,9 @@ bool SeriesParser::init(int rank, std::map<std::string,std::string> *arg, std::s
     }
     if (element.compare("&sequence_list")==0){
         return this->initList(rank, arg, sm);
+    }
+    if (element.compare("&sequence_filelist")==0){
+        return this->initFileList(rank, arg, sm);
     }
     return false;
 }
@@ -50,6 +58,41 @@ bool SeriesParser::initConst(int rank, std::map<std::string,std::string> *arg, S
     }
     SequenceConst *seq = new SequenceConst;
     seq->init(c0);
+    sm -> add(label,seq);
+    return true;
+}
+
+bool SeriesParser::initPolynom(int rank, std::map<std::string,std::string> *arg, SeriesManager *sm){
+    std::string label="";
+    double c0=0,c1=0,c2=0,c3=0,c4=0;
+    std::map<std::string,std::string>::iterator end=arg->end();
+
+    if (arg->find("label")!=end){label = arg->at("label");  arg->erase(arg->find("label"));}
+    if (arg->find("c0")!=end)   {c0    = atof(arg->at("c0").c_str());  arg->erase(arg->find("c0"));}
+    if (arg->find("c1")!=end)   {c1    = atof(arg->at("c1").c_str());  arg->erase(arg->find("c1"));}
+    if (arg->find("c2")!=end)   {c2    = atof(arg->at("c2").c_str());  arg->erase(arg->find("c2"));}
+    if (arg->find("c3")!=end)   {c3    = atof(arg->at("c3").c_str());  arg->erase(arg->find("c3"));}
+    if (arg->find("c4")!=end)   {c4    = atof(arg->at("c4").c_str());  arg->erase(arg->find("c4"));}
+
+    if (arg->size()!=0) {
+        if (rank == 0) {
+            std::cout << "*** Error: Unknown elements in &sequence_polynom" << std::endl;
+            this->usagePolynom();
+        }
+        return false;
+    }
+    if (label.size()<1) {
+        if (rank==0){
+            std::cout << "*** Error: Label not defined in &sequence_polynom" << std::endl;
+            this->usagePolynom();
+        }
+        return false;
+    }
+    if (rank==0){
+        std::cout << "Adding sequence with label: " <<label << std::endl;
+    }
+    SequencePolynom *seq = new SequencePolynom;
+    seq->init(c0,c1,c2,c3,c4);
     sm -> add(label,seq);
     return true;
 }
@@ -177,11 +220,97 @@ bool SeriesParser::initList(int rank, std::map<std::string,std::string> *arg, Se
     if (rank==0){
         std::cout << "Adding sequence with label: " <<label << std::endl;
     }
-//    SequenceConst *seq = new SequenceConst;
-//    seq->init(c0);
-//    sm -> add(label,seq);
+    SequenceList *seq = new SequenceList;
+    seq->init(fval,def);
+    sm -> add(label,seq);
     return true;
 }
+
+
+
+bool SeriesParser::initFileList(int rank, std::map<std::string,std::string> *arg, SeriesManager *sm)
+{
+    std::string label="";
+    std::string filename="";
+    vector<double> data;
+    std::map<std::string,std::string>::iterator end=arg->end();
+
+    if (arg->find("label")!=end){label   = arg->at("label"); arg->erase(arg->find("label"));}
+    if (arg->find("file")!=end){filename = arg->at("file");  arg->erase(arg->find("file"));}
+
+    if (arg->size()!=0) {
+        if (rank == 0) {
+            std::cout << "*** Error: Unknown elements in &sequence_filelist" << std::endl;
+            this->usageFileList();
+        }
+        return false;
+    }
+    if (label.empty()) {
+        if (rank==0){
+            std::cout << "*** Error: Label not defined in &sequence_filelist" << std::endl; this->usageFileList();
+        }
+        return false;
+    }
+    if (filename.empty()) {
+        if (rank==0){
+            std::cout << "*** Error: Filename not defined in &sequence_filelist" << std::endl; this->usageFileList();
+        }
+        return false;
+    }
+    
+    if(!readfile(filename, data, rank)) {
+		if(rank==0) {
+			cout << "*** Error while loading data from file in &sequence_filelist" << endl;
+		}
+		return(false);
+	}
+    if (rank==0){
+        std::cout << "Adding sequence with label: " << label << ", data file: " << filename << ", length of data set is: " << data.size() << endl;
+    }
+
+    double default_value=0.; // Default value is currently 0 (cannot be adjusted)
+    SequenceList *seq = new SequenceList;
+    seq->init(data,default_value);
+    sm -> add(label,seq);
+    return true;
+}
+bool SeriesParser::readfile(const string fn, vector<double> &v, int rank)
+{
+	ifstream ifs;
+
+	ifs.open(fn);
+	if(!ifs) {
+		if(rank==0) {
+			cout << "Error: cannot open file " << fn << " for read access" << endl;
+		}
+		return(false);
+	}
+	if(rank==0) {
+		cout << "Reading data from file " << fn << endl;
+	}
+
+	unsigned int linecntr=0;
+	string linebuf;
+	while(getline(ifs,linebuf))
+	{
+		linecntr++;
+
+		stringstream ss(linebuf);
+		double data=-1.;
+		if (!(ss >> data)) {
+			if(rank==0) {
+				cout << "Issue parsing line " << linecntr << endl;
+			}
+			return(false);
+		}
+		v.push_back(data);
+		// cout << "buf=" << linebuf << ", data=" << data << endl;
+	}
+
+	ifs.close();
+	return(true);
+}
+
 
 
 // the individual usages calls
@@ -191,6 +320,18 @@ void SeriesParser::usageConst(){
     cout << "&sequence_const" << endl;
     cout << " string label = <empty>" << endl;
     cout << " double c0 = 0" << endl;
+    cout << "&end" << endl << endl;
+    return;
+}
+void SeriesParser::usagePolynom(){
+    cout << "List of keywords for SEQUENCE_POLYNOM" << endl;
+    cout << "&sequence_polynom" << endl;
+    cout << " string label = <empty>" << endl;
+    cout << " double c0 = 0" << endl;
+    cout << " double c1 = 0" << endl;
+    cout << " double c2 = 0" << endl;
+    cout << " double c3 = 0" << endl;
+    cout << " double c4 = 0" << endl;
     cout << "&end" << endl << endl;
     return;
 }
@@ -218,10 +359,18 @@ void SeriesParser::usageRandom(){
 }
 void SeriesParser::usageList(){
     cout << "List of keywords for SEQUENCE_LIST" << endl;
-    cout << "&sequence_random" << endl;
+    cout << "&sequence_list" << endl;
     cout << " string label = <empty>" << endl;
     cout << " double val = [<empty>]" << endl;
     cout << " double default = 0" << endl;
+    cout << "&end" << endl << endl;
+    return;
+}
+void SeriesParser::usageFileList(){
+    cout << "List of keywords for SEQUENCE_FILELIST" << endl;
+    cout << "&sequence_filelist" << endl;
+    cout << " string label = <empty>" << endl;
+    cout << " double file = [<empty>]" << endl;
     cout << "&end" << endl << endl;
     return;
 }

@@ -21,16 +21,13 @@ class EField: public StringProcessing{
  public:
    EField();
    virtual ~EField();
-   bool init(int,int,map<string,string> *, Beam *, Setup *, Time *);
+   bool init(int,map<string,string> *, Beam *, Setup *);
 
 
  private:
-   void usage();
-   double rmax,dr,lambda;
-   int nz,nphi,ngrid;
-   bool longrange,redLorentz;
-
-
+   static void usage();
+   double rmax{0};
+   long nz{0},nphi{0},ngrid{100};
 };
 
 #endif

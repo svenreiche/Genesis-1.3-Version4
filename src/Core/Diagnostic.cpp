@@ -3,20 +3,23 @@
 //
 
 #include <iostream>
+#include <sstream>
 #include <complex>
 #include <mpi.h>
 
 #include "Diagnostic.h"
 #include "Output.h"
+#include "Setup.h"
+
+Diagnostic::Diagnostic()
+{
+	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank_);
+}
 
 Diagnostic::~Diagnostic()
 {
-	int rank;
-
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
 #if 0
-	if(rank==0) {
+	if(my_rank_==0) {
 		cout << "Diagnostic::~Diagnostic()" << endl;
 	}
 #endif
@@ -58,8 +61,8 @@ bool Diagnostic::add_field_diag(DiagFieldBase *pd)
 // diagnostics classes are only concern with the actual calculation.
 
 // routine to register the output parameters and to allocate memory
-void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool isTime, bool isScan, FilterDiagnostics &filter){
-
+void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool isTime, bool isScan, FilterDiagnostics &filter)
+{
     // lock the vectors holding the instances of diagnostic classes
     diag_can_add=false;
 
@@ -68,7 +71,7 @@ void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool is
     ns = ns_in;
     time = isTime;
     scan = isScan;
-    noff =rank*ns;
+    noff =rank*ns; // CL, 2023-10-15: kept caller-provided MPI rank here (for the time being)
     ntotal = ns * size;
     val.clear();
     units.clear();
@@ -81,7 +84,7 @@ void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool is
 
     // loop through the different class for registration and allocate memory
 
-    // undulator group (val.at(0) will be defined later in this->writeOutputFile
+    // undulator group (val.at(0) will be defined later in this->writeToOutputFile
 
     // beam
     for (auto group : dbeam){
@@ -102,7 +105,7 @@ void Diagnostic::init(int rank, int size, int nz_in, int ns_in, int nfld,bool is
             for (auto const &tag : group->getTags(filter)){
                 auto end = units.at(3+ifld).end();
                 if(units.at(3+ifld).find(tag.first) != end) {
-                    if(rank==0) {
+                    if(my_rank_==0) {
                         // note: warning is generated for every Field
                         cout << "Diagnostic::init: warning: key " << tag.first << " already existing in map (possible reason: multiple plugins with same obj_prefix)" << endl;
                     }
@@ -127,14 +130,23 @@ void Diagnostic::addOutput(int groupID, std::string key, std::string unit, std::
     single.at(groupID)[key]=true;
 }
 
-// adds some output and lfushes everything to a file
-void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> *field, Undulator *und)
+// adds some output and flushes everything to a file
+bool Diagnostic::writeToOutputFile(Beam *beam, vector<Field*> *field, Setup *setup, Undulator *und)
 {
     // lock the vectors holding the instances of diagnostic classes
     diag_can_add=false;
 
-    Output *out=new Output;
-//    string file=root.append(".test");
+    string rn, fnout;
+    setup->getRootName(&rn);
+    setup->RootName_to_FileName(&fnout, &rn);
+    fnout.append(".out.h5");
+
+    // generate file name for optional file with copy of metadata (this is a copy of the corresponding code block in Track.cpp)
+    string fnmeta;
+    setup->RootName_to_FileName(&fnmeta, &rn);
+    fnmeta.append(".meta.h5");
+
+
     this->addOutput(0,"zplot","m", zout);
     this->addOutput(0,"z","m", und->z);
     this->addOutput(0,"dz","m", und->dz);
@@ -189,24 +201,62 @@ void Diagnostic::writeToOutputFile(std::string root, Beam *beam, vector<Field*> 
     }
     this->addOutput(1,"frequency","ev",global);
 
-    out->open(root,noff,ns);
-    out->writeMeta(und);
-    out->writeGroup("Lattice",val[0], units[0],single[0]);
-    out->writeGroup("Global",val[1], units[1],single[1]);
-    out->writeGroup("Beam",val[2], units[2],single[2]);
-    for (int i=3; i<val.size();i++){
-        int h=field->at(i-3)->harm;
-        if (h==1){
-            out->writeGroup("Field",val[i], units[i],single[i]);
-        } else {
-            char buff[30];
-            snprintf(buff, sizeof(buff), "Field%d", h);
-            out->writeGroup(buff,val[i], units[i],single[i]);
+
+
+    if(setup->get_do_write_outfile())
+    {
+        Output out;
+//    string file=root.append(".test"); // CL, 2023-10-16: variable 'root' was renamed
+        if(!out.open(fnout,noff,ns)) {
+          if(my_rank_==0) {
+            cout << "   unable to open output file" << endl;
+          }
+          return(false);
         }
+        out.writeMeta(und);
+        out.writeGroup("Lattice",val[0], units[0],single[0]);
+        out.writeGroup("Global",val[1], units[1],single[1]);
+        out.writeGroup("Beam",val[2], units[2],single[2]);
+        for (int i=3; i<val.size();i++){
+            const int h = field->at(i-3)->harm;
+            char objname[30] = "Field"; // default for harmonic==1
+            if (h!=1){
+                snprintf(objname, sizeof(objname), "Field%d", h);
+            }
+            out.writeGroup(objname,val[i], units[i],single[i]);
+        }
+        out.close();
+    } else {
+       /* debug option to suppress .out.h5 file is ON: generate info file instead */
+       if(my_rank_==0) {
+           stringstream ss;
+           ofstream ofs;
+           ss << fnout << ".suppressed";
+           ofs.open(ss.str(), ofstream::out);
+           ofs.close();
+           cout << "   INFO: debug option to suppress writing of .out.h5 file is set" << endl;
+       }
     }
-    out->close();
-    delete out;
-    return;
+
+
+    if(setup->get_write_meta_file())
+    {
+        Output out_meta;
+        if(!out_meta.open(fnmeta,
+               noff /* controls which node is writing the strings to the hdf5 file */,
+               ns))
+        {
+            if(my_rank_==0) {
+                cout << "   unable to open output file" << endl;
+            }
+            return(false);
+        }
+        out_meta.writeMeta(und);
+        out_meta.close();
+    }
+
+
+    return(true);
 }
 
 // wrapper to do all the diagnostics calculation at a given integration step iz.
@@ -278,6 +328,7 @@ std::map<std::string,OutputInfo> DiagBeam::getTags(FilterDiagnostics & filter_in
         tags["efield"] = {false, false, "eV/m"}; // full field which changes particle energy
         tags["wakefield"] = {false, false, "eV/m"}; // effect from wakefields
         tags["LSCfield"] = {false, false, "eV/m"}; // effect from space charge field
+        tags["SSCfield"] = {false, false, "eV/m"}; // effect from space charge field
         tags["xmin"] = {false, false, "m"};
         tags["xmax"] = {false, false, "m"};
         tags["pxmin"] = {false, false, "rad"};
@@ -432,6 +483,7 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
             this->storeValue(val,"efield",idx,beam->eloss[is] + beam->longESC[is]);
             this->storeValue(val,"wakefield",idx,beam->eloss[is]);
             this->storeValue(val,"LSCfield",idx,beam->longESC[is]);
+            this->storeValue(val,"SSCfield",idx,beam->getSCField(is));
             this->storeValue(val,"xmin",idx,xmin);
             this->storeValue(val,"xmax",idx,xmax);
             this->storeValue(val,"pxmin",idx,pxmin);
@@ -529,7 +581,6 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
 #ifdef FFTW
 void DiagField::cleanup_FFT_resources(void)
 {
-
 	for(auto &[k,obj]: fftobj) {
 		delete obj;
 	}

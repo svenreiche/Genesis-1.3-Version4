@@ -7,180 +7,162 @@ BeamSolver::BeamSolver()
   onlyFundamental=false;
 }
 
-BeamSolver::~BeamSolver(){}
+BeamSolver::~BeamSolver()= default;
 
 
-void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undulator *und)
-{
-   
-  // here the harmonics needs to be taken into account
+void BeamSolver::advance(double delz, Beam *beam, vector< Field *> *field, Undulator *und) {
 
-  vector<int> nfld;
-  vector<double> rtmp;
-  rpart.clear();
-  rharm.clear();
-  xks=1;  // default value in the case that no field is defined
+    // here the harmonics needs to be taken into account
 
-   for (int i=0; i < field->size(); i++){
-    int harm=field->at(i)->getHarm();
-    if ((harm==1) || !onlyFundamental){
-      xks=field->at(i)->xks/static_cast<double>(harm);    // fundamental field wavenumber used in ODE below
-      nfld.push_back(i);
-      rtmp.push_back(und->fc(harm)/field->at(i)->xks);      // here the harmonics have to be taken care
-      rpart.push_back(0);
-      rharm.push_back(static_cast<double>(harm));
+    vector<int> nfld;
+    vector<double> rtmp;
+    rpart.clear();
+    rharm.clear();
+    xks = 1;  // default value in the case that no field is defined
+
+    for (int i = 0; i < field->size(); i++) {
+        int harm = field->at(i)->getHarm();
+        if ((harm == 1) || !onlyFundamental) {
+            xks = field->at(i)->xks / static_cast<double>(harm);    // fundamental field wavenumber used in ODE below
+            nfld.push_back(i);
+            rtmp.push_back(und->fc(harm) / field->at(i)->xks);      // here the harmonics have to be taken care
+            rpart.emplace_back(0);
+            rharm.push_back(static_cast<double>(harm));
+        }
     }
-  }  
 
-
-  xku=und->getku();
-  if (xku==0){   // in the case of drifts - the beam stays in phase if it has the reference energy // this requires that the phase slippage is not applied
-    xku=xks*0.5/und->getGammaRef()/und->getGammaRef();
-  }
-	    
-  double aw=und->getaw();
-
-  double autophase=und->autophase();
-
-  // obtaining long range space charge field
-  efield.longRange(beam,und->getGammaRef(),aw);  // defines the array beam->longESC
-
-  // Runge Kutta solver to advance particle
-
-  for (int is=0; is<beam->beam.size(); is++){    
-    // accumulate space charge field
-    double eloss = -beam->longESC[is]/511000; // convert eV to units of electron rest mass
-                                                // note sign change since it is the energy loss not gain
-    // calculating short range space charge    
-    if (esc.size() < beam->beam.at(is).size()){
-      esc.resize(beam->beam.at(is).size());
+    xku = und->getku();
+    if (xku ==
+        0) {   // in the case of drifts - the beam stays in phase if it has the reference energy // this requires that the phase slippage is not applied
+        xku = xks * 0.5 / und->getGammaRef() / und->getGammaRef();
     }
-    for (int ip=0; ip<beam->beam.at(is).size();ip++){
-	    esc[ip]=0;
+
+    double aw = und->getaw();
+    double autophase = und->autophase();
+
+    // obtaining long range space charge field
+    efield.longRange(beam, und->getGammaRef(), aw);  // defines the array beam->longESC
+
+    // Runge Kutta solver to advance particle
+    auto gammaz2 = und->getGammaRef()*und->getGammaRef()/(1+aw*aw);
+    for (int is = 0; is < beam->beam.size(); is++) {
+        // accumulate space charge field
+        double eloss = -beam->longESC[is] / 511000; // convert eV to units of electron rest mass
+        efield.shortRange(&beam->beam.at(is), beam->current.at(is), gammaz2, is);
+        for (int ip = 0; ip < beam->beam.at(is).size(); ip++) {
+            gamma = beam->beam.at(is).at(ip).gamma;
+            theta = beam->beam.at(is).at(ip).theta + autophase; // add autophase here
+            double x = beam->beam.at(is).at(ip).x;
+            double y = beam->beam.at(is).at(ip).y;
+            double px = beam->beam.at(is).at(ip).px;
+            double py = beam->beam.at(is).at(ip).py;
+            double awloc = und->faw(x, y);                 // get the transverse dependence of the undulator field
+            btpar = 1 + px * px + py * py + aw * aw * awloc * awloc;
+            ez = efield.getEField(ip) + eloss;  // adding global long range space charge field to each particle
+            cpart = 0;
+            double wx, wy;
+            int idx;
+            for (int ifld = 0; ifld < nfld.size(); ifld++) {
+                auto islice = (is + field->at(nfld[ifld])->first) % field->at(nfld[ifld])->field.size();
+
+                if (field->at(nfld[ifld])->getLLGridpoint(x, y, &wx, &wy, &idx)) { // check whether particle is on grid
+                    cpart = field->at(nfld[ifld])->field[islice].at(idx) * wx * wy;
+                    idx++;
+                    cpart += field->at(nfld[ifld])->field[islice].at(idx) * (1 - wx) * wy;
+                    idx += field->at(nfld[ifld])->ngrid - 1;
+                    cpart += field->at(nfld[ifld])->field[islice].at(idx) * wx * (1 - wy);
+                    idx++;
+                    cpart += field->at(nfld[ifld])->field[islice].at(idx) * (1 - wx) * (1 - wy);
+                    rpart[ifld] = rtmp[ifld] * awloc * conj(cpart);
+                } else {
+                    rpart[ifld] = 0;
+                }
+            }
+            this->RungeKutta(delz);
+
+            beam->beam.at(is).at(ip).gamma = gamma;
+            beam->beam.at(is).at(ip).theta = theta;
+        }
     }
-	  
-      //      efield.shortRange(&beam->beam,vector<double> &ez, double current, double gammaz){
-
-      for (int ip=0; ip<beam->beam.at(is).size();ip++){
-        gamma=beam->beam.at(is).at(ip).gamma;
-        theta=beam->beam.at(is).at(ip).theta+autophase; // add autophase here
-        double x =beam->beam.at(is).at(ip).x;
-        double y =beam->beam.at(is).at(ip).y;
-        double px=beam->beam.at(is).at(ip).px;
-        double py=beam->beam.at(is).at(ip).py;
-	    double awloc=und->faw(x,y);                 // get the transverse dependence of the undulator field
-        btpar=1+px*px+py*py+aw*aw*awloc*awloc;	  
-
-	ez=esc[ip]+eloss;  // adding global long range space charge field to each particle
-
-	cpart=0;
-	double wx,wy;
-	int idx;
-        for (int ifld=0;ifld<nfld.size();ifld++){
-
-	  int islice=(is+field->at(nfld[ifld])->first) % field->at(nfld[ifld])->field.size(); 
-
-	  if (field->at(nfld[ifld])->getLLGridpoint(x,y,&wx,&wy,&idx)){ // check whether particle is on grid
-           cpart=field->at(nfld[ifld])->field[islice].at(idx)*wx*wy;
-           idx++;
-           cpart+=field->at(nfld[ifld])->field[islice].at(idx)*(1-wx)*wy;
-           idx+=field->at(nfld[ifld])->ngrid-1;
-           cpart+=field->at(nfld[ifld])->field[islice].at(idx)*wx*(1-wy);
-           idx++;
-           cpart+=field->at(nfld[ifld])->field[islice].at(idx)*(1-wx)*(1-wy);
-           rpart[ifld]=rtmp[ifld]*awloc*conj(cpart);
-	  } else {
-          rpart[ifld] = 0;
-      }
-	}
-	this->RungeKutta(delz);
-
-        beam->beam.at(is).at(ip).gamma=gamma;
-        beam->beam.at(is).at(ip).theta=theta; 
-      }
-    
-  }
-  return;
 }
 
-void BeamSolver::RungeKutta(double delz)
-{
-  // Runge Kutta Solver 4th order - taken from pushp from the old Fortran source
+void BeamSolver::RungeKutta(double delz) {
+    // Runge Kutta Solver 4th order - taken from pushp from the old Fortran source
 
 
-  // first step
-  k2gg=0;
-  k2pp=0;
+    // first step
+    k2gg = 0;
+    k2pp = 0;
 
-  this->ODE(gamma,theta);
+    this->ODE(gamma, theta);
 
-  // second step
-  double stpz=0.5*delz;
+    // second step
+    double stpz = 0.5 * delz;
 
-  gamma+=stpz*k2gg;
-  theta+=stpz*k2pp;
-  
-  k3gg=k2gg;
-  k3pp=k2pp;
+    gamma += stpz * k2gg;
+    theta += stpz * k2pp;
 
-  k2gg=0;
-  k2pp=0;
+    k3gg = k2gg;
+    k3pp = k2pp;
 
-  this->ODE(gamma,theta);
+    k2gg = 0;
+    k2pp = 0;
 
-  // third step
-  gamma+=stpz*(k2gg-k3gg);
-  theta+=stpz*(k2pp-k3pp);
+    this->ODE(gamma, theta);
 
-  k3gg/=6;
-  k3pp/=6;
+    // third step
+    gamma += stpz * (k2gg - k3gg);
+    theta += stpz * (k2pp - k3pp);
 
-  k2gg*=-0.5;
-  k2pp*=-0.5;
+    k3gg /= 6;
+    k3pp /= 6;
 
-  this->ODE(gamma,theta);
+    k2gg *= -0.5;
+    k2pp *= -0.5;
 
-  // fourth step
-  stpz=delz;
+    this->ODE(gamma, theta);
 
-  gamma+=stpz*k2gg;
-  theta+=stpz*k2pp;
+    // fourth step
+    stpz = delz;
 
-  k3gg-=k2gg;
-  k3pp-=k2pp;
+    gamma += stpz * k2gg;
+    theta += stpz * k2pp;
 
-  k2gg*=2;
-  k2pp*=2;
+    k3gg -= k2gg;
+    k3pp -= k2pp;
 
-  this->ODE(gamma,theta);
-  gamma+=stpz*(k3gg+k2gg/6.0);
-  theta+=stpz*(k3pp+k2pp/6.0);
+    k2gg *= 2;
+    k2pp *= 2;
 
-  return;
+    this->ODE(gamma, theta);
+    gamma += stpz * (k3gg + k2gg / 6.0);
+    theta += stpz * (k3pp + k2pp / 6.0);
+
 }
 
 
-void BeamSolver::ODE(double tgam,double tthet)
-{
+void BeamSolver::ODE(double tgam,double tthet) {
 
-  // differential equation for longitudinal motion
-  double ztemp1=-2./xks;
-  complex<double> ctmp=0;
-  for (int i=0; i<rpart.size();i++){
-    ctmp+=rpart[i]*complex<double> (cos(rharm[i]*tthet), -sin(rharm[i]*tthet));
-  }
-  double btper0=btpar+ztemp1*ctmp.real();   //perpendicular velocity
-  double btpar0=sqrt(1.-btper0/(tgam*tgam));     //parallel velocity
+    // differential equation for longitudinal motion
+    double ztemp1 = -2. / xks;
+    complex<double> ctmp = 0;
+    for (int i = 0; i < rpart.size(); i++) {
+        ctmp += rpart[i] * complex<double>(cos(rharm[i] * tthet), -sin(rharm[i] * tthet));
+    }
+    double btper0 = btpar + ztemp1 * ctmp.real();   //perpendicular velocity
+    double btpar0 = sqrt(1. - btper0 / (tgam * tgam));     //parallel velocity
 #ifdef G4_DBGDIAG
-  // CL: detect negative radicands as NaN theta values can be the result
-  double btpar0_sq=1.-btper0/(tgam*tgam);     //(parallel velocity)^2
-  if(btpar0_sq<0) {
-    cout << "DBGDIAG(BeamSolver::ODE): error, negative radicand detected" << endl;
-  }
+    // CL: detect negative radicands as NaN theta values can be the result
+    double btpar0_sq=1.-btper0/(tgam*tgam);     //(parallel velocity)^2
+    if(btpar0_sq<0) {
+      cout << "DBGDIAG(BeamSolver::ODE): error, negative radicand detected" << endl;
+    }
 #endif
-  k2pp+=xks*(1.-1./btpar0)+xku;             //dtheta/dz
-  k2gg+=ctmp.imag()/btpar0/tgam-ez;         //dgamma/dz
+    k2pp += xks * (1. - 1. / btpar0) + xku;             //dtheta/dz
+    k2gg += ctmp.imag() / btpar0 / tgam - ez;         //dgamma/dz
+}
 
-  return; 
+void BeamSolver::checkAllocation(unsigned long nslice) {
+    efield.allocateForOutput(nslice);
 }
 

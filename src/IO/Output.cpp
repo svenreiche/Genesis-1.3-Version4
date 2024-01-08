@@ -45,9 +45,8 @@ void Output::close(){
 }
 
 
-void Output::open(string file, int s0_in, int ds_in)
+bool Output::open(string file, int s0_in, int ds_in)
 {
-
   // s0 = slice number of first slice for a given node
   // ds = number of slices, which are kept by a given node
 
@@ -65,19 +64,22 @@ void Output::open(string file, int s0_in, int ds_in)
   fid=H5Fcreate(file.c_str(),H5F_ACC_TRUNC, H5P_DEFAULT,pid);
   H5Pclose(pid);
 #else
-  create_outfile(&fid, file);
+  return(create_outfile(&fid, file));
 #endif
 }
 
 
 void Output::writeMeta(Undulator *und)
 {
+  hid_t gid=H5Gcreate(fid,"Meta",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  writeMetaWorker(und, gid);
+  H5Gclose(gid);
+}
+void Output::writeMetaWorker(Undulator *und, hid_t gid)
+{
   VersionInfo vi;
-  hid_t gid,gidsub;
-  vector<double> tmp;
-  tmp.resize(1);
-
-  gid=H5Gcreate(fid,"Meta",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  hid_t gidsub;
+  vector<double> tmp(1,0);
 
   gidsub=H5Gcreate(gid,"Version",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
   tmp[0]=vi.Major();
@@ -143,9 +145,8 @@ void Output::writeMeta(Undulator *und)
   inFile2.close();
 
   reportDumps(gid, und);
+  reportPlugins(gid, und);
   reportMPI(gid);
-
-  H5Gclose(gid);
 }
 
 void Output::writeGlobal(Undulator *und, double gamma, double lambda, double sample, double slen, bool one4one, bool time, bool scan, int ntotal)
@@ -240,6 +241,24 @@ void Output::reportDumps(hid_t gid, Undulator *und)
   H5Gclose(gid_dr);
 }
 
+void Output::reportPlugins(hid_t gid, Undulator *und)
+{
+  size_t nplugins=und->plugin_info_txt.size();
+  if(nplugins==0)
+    return;
+
+  hid_t gid_sub=H5Gcreate(gid,"Plugins",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  for(int kk=0; kk<nplugins; kk++) {
+    stringstream objname;
+    objname << "info_txt." << (kk+1);
+    writeSingleNodeString(gid_sub, objname.str(), &und->plugin_info_txt.at(kk));
+    objname.str(""); objname.clear();
+    objname << "prefix." << (kk+1);
+    writeSingleNodeString(gid_sub, objname.str(), &und->plugin_hdf5_prefix.at(kk));
+  }
+  H5Gclose(gid_sub);
+}
+
 void Output::reportMPI(hid_t gid)
 {
   vector<double> tmp;
@@ -292,16 +311,17 @@ void Output::writeGroup(std::string group, std::map<std::string,std::vector<doub
     return;
 }
 
-void Output::writeDataset(hid_t gid, string path, std::vector<double> &val, std::string unit, bool single){
-
+void Output::writeDataset(hid_t gid, string path, std::vector<double> &val, std::string unit, bool single)
+{
     std::size_t pos = path.find("/");
     if (pos == std::string::npos) {
         if (single) {
             this->writeSingleNode(gid, path.c_str(),unit.c_str(), &val);
         } else {
-            this->writeBuffer(gid, path.c_str(), unit. c_str(), &val);
+            this->writeBuffer(gid, path.c_str(), unit.c_str(), &val);
         }
     }  else {
+        /* recursive procedure: split path of HDF5 obj to write and (1) open/create first part, then (2) continue (and split again, if needed) */
         string group = path.substr(0,pos);
         hid_t gsub;
         if (this->groupExists(gid,group)){

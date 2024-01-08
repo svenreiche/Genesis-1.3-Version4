@@ -5,6 +5,7 @@
 
 #include "Collective.h"
 #include "Beam.h"
+#include "Undulator.h"
 
 Collective::Collective()
 {
@@ -16,8 +17,23 @@ Collective::Collective()
 
 Collective::~Collective()
 {
+    this->clearWake();
 }
 
+void Collective::clearWake(){
+    if (hasWake){
+        delete [] wake;
+        delete [] wakegeo;
+        delete [] wakeres;
+        delete [] wakerou;
+        delete [] current;
+        delete [] dcurrent;
+        delete [] wakeext;
+        delete [] wakeint;
+        delete [] count;
+    }
+    hasWake = false;
+}
 
 void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in, double *wakeext_in, double *wakeres_in, double *wakegeo_in, double * wakerou_in, double ztrans_in, double radius_in, bool transient_in)
 { 
@@ -31,10 +47,16 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
       size=1;
   }
 
+#if 0
+  if(0==rank) {
+    cout << "in Collective::initWake"<<endl;
+  }
+#endif
+
   
   ns=ns_in;  // full number of slices with highest resolution
   ds=ds_in;
-  ncur=size*nsNode;   // number of slices in simulations (should be ns/sample)
+  ncur=static_cast<int>(size)*nsNode;   // number of slices in simulations (should be ns/sample)
   dscur=ds*ns/ncur;
   ztrans=ztrans_in;
   radius=radius_in;
@@ -44,8 +66,13 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
 
   wakeext = new double[nsNode];  // global wake, explicityle defined in input deck (e.g. constant energy loss)
   wakeint = new double[nsNode];  // wake, internally calculated when updating the wake potential (e.g. sorting)
-  cur     = new double[ncur+1];    // array to hold current profile with simulation resolution.
   count   = new int [nsNode];
+
+  // array to hold current profile with simulation resolution.
+  // cur     = new double[ncur+1];
+  cur.resize(ncur+1);
+  for(int kk=0; kk<ncur+1; kk++)
+    cur[kk]=0;
 
 
   wake    = new double[ns];
@@ -73,7 +100,6 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
 
   hasWake=true;
   needsUpdate=true;
-  return;
 }
 
 
@@ -94,29 +120,33 @@ void Collective::apply(Beam *beam, Undulator *und, double delz)
   for (int ic = 0; ic <beam->current.size(); ic++){
     beam->eloss[ic]=wakeext[ic]+wakeint[ic];
     double dg=beam->eloss[ic]*delz/511000;    // actuall beam loss per integration step
-    int npart=beam->beam.at(ic).size();
-    for (int ip=0; ip<npart; ip++){
+    unsigned long npart=beam->beam.at(ic).size();
+    for (unsigned long ip=0; ip<npart; ip++){
       beam->beam.at(ic).at(ip).gamma+=dg;
     }
   }
-
-  return;
-
-
-
 }
 
 
 
 void Collective::update(Beam *beam, double zpos)
 {  
+  // ---------------
+  // step 0 - checks
+  int nsNode=static_cast<int>(beam->current.size());
+  // the following access with 'at' deterministically crashes the program before the MPI_Allgather operation if destination array is too small
+  cur.at(ncur)=0; // used for interpolation
 
+  // check if the total number of slices used to prepare global current buffer has changed
+  if(nsNode*size!=ncur)
+    abort();
   
   // ---------------------------
   // step 1 - gather current profile from all nodes
-
-  int nsNode=beam->current.size();
-  MPI_Allgather(&beam->current[0],nsNode,MPI_DOUBLE,cur,nsNode,MPI_DOUBLE,MPI_COMM_WORLD);
+  MPI_Allgather(
+     &beam->current[0],nsNode,MPI_DOUBLE,
+     cur.data(),       nsNode,MPI_DOUBLE,
+     MPI_COMM_WORLD);
   cur[ncur]=0;   // used for interpolation
 
 
@@ -137,13 +167,13 @@ void Collective::update(Beam *beam, double zpos)
   //----------------------------------------   
   // step 3 - calculate the startng position for transient
 
-  int icut=0;
+  unsigned long icut;
   double z=zpos+ztrans;  // effective length from first source point
   double delta=0.5*radius*radius;
   if (z <=0) {      // if value is negative no wakefields are calculated
       icut=ns;
   } else {
-      icut=static_cast<int>(floor(delta/z/ds));
+      icut=static_cast<unsigned long>(floor(delta/z/ds));
   }
   if (!transient){
      icut=0;
@@ -169,7 +199,7 @@ void Collective::update(Beam *beam, double zpos)
   for (int is=is0; is< is1; is++){  // loop the evaluation point from back to front
     double s=is*ds;
     double wakeloc=0;
-    for (int i=icut; i < ns-is; i++){  // loob from evaluation point till the head of the bunch
+    for (unsigned long i=icut; i < ns-is; i++){  // loob from evaluation point till the head of the bunch
       wakeloc+=current[is+i]*(wakeres[i]+wakerou[i]);
       wakeloc+=dcurrent[is+i]*wakegeo[i];
     }
@@ -185,10 +215,7 @@ void Collective::update(Beam *beam, double zpos)
       wakeint[ic]=0;
     }
   }
-
   needsUpdate=false;
-  return;
-   
 }
 
 

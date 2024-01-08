@@ -20,14 +20,12 @@ class Beam{
  public:
    Beam();
    virtual ~Beam();
-   void initDiagnostics(int);
-   void diagnostics(bool,double);
-   void diagnosticsStart();
    void init(int, int, double,double, double,bool);
    void initSorting(int,int,bool,bool);
-   void initEField(double,int,int,int,double,bool,bool);
+   void initEField(double,int,int,int,double,bool);
    void initIncoherent(int, int, bool,bool);
    void initWake(unsigned int, unsigned int, double, double *, double *, double *,double *, double,double, bool);
+   void checkBeforeTracking();
    bool harmonicConversion(int,bool);
    bool subharmonicConversion(int,bool);
    int sort();
@@ -39,19 +37,20 @@ class Beam{
    int  get_WriteFilter_from();
    int  get_WriteFilter_to();
    int  get_WriteFilter_inc();
-
+   bool hasWake();
+   double getSCField(int);
    void setBunchingHarmonicOutput(int harm_in);
    int getBunchingHarmonics();
    void set_global_stat(bool);
-   bool get_global_stat(void);
+   bool get_global_stat();
    bool outputCurrent();
    bool outputAux();
    bool outputEnergy();
    bool outputSpatial();
 
    void report_storage(string infotxt);
-   bool dbg_skip_shrink(void);
-   void make_compact(void);
+   bool dbg_skip_shrink();
+   void make_compact();
 
    vector< vector<Particle> > beam;
    vector<double> current,eloss,longESC;
@@ -83,7 +82,16 @@ class Beam{
 
    bool beam_write_filter;
    int beam_write_slices_from, beam_write_slices_to, beam_write_slices_inc;
+
+
+
 };
+
+// check allocated memory
+inline void Beam::checkBeforeTracking() {
+    solver.checkAllocation(this->beam.size());
+}
+
 
 inline bool Beam::outputCurrent(){ return doCurrent;}
 inline bool Beam::outputSpatial(){ return doSpatial;}
@@ -92,23 +100,23 @@ inline bool Beam::outputAux(){ return doAux;}
 
 inline void Beam::initIncoherent(int base, int rank, bool spread, bool loss){
   incoherent.init(base,rank,spread,loss);
-  return;
 }
 
-inline void Beam::initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool lngr, bool redLR){
-  solver.initEField(rmax,ngrid,nz,nphi,lambda,lngr,redLR);
-  return;
+inline void Beam::initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool lngr){
+  solver.initEField(rmax,ngrid,nz,nphi,lambda,lngr);
 }
 
 inline void Beam::initWake(unsigned int ns, unsigned int nsNode, double ds, double *wakeext, double *wakeres, double *wakegeo,double *wakerou, double ztrans, double radius, bool transient){
   col.initWake(ns, nsNode, ds, wakeext, wakeres, wakegeo, wakerou, ztrans, radius, transient);
 }
 
+inline bool Beam::hasWake(){return col.hasWakeDefined();}
+inline double Beam::getSCField(int islice) {return solver.getSCField(islice);}
 
 inline void Beam::setBunchingHarmonicOutput(int harm_in){bharm=harm_in;}
 inline int Beam::getBunchingHarmonics(){return bharm;}
 inline void Beam::set_global_stat(bool in){do_global_stat=in;}
-inline bool Beam::get_global_stat(void){return(do_global_stat);}
+inline bool Beam::get_global_stat(){return(do_global_stat);}
 inline void Beam::setOutput(bool noCurrent_in, bool noEnergy_in, bool noSpatial_in, bool noAux_in) {
   doCurrent = !noCurrent_in;
   doSpatial = !noSpatial_in;

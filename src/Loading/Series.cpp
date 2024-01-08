@@ -1,6 +1,9 @@
 #include "Series.h"
 #include <cmath>
 
+// cross check if Series.cpp is used at all?
+
+
 Series::Series()
 {
 }

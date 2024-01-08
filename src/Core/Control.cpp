@@ -55,7 +55,7 @@ bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und, bool
   
   if ((marker & 2) != 0){
     WriteBeamHDF5 dump;
-    if(dump.write(basename,beam))
+    if(dump.write(basename,beam,1))   // use stride of 1 -> all particles are dump
     {
       /* register beam dump => it will be reported in list of dumps generated during current "&track" command */
       string fn;
@@ -81,10 +81,9 @@ bool Control::applyMarker(Beam *beam, vector<Field*>*field, Undulator *und, bool
 }
 
 
+#if 0 // .out.h5 file is now written in class Diagnostic
 void Control::output(Beam *beam, vector<Field*> *field, Undulator *und, Diagnostic &diag)
 {
-
-  
   Output *out=new Output;
 
   string file=root.append(".out.h5");
@@ -102,21 +101,15 @@ void Control::output(Beam *beam, vector<Field*> *field, Undulator *und, Diagnost
  
   delete out;
   return;
-
-
-
 }
+#endif
 
 
-bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<Field*> *field, Undulator *und, bool inTime, bool inScan)
+bool Control::init(int inrank, int insize, const string in_rootname, Beam *beam, vector<Field*> *field, Undulator *und, bool inTime, bool inScan)
 {
-
   rank=inrank;
   size=insize;
-
-  stringstream sroot(file);
-  root=sroot.str();
-  root.resize(root.size()-7);  // remove the extension ".h5"
+  root = in_rootname;
 
   one4one=beam->one4one;
   reflen=beam->reflength;
@@ -148,23 +141,11 @@ bool Control::init(int inrank, int insize, const char *file, Beam *beam, vector<
     }
   }
 
-  for (unsigned int i=0; i<field->size();i++){
-      field->at(i)->resetSlippage();
+  for (auto & fld : *field){
+      fld->resetSlippage();
   }
 
-    // initial diagnostic
-
-  if (rank==0) { cout << "Initial analysis of electron beam and radiation field..."  << endl; }
-
-  /*
-  beam->initDiagnostics(und->outlength());
-  beam->diagnostics(true,0);
-  beam->diagnosticsStart();
-  for (unsigned int i=0; i<field->size();i++){
-      field->at(i)->initDiagnostics(und->outlength());
-      field->at(i)->diagnostics(true);  // initial values
-  }	
-  */
+  beam->checkBeforeTracking();
   return true;  
 }
 

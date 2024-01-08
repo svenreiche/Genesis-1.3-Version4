@@ -20,11 +20,17 @@ The following describes all supported namelist with their variables, including i
     - [profile_step](#profile_step)
     - [profile_polynom](#profile_polynom)
     - [profile_file](#profile_file)
+  - [sequence](#sequences)
+    - [sequence_const](#sequence_const)
+    - [sequence_polynom](#sequence_polynom)
+    - [sequence_power](#psequence_power)
+    - [sequence_random](#profile_random)
   - [beam](#beam)
   - [field](#field)
   - [importdistribution](#importdistribution)
   - [importbeam](#importbeam)
   - [importfield](#importfield)
+  - [importtransformation](#importtransformation)
   - [efield](#efield)
   - [sponrad](#sponrad)
   - [wake](#wake)
@@ -155,6 +161,53 @@ Profiles are defining a dependence on the position in the time frame, which then
 
 [Back](#supported-namelists)
 
+
+<div style="page-break-after: always; visibility: hidden"> \pagebreak </div>
+
+### sequences
+
+Sequences act similar to profiles that they define a series of values which can be used to control dependence of certain parameters. While for profiles these are mostly properties of the electorn beam and radiation field, sequences are used for 
+occurences of beamline elements for specific parameters. Examples are applying a taper gradiant to the undulator offset or add random offsets to the quadrupole positions.
+All sequences have in common that they have to have a label with which they are referred to in the lattice. 
+To indicate the reference to a sequence and thus allows to distinguish Genesis between normal numbers 
+the label name must have the additional character ’@’ in front. E.g. 
+if the name of the label is `taper` then in the parameter list of the modulator element 
+it is referred to by `aw = @taper`. A sequence is evoked for each occurence of the reference. As an example
+in a line which is 6 times a Fodo Cell which each space between the quadrupoles hosting an undulator, a reference by the undulator field will evoke the first 12 elements of the sequence.
+
+#### sequence_const
+
+- `label` (*string, \<empty>*): Name of the sequence, which is used to refer to it in the lattice
+- `c0` (*double, 0*): constant value to be used.
+
+#### sequence_polynom
+
+- `label` (*string, \<empty>*): Name of the sequence, which is used to refer to it in the lattice
+- `c0`(*double, 0*): Constant term
+- `c1`(*double, 0*): Term proportional to s
+- `c2`(*double, 0*): Term proportional to s^2
+- `c3`(*double, 0*): Term proportional to s^3
+- `c4`(*double, 0*): Term proportional to s^4
+
+#### sequence_power
+
+- `label`(*string, \<empty>*): Name of the sequence, which is used to refer to it in the lattice
+- `c0` (*double, 0*): Constant term
+- `dc` (*double, 0*): Term scaling the growing power series before added to the constant term
+- `alpha` (*double, 0*): power of the series
+- `n0` (*integer, 1*): starting index of power growth. Otherwise the sequence uses only the constant term
+- 
+#### sequence_random
+
+- `label`(*string, \<empty>*): Name of the sequence, which is used to refer to it in the lattice
+- `c0` (*double, 0*): Mean value
+- `dc` (*double, 0*): Amplitude of the error, either the standard division for normal distribution or the min and max value for uniform distribution.
+- `seed` (*integer, 100*): seed for the random number generator
+- `normal` (*bool, true*): Flag for Gaussian distribution. If set to false a uniform distribution is used.
+
+
+[Back](#supported-namelists)
+
 <div style="page-break-after: always; visibility: hidden"> \pagebreak </div>
 
 ### beam
@@ -253,7 +306,7 @@ The modules controls the import of a Genesis 1.3 particle file to replace the in
 [Back](#supported-namelists)
 
 <div style="page-break-after: always; visibility: hidden"> \pagebreak </div>
-./g 
+
 ### importfield
 
 The modules controls the import of a Genesis 1.3 field file to replace the internal generation of the field distribution (note that the module `field` should only be called afterwards with the `accumulate`-option enabled). The routine defines also the parameter for a time-dependent run if the `time`-namelist hasn’t been defined yet.
@@ -264,17 +317,34 @@ The modules controls the import of a Genesis 1.3 field file to replace the inter
 
 [Back](#supported-namelists)
 
+
+### importtransformation
+
+Once an electron distribution is generated the namelist can be used to manipulate the distribution by shifting the particle by the vector dr or applying the transport matrix R. The applied transformation is `r1 = R*r0+dr`, where
+`r0` is the initial particle vector and `r1` the final one. The transformation assumes the standard 6D vector of `(x,x',y,y',s,delta)`.
+the supplied vector and matrix must have the corresponding shape (6 or 6x6). 
+The user can supply more than one vector or matrix, e.g. sampling at various positions `s`. Then the transformation used interpolated values.
+Note that in the case of transport matrices and interpolated matrix does not preserve the emittance. In this case a high sample rate should be supplied to reduce this effect to a minimum.
+Genesis will check the shape of the transport vector and matrices. If the rank is higher than needed (e.g. 2x6x6 for a transport matrix) then it assumes the first index
+refers to the sample along the `s`-axis. In this case the sample distance `slen` should be also specified. In the case that `n=1` or `slen=0` only a global transformation is applied.
+
+- `file` (*string, \<empty>*): File name of a hdf5 compliant datafile to contain the vector and matrix informations
+- `vector` (*string, \<empty>*) Name of the dataset which contains the vector information. The shape must be either (6) or (n,6)
+- `matrix` (*string, \<empty>*) Name of the dataset which contains the matrix information. The shape must be either (6,6) or (n,6,6)
+- `slen` (*double, 0*): The length in meters between adjacent sample points (n>1), needed for the interpolation. If the value is zero only a global transformation is applied using the first entry.
+[Back](#supported-namelists)
+
+
+
 <div style="page-break-after: always; visibility: hidden"> \pagebreak </div>
 
 ### efield
 
 This namelist controls the long and short range space charge fields. The long range corresponds to any length scale longer than the slice length of the simulation, while the short range is on the resonant wavelength scale. Numerically they are treated differently.
 The calculation for the short range is done on a radial-azimuthal grid, centered to the centroid position of the electron slice, while the long range is the sum of the space charge field in the rest frame where each slice is treated as a uniform disk.
-At the moment the short range field is disabled but will be reenabled in upcoming versions of Genesis 1.3
 
 - `longrange` (*bool, false*): Flag to enable the calculation of the long range space charge field.
-- `reducedLF` (*bool, false*): Flag to do the Lorentz correction for the motion in the undulator field so that the effective relativistic factor is scaled by sqrt(1+aw^2).
-- `rmax` (*double, 0*): Scaling factor to define the grid size for the short range space charge field, which is given by the product of `rmax` and the maximum offset of the macro particles from its centroid
+- `rmax` (*double, 0*): Size of radial grid in meters. If the beam size gets larger than the grid the size is automatically adjusted to the maximum radius of the electrons with an additional 50% extension. When the mesh size is adjusted a message will be printed on screen.
 - `nz` (*int, 0*): Number of longitudinal Fourier component of the short range space charge field. Note that this should be not in conflict with the beamlet size.
 - `nphi` (*int, 0*): Number of azimuthal modes in the calculation of the short range space charge field.
 - `ngrid` (*int, 100*): Number of grid points of the radial grid for the short range space charge field.
@@ -326,10 +396,11 @@ An empty namelist with no variables. It initiates the sorting and redistribution
 
 ### write
 
-With this name list the field or particle distributions are dumped.
+With this name list the field or particle distributions are dumped. The placeholder character `@` can be used to refer to the rootname of the simulation run, e.g. `field = @.final`
 
 - `field` (*string,\<empty>*): if a filename is defined, Genesis writes out the field distribution of all harmonics. The harmonics are indicated by the suffix ’.hxxx.’ where xxx is the harmonic number. The filename gets the extension.fld.h5 automatically
 - `beam` (*string, \<empty>*): if a filename is defined, Genesis writes out the particle distribution. The filename gets the `extension.par.h5` automatically
+- `stride` (*integer,1*): For values larger than 1 the amount of particles written to the file is reduced by only writing each *stride*th particle to the dump file.
 
 [Back](#supported-namelists)
 

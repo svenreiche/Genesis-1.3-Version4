@@ -31,7 +31,7 @@ void AlterSetup::usage(){
   return;
 }
 
-bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice *lat, Time *time, Beam *beam, vector<Field *> *field)
+bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice *lat, Time *time, Beam *beam, vector<Field *> *field, SeriesManager *sm)
 {
   beamline="";  // clear beamline name for multiple calls of altersetup
   lattice=setup->getLattice();
@@ -116,7 +116,7 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
 
   // step one: Select new lattice if selected
   if (beamline!="") {
-    bool status = lat->parse(lattice,beamline,rank);
+    bool status = lat->parse(lattice,beamline,rank,sm);
      if (status==false) { return status ; }
   }
 
@@ -139,6 +139,9 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
     }
     time->finishInit(setup);
     // step 3.2 - beam
+    if ((resample) && (beam->hasWake())){
+        if (rank==0) {cout << "*** Warning: Subharmonic conversion will discard existing wakefield definition" << endl;}
+    }
     if (!beam->subharmonicConversion(subharmonic,resample)){ 
       if (rank==0) {cout << "*** Error: Cannot convert beam distribution to lower harmonic" << endl;}
       return false;
@@ -174,6 +177,9 @@ bool AlterSetup::init(int inrank, map<string,string> *arg, Setup *setup, Lattice
     time->finishInit(setup);
 
     // step 4.2 - beam
+    if ((resample) && (beam->hasWake())){
+        if (rank==0) {cout << "*** Warning: Harmonic conversion will discard existing wakefield definition" << endl;}
+    }
     if (!beam->harmonicConversion(harmonic,resample)){ 
       if (rank==0) {cout << "*** Error: Cannot convert beam distribution to higher harmonic" << endl;}
       return false;

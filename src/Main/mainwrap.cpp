@@ -40,7 +40,9 @@ void G4_usage_and_stop(void)
 
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize(); // node turned off
-    exit(0);
+
+    // non-zero exit code signals error, for instance to SLURM
+    exit(1);
 }
 
 int main (int argc, char *argv[])

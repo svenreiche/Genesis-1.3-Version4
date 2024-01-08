@@ -48,6 +48,7 @@ class HDF5Base{
   void readDataChar(hid_t fid, char *name, char *data, int size);
   void readDataInt(hid_t fid, char *name, int *data, int size);
   int getDatasetSize(hid_t fid, char *name);
+  bool getFullDatasetSize(hid_t fid, const char *name, std::vector<int> &shape);
   bool checkForLink(hid_t fid, string name);
 
 
