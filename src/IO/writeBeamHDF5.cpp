@@ -65,6 +65,7 @@ bool WriteBeamHDF5::write(string fileroot, Beam *beam, int stride)
     s0=-1;
     if ((i>=smin) && (i<smax)){
       s0=0;    // select the slice which is writing
+      npart = 0;
       for (int icount = 0; icount < beam->beam.at(islice).size(); icount += stride){
           npart++;
       }
