@@ -61,6 +61,7 @@ class Setup: public StringProcessing{
    //   bool   getInputFileNameField(string *);
    bool   getRootName(string *);
    void   setRootName(string *);
+   void   getOutputdir(string *);
    bool   RootName_to_FileName(string *, string *);
    int getCount();
    void incrementCount();
@@ -149,6 +150,6 @@ inline void   Setup::BWF_set_inc(int in)
 
 inline bool   Setup::getSemaEnStart() { return sema_file_enabled_start; }
 inline bool   Setup::getSemaEnDone()  { return sema_file_enabled_done; }
-
+inline void   Setup::getOutputdir(string *q) {*q = outputdir;}
 inline bool   Setup::get_write_meta_file(){ return write_meta_file;}
 #endif
