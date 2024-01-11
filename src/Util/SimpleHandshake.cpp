@@ -1,13 +1,11 @@
 /*
  * Simple handshaking with files.
  * 
- * C. Lechner, EuXFEL, 2023-Nov
+ * C. Lechner, EuXFEL, 2023-Nov/2024-Jan
  * 
  * Was implemented to trigger processing of dumped field distribution
  * before subsequent loading. Of course, the processing program needs
  * to be already running...
- * 
- * FIXME: Currently uses MPI_Barrier, which does busy waiting.
  */
 
 #include <fstream>
@@ -24,6 +22,7 @@ using namespace std;
 SimpleHandshake::SimpleHandshake() {
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank_);
 	
+	// controls MPI synchronization method
 	busy_wait_ = false;
 
 	// these are the file extensions
@@ -119,16 +118,15 @@ bool SimpleHandshake::doit(map<string,string> *arg, const string prefix)
 
 	auto end=arg->end();
 	string file = "g4_hs";
-    if (arg->find("file")!=end){file = arg->at("file"); arg->erase(arg->find("file"));}
-    if (!arg->empty()){
-      if (my_rank_==0){ cout << "*** Error: Unknown elements in &simple_handshake" << endl; usage();}
-      return(false);
-    }
+	if (arg->find("file")!=end){file = arg->at("file"); arg->erase(arg->find("file"));}
+	if (!arg->empty()){
+	  if (my_rank_==0){ cout << "*** Error: Unknown elements in &simple_handshake" << endl; usage();}
+	  return(false);
+	}
 
 	// If output directory is defined, prefix has a trailing "/",
 	// if no output dir defined, prefix is empty string.
-	// All names relative to the simulation output directory
-	// -> not the complete filenames
+	// All names relative to the current working directory
 	const string path_wait   = prefix+file+ext_wait_;
 	const string path_resume = prefix+file+ext_resume_;
 
