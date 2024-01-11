@@ -452,14 +452,16 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
             break;
         }
 
-	      if (element.compare("&simple_handshake")==0){
+        //----------------------------------------------------
+        // handshake/sync. with external programs
+        if (element.compare("&simple_handshake")==0){
             SimpleHandshake *hs=new SimpleHandshake;
             string prefix;
             setup->getOutputdir(&prefix);
-	        if (!hs->doit(prefix)){ break;}
+            if (!hs->doit(&argument, prefix)){ break;}
             delete hs;
             continue;  
-          } 
+        } 
 
         //-----------------------------------------------------
         // error because the element typ is not defined
