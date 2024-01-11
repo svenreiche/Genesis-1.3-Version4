@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include <complex>
-#include <math.h>
+#include <cmath>
 
 
 #include "Particle.h"

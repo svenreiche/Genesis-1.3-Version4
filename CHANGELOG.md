@@ -1,4 +1,7 @@
 # Change Log
+### [4.6.6] 
+- fixed: exclude_current_output switch in &setup had no effect
+- fixed: a requested bunching factor is now reproduced correctly for large values 
 
 ### [4.6.5] - 2023/12/06
 - added sequence from external file

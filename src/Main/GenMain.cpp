@@ -52,6 +52,7 @@
 #endif
 #include "SeriesManager.h"
 #include "SeriesParser.h"
+#include "SimpleHandshake.h"
 
 #include <sstream>
 
@@ -229,11 +230,11 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //---------------------------------------------------
         // adding sequence elements
         //
-
         if ((element.compare("&sequence_const") == 0) ||
             (element.compare("&sequence_polynom") == 0) ||
             (element.compare("&sequence_power") == 0) ||
             (element.compare("&sequence_list") == 0) ||
+            (element.compare("&sequence_filelist")==0) ||
             (element.compare("&sequence_random") == 0)) {
             SeriesParser *seriesparser = new SeriesParser;
             if (!seriesparser->init(rank, &argument, element, series)) { break; }
@@ -451,7 +452,14 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
             break;
         }
 
-
+	      if (element.compare("&simple_handshake")==0){
+            SimpleHandshake *hs=new SimpleHandshake;
+            string prefix;
+            setup->getOutputdir(&prefix);
+	        if (!hs->doit(prefix)){ break;}
+            delete hs;
+            continue;  
+          } 
 
         //-----------------------------------------------------
         // error because the element typ is not defined

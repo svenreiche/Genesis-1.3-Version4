@@ -115,6 +115,7 @@ add_library(genesis13 STATIC
         src/Util/Hammerslay.cpp
         src/Util/Inverfc.cpp
         src/Util/RandomU.cpp
+	src/Util/SimpleHandshake.cpp
         src/Util/Sorting.cpp
         src/Util/StringProcessing.cpp
         src/Util/SemaFile.cpp
