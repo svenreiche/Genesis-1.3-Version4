@@ -1,25 +1,25 @@
 #include "QuietLoading.h"
 
 QuietLoading::QuietLoading(){
-  sx=NULL;
-  sy=NULL;
-  st=NULL;
-  spx=NULL;
-  spy=NULL;
-  sg=NULL;
+  sx=nullptr;
+  sy=nullptr;
+  st=nullptr;
+  spx=nullptr;
+  spy=nullptr;
+  sg=nullptr;
 }
-QuietLoading::~QuietLoading(){}
+QuietLoading::~QuietLoading()= default;
 
 
 
 void QuietLoading::init(bool one4one, int *base)
 {
-  if (sx !=NULL) { delete sx; }
-  if (sy !=NULL) { delete sy; }
-  if (spx!=NULL) { delete spx; }
-  if (spy!=NULL) { delete spy; }
-  if (st !=NULL) { delete st; }
-  if (sg !=NULL) { delete sg; }
+  delete sx;
+  delete sy;
+  delete spx;
+  delete spy;
+  delete st;
+  delete sg;
 
   if (one4one){
      RandomU rseed(base[0]);
@@ -51,7 +51,7 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
 {
 
 
-  // resets Hammersley sequence but does nothing for random sequence; 
+  // resets Hammersley sequence but does nothing for random sequence;
   Sequence *seed = new RandomU(islice);
   int iseed=static_cast<int>(round(seed->getElement()*1e9));
   delete seed;
@@ -64,12 +64,12 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
   spx->set(iseed);
   spy->set(iseed);
 
-  int mpart=npart/nbins; 
-  
+  int mpart=npart/nbins;
+
   Inverfc erf;
 
-  double dtheta=1./static_cast<double>(nbins);  
-  // raw distribution  
+  double dtheta=1./static_cast<double>(nbins);
+  // raw distribution
    for (int i=0;i <mpart; i++){
     beam[i].theta=st->getElement()*dtheta;
     beam[i].gamma=erf.value(2*sg->getElement());
@@ -88,7 +88,7 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
   double norm=0;
   if (mpart>0){
     norm=1./static_cast<double>(mpart);
-  } 
+  }
 
   // energy
 
@@ -104,28 +104,27 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
   zz*=slice->delgam;
 
   for (int i=0; i<mpart; i++){
-    beam[i].gamma= (beam[i].gamma-z)*zz+slice->gamma; 
+    beam[i].gamma= (beam[i].gamma-z)*zz+slice->gamma;
   }
-  
+
   // x and px correlation;
   z=0;
   zz=0;
   double p=0;
-  double pp=0;
   double zp=0;
 
   for (int i=0; i<mpart;i++){
     z +=beam[i].x;
     zz+=beam[i].x*beam[i].x;
     p +=beam[i].px;
-    zp+=beam[i].x*beam[i].px;    
+    zp+=beam[i].x*beam[i].px;
   }
   z*=norm;
   p*=norm;
   zz=sqrt(fabs(zz*norm-z*z));
   if (zz>0) {zz=1./zz;}
   zp=(zp*norm-z*p)*zz*zz;
-  
+
   for (int i=0; i<mpart;i++){
     beam[i].px=beam[i].px-p;
     beam[i].px-=zp*beam[i].x;
@@ -136,21 +135,20 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
   z=0;
   zz=0;
   p=0;
-  pp=0;
   zp=0;
 
   for (int i=0; i<mpart;i++){
     z +=beam[i].y;
     zz+=beam[i].y*beam[i].y;
     p +=beam[i].py;
-    zp+=beam[i].y*beam[i].py;    
+    zp+=beam[i].y*beam[i].py;
   }
   z*=norm;
   p*=norm;
   zz=sqrt(fabs(zz*norm-z*z));
   if (zz>0) {zz=1./zz;}
   zp=(zp*norm-z*p)*zz*zz;
-  
+
   for (int i=0; i<mpart;i++){
     beam[i].py=beam[i].py-p;
     beam[i].py-=zp*beam[i].y;
@@ -161,13 +159,13 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
   z = 0;
   zz = 0;
   p = 0;
-  pp= 0 ;
-  
+  double pp= 0 ;
+
   for (int i=0; i<mpart;i++){
     z +=beam[i].px;
     zz+=beam[i].px*beam[i].px;
     p +=beam[i].py;
-    pp+=beam[i].py*beam[i].py;    
+    pp+=beam[i].py*beam[i].py;
   }
   z*=norm;
   p*=norm;
@@ -181,33 +179,9 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
     beam[i].py=(beam[i].py-p)*pp;
   }
 
-  // cross check
-  /*
-  z=0;
-  zz=0;
-  p=0;
-  pp=0;
-  zp=0;
-   for (int i=0; i<mpart;i++){
-    z +=beam[i].x;
-    zz+=beam[i].x*beam[i].x;
-    p +=beam[i].px;
-    pp+=beam[i].px*beam[i].px;
-    zp+=beam[i].x*beam[i].px;    
-  }
-  z*=norm;
-  p*=norm;
-  zz=sqrt(fabs(zz*norm-z*z));
-  pp=sqrt(fabs(pp*norm-p*p));
-  if (zz>0) {zz=1./zz;}
-  if (pp>0) {pp=1./pp;}
-  zp=(zp*norm-z*p)*zz*zz;
 
-  cout << "Quiet Loading Result in x : " <<  z << " " << zz << " "<< p << " " << pp << " " <<zp << endl;
-  */
-  
   // scale to physical size
- 
+
   double sigx=sqrt(slice->ex*slice->betax/slice->gamma);
   double sigy=sqrt(slice->ey*slice->betay/slice->gamma);
   double sigpx=sqrt(slice->ex/slice->betax/slice->gamma);
@@ -239,8 +213,8 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
       beam[i2+j].y    =beam[i1].y;
       beam[i2+j].px   =beam[i1].px;
       beam[i2+j].py   =beam[i1].py;
-      beam[i2+j].theta=beam[i1].theta+j*dtheta;     
-    } 
+      beam[i2+j].theta=beam[i1].theta+j*dtheta;
+    }
   }
 
 
@@ -250,14 +224,37 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
     beam[i].theta*=theta0;
   }
 
+  double pi = 2*asin(1.);
+  double blocal = slice->bunch;
   // bunching and energy modulation
-
-  if ((slice->bunch!=0)||(slice->emod!=0)){
-    for (int i=0; i<npart;i++){
-      beam[i].gamma-=slice->emod*sin(beam[i].theta-slice->emodphase);
-      beam[i].theta-=2*slice->bunch*sin(beam[i].theta-slice->bunchphase);
-    }
+  if (blocal !=0){
+      double btar = blocal;  // target value
+      double blow = 0;  // assume it initial guess
+      double bupp = 0.9999;
+      double bmid = 0;
+      while ((bupp-blow) > 1e-6){
+          bmid = 0.5*(blow+bupp);
+          double bprobe = sin((1-bmid)*pi)/((1-bmid)*pi);
+          if (btar<bprobe){
+              bupp = bmid;
+          } else {
+              blow = bmid;
+          }
+      }
+      blocal = bmid;
   }
 
-  return;
+  if ((blocal!=0)||(slice->emod!=0)) {
+      if (slice->bunch > 0.1) {
+          for (int i = 0; i < npart; i++) {
+              beam[i].gamma -= slice->emod * sin(beam[i].theta - slice->emodphase);
+              beam[i].theta += -blocal * beam[i].theta + blocal * pi + slice->bunchphase+pi;
+          }
+      } else {
+          for (int i = 0; i < npart; i++) {
+              beam[i].gamma -= slice->emod * sin(beam[i].theta - slice->emodphase);
+              beam[i].theta-=2*slice->bunch*sin(beam[i].theta-slice->bunchphase);
+          }
+      }
+  }
 }
