@@ -21,11 +21,44 @@ using namespace std;
 
 SimpleHandshake::SimpleHandshake() {
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank_);
+	
+	busy_wait_ = false;
 
 	// these are the filenames relative to the simulation output directory
 	// -> not the complete filenames
 	fn_wait_ = "g4_hs.wait";
 	fn_resume_ = "g4_hs.resume";
+}
+
+void SimpleHandshake::join(void)
+{
+	if(busy_wait_) {
+		/*
+		 * MPI_Barrier: All processes wait until rank 0 arrives as well.
+		 * Note: With OpenMPI, this results in busy waiting on all CPUs,
+		 */
+		MPI_Barrier(MPI_COMM_WORLD);
+		return;
+	}
+	
+	/*
+	 * Improved sync that puts waiting processes to sleep
+	 * (so that CPUs can be be used for other tasks)
+	 */
+	MPI_Request req;
+	MPI_Ibarrier(MPI_COMM_WORLD, &req);
+	
+	while(1) {
+		int flag=-1;
+		MPI_Test(&req, &flag, MPI_STATUS_IGNORE);
+		if(flag) {
+			break;
+		}
+		
+		sleep(1);
+		// cout << "waiting on rank " << my_rank_ << endl;
+	}
+	return;
 }
 
 void SimpleHandshake::drop_file(const string fn)
@@ -62,11 +95,8 @@ void SimpleHandshake::wait_for_file(const string fname)
 		}
 	}
 
-	/*
-	 * MPI_Barrier: All processes wait until rank 0 arrives as well.
-	 * FIXME: Busy waiting on all CPUs, replace the MPI_Barrier by something better that puts processes to sleep.
-	 */
-	MPI_Barrier(MPI_COMM_WORLD);
+	/* Here, all processes wait until rank 0 arrives as well. */
+	join();
 	if(0==my_rank_) {
 		cout << msg_indent << "Execution of GENESIS continues" << endl;
 	}
