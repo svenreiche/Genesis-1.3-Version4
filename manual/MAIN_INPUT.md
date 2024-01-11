@@ -37,6 +37,7 @@ The following describes all supported namelist with their variables, including i
   - [sort](#sort)
   - [write](#write)
   - [track](#track)
+  - [simple_handshake](#simple_handshake)
 
 <div style="page-break-after: always; visibility: hidden"> \pagebreak </div>
 
@@ -416,6 +417,11 @@ This namelist initiate the actually tracking through the undulator and then writ
 - `beam_dump_step` (*int, 0*): Defines the number of integration steps before a particle dump is written. Be careful because for time-dependent simulation it can generate many large output files.
 -  `sort_step` (*int,0*): Defines the number of steps of integration before the particle distribution is sorted. Works only for one-4-one simulations.
 
+[Back](#supported-namelists)
+
+### simple_handshake
+This namelist enables synchronization of the simulation progress with external programs. Arriving at this namelist, an empty file (default name: `g4_hs.wait`) is generated in the working directory of the simulation. The simulation resumes once a second file is detected (default name: `g4_hs.resume`).
+The parameter `file` (*string, default value: `g4_hs`*) allows to change the filenames used for synchronization.
 [Back](#supported-namelists)
 
 <div style="page-break-after: always; visibility: hidden"> \pagebreak </div>
