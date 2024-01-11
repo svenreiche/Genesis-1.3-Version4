@@ -20,15 +20,17 @@ void ReadFieldHDF5::close(){
 
 bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time *time, int harm, bool dotime)
 {
-
-
   isOpen=false;
+  
   // read global data
+  double reflen=-1.;
 
-  double reflen;
-
-
-  fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);  
+  if ((fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT))==H5I_INVALID_HID) {
+    if(0==rank) {
+      cout << "*** Error in ReadFieldHDF5::readGlobal, unable to open field file " << file << endl;
+      return(false);
+	}
+  }
   readDataDouble(fid,(char *)"refposition",&s0,1);
   readDataDouble(fid,(char *)"gridsize",&dgrid,1);
   readDataDouble(fid,(char *)"wavelength",&reflen,1);
@@ -41,20 +43,15 @@ bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Tim
   work = new double [nwork];
 
   
-
-  double lambda=setup->getReferenceLength();                        // reference length for theta
-  
   // s0=s0;  // add offset from input deck
   slen=slicelen*count;
-
-
 
   double ks=4.*asin(1)/reflen;
   scl=dgrid*eev/ks/sqrt(vacimp);
   scl=1./scl;
   dgrid=0.5*dgrid*static_cast<double>(ngrid-1);
 
-
+  double lambda=setup->getReferenceLength();                        // reference length for theta
   if (fabs((lambda-reflen*static_cast<double>(harm))/lambda)>1e-6){
       if (rank==0){ cout << "*** Error: Mismatch between reference length of run and of input file" << endl;}
       return false;    
@@ -81,13 +78,6 @@ bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Tim
       if (rank==0){ cout << "*** Error: Mismatch in sample rate of run and of input file" << endl;}
       return false;
   }
-
-
-
-
-
-
-
 
   return true;
 } 
