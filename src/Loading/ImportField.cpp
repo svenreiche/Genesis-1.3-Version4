@@ -2,13 +2,7 @@
 #include "readFieldHDF5.h"
 
 
-ImportField::ImportField()
-{
-  offset=0;
-  harm=1;
-  dotime=true;
-}
-
+ImportField::ImportField() {}
 ImportField::~ImportField(){}
 
 void ImportField::usage(){
@@ -25,19 +19,20 @@ void ImportField::usage(){
 
 bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field *> *fieldin, Setup *setup, Time *time)
 {
+  // parameters and their defaults
+  string file;
+  int harm=1;
+  bool dotime=true;
+  double offset=0.;
 
- 
-    
   double lambda=setup->getReferenceLength();   // reference length for theta
-  double gamma=setup->getReferenceEnergy();           // get default energy from setup input deck
+  double gamma=setup->getReferenceEnergy();    // get default energy from setup input deck
 
 
   map<string,string>::iterator end=arg->end();
-
   if (arg->find("file")!=end    ){file=arg->at("file"); arg->erase(arg->find("file"));}
   if (arg->find("time")!=end)    {dotime = atob(arg->at("time").c_str()); arg->erase(arg->find("time"));}
   if (arg->find("harmonic")!=end){harm = atoi(arg->at("harmonic").c_str()); arg->erase(arg->find("harmonic"));}
-
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &importfield" << endl; this->usage();}
@@ -45,15 +40,12 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
   }
 
 
-
   ReadFieldHDF5 import;
-
   bool check=import.readGlobal(rank, size, file, setup, time, harm, dotime);
   if (!check) { 
     import.close();
     return check; 
   }
-
   
 
   // sample rate and time dependent run could have changed when taken by externaldistribution in readGlobal
@@ -62,7 +54,6 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
 
   vector<double> s;
   int nslice=time->getPosition(&s);
-
 
   int idx=-1;
   Field *field;
