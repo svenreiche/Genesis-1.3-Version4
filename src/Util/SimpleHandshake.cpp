@@ -12,6 +12,8 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <string>
 #include <unistd.h>
 #include <mpi.h>
 
@@ -24,10 +26,17 @@ SimpleHandshake::SimpleHandshake() {
 	
 	busy_wait_ = false;
 
-	// these are the filenames relative to the simulation output directory
-	// -> not the complete filenames
-	fn_wait_ = "g4_hs.wait";
-	fn_resume_ = "g4_hs.resume";
+	// these are the file extensions
+	ext_wait_ = ".wait";
+	ext_resume_ = ".resume";
+}
+
+void SimpleHandshake::usage(void)
+{
+  cout << "List of keywords for simple_handshake" << endl;
+  cout << "&simple_handshake" << endl;
+  cout << " string file = <g4_hs>" << endl;
+  cout << "&end" << endl << endl;
 }
 
 void SimpleHandshake::join(void)
@@ -102,16 +111,26 @@ void SimpleHandshake::wait_for_file(const string fname)
 	}
 }
 
-bool SimpleHandshake::doit(const string prefix)
+bool SimpleHandshake::doit(map<string,string> *arg, const string prefix)
 {
 	if(0==my_rank_) {
 		cout << endl << "SimpleHandshake" << endl;
 	}
 
-	// if output directory is defined, prefix has a trailing "/"
-	// if no output dir defined, prefix is empty string
-	const string path_wait   = prefix+fn_wait_;
-	const string path_resume = prefix+fn_resume_;
+	auto end=arg->end();
+	string file = "g4_hs";
+    if (arg->find("file")!=end){file = arg->at("file"); arg->erase(arg->find("file"));}
+    if (!arg->empty()){
+      if (my_rank_==0){ cout << "*** Error: Unknown elements in &simple_handshake" << endl; usage();}
+      return(false);
+    }
+
+	// If output directory is defined, prefix has a trailing "/",
+	// if no output dir defined, prefix is empty string.
+	// All names relative to the simulation output directory
+	// -> not the complete filenames
+	const string path_wait   = prefix+file+ext_wait_;
+	const string path_resume = prefix+file+ext_resume_;
 
 	// Delete any "resume" file that may still be there from a previous
 	// run before dropping the "wait" file (not handling the error
