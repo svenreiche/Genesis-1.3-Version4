@@ -13,7 +13,6 @@ void EField::usage(){
   cout << " int nphi = 0" << endl;
   cout << " int ngrid = 100" << endl;
   cout << " bool longrange = False" << endl;
-  cout << " bool dump = False" << endl;
   cout << "&end" << endl << endl;
 }
 
