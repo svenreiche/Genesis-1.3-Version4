@@ -198,8 +198,8 @@ double SeriesRandom::value()
 }
 
 void SeriesRandom::usage(){
-  cout << "List of keywords for SEQUENCE_POWER" << endl;
-  cout << "&sequence_power" << endl;
+  cout << "List of keywords for SEQUENCE_RANDOM" << endl;
+  cout << "&sequence_random" << endl;
   cout << " string label = <empty>" << endl;
   cout << " double c0 = 0" << endl;
   cout << " double dc = 0" << endl;

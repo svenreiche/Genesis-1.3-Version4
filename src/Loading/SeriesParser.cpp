@@ -370,7 +370,7 @@ void SeriesParser::usageFileList(){
     cout << "List of keywords for SEQUENCE_FILELIST" << endl;
     cout << "&sequence_filelist" << endl;
     cout << " string label = <empty>" << endl;
-    cout << " double file = [<empty>]" << endl;
+    cout << " string file = <empty>" << endl;
     cout << "&end" << endl << endl;
     return;
 }
