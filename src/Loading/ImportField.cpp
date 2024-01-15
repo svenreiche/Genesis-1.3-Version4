@@ -75,12 +75,16 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
   }
   else
   {
-	if(!force_replace) {
+    // we have a field at this harmonic...
+    if(!force_replace) {
       if (rank==0) {cout << "*** Error: Cannot import field, because field is already defined" << endl; }
       return false;
     }
 
-    if (rank==0) {cout << "Importing radiation field distribution from file: " << file << " (replacing already existing field)..." << endl; }
+    if (rank==0) {
+      cout << "Importing radiation field distribution from file: " << file << " (replacing already existing field)..." << endl;
+      cout << "   !Replacing of fields is a new function, use with care!" << endl;
+    }
     field = new Field;
     // replace already existing field by new one to be filled w/ data (no need to update the index)
     old_field = fieldin->at(idx);
