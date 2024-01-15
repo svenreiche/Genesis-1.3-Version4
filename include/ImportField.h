@@ -31,10 +31,6 @@ class ImportField : public StringProcessing{
 
  private:
    void usage();
-   string file;
-   int harm;
-   double offset;
-   bool dotime;
 };
 
 
