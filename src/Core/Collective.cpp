@@ -29,8 +29,8 @@ void Collective::clearWake(){
         delete [] current;
         delete [] dcurrent;
         delete [] wakeext;
-        delete [] wakeint;
-        delete [] count;
+        //delete [] wakeint;
+        //delete [] count;
     }
     hasWake = false;
 }
@@ -41,11 +41,18 @@ void Collective::resize_and_zero(vector<double>& v, size_t n)
   for(size_t j=0; j<n; j++)
     v.at(j)=0;
 }
+void Collective::resize_and_zero_i(vector<int>& v, size_t n)
+{
+  v.resize(n);
+  for(size_t j=0; j<n; j++)
+    v.at(j)=0;
+}
 
 void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in, double *wakeext_in, double *wakeres_in, double *wakegeo_in, double * wakerou_in, double ztrans_in, double radius_in, bool transient_in)
 { 
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
-  MPI_Comm_size(MPI_COMM_WORLD, &size); // assign ranksize to node
+  // obtain MPI rank/size
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
   if (MPISingle){
       rank=0;
       size=1;
@@ -69,8 +76,8 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
  
 
   wakeext = new double[nsNode];  // global wake, explicityle defined in input deck (e.g. constant energy loss)
-  wakeint = new double[nsNode];  // wake, internally calculated when updating the wake potential (e.g. sorting)
-  count   = new int [nsNode];
+  resize_and_zero(wakeint,nsNode);  // wake, internally calculated when updating the wake potential (e.g. sorting)
+  resize_and_zero_i(count,nsNode);
 
   // array to hold current profile with simulation resolution.
   resize_and_zero(cur,ncur+1);
@@ -85,7 +92,7 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
   // fill the wakes or single particle wakes
   for (int i=0; i <nsNode; i++){
     wakeext[i]=wakeext_in[i];
-    wakeint[i]=0;
+    wakeint.at(i)=0;
   }
 
 
@@ -118,7 +125,7 @@ void Collective::apply(Beam *beam, Undulator *und, double delz)
   // apply wakes
 
   for (int ic = 0; ic <beam->current.size(); ic++){
-    beam->eloss[ic]=wakeext[ic]+wakeint[ic];
+    beam->eloss[ic]=wakeext[ic]+wakeint.at(ic);
     double dg=beam->eloss[ic]*delz/511000;    // actuall beam loss per integration step
     unsigned long npart=beam->beam.at(ic).size();
     for (unsigned long ip=0; ip<npart; ip++){
@@ -185,8 +192,8 @@ void Collective::update(Beam *beam, double zpos)
 
 
   for (int ic = 0; ic <nsNode; ic++){
-    count[ic]=0;
-    wakeint[ic]=0;
+    count.at(ic)=0;
+    wakeint.at(ic)=0;
   }
 
 
@@ -199,20 +206,20 @@ void Collective::update(Beam *beam, double zpos)
   for (int is=is0; is< is1; is++){  // loop the evaluation point from back to front
     double s=is*ds;
     double wakeloc=0;
-    for (unsigned long i=icut; i < ns-is; i++){  // loob from evaluation point till the head of the bunch
+    for (unsigned long i=icut; i < ns-is; i++){  // loop from evaluation point till the head of the bunch
       wakeloc+=current[is+i]*(wakeres[i]+wakerou[i]);
       wakeloc+=dcurrent[is+i]*wakegeo[i];
     }
     int idx = floor((s-sc0)/dscur);
-    count[idx]++;
-    wakeint[idx]+=wakeloc;
+    count.at(idx)++;
+    wakeint.at(idx)+=wakeloc;
   }
 
   for (int ic = 0; ic <nsNode; ic++){
-    if (count[ic] > 0) {
-      wakeint[ic]/=static_cast<double>(count[ic]);
+    if (count.at(ic) > 0) {
+      wakeint.at(ic)/=static_cast<double>(count.at(ic));
     } else {
-      wakeint[ic]=0;
+      wakeint.at(ic)=0;
     }
   }
   needsUpdate=false;
