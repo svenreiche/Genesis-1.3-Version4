@@ -164,10 +164,11 @@ void Collective::update(Beam *beam, double zpos)
   for (int is=0; is <ns ; is++){
     double s=ds*static_cast<double> (is);
     unsigned int idx=static_cast<int> (floor(s/dscur));
+    /* FIXME: range checking needed here (to avoid possible issues with floor operation resulting in idx=-1? */
     double wei=1-(s-idx*dscur)/dscur;  
-    current[is]=wei*cur[idx]+(1-wei)*cur[idx+1];
+    current[is]=wei*cur.at(idx)+(1-wei)*cur.at(idx+1);
     current[is]*=ds/ce;   // convert current to number of electrons
-    dcurrent[is]=-(cur[idx+1]-cur[idx])*ds/ce/dscur;
+    dcurrent[is]=-(cur.at(idx+1)-cur.at(idx))*ds/ce/dscur;
     wake[is]=0;
   }
  
