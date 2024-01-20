@@ -22,15 +22,15 @@ Collective::~Collective()
 
 void Collective::clearWake(){
     if (hasWake){
-        delete [] wake;
-        delete [] wakegeo;
-        delete [] wakeres;
-        delete [] wakerou;
-        delete [] current;
-        delete [] dcurrent;
-        delete [] wakeext;
-        //delete [] wakeint;
-        //delete [] count;
+        wake.clear();
+        wakegeo.clear();
+        wakeres.clear();
+        wakerou.clear();
+        current.clear();
+        dcurrent.clear();
+        wakeext.clear();
+        wakeint.clear();
+        count.clear();
     }
     hasWake = false;
 }
@@ -73,21 +73,20 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
   radius=radius_in;
   transient=transient_in;
 
- 
-
-  wakeext = new double[nsNode];  // global wake, explicityle defined in input deck (e.g. constant energy loss)
-  resize_and_zero(wakeint,nsNode);  // wake, internally calculated when updating the wake potential (e.g. sorting)
-  resize_and_zero_i(count,nsNode);
 
   // array to hold current profile with simulation resolution.
   resize_and_zero(cur,ncur+1);
 
-  wake    = new double[ns];
-  wakegeo = new double[ns];
-  wakeres = new double[ns];
-  wakerou = new double[ns];
-  current = new double[ns];
-  dcurrent= new double[ns];
+  resize_and_zero(wakeext, nsNode);  // global wake, explicityle defined in input deck (e.g. constant energy loss)
+  resize_and_zero(wakeint, nsNode);  // wake, internally calculated when updating the wake potential (e.g. sorting)
+  resize_and_zero_i(count, nsNode);
+
+  resize_and_zero(wake,    ns);
+  resize_and_zero(wakegeo, ns);
+  resize_and_zero(wakeres, ns);
+  resize_and_zero(wakerou, ns);
+  resize_and_zero(current, ns);
+  resize_and_zero(dcurrent,ns);
 
   // fill the wakes or single particle wakes
   for (int i=0; i <nsNode; i++){

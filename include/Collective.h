@@ -36,8 +36,7 @@ private:
    double ds,dscur;
    unsigned int ns;
    int size,rank,ncur;
-   double *wakeext, *wakeres, *wakegeo, *wakerou, *wake, *current, *dcurrent;
-   std::vector<double> wakeint;
+   std::vector<double> wakeext, wakeint, wakeres, wakegeo, wakerou, wake, current, dcurrent;
    std::vector<double> cur;
    std::vector<int> count;
 
