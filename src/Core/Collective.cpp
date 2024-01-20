@@ -210,7 +210,20 @@ void Collective::update(Beam *beam, double zpos)
       wakeloc+=current[is+i]*(wakeres[i]+wakerou[i]);
       wakeloc+=dcurrent[is+i]*wakegeo[i];
     }
-    int idx = floor((s-sc0)/dscur);
+    
+    double floorarg = (s-sc0)/dscur;
+    int idx = floor(floorarg);
+    /* Lechner, 2024-Jan: workaround (range checking) from commit id 28dd1fb, use only until issue is fixed */
+    if(idx<0) {
+        const double eps=1.0e-10;
+        if(floorarg >= -eps) {
+			idx=0;
+            cout << "workaround/hack in Collective.cpp: set idx=" << idx << ", floorarg=" << floorarg << endl;
+        } else {
+            cout << "!!! BADSTUFF in Collective.cpp: idx=" << idx << ", floorarg=" << floorarg << endl;
+            abort();
+        }
+    }
     count.at(idx)++;
     wakeint.at(idx)+=wakeloc;
   }
