@@ -37,11 +37,10 @@ private:
    unsigned int ns;
    int size,rank,ncur;
    double *wakeext, *wakeint, *wakeres, *wakegeo, *wakerou, *wake, *current, *dcurrent;
-   // double *cur;
    std::vector<double> cur;
    int *count;
 
-
+   void resize_and_zero(std::vector<double>&, size_t);
 };
 
 inline bool Collective::hasWakeDefined() const{

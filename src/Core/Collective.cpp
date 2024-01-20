@@ -35,13 +35,17 @@ void Collective::clearWake(){
     hasWake = false;
 }
 
+void Collective::resize_and_zero(vector<double>& v, size_t n)
+{
+  v.resize(n);
+  for(size_t j=0; j<n; j++)
+    v.at(j)=0;
+}
+
 void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in, double *wakeext_in, double *wakeres_in, double *wakegeo_in, double * wakerou_in, double ztrans_in, double radius_in, bool transient_in)
 { 
-
-
   MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
   MPI_Comm_size(MPI_COMM_WORLD, &size); // assign ranksize to node
-
   if (MPISingle){
       rank=0;
       size=1;
@@ -69,11 +73,7 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
   count   = new int [nsNode];
 
   // array to hold current profile with simulation resolution.
-  // cur     = new double[ncur+1];
-  cur.resize(ncur+1);
-  for(int kk=0; kk<ncur+1; kk++)
-    cur[kk]=0;
-
+  resize_and_zero(cur,ncur+1);
 
   wake    = new double[ns];
   wakegeo = new double[ns];
