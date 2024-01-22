@@ -22,26 +22,37 @@ Collective::~Collective()
 
 void Collective::clearWake(){
     if (hasWake){
-        delete [] wake;
-        delete [] wakegeo;
-        delete [] wakeres;
-        delete [] wakerou;
-        delete [] current;
-        delete [] dcurrent;
-        delete [] wakeext;
-        delete [] wakeint;
-        delete [] count;
+        wake.clear();
+        wakegeo.clear();
+        wakeres.clear();
+        wakerou.clear();
+        current.clear();
+        dcurrent.clear();
+        wakeext.clear();
+        wakeint.clear();
+        count.clear();
     }
     hasWake = false;
 }
 
+void Collective::resize_and_zero(vector<double>& v, size_t n)
+{
+  v.resize(n);
+  for(size_t j=0; j<n; j++)
+    v.at(j)=0;
+}
+void Collective::resize_and_zero_i(vector<int>& v, size_t n)
+{
+  v.resize(n);
+  for(size_t j=0; j<n; j++)
+    v.at(j)=0;
+}
+
 void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in, double *wakeext_in, double *wakeres_in, double *wakegeo_in, double * wakerou_in, double ztrans_in, double radius_in, bool transient_in)
 { 
-
-
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
-  MPI_Comm_size(MPI_COMM_WORLD, &size); // assign ranksize to node
-
+  // obtain MPI rank/size
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
   if (MPISingle){
       rank=0;
       size=1;
@@ -62,30 +73,25 @@ void Collective::initWake(unsigned int ns_in, unsigned int nsNode, double ds_in,
   radius=radius_in;
   transient=transient_in;
 
- 
-
-  wakeext = new double[nsNode];  // global wake, explicityle defined in input deck (e.g. constant energy loss)
-  wakeint = new double[nsNode];  // wake, internally calculated when updating the wake potential (e.g. sorting)
-  count   = new int [nsNode];
 
   // array to hold current profile with simulation resolution.
-  // cur     = new double[ncur+1];
-  cur.resize(ncur+1);
-  for(int kk=0; kk<ncur+1; kk++)
-    cur[kk]=0;
+  resize_and_zero(cur,ncur+1);
 
+  resize_and_zero(wakeext, nsNode);  // global wake, explicityle defined in input deck (e.g. constant energy loss)
+  resize_and_zero(wakeint, nsNode);  // wake, internally calculated when updating the wake potential (e.g. sorting)
+  resize_and_zero_i(count, nsNode);
 
-  wake    = new double[ns];
-  wakegeo = new double[ns];
-  wakeres = new double[ns];
-  wakerou = new double[ns];
-  current = new double[ns];
-  dcurrent= new double[ns];
+  resize_and_zero(wake,    ns);
+  resize_and_zero(wakegeo, ns);
+  resize_and_zero(wakeres, ns);
+  resize_and_zero(wakerou, ns);
+  resize_and_zero(current, ns);
+  resize_and_zero(dcurrent,ns);
 
   // fill the wakes or single particle wakes
   for (int i=0; i <nsNode; i++){
     wakeext[i]=wakeext_in[i];
-    wakeint[i]=0;
+    wakeint.at(i)=0;
   }
 
 
@@ -118,7 +124,7 @@ void Collective::apply(Beam *beam, Undulator *und, double delz)
   // apply wakes
 
   for (int ic = 0; ic <beam->current.size(); ic++){
-    beam->eloss[ic]=wakeext[ic]+wakeint[ic];
+    beam->eloss[ic]=wakeext[ic]+wakeint.at(ic);
     double dg=beam->eloss[ic]*delz/511000;    // actuall beam loss per integration step
     unsigned long npart=beam->beam.at(ic).size();
     for (unsigned long ip=0; ip<npart; ip++){
@@ -157,10 +163,11 @@ void Collective::update(Beam *beam, double zpos)
   for (int is=0; is <ns ; is++){
     double s=ds*static_cast<double> (is);
     unsigned int idx=static_cast<int> (floor(s/dscur));
+    /* FIXME: range checking needed here (to avoid possible issues with floor operation resulting in idx=-1? */
     double wei=1-(s-idx*dscur)/dscur;  
-    current[is]=wei*cur[idx]+(1-wei)*cur[idx+1];
+    current[is]=wei*cur.at(idx)+(1-wei)*cur.at(idx+1);
     current[is]*=ds/ce;   // convert current to number of electrons
-    dcurrent[is]=-(cur[idx+1]-cur[idx])*ds/ce/dscur;
+    dcurrent[is]=-(cur.at(idx+1)-cur.at(idx))*ds/ce/dscur;
     wake[is]=0;
   }
  
@@ -185,8 +192,8 @@ void Collective::update(Beam *beam, double zpos)
 
 
   for (int ic = 0; ic <nsNode; ic++){
-    count[ic]=0;
-    wakeint[ic]=0;
+    count.at(ic)=0;
+    wakeint.at(ic)=0;
   }
 
 
@@ -199,20 +206,33 @@ void Collective::update(Beam *beam, double zpos)
   for (int is=is0; is< is1; is++){  // loop the evaluation point from back to front
     double s=is*ds;
     double wakeloc=0;
-    for (unsigned long i=icut; i < ns-is; i++){  // loob from evaluation point till the head of the bunch
+    for (unsigned long i=icut; i < ns-is; i++){  // loop from evaluation point till the head of the bunch
       wakeloc+=current[is+i]*(wakeres[i]+wakerou[i]);
       wakeloc+=dcurrent[is+i]*wakegeo[i];
     }
-    int idx = floor((s-sc0)/dscur);
-    count[idx]++;
-    wakeint[idx]+=wakeloc;
+    
+    double floorarg = (s-sc0)/dscur;
+    int idx = floor(floorarg);
+    /* Lechner, 2024-Jan: workaround (range checking) from commit id 28dd1fb, use only until issue is fixed */
+    if(idx<0) {
+        const double eps=1.0e-10;
+        if(floorarg >= -eps) {
+			idx=0;
+            cout << "workaround/hack in Collective.cpp: set idx=" << idx << ", floorarg=" << floorarg << endl;
+        } else {
+            cout << "!!! BADSTUFF in Collective.cpp: idx=" << idx << ", floorarg=" << floorarg << endl;
+            abort();
+        }
+    }
+    count.at(idx)++;
+    wakeint.at(idx)+=wakeloc;
   }
 
   for (int ic = 0; ic <nsNode; ic++){
-    if (count[ic] > 0) {
-      wakeint[ic]/=static_cast<double>(count[ic]);
+    if (count.at(ic) > 0) {
+      wakeint.at(ic)/=static_cast<double>(count.at(ic));
     } else {
-      wakeint[ic]=0;
+      wakeint.at(ic)=0;
     }
   }
   needsUpdate=false;

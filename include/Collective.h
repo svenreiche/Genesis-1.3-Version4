@@ -36,12 +36,12 @@ private:
    double ds,dscur;
    unsigned int ns;
    int size,rank,ncur;
-   double *wakeext, *wakeint, *wakeres, *wakegeo, *wakerou, *wake, *current, *dcurrent;
-   // double *cur;
+   std::vector<double> wakeext, wakeint, wakeres, wakegeo, wakerou, wake, current, dcurrent;
    std::vector<double> cur;
-   int *count;
+   std::vector<int> count;
 
-
+   void resize_and_zero(std::vector<double>&, size_t);
+   void resize_and_zero_i(vector<int>& v, size_t n);
 };
 
 inline bool Collective::hasWakeDefined() const{
