@@ -101,7 +101,7 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
   }
   import.close();
   
-  // delete old_field;
+  delete old_field; // ok to delete nullptr -> no action
 
   return true;
 }
