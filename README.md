@@ -9,7 +9,7 @@ Version 4.6.6 has been released (10.01.2024)
 
 [Change Log](CHANGELOG.md)
 
-[Change Log (unrelease Developer Version](CHANGELOG_DEV.md)
+[Change Log (current Developer Version)](CHANGELOG_DEV.md)
 
 [Planned Features](DEVELOPMENT.md)
 
