@@ -1,4 +1,4 @@
-## Example 1 : Steady-State Simulation
+## Example 3 : Time-dependent Simulation
 
 *All files for running the example are found in the subdirectory examples/Example3-TimeDependent of the source code distribution*
 
