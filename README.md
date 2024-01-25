@@ -22,5 +22,6 @@ Version 4.6.5 has been released (22.12.2023)
 **Examples:** ([Overview](examples/))
 * [Example 1 - Steady State](examples/Example1-SteadyState/)
 * [Example 2 - Field and Particle Dumps](examples/Example2-Dumps/)
+* [Example 3 - Time-dependent Simulation](examples/Example3-TimeDependent/)
 
 
