@@ -1,0 +1,56 @@
+&setup
+rootname=Example3
+lattice=Example3.lat
+beamline=FEL
+lambda0=1e-10
+gamma0=11357.82
+delz=0.045000
+shotnoise=1
+nbins = 8
+field_global_stat = true
+beam_global_stat = true
+exclude_spatial_output = true
+exclude_fft_output = true
+&end
+
+&lattice
+zmatch=9.5
+&end
+
+&time
+slen = 20e-6
+sample = 3
+&end
+
+&profile_gauss
+label=current
+c0 = 2500
+s0 = 10e-6
+sig = 6e-6
+&end
+
+&profile_polynom
+label=energy
+c0=11347.
+c1=1e7.
+&end
+
+&field
+power=0
+dgrid=2.000000e-04
+ngrid=255
+waist_size=30e-6
+&end
+
+&beam
+current=@current
+gamma = @energy
+delgam=1.000000
+ex=4.000000e-07
+ey=4.000000e-07
+&end
+
+&track
+output_step=3
+&end
+
