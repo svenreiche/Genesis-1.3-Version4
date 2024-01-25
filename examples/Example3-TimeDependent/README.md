@@ -136,13 +136,20 @@ This is also visible in the profiles of the radiation power and farfield intensi
 the current profile since it acts more like spontaneous radiation which is proportional to the current. The plot is taken after the first undulator module.
 
 ![Plots4](Plots/Figure_4.png)
+
 Further downstream the power profile has more fluctuation similar to the farfield intensity. 
 
 ![Plots5](Plots/Figure_5.png)
+
 A zoom in the core part of the beam-frame shows that close at saturation the profile of power and far-field intensity has roughly the same shape.
 The slight shift in the power is still causes from some parasitic higher modes and indicates that the transverse coherence is not fully at 100%.
 
 ![Plots6](Plots/Figure_6.png)
+
 A more compact plot showing the evolution is when for each step in z the profile is normalized to its mean values. Otherwise one could not see the start-up regime with the exponential growth of 
 the radiation power. In this 2D plot the spiky structure becomes apparent after about half the undulator length. These spikes more forward in the beam-frame with a group velocity which is less than the spead of light.
 At saturation this changes (the slope of the spikes is slightly changed). Also after saturation the power in the head and tail can reach saturation and the pulse gets longer.
+
+![Plots7](Plots/Figure_7.png)
+
+From the farfield intensity and phase the spectrum can be calculated. In this case the spectrum is wider than expected since the beam has an intrinsic energy chirp and thus boradening the emitted frequency spectrum
