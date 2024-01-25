@@ -28,7 +28,7 @@ Genesis supports now the automatic configuration with CMAKE. Following commands 
 
 ```
 mkdir build
-chdir build
+cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```

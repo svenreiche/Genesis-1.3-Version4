@@ -1,207 +1,148 @@
 ## Example 1 : Steady-State Simulation
 
-*All files for running the example are found in the subdirectory examples/Example1-SteadyState of the source code distribution*
+*All files for running the example are found in the subdirectory examples/Example3-TimeDependent of the source code distribution*
 
-Steady-state simulations are the simplest form to run Genesis, where the variation along the electron bunch and radiation field is assumed constant. Field distribution,
-which slips out of the electron slice is replaced with an identical field, slipping in. Internally, Genesis disables any slippage and it is sufficient to simulate only a single slice with the length of the
-wavelength of interest. Note this is identical to a single frequency model.
+Time-Dependent differs from steady-state simulation by tracking multiple slices of the electron bunch through the undulator. This
+allows to resolve a band of frequencies, depending on the sample rate of the electron slices. 
+For convention a set of slices is defined in the bunch-frame, which moves with the speed of the electrons. Therefore mostly the electrons are
+staying at the same location while the radiation slips forward, namely by one wavelength per undulator period. In Genesis the coordinate 
+in the bunch frame is given by **s**. This shouldn't be mixed with **z** which is the position in the undulator where the bunch frame is evaluated. 
+In the underlying model the variable **z** acts as the independent variable of a proposed Hamiltonian 
 
-In the following the setup input and lattice file are explained in some detail. Since this is the first example it starts from scratch.
-
-#### Lattice File
-
-The lattice file contains the physical definition of the undulator beamline, including the types, their position and strengths.
-The example follows the lattice of the SwissFEL hard X-ray beamline Aramis, which places undulator modules in a FODO lattice.
-
-The first is to define the undulator module, which is used for all instances in the lattice. The given line in thelattice file is
-
-
-```asm
-UND: UNDULATOR = { lambdau=0.015000, nwig=266, aw=0.84853, helical= True};
-```
-
-The tag **UND** is a label to used to refer latter in the file to this element. The type is defined by the keyword **UNDULATOR** followed by a list of
-parameters, placed in a curly bracket. Here the undulator period is 15 mm, the module has 266 undulator periods, 
-and the rms undulator parameter is 0.84853. The undulator has a helical configuration.
-
-```asm
-QF: QUADRUPOLE = { l = 0.080000, k1= 2.000000 };
-QD: QUADRUPOLE = { l = 0.080000, k1= -2.000000 };
-```
-Next, two quadrupoles are defined with opposite polarity. A positive value means that the beam is focussed in the x-plane.
-The field strength are normalized (independent from the explicit electron beam energy) and has the unit of inverse meter squared.
-An estimate of the focal strength is f = 1/k1*l. With a length of 8 cm it is in this case 6.25 m.
-
-```asm
-D1: DRIFT = { l = 0.44};
-D2: DRIFT = { l = 0.24};
-```
-Two drift lengths of 44 and 24 cm respectively defines the space before and after the quadrupole.
-
-The explicit layout is defined with the **LINE** command: a list of basic elements (e.g. undulator, quadrupoles) or other lines.
-(Note Genesis 1.3 allows only a recursion depth of 10, where a line is placed as an element of an outline). The basic
-arrangement is: Undulator Module - Drift - Focusing Quadrupole - Drift - Undulator Module - Drift - Defocusing Quadrupole Drift
-
-```asm
-FODO: LINE={UND,D1,QF,D2,UND,D1,QD,D2};
-```
-
-The label of this subsection of the full beamline is FODO. In the full beamline, the FODO lattice has 6 periodic cells.
-```asm
-FEL: LINE={6*FODO};
-```
-
-The multiplier before an element acts the same has explicitly as writing the same element several times. Thus the statement above is identical to 
-**FEL: LINE={FODO,FODO,FODO,FODO,FODO,FODO};**
-
-This completes the definition of the lattice file. Note that the total length of the FODO cell is 9.5 m, which is needed in the main input file.
+This example is based on the steady-state input deck of the first example. To run time-dependent simulation the lattice file does not need to be changed. 
 
 #### Input File
 
-The main input file is a list of namelist, which are processed in the order they appear in the file. IT is necessary that the first namelist is &setup,
-defining some key parameters for the simulation
+The definition of the beam-frame is done with the &time namelist.
+
 ```asm
-&setup
-rootname=Example1
-lattice=Example1.lat
-beamline=FEL
-lambda0=1e-10
-gamma0=11357.82
-delz=0.045000
-shotnoise=0
-nbins = 8
+&time
+slen = 20e-6
+sample = 3
 &end
 ```
-The **rootname** is used for any output file, starting with the string given here. In this case themain output file would be
-Example1.out.h5
-The **lattice* parameter defines the file, which describes the beamline elements. This file has been discussed above.
-The element **beamline** selects one line in the lattice file to be used for simulation. This allows to have several variants in the lattice file.
-Setting this to **beamline=FODO** would actually use only a single FODO cell with two undulator modules instead the 6 cells of the full lattice.
-Genesis needs two reference values for the reference wavelength **lambda0** and reference energy **gamma0**.
-These do not have necessarily be the FEL wavelength (In SASE simulations) or the electron beam energies, but should not diviates too much for not violating the
-resonant approximation of the underlying numerical model. **delz* is the preferred integration step size (here about 3 undulator periods in one step) though
-genesis will align the step size for each step to resolve each beamline elements correctly.
-Since this is a steady state simulation the impact of the fluctuation in the electron position should be disabled (shotnoise) by setting **shotnoise** to zero. In time-dependent simulation (SASE simulation) this should be set to one though.
-The last parameter **nbins** defines the number of particles per beamlet, which is a group of macro particles which share the same coordinate, except for their longitudinal position.
-.
 
-For injecting the electron beam into the lattice, the optical function should be defined when initializing the electron beam.
-However, Genesis can be calculated the match solution to the lattice with the **lattice** namelist.
+Here the total length is 20 microns and with a sample rate of 3 times the reference wavelength which is defined as **gammaref** in the main setup namelist.
+The sample rate cannot be smaller than 1 but can be increased as long as the sample rate is still smaller than the cooperation length. The choice of the sample rate also defines
+the spectral bandwidth according to Nyquist theorem. For the maximum sample rate the frequency is +/-50% around the central frequency. With larger samplerate the bandwidth is restricted
+to +/- 50/**sample** percent.  Due to the underlying solver the FEL should be well within the given bandwidth of the simulation. Where this is valid or not, will not be checked by Genesis (Example would be
+simulation with a very large energy chirp in the electron beam or seed signal well different from the central frequency). On the other hand the resonant frequency of the FEL does not need to be
+exact the same as the central frequency.
+
+There is also one possible pitfall that the desired integration stepsize is not in conflict with the sample rate. The given example requests an integration step size of 45 mm, which corresponds to
+three undulator periods. This means that after one single integration step the field is pushed three wavelength. If the sample rate is smaller, e.g. 1 than after one integration step the field is jumping over electron slices without interaction.
+As an example for sample = 1 the field in slice is copied from slice i to slice i+3.  There is no interaction with slice i+1 and i+2. As a consequence the simulation acts as three independent simulation 
+with a sample rated of 3 each.  For this reason the example uses a sample rate of 3.
+
+To illustrate time-varying input parameter, we set up the simulation for a Gaussian current profile and a linear chirp.
+For that some profiles are defined with 
 ```asm
-&lattice
-zmatch=9.5
+&profile_gauss
+label=current
+c0 = 2500
+s0 = 10e-6
+sig = 6e-6
+&end
+
+&profile_polynom
+label=energy
+c0=11347.
+c1=1e7.
 &end
 ```
-**zmatch** defines the length over which a periodic solution is assumed. Note that 9.5 is the same value as we calculated 
-for the length of the basic FODO cell in the lattice file.
+The upper is the current profile with an rms length of 6 microns. Since the beam frame is defined for 20 microns, starting at s=0 micron. The peak of the Gaussian is placed at s=10 microns with the **s0** parameter.
 
-Next is the definition of the radiation field for the start of the simulation. Since this is a steady-state simulation
-it should have some radiation power.
-```asm
-&field
-power=5e3
-dgrid=2.000000e-04
-ngrid=255
-waist_size=30e-6
-&end
-```
-Here the starting power is 5 kW and the field has a size of 30 microns. The physical meaning of **waist_size**
-is the same as w0 for a fundamental Gauss mode. With the wavelength (here **xlambda0** from setup namelist) and the waist size
-the radiation wavefront is well defined.
-the wavefront is then placed on a 2D grid with **255** grid points in each direction and an 
-extension between -200 to 200 microns.  Note that it is strongly recommended having an odd number of grid points to have the origin
-of the two grid coincide with the transverse position x=0 and y=0.
+The lower namelist is the energy chirp of the electron bunch. That namelist supports higher polynomial order but the corresponding coefficent are defaulting to zero.
+Here only the constant and linear term is defined.
 
-The electron beam is generated with:
+To assign these profiles to the beam parameters they are referred to by their name:
+
 ```asm
 &beam
-current=3000
-delgam=1.000000
-ex=4.000000e-07
-ey=4.000000e-07
+current=@current
+gamma = @energy
+...
 &end
 ```
-Here the beam has a current of 3 kA, an RMS energy spread of 0.511 MeV (**delgam**=1)
-and normalized emittances of 400 nm in x and y.  Note that the mean beam energy is taken from **setup** and
-the optical twiss parameters from the matching command in **lattice**. However, one can overwrite the values here if needed.
 
-So far the input file has the basic set-up, did a matching to the lattice and generated one radiation wavefront and
-one slice of electron distribution, it can be tracked now:
+Time-simulation using much more resources than steady-state simulation and sufficient memory much be provided for storing the entire beam and field in memory.
+Also the output files can be very large. Therefore it is better to reduced them.
+One method is to only generate output after a given count of integration step. This is done in the track namelist with:
 
 ```asm
 &track
+output_step=3
+&end
+```
+In this case after each 3rd integration step there will be an output
+
+The other methode is to exclude certain fields in the output in combination for a collective output of all slices, such as the mean energy in the electron beam.
+This is controlled in the setup namelist:
+
+```asm
+&setup
+...
+field_global_stat = true
+beam_global_stat = true
+exclude_spatial_output = true
+exclude_fft_output = true
 &end
 ```
 
+**exclude_spatial_output** supresses any spatial information (cente rposition and rms sizes) while **exclude__fft_output** affects the field divergent. It has also the 
+benefit that the simulation runs a little bit faster since the 2D FFT of the field wave-fronts can be CPU intensive
+
+Global stats parameters can be fined in the group **Global** in the correpsonding field or beam group.
+
+
+The last step to run a SASE simulation to set the radiaiton power to zero and set the shotnoise parameter in the setup namelist to one.
+
+
 ## Output
+Since the simulation is tracking thousands of slice instead of a single slice for steady-state simulation, Genesis should be started with the mpirun command.
 
-Running the example with ```genesis4 Example1.in``` should be quite fast. The output should look like:
-```
----------------------------------------------
-GENESIS - Version 4.6.3 (beta) has started...
-Compile info: Compiled by reiche at 2023-09-11 14:11:39 [UTC] from Git Commit ID: 4cc8ca48f6a42375139a1e4f7dd13306e5751d34
-Starting Time: Mon Sep 11 17:16:53 2023
+A typical launching command is ```mpirun -np 100 genesis4 Example3.in``` and it will take some time.
+the output is similar to the steady-state simulation except some informations are added on the number of slices and the resulting beam-frame size.
+Since the MPI execution of Genesis requires a symmetric number of slices per node it might not be able to resolve the requested size of the beam-frame.
+To solve this Genesis will add that many slices to the last node that it holds the same amount as the others. This causes an extension of the time-window.
+This depends on the number of modes chosen.
 
-MPI-Comm Size: 1 node
+In addition the shotnoise depends on the number of modes, where 1000 slices are resolved by 20 or 50 nodes. This will be fixed in a future release for a better reporducibility of the simulation results.
 
-Parsing lattice file...
-Matching for periodic solution between z = 0 and z = 9.5 :
-   betax (m) : 8.82088
-   alphax    : -0.724138
-   phix (deg): 44.4024
-   betay (m) : 16.9039
-   alphay    : 1.36263
-   phiy (deg): 47.1917
-Generating input radiation field for HARM = 1 ...
-Generating input particle distribution...
 
-Running Core Simulation...
-Steady-state run
-Initial analysis of electron beam and radiation field...
-  Calculation: 0% done
-  Calculation: 10% done
-  Calculation: 20% done
-  Calculation: 30% done
-  Calculation: 40% done
-  Calculation: 50% done
-  Calculation: 60% done
-  Calculation: 70% done
-  Calculation: 80% done
-  Calculation: 90% done
-  Calculation: 100% done
-Writing output file...
-
-Core Simulation done.
-End of Track
-
-Program is terminating...
-Ending Time: Mon Sep 11 17:17:22 2023
-Total Wall Clock Time: 29.5481 seconds
--------------------------------------
-
-```
-The python script ```Example1.py``` will parse the output file and can be used as a template on how read the output file.
+The python script ```Example3.py``` will parse the output file and can be used as a template on how read the output file.
 To run the script python should have the packages **matplotlib** and **h5py** installed.
 The generated figure should be identical to the following plots.
 
-#### Lattice
+#### Time-dependent beam parameters
 ![Plot1](Plots/Figure_1.png)
 
-Main undulator field and quadrupole is displayed.
+To verify the requested shape the beam current and the energy at the simulation start is plotted.
 
-#### Beam and Field Sizes
+#### Pulse Energy and Far Field Intensity
 
 ![Plots2](Plots/Figure_2.png)
 
-While the electronbeam has the typical alternating oscillation in its beam size due to the FODO lattice, the radiation field starts with 15 micron
-(note this should be half of the value **waist_size** in the input deck) but get smaller due to gain guiding.
-Around 40 m the FEL process reaches saturation and the radiaiton field starts to diverge.
+The Global group in the Field group holds the evolution of the pulse energy and the on-axis far field intensity.
+Since Genesis allows for a lot of higher transverse modes to be emitted they are included in the calculation of the pulse energy for
+SASE simulation. This generates the bump in the semi-log plot. Often it is hard to see if there is an exponential gain.
+For that it is convenient to plot the on-axis far-field intensity. Since it has no contribution from higher transverse modes it is a "cleaner" signal for the FEL process.
 
-#### Radiation Power and Bunching
+#### Radiation Profile
 
 ![Plots3](Plots/Figure_3.png)
 
-In this log plot one can see the growth of the radiation power and bunching factor till saturation is reached around 40 m.
-Note that the little dip in power at around 5 m could be optimize by tuning the FEL. This canbe done either by **gamma0** in the setup namelist
-or the value for **aw** in the lattice file.
+This is also visible in the profiles of the radiation power and farfield intensity. In the start-up the power follows quite closely
+the current profile since it acts more like spontaneous radiation which is proportional to the current. The plot is taken after the first undulator module.
 
+![Plots4](Plots/Figure_4.png)
+Further downstream the power profile has more fluctuation similar to the farfield intensity. 
+
+![Plots5](Plots/Figure_5.png)
+A zoom in the core part of the beam-frame shows that close at saturation the profile of power and far-field intensity has roughly the same shape.
+The slight shift in the power is still causes from some parasitic higher modes and indicates that the transverse coherence is not fully at 100%.
+
+![Plots6](Plots/Figure_6.png)
+A more compact plot showing the evolution is when for each step in z the profile is normalized to its mean values. Otherwise one could not see the start-up regime with the exponential growth of 
+the radiation power. In this 2D plot the spiky structure becomes apparent after about half the undulator length. These spikes more forward in the beam-frame with a group velocity which is less than the spead of light.
+At saturation this changes (the slope of the spikes is slightly changed). Also after saturation the power in the head and tail can reach saturation and the pulse gets longer.

@@ -1,5 +1,7 @@
 # Change Log
-### [4.6.6] 
+### [4.6.6] - 2024/01/25
+- fixed: corrected the output for 'Global/frequency' in the main output file
+- add example for time-depdendent simulations
 - fixed: exclude_current_output switch in &setup had no effect
 - fixed: a requested bunching factor is now reproduced correctly for large values 
 

@@ -9,3 +9,7 @@ In [Example 2](Example2-Dumps/), field and beam dumps are added to the simulatio
 
 ![Example 2, Fig 1](Example2-Dumps/Plots/Figure_1.png)
 
+## Example 3
+In [Example 3](Example3-TimeDependent/), the simulation is extended to time-dependent simulations with the demonstration of profiles to describe any temporary dependence in beam or field parameters
+
+![Example 3, Fig 4](Example3-TimeDependent/Plots/Figure_4.png)
