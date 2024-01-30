@@ -40,6 +40,8 @@ private:
    std::vector<double> cur;
    std::vector<int> count;
 
+   unsigned long long loc_count_workaround;
+
    void resize_and_zero(std::vector<double>&, size_t);
    void resize_and_zero_i(vector<int>& v, size_t n);
 };
