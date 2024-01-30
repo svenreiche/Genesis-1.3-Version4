@@ -190,16 +190,15 @@ bool Diagnostic::writeToOutputFile(Beam *beam, vector<Field*> *field, Setup *set
         global[i]=static_cast<double>(i)*beam->slicelength;
     }
     this->addOutput(1,"s","m",global);
-    double e0=1023.842e-9/beam->reflength;
+    double e0=1239.842e-9/beam->reflength;
     double df=e0*beam->reflength/beam->slicelength/static_cast<double>(ntotal);
     if (ntotal == 1) {
         df=0;
     }
-    e0 -=0.5*df*ntotal;
     for (int i=0; i<ntotal; i++){
-        global[i]=e0+static_cast<double>(i)*df;
+      global[i]=e0+static_cast<double>(i)*df-0.5*df*static_cast<double>(ntotal);
     }
-    this->addOutput(1,"frequency","ev",global);
+    this->addOutput(1,"frequency","eV",global);
 
 
 
@@ -676,6 +675,7 @@ std::map<std::string,OutputInfo> DiagField::getTags(FilterDiagnostics & filter_i
     }
 #endif
     // some basic parameter output
+    tags["gridspacing"] = {true,true,"m"};
     tags["dgrid"]={true,true,"m"};
     tags["ngrid"]={true,true," "};
     return tags;
@@ -949,10 +949,10 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
 #endif
     }
     if (iz ==0){
-        this->storeValue(val,"dgrid",0,field->dgrid);
+        this->storeValue(val,"dgrid",0,field->gridmax);
+        this->storeValue(val,"gridspacing",0,field->dgrid);
         this->storeValue(val,"ngrid",0,static_cast<double> (ngrid));
     }
 
-    return;
 }
 

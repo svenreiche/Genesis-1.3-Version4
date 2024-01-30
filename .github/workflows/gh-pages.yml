@@ -61,7 +61,7 @@ jobs:
         with:
           path: ./site
   deploy:
-    # if: ${{ github.repository_owner == 'svenreiche' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags')) }}
+    if: ${{ github.repository_owner == 'svenreiche' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags')) }}
     needs: build
     name: "Deploy docs"
 

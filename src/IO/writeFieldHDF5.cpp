@@ -55,6 +55,10 @@ bool WriteFieldHDF5::writeMain(string fileroot, Field *field)
   int smax=smin+field->field.size();
 
   // write global data
+  hid_t gid=H5Gcreate(fid,"Meta",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  this->writeVersion(gid);
+  H5Gclose(gid);
+
   this->writeGlobal(field->xlambda,field->slicelength,field->s0,field->dgrid,field->ngrid,ntotal);
 
   /*** if enabled, dump complex field data to file ***/
@@ -73,7 +77,7 @@ bool WriteFieldHDF5::writeMain(string fileroot, Field *field)
       s0=-1;
       char name[16];
       sprintf(name,"slice%6.6d",i+1);
-      hid_t gid=H5Gcreate(fid,name,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+      gid=H5Gcreate(fid,name,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
       if ((i>=smin) && (i<smax)){
         s0=0;    // select the slice which is writing

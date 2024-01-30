@@ -75,8 +75,11 @@ void Output::writeMeta(Undulator *und)
   writeMetaWorker(und, gid);
   H5Gclose(gid);
 }
+
 void Output::writeMetaWorker(Undulator *und, hid_t gid)
 {
+  this->writeVersion(gid);
+  /*
   VersionInfo vi;
   hid_t gidsub;
   vector<double> tmp(1,0);
@@ -94,6 +97,7 @@ void Output::writeMetaWorker(Undulator *und, hid_t gid)
   string s_bi(vi.Build());
   this->writeSingleNodeString(gidsub,"Build_Info", &s_bi);
   H5Gclose(gidsub);
+  */
 
   time_t timer;
   time(&timer);

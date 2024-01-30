@@ -13,6 +13,7 @@
 
 #include <hdf5.h>
 
+#include "version.h"
 
 using namespace std;
 
@@ -27,6 +28,7 @@ class HDF5Base{
   int s0;
   hsize_t ds; // size in s for 2D array inwrite buffer
 
+  void  writeVersion(hid_t gid);
   bool create_outfile(hid_t *, string);
   
   // function from output and wrideHDF5beam/field
