@@ -1,5 +1,5 @@
 #include <cmath>
-#include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <mpi.h>
@@ -152,9 +152,11 @@ bool FieldManipulator::apply_SPP(Field *p_fld, Time *time, FieldManipulator_SPP_
 	}
 
 	const int ngrid = p_fld->ngrid;
-
 	const int icenter = (ngrid-1)/2;
-	assert((ngrid%2)==1); // In GENESIS, ngrid is always odd. Just to be sure.
+	if((ngrid%2)!=1) {
+		// In GENESIS, ngrid is always odd. Just to be sure...
+		abort();
+	}
 
 	int iy, ix;
 	for(int idslice=0; idslice < time->getNodeNSlice(); idslice++)
