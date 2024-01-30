@@ -7,6 +7,25 @@ extern bool MPISingle;
 HDF5Base::HDF5Base(){}
 HDF5Base::~HDF5Base(){}
 
+void HDF5Base::writeVersion(hid_t gid){
+    VersionInfo vi;
+    hid_t gidsub;
+    vector<double> tmp(1,0);
+    gidsub=H5Gcreate(gid,"Version",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+    tmp[0]=vi.Major();
+    this->writeSingleNode(gidsub,"Major"," ",&tmp);
+    tmp[0]=vi.Minor();
+    this->writeSingleNode(gidsub,"Minor"," ",&tmp);
+    tmp[0]=vi.Rev();
+    this->writeSingleNode(gidsub,"Revision"," ",&tmp);
+    tmp[0]=0;
+    if (vi.isBeta()) { tmp[0]=1;}
+    this->writeSingleNode(gidsub,"Beta"," ",&tmp);
+    string s_bi(vi.Build());
+    this->writeSingleNodeString(gidsub,"Build_Info", &s_bi);
+    H5Gclose(gidsub);
+}
+
 // from 'Output::open' (dev branch as of Dec-2022)
 bool HDF5Base::create_outfile(hid_t *fidout, string file)
 {

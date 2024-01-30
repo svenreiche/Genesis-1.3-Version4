@@ -32,6 +32,11 @@ bool WriteBeamHDF5::write(string fileroot, Beam *beam, int stride)
 
   // write global data
   // this->writeGlobal(beam->nbins,beam->one4one,beam->reflength,beam->slicelength,beam->s0,ntotal);
+
+  hid_t gid=H5Gcreate(fid,"Meta",H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+  this->writeVersion(gid);
+  H5Gclose(gid);
+
   writeGlobal(beam, ntotal);
 
   /* write beam: loop through slices */
@@ -57,7 +62,7 @@ bool WriteBeamHDF5::write(string fileroot, Beam *beam, int stride)
 
     char name[16];
     sprintf(name,"slice%6.6d",i+1);
-    hid_t gid=H5Gcreate(fid,name,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
+    gid=H5Gcreate(fid,name,H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT);
 
     int islice= i % beam->beam.size() ;   // count inside the given slice range
 

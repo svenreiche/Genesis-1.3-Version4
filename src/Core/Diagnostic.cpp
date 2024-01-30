@@ -675,6 +675,7 @@ std::map<std::string,OutputInfo> DiagField::getTags(FilterDiagnostics & filter_i
     }
 #endif
     // some basic parameter output
+    tags["gridspacing"] = {true,true,"m"};
     tags["dgrid"]={true,true,"m"};
     tags["ngrid"]={true,true," "};
     return tags;
@@ -948,10 +949,10 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
 #endif
     }
     if (iz ==0){
-        this->storeValue(val,"dgrid",0,field->dgrid);
+        this->storeValue(val,"dgrid",0,field->gridmax);
+        this->storeValue(val,"gridspacing",0,field->dgrid);
         this->storeValue(val,"ngrid",0,static_cast<double> (ngrid));
     }
 
-    return;
 }
 
