@@ -58,8 +58,8 @@ Labels are used to identify elements and are referred to in the line element. Mo
 ### corrector
 
 - `l` (*double, 0, [m]*): Length of the corrector in meter.
-- `cx` (*double, 0, [m]*): Kick angle in $x$ in units of $\gamma \beta_x$.
-- `cy` (*double, 0, [m]*): Kick angle in $y$ in units of $\gamma \beta_y$.
+- `cx` (*double, 0, [rad]*): Kick angle in $x$ in units of radians.
+- `cy` (*double, 0, [rad]*): Kick angle in $y$ in units of radians.
 
 [Back](#supported-lattice-elements)
 
