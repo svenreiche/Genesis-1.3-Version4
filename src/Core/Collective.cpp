@@ -13,6 +13,8 @@ Collective::Collective()
   transient=false;
   ztrans=0;
   radius=1.0;
+
+  loc_count_workaround=0;
 }
 
 Collective::~Collective()
@@ -216,9 +218,16 @@ void Collective::update(Beam *beam, double zpos)
     /* Lechner, 2024-Jan: workaround (range checking) from commit id 28dd1fb, use only until issue is fixed */
     if(idx<0) {
         const double eps=1.0e-10;
+        loc_count_workaround++;
         if(floorarg >= -eps) {
-			idx=0;
-            cout << "workaround/hack in Collective.cpp: set idx=" << idx << ", floorarg=" << floorarg << endl;
+            idx=0;
+            if(1==loc_count_workaround) {
+                cout << "workaround/hack in Collective.cpp: set idx=" << idx << ", floorarg=" << floorarg << endl;
+            } else if (2==loc_count_workaround) {
+                cout << "workaround/hack in Collective.cpp: set idx=" << idx << ", floorarg=" << floorarg << " (not reporting further interventions)" << endl;
+            } else {
+                /* only reporting the first two interventions */
+            }
         } else {
             cout << "!!! BADSTUFF in Collective.cpp: idx=" << idx << ", floorarg=" << floorarg << endl;
             abort();
