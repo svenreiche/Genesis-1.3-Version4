@@ -197,3 +197,6 @@ add_dependencies(genesis13 get_git_hash)
 add_executable(genesis4 src/Main/mainwrap.cpp)
 
 target_link_libraries(genesis4 genesis13 ${_libraries})
+
+
+add_subdirectory(misc/plugin_testbench)
