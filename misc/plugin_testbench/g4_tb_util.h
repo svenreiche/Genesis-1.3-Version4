@@ -1,6 +1,7 @@
 #ifndef __TB_UTIL_H
 #define __TB_UTIL_H
 
+#include <fstream>
 #include <string>
 
 // class holding the configuration data
@@ -8,7 +9,7 @@
 class TB_Cfg {
 public:
 	TB_Cfg();
-	bool update_from_stream(void);
+	bool update_from_stream(std::ifstream&);
 
 
 	std::string libfile   {"./libdemo.so"};

@@ -80,11 +80,8 @@ bool TB_Cfg::update_param(const string key, const string value)
 	return(false);
 }
 
-bool TB_Cfg::update_from_stream(void)
+bool TB_Cfg::update_from_stream(ifstream& ifs)
 {
-	ifstream ifs;
-
-	ifs.open("demo_params.txt", ifstream::in);
 	int lcntr=1;
 	string linebuf;
 	while(getline(ifs, linebuf)) {
@@ -97,14 +94,13 @@ bool TB_Cfg::update_from_stream(void)
 		string right = linebuf.substr(pos+1,string::npos);
 		eat_whitespaces(left);
 		eat_whitespaces(right);
-		cout << "L:" << left << ", R:" << right << endl;
+		// cout << "L:" << left << ", R:" << right << endl;
 		if(!update_param(left,right)) {
 			cout << "line " << lcntr << ": error processing parameter " << left << endl;
 		}
 
 		lcntr++;
 	}
-	ifs.close();
 
 	return(true);
 }

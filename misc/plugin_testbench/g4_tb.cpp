@@ -1,3 +1,9 @@
+/*
+ * Testbench for plugins
+ *
+ * Christoph Lechner, European XFEL, 2024-Apr
+ */
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
@@ -11,12 +17,12 @@
 
 using namespace std;
 
-void prepare_field(TB_Cfg *cfg, vector<Field *> *fieldin)
+void prepare_field(TB_Cfg *ptbcfg, vector<Field *> *fieldin)
 {
-	/*** based on LoadField::init in LoadField.cpp ***/
+	/* based on LoadField::init in LoadField.cpp */
 	Field *field = new Field;
-	const int ngrid = cfg->ngrid;
-	field->init(cfg->nslice,ngrid,cfg->dgrid,cfg->lambda,cfg->sample*cfg->lambda,cfg->s0,cfg->harm);
+	const int ngrid = ptbcfg->ngrid;
+	field->init(ptbcfg->nslice,ngrid,ptbcfg->dgrid,ptbcfg->lambda,ptbcfg->sample*ptbcfg->lambda,ptbcfg->s0,ptbcfg->harm);
 	fieldin->push_back(field);
 	int idx=fieldin->size()-1;
 
@@ -24,23 +30,23 @@ void prepare_field(TB_Cfg *cfg, vector<Field *> *fieldin)
 	FieldSlice slice;
 	GaussHermite gh;
 
-	for (int j=0; j<cfg->nslice; j++)
+	for (int j=0; j<ptbcfg->nslice; j++)
 	{
 		// int i=j+time->getNodeOffset(); // FIXME
 		int i=j; // +time->getNodeOffset(); // FIXME
-		slice.lambda = cfg->lambda;
-		slice.power = 1e6;
+		slice.lambda = ptbcfg->lambda;
+		slice.power =  ptbcfg->power;
 		slice.phase = 0;
 		slice.z0 = 0;
-		slice.w0 = 20e-6;
+		slice.w0 = ptbcfg->w0;
 		slice.xcen = 0;
 		slice.ycen = 0;
 		slice.xangle = 0;
 		slice.yangle = 0;
 		slice.nx = 0;
 		slice.ny = 0;
-		slice.harm = cfg->harm;
-		gh.loadGauss(fieldslice,&slice,cfg->dgrid,ngrid);
+		slice.harm = ptbcfg->harm;
+		gh.loadGauss(fieldslice,&slice,ptbcfg->dgrid,ngrid);
 		for (int k=0; k<ngrid*ngrid;k++) {
 			fieldin->at(idx)->field[j].at(k)=fieldslice[k];
 		}
@@ -48,32 +54,32 @@ void prepare_field(TB_Cfg *cfg, vector<Field *> *fieldin)
 	delete[] fieldslice;
 }
 
-void dump_result_mtx(TB_Cfg *cfg, const vector<double>& d)
+void dump_result_mtx(TB_Cfg *ptbcfg, const vector<double>& d)
 {
 	// Fast index is slice id
 	size_t idx=0;
-	for(int iz=0; iz<cfg->nz; iz++) {
+	for(int iz=0; iz<ptbcfg->nz; iz++) {
 		cout << "      [";
 		for(int idslice=0; ; ) {
 			cout << d.at(idx);
 			idx++;
 			idslice++;
-			if(idslice>=cfg->nslice) {
+			if(idslice>=ptbcfg->nslice) {
 				break;
 			}
 			cout << ",";
 		}
 		cout << "]";
-		if(iz<(cfg->nz-1))
+		if(iz<(ptbcfg->nz-1))
 			cout << ",";
 		cout << endl;
 	}
 }
-void dump_results(TB_Cfg *pcfg, const map< string,vector<double> >& r)
+void dump_results(TB_Cfg *ptbcfg, const map< string,vector<double> >& r)
 {
 	for(auto const &obj: r) {
 		cout << "   data in \"" << obj.first << "\"" << endl;
-		dump_result_mtx(pcfg, obj.second);
+		dump_result_mtx(ptbcfg, obj.second);
 	}
 }
 
@@ -85,29 +91,51 @@ int main(int argc, char **argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+	if(argc!=2) {
+		if(rank==0) {
+			cout << "This program requires one parameter: The name of the configuration file." << endl << "Exiting." << endl;
+		}
+		MPI_Finalize();
+		exit(1);
+	}
+	string fncfg(argv[1]);
+
 	/* prepare the configuration parameters */
-	TB_Cfg *pcfg = new TB_Cfg;
-	// TODO: call parser here
-	pcfg->update_from_stream();
+	TB_Cfg *ptbcfg = new TB_Cfg;
 
-	exit(0);
+	ifstream ifs;
+	ifs.open(fncfg, ifstream::in);
+	if(!ifs.good()) {
+		if(rank==0) {
+			cout << "Issue reading configuration file '" << fncfg << "'." << endl << "Exiting." << endl;
+		}
+		MPI_Finalize();
+		exit(1);
+	}
+	if(rank==0) {
+		cout << "opened config file '" << fncfg << "." << endl;
+	}
+	ptbcfg->update_from_stream(ifs);
+	ifs.close();
+	if(rank==0) {
+		cout << "processed config file." << endl << endl;
+	}
 
-	/*** copied from RegPlugin.cpp (commit id 4681421, date: 2024-03-20) ***/
-	string libfile = "./libdemo.so";
-	string obj_prefix = "plugin";
-	string parameter = "";
-	bool verbose = false;
-	bool interface_verbose = false;
 
+	/***********************************************************/
+	/*** set up library interface and attempt to load plugin ***/
+	/***********************************************************/
+
+	/* based on RegPlugin.cpp (commit id 4681421, date: 2024-03-20) */
 	DiagFieldPluginCfg cfg;
-	cfg.obj_prefix = obj_prefix;
-	cfg.libfile = libfile;
-	cfg.parameter = parameter;
-	cfg.lib_verbose = verbose; // controls verbosity in the loaded .so lib
-	cfg.interface_verbose = interface_verbose;
+	cfg.libfile = ptbcfg->libfile;
+	cfg.parameter = ptbcfg->parameter;
+	cfg.obj_prefix = "plugin";
+	cfg.lib_verbose = false; // controls verbosity in the loaded .so lib
+	cfg.interface_verbose = false;
 
    
-	/*** copied from Gencore.cpp (commit id 4681421, date: 2024-03-20) ***/
+	/* copied from Gencore.cpp (commit id 4681421, date: 2024-03-20) */
 	if(rank==0) {
 		cout << "Setting up DiagFieldHook for libfile=\"" << cfg.libfile << "\", obj_prefix=\"" << cfg.obj_prefix << "\"" << endl;
 	}
@@ -137,12 +165,14 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	const size_t cfgout_size = pcfg->nslice*pcfg->nz;
+	/**********************/
+	/*** prepare fields ***/
+	/**********************/
+	const size_t cfgout_size = ptbcfg->nslice*ptbcfg->nz;
 	vector<Field *> *fields = new vector<Field *>;
-	prepare_field(pcfg, fields);
-	/*** Remark, CL, 2024-03-28: Not using field import code from src/Loading/ImportField.cpp yet, because one would have to prepare an instance of class 'Setup'. ***/
-
-	/*** setup data structures for diagnostics data, code from Diagnostic::init in Diagnostic.cpp ***/
+	prepare_field(ptbcfg, fields);
+	// Remark, CL, 2024-03-28: Not using field import code from src/Loading/ImportField.cpp yet, because one would have to prepare an instance of class 'Setup'.
+	/* setup data structures for diagnostics data, code from Diagnostic::init in Diagnostic.cpp */
     
 	// Remark on data organization:
 	// in Diagnostic.h:
@@ -155,8 +185,10 @@ int main(int argc, char **argv)
 		results[tag.first].resize(cfgout_size);
 	}
 
-	/*** NOW, run the diagnostics code ***/
-	for(int iz=0; iz<pcfg->nz; iz++)
+	/**********************************************/
+	/*** run the diagnostics code in the plugin ***/
+	/**********************************************/
+	for(int iz=0; iz<ptbcfg->nz; iz++)
 	{
 		for(int ifld=0; ifld<fields->size(); ifld++) {
 			/* this calls the code provided by the plugin, so put breakpoints there if needed */
@@ -164,8 +196,8 @@ int main(int argc, char **argv)
 		}
 
 		// scale the field for the test
-		for (int j=0; j<pcfg->nslice; j++) {
-			for (int k=0; k<pcfg->ngrid*pcfg->ngrid;k++){
+		for (int j=0; j<ptbcfg->nslice; j++) {
+			for (int k=0; k<ptbcfg->ngrid*ptbcfg->ngrid;k++){
 				const int idx=0;
 				fields->at(idx)->field[j].at(k)*=2.0; 
 			}
@@ -173,9 +205,10 @@ int main(int argc, char **argv)
 	}
 
 	if(0==rank) {
-		cout << "**********************************" << endl;
-		cout << "Dumping generated diagnostics data" << endl;
-		dump_results(pcfg, results);
+		cout << endl
+		     << "**********************************" << endl
+		     << "Dumping generated diagnostics data" << endl;
+		dump_results(ptbcfg, results);
 	}
     
 	/*** TODO: clean up all resources, unload the plugin module etc. ***/
@@ -184,7 +217,7 @@ int main(int argc, char **argv)
 		delete fields->at(kk);
 	}
 	delete fields;
-	delete pcfg;
+	delete ptbcfg;
 
 	MPI_Finalize();
 	return(0);
