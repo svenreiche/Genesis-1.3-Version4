@@ -115,10 +115,13 @@ int main(int argc, char **argv)
 	if(rank==0) {
 		cout << "opened config file '" << fncfg << "." << endl;
 	}
-	ptbcfg->update_from_stream(ifs);
+	bool parse_ok=ptbcfg->update_from_stream(ifs);
 	ifs.close();
 	if(rank==0) {
-		cout << "processed config file." << endl << endl;
+		if(!parse_ok)
+			cout << "processed config file (there were errors)." << endl << endl;
+		else
+			cout << "processed config file." << endl << endl;
 	}
 
 
@@ -195,13 +198,15 @@ int main(int argc, char **argv)
 			pdfh->getValues(fields->at(ifld), results, iz);
 		}
 
-		// scale the field for the test
+#if 0
+		// scale the field for test of data organization
 		for (int j=0; j<ptbcfg->nslice; j++) {
 			for (int k=0; k<ptbcfg->ngrid*ptbcfg->ngrid;k++){
 				const int idx=0;
 				fields->at(idx)->field[j].at(k)*=2.0; 
 			}
 		}
+#endif
 	}
 
 	if(0==rank) {

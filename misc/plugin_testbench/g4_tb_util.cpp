@@ -82,6 +82,7 @@ bool TB_Cfg::update_param(const string key, const string value)
 
 bool TB_Cfg::update_from_stream(ifstream& ifs)
 {
+	bool ok=true;
 	int lcntr=1;
 	string linebuf;
 	while(getline(ifs, linebuf)) {
@@ -96,11 +97,13 @@ bool TB_Cfg::update_from_stream(ifstream& ifs)
 		eat_whitespaces(right);
 		// cout << "L:" << left << ", R:" << right << endl;
 		if(!update_param(left,right)) {
+			// parsing of this parameter-value combination did not work -> report and continue
 			cout << "line " << lcntr << ": error processing parameter " << left << endl;
+			ok = false;
 		}
 
 		lcntr++;
 	}
 
-	return(true);
+	return(ok);
 }
