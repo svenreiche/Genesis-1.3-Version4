@@ -85,6 +85,13 @@ int main(int argc, char **argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+	/* prepare the configuration parameters */
+	TB_Cfg *pcfg = new TB_Cfg;
+	// TODO: call parser here
+	pcfg->update_from_stream();
+
+	exit(0);
+
 	/*** copied from RegPlugin.cpp (commit id 4681421, date: 2024-03-20) ***/
 	string libfile = "./libdemo.so";
 	string obj_prefix = "plugin";
@@ -130,7 +137,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	TB_Cfg *pcfg = new TB_Cfg;
+	const size_t cfgout_size = pcfg->nslice*pcfg->nz;
 	vector<Field *> *fields = new vector<Field *>;
 	prepare_field(pcfg, fields);
 	/*** Remark, CL, 2024-03-28: Not using field import code from src/Loading/ImportField.cpp yet, because one would have to prepare an instance of class 'Setup'. ***/
@@ -145,8 +152,7 @@ int main(int argc, char **argv)
 
 	FilterDiagnostics filter;
 	for(auto const &tag: pdfh->getTags(filter)) {
-		int size = pcfg->nslice*pcfg->nz;
-		results[tag.first].resize(size);
+		results[tag.first].resize(cfgout_size);
 	}
 
 	/*** NOW, run the diagnostics code ***/
@@ -166,9 +172,11 @@ int main(int argc, char **argv)
 		}
 	}
 
-	cout << "**********************************" << endl;
-	cout << "Dumping generated diagnostics data" << endl;
-	dump_results(pcfg, results);
+	if(0==rank) {
+		cout << "**********************************" << endl;
+		cout << "Dumping generated diagnostics data" << endl;
+		dump_results(pcfg, results);
+	}
     
 	/*** TODO: clean up all resources, unload the plugin module etc. ***/
 
