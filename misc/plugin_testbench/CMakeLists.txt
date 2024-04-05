@@ -1,6 +1,9 @@
 project(g4_tb)
 
-add_executable(g4_tb g4_tb.cpp)
+add_executable(g4_tb
+	g4_tb.cpp
+	g4_tb_util.cpp
+)
 
 ### copied from top-level CMakeLists.txt file ###
 # The -DFFTW=1 is cruical: otherwise the storage layout of class

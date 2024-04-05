@@ -7,24 +7,16 @@
 #include "DiagnosticHook.h"
 #include "DiagnosticHookS.h"
 #include "GaussHermite.h"
+#include "g4_tb_util.h"
 
 using namespace std;
 
-const int nslice=2;
-
-
-void prepare_field(vector<Field *> *fieldin)
+void prepare_field(TB_Cfg *cfg, vector<Field *> *fieldin)
 {
 	/*** based on LoadField::init in LoadField.cpp ***/
 	Field *field = new Field;
-	// field->init(time->getNodeNSlice(),ngrid,dgrid,lambda,sample*lambda,s[0],harm);
-	const double dgrid = 100e-6;
-	const int ngrid = 151;
-	const double lambda = 1e-10;
-	const int sample = 1;
-	const double s0 = 0;
-	const int harm = 1;
-	field->init(nslice,ngrid,dgrid,lambda,sample*lambda,s0,harm);
+	const int ngrid = cfg->ngrid;
+	field->init(cfg->nslice,ngrid,cfg->dgrid,cfg->lambda,cfg->sample*cfg->lambda,cfg->s0,cfg->harm);
 	fieldin->push_back(field);
 	int idx=fieldin->size()-1;
 
@@ -32,52 +24,56 @@ void prepare_field(vector<Field *> *fieldin)
 	FieldSlice slice;
 	GaussHermite gh;
 
-	for (int j=0; j<nslice; j++)
+	for (int j=0; j<cfg->nslice; j++)
 	{
 		// int i=j+time->getNodeOffset(); // FIXME
 		int i=j; // +time->getNodeOffset(); // FIXME
-		slice.lambda=lambda;
-		slice.power=1e6;
-		slice.phase=0;
-		slice.z0=0;
-		slice.w0=20e-6;
-		slice.xcen=0;
-		slice.ycen=0;
-		slice.xangle=0;
-		slice.yangle=0;
-		slice.nx=0;
-		slice.ny=0;
-		slice.harm=harm;
-		gh.loadGauss(fieldslice,&slice,dgrid,ngrid);
-		for (int k=0; k<ngrid*ngrid;k++){
-			fieldin->at(idx)->field[j].at(k)=fieldslice[k]; 
-		}      
+		slice.lambda = cfg->lambda;
+		slice.power = 1e6;
+		slice.phase = 0;
+		slice.z0 = 0;
+		slice.w0 = 20e-6;
+		slice.xcen = 0;
+		slice.ycen = 0;
+		slice.xangle = 0;
+		slice.yangle = 0;
+		slice.nx = 0;
+		slice.ny = 0;
+		slice.harm = cfg->harm;
+		gh.loadGauss(fieldslice,&slice,cfg->dgrid,ngrid);
+		for (int k=0; k<ngrid*ngrid;k++) {
+			fieldin->at(idx)->field[j].at(k)=fieldslice[k];
+		}
 	}
 	delete[] fieldslice;
 }
 
-void dump_result_mtx(const vector<double> d)
+void dump_result_mtx(TB_Cfg *cfg, const vector<double>& d)
 {
-	cout << "      [";
-
-	// TODO: Organize output as matrix, dimensions being 'nslice' and 'nz'
-	for(int kk=0; ; ) {
-		cout << d.at(kk);
-		kk++;
-		if(kk>=d.size()) {
-			break;
+	// Fast index is slice id
+	size_t idx=0;
+	for(int iz=0; iz<cfg->nz; iz++) {
+		cout << "      [";
+		for(int idslice=0; ; ) {
+			cout << d.at(idx);
+			idx++;
+			idslice++;
+			if(idslice>=cfg->nslice) {
+				break;
+			}
+			cout << ",";
 		}
-		cout << ",";
+		cout << "]";
+		if(iz<(cfg->nz-1))
+			cout << ",";
+		cout << endl;
 	}
-
-	cout << "]";
-	cout << endl;
 }
-void dump_results(const map< string,vector<double> > r)
+void dump_results(TB_Cfg *pcfg, const map< string,vector<double> >& r)
 {
 	for(auto const &obj: r) {
 		cout << "   data in \"" << obj.first << "\"" << endl;
-		dump_result_mtx(obj.second);
+		dump_result_mtx(pcfg, obj.second);
 	}
 }
 
@@ -128,12 +124,15 @@ int main(int argc, char **argv)
 	} else {
 		delete pdfh;
 		if(rank==0) {
-			cout << "failed to set up DiagFieldHook, not registering" << endl;
+			cout << "failed to set up DiagFieldHook, exiting" << endl;
 		}
+		MPI_Finalize();
+		exit(1);
 	}
 
+	TB_Cfg *pcfg = new TB_Cfg;
 	vector<Field *> *fields = new vector<Field *>;
-	prepare_field(fields);
+	prepare_field(pcfg, fields);
 	/*** Remark, CL, 2024-03-28: Not using field import code from src/Loading/ImportField.cpp yet, because one would have to prepare an instance of class 'Setup'. ***/
 
 	/*** setup data structures for diagnostics data, code from Diagnostic::init in Diagnostic.cpp ***/
@@ -145,26 +144,39 @@ int main(int argc, char **argv)
 	map< string,vector<double> > results;
 
 	FilterDiagnostics filter;
-	const int nz=2;
 	for(auto const &tag: pdfh->getTags(filter)) {
-		int size = nslice*nz;
+		int size = pcfg->nslice*pcfg->nz;
 		results[tag.first].resize(size);
 	}
 
 	/*** NOW, run the diagnostics code ***/
-	for(int iz=0; iz<nz; iz++)
+	for(int iz=0; iz<pcfg->nz; iz++)
 	{
 		for(int ifld=0; ifld<fields->size(); ifld++) {
 			/* this calls the code provided by the plugin, so put breakpoints there if needed */
 			pdfh->getValues(fields->at(ifld), results, iz);
 		}
+
+		// scale the field for the test
+		for (int j=0; j<pcfg->nslice; j++) {
+			for (int k=0; k<pcfg->ngrid*pcfg->ngrid;k++){
+				const int idx=0;
+				fields->at(idx)->field[j].at(k)*=2.0; 
+			}
+		}
 	}
 
 	cout << "**********************************" << endl;
 	cout << "Dumping generated diagnostics data" << endl;
-	dump_results(results);
+	dump_results(pcfg, results);
     
 	/*** TODO: clean up all resources, unload the plugin module etc. ***/
+
+	for(int kk=0; kk<fields->size(); kk++) {
+		delete fields->at(kk);
+	}
+	delete fields;
+	delete pcfg;
 
 	MPI_Finalize();
 	return(0);
