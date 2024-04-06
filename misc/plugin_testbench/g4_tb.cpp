@@ -314,18 +314,22 @@ int main(int argc, char **argv)
 	map< string,vector<double> > glbl_results; // !only populated with collected data on rank 0!
 	res_collect(ptbcfg, glbl_results, results);
 	if(0==rank) {
+		const char *fnout = "plugin_data.txt";
 		ofstream ofs;
-		ofs.open("plugin_data.txt", ofstream::out);
+		ofs.open(fnout, ofstream::out);
 		dump_results_core(ofs, glbl_results, ptbcfg->nz, mpisize*ptbcfg->nslice);
 		ofs.close();
+
+		cout << "Data collected from all processes written to file '" << fnout << "'" << endl;
 	}
     
-	/*** TODO: clean up all resources, unload the plugin module etc. ***/
+	/*** TODO: clean up all resources ***/
 
 	for(int kk=0; kk<fields->size(); kk++) {
 		delete fields->at(kk);
 	}
 	delete fields;
+	delete pdfh; // unloads library
 	delete ptbcfg;
 
 	MPI_Finalize();
