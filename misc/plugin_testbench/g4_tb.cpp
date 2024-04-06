@@ -56,38 +56,42 @@ void prepare_field(TB_Cfg *ptbcfg, vector<Field *> *fieldin)
 	delete[] fieldslice;
 }
 
-void dump_result_mtx(TB_Cfg *ptbcfg, const vector<double>& d)
+void dump_result_mtx(ostream& os, const vector<double>& d, const int nz, const int nslice)
 {
 	// Fast index is slice id
 	size_t idx=0;
-	for(int iz=0; iz<ptbcfg->nz; iz++) {
-		cout << "      [";
+	for(int iz=0; iz<nz; iz++) {
+		os << "      [";
 		for(int idslice=0; ; ) {
-			cout << d.at(idx);
+			os << d.at(idx);
 			idx++;
 			idslice++;
-			if(idslice>=ptbcfg->nslice) {
+			if(idslice>=nslice) {
 				break;
 			}
-			cout << ",";
+			os << ",";
 		}
-		cout << "]";
-		if(iz<(ptbcfg->nz-1))
-			cout << ",";
-		cout << endl;
+		os << "]";
+		if(iz<(nz-1))
+			os << ",";
+		os << endl;
 	}
 }
-void dump_results(TB_Cfg *ptbcfg, const map< string,vector<double> >& r)
+void dump_results_core(ostream &os, const map< string,vector<double> >& r, const int nz, const int nslice)
 {
 	for(auto const &obj: r) {
-		cout << "   data in \"" << obj.first << "\"" << endl;
-		dump_result_mtx(ptbcfg, obj.second);
+		os << "   data in \"" << obj.first << "\"" << endl;
+		dump_result_mtx(os, obj.second, nz, nslice);
 	}
 }
-
-void xyz(TB_Cfg *ptbcfg, const map< string,vector<double> >& localdata)
+void dump_results(ostream &os, TB_Cfg *ptbcfg, const map< string,vector<double> >& r)
 {
-	map< string,vector<double> > globaldata; // only used on rank0
+	dump_results_core(os, r, ptbcfg->nz, ptbcfg->nslice);
+}
+
+void res_collect(TB_Cfg *ptbcfg, map< string,vector<double> > & globaldata, const map< string,vector<double> >& localdata)
+{
+	// remark: globaldata is only used on rank 0
 	int rank, mpisize;
 
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -278,29 +282,37 @@ int main(int argc, char **argv)
 			/* this calls the code provided by the plugin, so put breakpoints there if needed */
 			pdfh->getValues(fields->at(ifld), results, iz);
 		}
-
-#if 1
-		// scale the field for test of data organization
-		for (int j=0; j<ptbcfg->nslice; j++) {
-			for (int k=0; k<ptbcfg->ngrid*ptbcfg->ngrid;k++){
-				const int idx=0;
-				fields->at(idx)->field[j].at(k)*=2.0*rank;
-			}
-		}
-#endif
 	}
+
+#if 0
+	// test of data organization
+	for(int iz=0; iz<ptbcfg->nz; iz++) {
+		for (int is=0; is<ptbcfg->nslice; is++) {
+			unsigned long long x = is + rank*ptbcfg->nslice; // 'global' slice id
+			x = 10*iz;
+			results["plugin/abc"].at(iz*ptbcfg->nslice + is) = x;
+		}
+	}
+#endif
 
 	if(0==rank) {
 		cout << endl
 		     << "**********************************" << endl
 		     << "Dumping generated diagnostics data" << endl;
-		dump_results(ptbcfg, results);
+		dump_results(cout, ptbcfg, results);
 	}
 
 	/***************************************************************/
 	/*** collect data from all processes on the MPI communicator ***/
 	/***************************************************************/
-	xyz(ptbcfg, results);
+	map< string,vector<double> > glbl_results; // !only populated with collected data on rank 0!
+	res_collect(ptbcfg, glbl_results, results);
+	if(0==rank) {
+		ofstream ofs;
+		ofs.open("stuff.txt", ofstream::out);
+		dump_results_core(ofs, glbl_results, ptbcfg->nz, mpisize*ptbcfg->nslice);
+		ofs.close();
+	}
     
 	/*** TODO: clean up all resources, unload the plugin module etc. ***/
 
