@@ -79,9 +79,15 @@ void dump_result_mtx(ostream& os, const vector<double>& d, const int nz, const i
 }
 void dump_results_core(ostream &os, const map< string,vector<double> >& r, const int nz, const int nslice)
 {
+	int counter = 1; // counter to have unique object names
 	for(auto const &obj: r) {
-		os << "   data in \"" << obj.first << "\"" << endl;
+		// formatting of data matrix optimized for numpy.array
+		os << "# data in \"" << obj.first << "\"" << endl;
+		os << "data" << counter << " = np.array([" << endl;
 		dump_result_mtx(os, obj.second, nz, nslice);
+		os << "])" << endl << endl;
+
+		counter++;
 	}
 }
 void dump_results(ostream &os, TB_Cfg *ptbcfg, const map< string,vector<double> >& r)
@@ -198,15 +204,15 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	if(rank==0) {
-		cout << "opened config file '" << fncfg << "." << endl;
+		cout << "opened config file '" << fncfg << "'." << endl;
 	}
 	bool parse_ok=ptbcfg->update_from_stream(ifs);
 	ifs.close();
 	if(rank==0) {
 		if(!parse_ok)
-			cout << "processed config file (there were errors)." << endl << endl;
+			cout << "   processed config file (there were errors)." << endl << endl;
 		else
-			cout << "processed config file." << endl << endl;
+			cout << "   processed config file." << endl << endl;
 	}
 
 
@@ -309,7 +315,7 @@ int main(int argc, char **argv)
 	res_collect(ptbcfg, glbl_results, results);
 	if(0==rank) {
 		ofstream ofs;
-		ofs.open("stuff.txt", ofstream::out);
+		ofs.open("plugin_data.txt", ofstream::out);
 		dump_results_core(ofs, glbl_results, ptbcfg->nz, mpisize*ptbcfg->nslice);
 		ofs.close();
 	}

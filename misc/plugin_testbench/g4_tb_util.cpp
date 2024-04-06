@@ -1,3 +1,8 @@
+/*
+ * Helper functions for plugin testbench.
+ *
+ * Christoph Lechner, European XFEL, 2024-Apr.
+ */
 #include <fstream>
 #include <iostream>
 #include <cstdio>
