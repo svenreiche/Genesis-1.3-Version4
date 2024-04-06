@@ -7,8 +7,9 @@
 
 #include <getopt.h>
 
-//#include "VersionInfo.h"
 #include "version.h"
+
+
 using namespace std;
 
 // very basic wrapper for genesis. Most of the genesis stuff is moved into genmain.

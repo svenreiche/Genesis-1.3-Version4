@@ -12,7 +12,6 @@
 #include "Beam.h"
 #include "Field.h"
 #include "Undulator.h"
-#include "version.h"
 
 using namespace std;
 

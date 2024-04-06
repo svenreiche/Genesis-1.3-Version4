@@ -1,4 +1,6 @@
 #include "Output.h"
+#include "version.h"
+
 #include <stdlib.h>
 
 // Meta info
