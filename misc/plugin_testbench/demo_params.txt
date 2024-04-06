@@ -1,8 +1,6 @@
 power = 1
 nslice=7
 nz = 5
-# this is a not-existing parameter
-bad_parameter = 4
 lambda = 2e-8
 dgrid = 1e-4
 ngrid = 251
