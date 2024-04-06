@@ -8,6 +8,8 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <cstring>
 #include <mpi.h>
 
 #include "DiagnosticHook.h"
@@ -83,13 +85,92 @@ void dump_results(TB_Cfg *ptbcfg, const map< string,vector<double> >& r)
 	}
 }
 
+void xyz(TB_Cfg *ptbcfg, const map< string,vector<double> >& localdata)
+{
+	map< string,vector<double> > globaldata; // only used on rank0
+	int rank, mpisize;
+
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
+
+	/* 1) enforce that all processes on MPI communicator have same map size (=number of elements)  */
+	int map_nele = localdata.size();
+	MPI_Bcast(&map_nele, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	if(map_nele != localdata.size()) {
+		abort();
+	}
+
+
+	/* 2) compare keystrings (we know already that all processes have an identical number of map elements -> prevents hang-ups during MPI collective ops) */
+	vector<string> keys;
+	for (auto const &[k,v]: localdata) {
+		keys.push_back(k);
+	}
+	stable_sort(keys.begin(), keys.end());
+	for(auto const &k: keys) {
+		const char *loc_s = k.c_str();
+		char *buf = nullptr;
+		int buf_slen = k.length();
+
+		MPI_Bcast(&buf_slen, 1, MPI_INT, 0, MPI_COMM_WORLD);
+		buf = new char[buf_slen + 1 /* space for trailing '\0' */]();
+		if (0==rank)
+			strncpy(buf, loc_s, buf_slen+1); /* source process */
+		MPI_Bcast(buf, buf_slen, MPI_CHAR, 0, MPI_COMM_WORLD);
+
+#if 0
+		// dbg: inject deviation into received key-string, will it be detected?
+		if(1==rank)
+			buf[0] = '_';
+#endif
+
+		if(strcmp(buf, loc_s)) {
+			abort(); // local key string is different from root process with rank 0
+		}
+
+		delete [] buf;
+	}
+
+	const size_t local_cfgout_size = ptbcfg->nslice*ptbcfg->nz;
+	vector<double> rbuf, rbuf_sorted;
+	double *pdest = nullptr;
+	if(rank==0) {
+		rbuf.resize(mpisize*local_cfgout_size);
+		rbuf_sorted.resize(mpisize*local_cfgout_size);
+		pdest = rbuf.data();
+	}
+	for (auto const &[k,v]: localdata) {
+		// remark: not using the vector with keys compiled for the tests above (combination of "const map<... , ...>" and the [] operation does not compile, probably because [] operation could also insert a new object into the map if the key does not exist)
+		MPI_Gather(v.data(), local_cfgout_size, MPI_DOUBLE, pdest, local_cfgout_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+		/* rearrange collected data
+		 * - Every process we has a the local buffer, a 1-D vector with size nslice*nz
+		 * - After the collection all these are stored one after another in one big 1-D array on rank 0
+		 * -> there are nz interleaved sets of data blocks (block length is nslice, the stride is length of local data buffer, i.e. nslice*nz)
+		 */
+		if(rank==0) {
+			const int nslice = ptbcfg->nslice;
+			size_t idx_dest=0;
+			for(size_t iz=0; iz<ptbcfg->nz; iz++) {
+				size_t idx_src0 = iz*nslice;
+				for (size_t irank=0; irank<mpisize; irank++) {
+					size_t idx_src = idx_src0 + irank*local_cfgout_size;
+					for(int kk=0; kk<nslice; kk++)
+						rbuf_sorted.at(idx_dest++) = rbuf.at(idx_src++);
+				}
+			}
+			globaldata[k] = rbuf_sorted;
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
-	int rank, size;
+	int rank, mpisize;
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
 
 	if(argc!=2) {
 		if(rank==0) {
@@ -198,12 +279,12 @@ int main(int argc, char **argv)
 			pdfh->getValues(fields->at(ifld), results, iz);
 		}
 
-#if 0
+#if 1
 		// scale the field for test of data organization
 		for (int j=0; j<ptbcfg->nslice; j++) {
 			for (int k=0; k<ptbcfg->ngrid*ptbcfg->ngrid;k++){
 				const int idx=0;
-				fields->at(idx)->field[j].at(k)*=2.0; 
+				fields->at(idx)->field[j].at(k)*=2.0*rank;
 			}
 		}
 #endif
@@ -215,6 +296,11 @@ int main(int argc, char **argv)
 		     << "Dumping generated diagnostics data" << endl;
 		dump_results(ptbcfg, results);
 	}
+
+	/***************************************************************/
+	/*** collect data from all processes on the MPI communicator ***/
+	/***************************************************************/
+	xyz(ptbcfg, results);
     
 	/*** TODO: clean up all resources, unload the plugin module etc. ***/
 
