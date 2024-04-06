@@ -86,6 +86,11 @@ bool TB_Cfg::update_from_stream(ifstream& ifs)
 	int lcntr=1;
 	string linebuf;
 	while(getline(ifs, linebuf)) {
+		eat_whitespaces(linebuf);
+		// Ignore empty lines and comments beginning with '#' sign
+		if((linebuf.length()==0) || (linebuf.at(0)=='#'))
+			continue;
+
 		size_t pos = linebuf.find_first_of("=");
 		if (pos==string::npos) {
 			cout << "line " << lcntr << ": error parsing line \"" << linebuf << "\"" << endl;
@@ -96,6 +101,7 @@ bool TB_Cfg::update_from_stream(ifstream& ifs)
 		eat_whitespaces(left);
 		eat_whitespaces(right);
 		// cout << "L:" << left << ", R:" << right << endl;
+
 		if(!update_param(left,right)) {
 			// parsing of this parameter-value combination did not work -> report and continue
 			cout << "line " << lcntr << ": error processing parameter " << left << endl;
