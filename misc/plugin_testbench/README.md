@@ -13,13 +13,28 @@ To build follow the usual procedure to compile "GENESIS 1.3", but with the addit
 ```
 This compiles "GENESIS 1.3", v4 and the plugin testbench which re-uses some of the code of "GENESIS 1.3", v4 to perform the tests.
 
-## Using it
-This example was done with git commit ID 3295805.
+## Basic usage
+### Single process
+The parameters are specified in a configuration file. This directory contains one example configuration file, `demo_params.txt`. The testbench expects a single argument, the name of the configuration file to use.
+```
+./g4_tb demo_params.txt
+```
+At the end of the execution, a file named `plugin_data.txt` is generated (at the moment the name of this file is hardcoded). The formatting of the file is optimized for import into Python/numpy.
 
-While this testbench supports MPI, we don't use it here for sake of simplicity. The parameters are specified in a configuration file. This directory contains one example configuration file, `demo_params.txt`. The testbench expects a single argument, the name of the configuration file to use.
+### In MPI environment
+FEL simulations with "GENESIS 1.3", v4 typically run in an MPI environment. The testbench also supports operation in MPI enviroments.
 
-Now, we use the testbench to debug a plugin with `gdb`.
-One standard approach to debug the field analysis code is to place a breakpoint at the beginning of the field processing code in the plugin:
+Depending on the configuration of your MPI environment this can as simple as 
+```
+mpirun ./g4_tb demo_params.txt
+```
+
+Note that in this case the parameter `nslice` in the configuration file specifies the number of slices per process on the MPI communicator. The diagnostics data written to the generated output file contains the data generated in all processes, but only the data generated on MPI rank 0 is written to stdout.
+
+## Usage with gdb
+Now, we illustrate how to use the testbench to debug a plugin with `gdb`. This example was done with git commit ID 3295805.
+
+While the testbench supports MPI, we don't use it here for sake of simplicity. One standard approach to debug the field analysis code is to place a breakpoint at the beginning of the field processing code in the plugin:
 ```
 % gdb ./g4_tb
 GNU gdb (GDB) 9.2
