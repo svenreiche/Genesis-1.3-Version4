@@ -1,4 +1,5 @@
 power = 1
+# in MPI environment this specifies the number of slices per process
 nslice=7
 nz = 5
 lambda = 2e-8

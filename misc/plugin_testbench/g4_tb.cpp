@@ -16,6 +16,7 @@
 #include "DiagnosticHookS.h"
 #include "GaussHermite.h"
 #include "g4_tb_util.h"
+#include "version.h"
 
 using namespace std;
 
@@ -191,7 +192,9 @@ int main(int argc, char **argv)
 	string fncfg(argv[1]);
 
 	if(0==rank) {
-		cout << "name of configuration file: " << fncfg << endl
+		VersionInfo vi;
+		cout << "g4_tb, build info: " << vi.Build() << endl
+		     << "name of configuration file: " << fncfg << endl
 		     << "mpisize = " << mpisize << endl << endl;
 	}
 
