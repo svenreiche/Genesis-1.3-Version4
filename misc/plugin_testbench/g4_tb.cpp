@@ -79,15 +79,14 @@ void dump_result_mtx(ostream& os, const vector<double>& d, const int nz, const i
 }
 void dump_results_core(ostream &os, const map< string,vector<double> >& r, const int nz, const int nslice)
 {
-	int counter = 1; // counter to have unique object names
-	for(auto const &obj: r) {
+	os << "# create empty Python dictionary" << endl;
+	os << "data = {};" << endl;
+	for(auto const &[name,data]: r) {
 		// formatting of data matrix optimized for numpy.array
-		os << "# data in \"" << obj.first << "\"" << endl;
-		os << "data" << counter << " = np.array([" << endl;
-		dump_result_mtx(os, obj.second, nz, nslice);
+		os << "# data in \"" << name << "\"" << endl;
+		os << "data['" << name << "'] = np.array([" << endl;
+		dump_result_mtx(os, data, nz, nslice);
 		os << "])" << endl << endl;
-
-		counter++;
 	}
 }
 void dump_results(ostream &os, TB_Cfg *ptbcfg, const map< string,vector<double> >& r)
@@ -190,6 +189,11 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	string fncfg(argv[1]);
+
+	if(0==rank) {
+		cout << "name of configuration file: " << fncfg << endl
+		     << "mpisize = " << mpisize << endl << endl;
+	}
 
 	/* prepare the configuration parameters */
 	TB_Cfg *ptbcfg = new TB_Cfg;
