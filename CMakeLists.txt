@@ -197,3 +197,8 @@ add_dependencies(genesis13 get_git_hash)
 add_executable(genesis4 src/Main/mainwrap.cpp)
 
 target_link_libraries(genesis4 genesis13 ${_libraries})
+
+# Compilation of plugin testbench only when plugin system is requested
+if(USE_DPI)
+   add_subdirectory(misc/plugin_testbench)
+endif()

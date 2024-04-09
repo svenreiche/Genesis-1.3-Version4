@@ -1,0 +1,12 @@
+power = 1
+# in MPI environment this specifies the number of slices per process
+nslice=7
+nz = 5
+lambda = 2e-8
+dgrid = 1e-4
+ngrid = 251
+libfile = ./libdemo.so
+
+# empty lines should not be an issue
+
+ 	# more comments here, with whitespace before the pound sign
