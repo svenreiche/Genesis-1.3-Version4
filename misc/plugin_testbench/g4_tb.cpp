@@ -321,13 +321,17 @@ int main(int argc, char **argv)
 	map< string,vector<double> > glbl_results; // !only populated with collected data on rank 0!
 	res_collect(ptbcfg, glbl_results, results);
 	if(0==rank) {
-		const char *fnout = "plugin_data.txt";
+		const char *fnout = ptbcfg->fn_out.c_str();
 		ofstream ofs;
 		ofs.open(fnout, ofstream::out);
-		dump_results_core(ofs, glbl_results, ptbcfg->nz, mpisize*ptbcfg->nslice);
-		ofs.close();
+		if(!ofs) {
+			cout << "error opening file '" << fnout << "' for write operation" << endl;
+		} else {
+			dump_results_core(ofs, glbl_results, ptbcfg->nz, mpisize*ptbcfg->nslice);
+			ofs.close();
 
-		cout << "Data collected from all processes written to file '" << fnout << "'" << endl;
+			cout << "Data collected from all processes written to file '" << fnout << "'" << endl;
+		}
 	}
     
 	/*** TODO: clean up all resources ***/
