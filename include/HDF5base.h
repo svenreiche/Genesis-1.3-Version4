@@ -13,8 +13,6 @@
 
 #include <hdf5.h>
 
-#include "version.h"
-
 using namespace std;
 
 class HDF5Base{

@@ -1,4 +1,5 @@
 #include "HDF5base.h"
+#include "version.h"
 
 #include <mpi.h>
 
