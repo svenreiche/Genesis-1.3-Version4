@@ -5,6 +5,7 @@
  */
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <string>
 #include <vector>
@@ -59,6 +60,11 @@ void prepare_field(TB_Cfg *ptbcfg, vector<Field *> *fieldin)
 
 void dump_result_mtx(ostream& os, const vector<double>& d, const int nz, const int nslice)
 {
+	// ios_base::fmtflags f(os.flags());
+	const auto default_precision = os.precision();
+
+	os << setprecision(10);
+
 	// Fast index is slice id
 	size_t idx=0;
 	for(int iz=0; iz<nz; iz++) {
@@ -77,6 +83,9 @@ void dump_result_mtx(ostream& os, const vector<double>& d, const int nz, const i
 			os << ",";
 		os << endl;
 	}
+
+	os << setprecision(default_precision);
+	// os.flags(f);
 }
 void dump_results_core(ostream &os, const map< string,vector<double> >& r, const int nz, const int nslice)
 {
