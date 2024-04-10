@@ -5,6 +5,7 @@
  */
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <string>
 #include <vector>
@@ -59,6 +60,11 @@ void prepare_field(TB_Cfg *ptbcfg, vector<Field *> *fieldin)
 
 void dump_result_mtx(ostream& os, const vector<double>& d, const int nz, const int nslice)
 {
+	// ios_base::fmtflags f(os.flags());
+	const auto default_precision = os.precision();
+
+	os << setprecision(10);
+
 	// Fast index is slice id
 	size_t idx=0;
 	for(int iz=0; iz<nz; iz++) {
@@ -77,6 +83,9 @@ void dump_result_mtx(ostream& os, const vector<double>& d, const int nz, const i
 			os << ",";
 		os << endl;
 	}
+
+	os << setprecision(default_precision);
+	// os.flags(f);
 }
 void dump_results_core(ostream &os, const map< string,vector<double> >& r, const int nz, const int nslice)
 {
@@ -321,13 +330,17 @@ int main(int argc, char **argv)
 	map< string,vector<double> > glbl_results; // !only populated with collected data on rank 0!
 	res_collect(ptbcfg, glbl_results, results);
 	if(0==rank) {
-		const char *fnout = "plugin_data.txt";
+		const char *fnout = ptbcfg->fn_out.c_str();
 		ofstream ofs;
 		ofs.open(fnout, ofstream::out);
-		dump_results_core(ofs, glbl_results, ptbcfg->nz, mpisize*ptbcfg->nslice);
-		ofs.close();
+		if(!ofs) {
+			cout << "error opening file '" << fnout << "' for write operation" << endl;
+		} else {
+			dump_results_core(ofs, glbl_results, ptbcfg->nz, mpisize*ptbcfg->nslice);
+			ofs.close();
 
-		cout << "Data collected from all processes written to file '" << fnout << "'" << endl;
+			cout << "Data collected from all processes written to file '" << fnout << "'" << endl;
+		}
 	}
     
 	/*** TODO: clean up all resources ***/

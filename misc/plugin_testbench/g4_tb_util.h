@@ -27,6 +27,8 @@ public:
 	double power  {1e6};
 	double w0     {20e-6};
 
+	std::string fn_out {"plugin_data.txt"};
+
 private:
 	bool update_param(const std::string, const std::string);
 	void eat_whitespaces(std::string &);

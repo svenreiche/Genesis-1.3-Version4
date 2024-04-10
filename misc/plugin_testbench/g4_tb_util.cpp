@@ -42,7 +42,8 @@ bool TB_Cfg::update_param(const string key, const string value)
 	};
 	const map<string, string *> param_string {
 		{"libfile",   &libfile},
-		{"parameter", &parameter}
+		{"parameter", &parameter},
+		{"outfile",   &fn_out}
 	};
 
 	/* PARAMETERS WITH EXPECTED VALUE OF TYPE 'double' */
