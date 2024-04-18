@@ -214,7 +214,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         // modifying the lattice file
 
         if (element == "&lattice") {
-            if (!alt->init(rank, size, &argument, lattice, setup, seq)) { break; }
+            if (!alt->init(rank, size, &argument, lattice, setup, series)) { break; }
             continue;
         }
 

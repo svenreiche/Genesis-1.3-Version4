@@ -30,7 +30,7 @@ void AlterLattice::usage(){
 }
 
 
-bool AlterLattice::init(int inrank, int insize, map<string,string> *arg, Lattice *lat, Setup *setup, Series *seq)
+bool AlterLattice::init(int inrank, int insize, map<string,string> *arg, Lattice *lat, Setup *setup, SeriesManager *seq)
 {
 
   rank=inrank;
