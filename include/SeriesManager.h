@@ -14,7 +14,9 @@ class SeriesManager {
     public:
         void add(std::string, Sequence *);
         double getElement(std::string);
+        bool check(std::string);
     private:
+
         std::map<std::string,Sequence *> catalogue;
 };
 

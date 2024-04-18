@@ -11,6 +11,7 @@
 #include "Lattice.h"
 #include "Setup.h"
 #include "Series.h"
+#include "SeriesManager.h"
 
 class Setup;
 class Lattice;
@@ -21,7 +22,7 @@ class AlterLattice:  public StringProcessing{
  public:
    AlterLattice();
    virtual ~AlterLattice();
-   bool init(int, int, map<string,string> *, Lattice *, Setup *, Series *);
+   bool init(int, int, map<string,string> *, Lattice *, Setup *, SeriesManager *);
  private:
    void usage();
    string element,field;

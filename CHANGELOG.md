@@ -1,6 +1,15 @@
 # Change Log
 
-### [4.6.6] - 2024/01/10
+### [4.6.6] - 2024/04/18
+- fixed: changing elements via the lattice-namelist methods works again after ignoring any sequence.
+
+### [4.6.6] - 2024/01/30
+- fixed: the output record in Field/dgrid in the main output is now consistent with the input parameter. The gridspacing is now given with the record field/gridspacing
+- added the output of the Genesis verison info in the outp
+
+### [4.6.6] - 2024/01/25
+- fixed: corrected the output for 'Global/frequency' in the main output file
+- add example for time-depdendent simulations
 - fixed: exclude_current_output switch in &setup had no effect
 - fixed: a requested bunching factor is now reproduced correctly for large values 
 
