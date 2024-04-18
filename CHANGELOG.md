@@ -1,5 +1,8 @@
 # Change Log
 
+### [4.6.6] - 2024/04/18
+- fixed: changing elements via the lattice-namelist methods works again after ignoring any sequence.
+
 ### [4.6.6] - 2024/01/30
 - fixed: the output record in Field/dgrid in the main output is now consistent with the input parameter. The gridspacing is now given with the record field/gridspacing
 - added the output of the Genesis verison info in the outp
