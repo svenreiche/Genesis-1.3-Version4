@@ -1,3 +1,5 @@
+#include <iostream>
+#include <fstream>
 #include <sstream>
 #include "Setup.h"
 #ifdef USE_DPI
@@ -86,7 +88,18 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, SeriesManage
   auto end=arg->end();
 
   if (arg->find("rootname")!=end){rootname = arg->at("rootname"); arg->erase(arg->find("rootname"));}
-  if (arg->find("outputdir")!=end){outputdir = arg->at("outputdir"); arg->erase(arg->find("outputdir"));}
+  if (arg->find("outputdir")!=end){
+    outputdir = arg->at("outputdir");
+    arg->erase(arg->find("outputdir"));
+
+    if(!check_outputdir(outputdir))
+    {
+      if(0==rank) {
+        cout << "*** Error: cannot write to output directory " << outputdir << endl;
+      }
+      return(false);
+    }
+  }
   if (arg->find("lattice")!=end) {lattice  = arg->at("lattice");  arg->erase(arg->find("lattice"));}
   if (arg->find("beamline")!=end){beamline = arg->at("beamline"); arg->erase(arg->find("beamline"));}
   if (arg->find("lattice")!=end) {lattice  = arg->at("lattice");  arg->erase(arg->find("lattice"));}
@@ -236,4 +249,29 @@ bool Setup::getSemaFN(string *fnout) {
 }
 void Setup::setSemaFN(string fn_in) {
 	sema_file_name = fn_in;
+}
+
+bool Setup::check_outputdir(const string& dir)
+{
+	int ok = -1; // default value differs from value used to signal success on rank 0
+	ofstream ofs;
+	string fn = dir+"/test.outputdir.txt";
+
+	// The actual test is only performed on rank 0 (this reduces I/O load for large simulations)
+	// - this detects configuration issues (non-existent output directory) but
+	//   does not detect issues on single simulation nodes (these rare cases are
+	//   detected once output file is being written)
+	// - all nodes need to return the same test result (ok/not ok)
+	if(0==rank) {
+		ok = 1;
+		ofs.open(fn, ofstream::out);
+		if(!ofs) {
+			// issue with directory configuration is to be reported by calling function
+			// cout << "error generating file " << fn << endl;
+			ok = 0;
+		}
+		ofs.close();
+	}
+	MPI_Bcast(&ok, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	return(1==ok);
 }
