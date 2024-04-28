@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <ctime>
+#include <cstdio>
 #include "Setup.h"
 #ifdef USE_DPI
   #include "DiagnosticHookS.h"
@@ -254,8 +256,6 @@ void Setup::setSemaFN(string fn_in) {
 bool Setup::check_outputdir(const string& dir)
 {
 	int ok = -1; // default value differs from value used to signal success on rank 0
-	ofstream ofs;
-	string fn = dir+"/test.outputdir.txt";
 
 	// The actual test is only performed on rank 0 (this reduces I/O load for large simulations)
 	// - this detects configuration issues (non-existent output directory) but
@@ -264,14 +264,31 @@ bool Setup::check_outputdir(const string& dir)
 	// - all nodes need to return the same test result (ok/not ok)
 	if(0==rank) {
 		ok = 1;
-		ofs.open(fn, ofstream::out);
+
+		// generate file name (TODO: improve method to get unique filename)
+		time_t t = time(nullptr);
+		const size_t tbuf_len = 100;
+		char tbuf[tbuf_len];
+		stringstream ssfn;
+		strftime(tbuf, tbuf_len, "%Y%m%dT%H%M%S", localtime(&t));
+		ssfn << dir+"/test.outputdir.";
+		ssfn << tbuf;
+
+		// see if file can be created
+		ofstream ofs;
+		ofs.open(ssfn.str(), ofstream::out);
 		if(!ofs) {
 			// issue with directory configuration is to be reported by calling function
 			// cout << "error generating file " << fn << endl;
 			ok = 0;
 		}
 		ofs.close();
+
+		// finally, delete the file
+		remove(ssfn.str().c_str());
 	}
+
+	// all MPI processes give same test result
 	MPI_Bcast(&ok, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	return(1==ok);
 }
