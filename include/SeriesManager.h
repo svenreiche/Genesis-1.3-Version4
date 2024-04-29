@@ -2,21 +2,22 @@
 // Created by reiche on 4/21/23.
 //
 
-#include <string>
-#include <map>
-
 #ifndef GENESIS_1_3_VERSION4_SERIESMANAGER_H
 #define GENESIS_1_3_VERSION4_SERIESMANAGER_H
+
+#include <string>
+#include <map>
 
 class Sequence;
 
 class SeriesManager {
-    public:
+public:
+	SeriesManager();
         void add(std::string, Sequence *);
         double getElement(std::string);
         bool check(std::string);
-    private:
-
+private:
+        int rank_;
         std::map<std::string,Sequence *> catalogue;
 };
 
