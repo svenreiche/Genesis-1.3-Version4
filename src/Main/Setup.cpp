@@ -1,4 +1,8 @@
+#include <iostream>
+#include <fstream>
 #include <sstream>
+#include <ctime>
+#include <cstdio>
 #include "Setup.h"
 #ifdef USE_DPI
   #include "DiagnosticHookS.h"
@@ -86,7 +90,18 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, SeriesManage
   auto end=arg->end();
 
   if (arg->find("rootname")!=end){rootname = arg->at("rootname"); arg->erase(arg->find("rootname"));}
-  if (arg->find("outputdir")!=end){outputdir = arg->at("outputdir"); arg->erase(arg->find("outputdir"));}
+  if (arg->find("outputdir")!=end){
+    outputdir = arg->at("outputdir");
+    arg->erase(arg->find("outputdir"));
+
+    if(!check_outputdir(outputdir))
+    {
+      if(0==rank) {
+        cout << "*** Error: cannot write to output directory " << outputdir << endl;
+      }
+      return(false);
+    }
+  }
   if (arg->find("lattice")!=end) {lattice  = arg->at("lattice");  arg->erase(arg->find("lattice"));}
   if (arg->find("beamline")!=end){beamline = arg->at("beamline"); arg->erase(arg->find("beamline"));}
   if (arg->find("lattice")!=end) {lattice  = arg->at("lattice");  arg->erase(arg->find("lattice"));}
@@ -236,4 +251,44 @@ bool Setup::getSemaFN(string *fnout) {
 }
 void Setup::setSemaFN(string fn_in) {
 	sema_file_name = fn_in;
+}
+
+bool Setup::check_outputdir(const string& dir)
+{
+	int ok = -1; // default value differs from value used to signal success on rank 0
+
+	// The actual test is only performed on rank 0 (this reduces I/O load for large simulations)
+	// - this detects configuration issues (non-existent output directory) but
+	//   does not detect issues on single simulation nodes (these rare cases are
+	//   detected once output file is being written)
+	// - all nodes need to return the same test result (ok/not ok)
+	if(0==rank) {
+		ok = 1;
+
+		// generate file name (TODO: improve method to get unique filename)
+		time_t t = time(nullptr);
+		const size_t tbuf_len = 100;
+		char tbuf[tbuf_len];
+		stringstream ssfn;
+		strftime(tbuf, tbuf_len, "%Y%m%dT%H%M%S", localtime(&t));
+		ssfn << dir+"/test.outputdir.";
+		ssfn << tbuf;
+
+		// see if file can be created
+		ofstream ofs;
+		ofs.open(ssfn.str(), ofstream::out);
+		if(!ofs) {
+			// issue with directory configuration is to be reported by calling function
+			// cout << "error generating file " << fn << endl;
+			ok = 0;
+		}
+		ofs.close();
+
+		// finally, delete the file
+		remove(ssfn.str().c_str());
+	}
+
+	// all MPI processes give same test result
+	MPI_Bcast(&ok, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	return(1==ok);
 }

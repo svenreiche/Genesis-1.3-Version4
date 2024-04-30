@@ -85,6 +85,8 @@ class Setup: public StringProcessing{
 
  private:
    static void usage();
+   bool check_outputdir(const string &);
+
    string rootname,outputdir,lattice,beamline,partfile,fieldfile;
    double gamma0,lambda0,delz;
    bool one4one,shotnoise;
