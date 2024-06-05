@@ -1,5 +1,8 @@
 # Change Log
 
+### [4.6.6] - 2024/06/05
+- fixed: Running non 1-4-1 simulations (aka quiet loading) with zero current (e.g. step profile) causes NaN events in the particle phase for the calculation of the shot noise. It ripples through the simulation producing more NaN in other parameters.
+
 ### [4.6.6] - 2024/04/18
 - fixed: changing elements via the lattice-namelist methods works again after ignoring any sequence.
 
