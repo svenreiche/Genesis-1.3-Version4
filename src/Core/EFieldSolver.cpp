@@ -87,6 +87,10 @@ void EFieldSolver::longRange(Beam *beam, double gamma0, double aw) {
     for (int i=0; i<nsize;i++){
         work1[i]=beam->current[i];
         work2[i]=beam->getSize(i);
+        if (work2[i] <= 0) {  // check for zero current slices which have also no beam size and therefore will cause a NaN
+            work1[i] = 0;
+            work2[i] = 1;
+        }
     }
 
     // gathering information on full current and beam size profile
