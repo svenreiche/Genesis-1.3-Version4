@@ -9,7 +9,7 @@ assignees: svenreiche
 
 ### Describe the bug
 A clear and concise description of what the bug is.
-Please include the version of the source code you use (even better: the git commit commit ID reported at start of the executable).
+Please include the version of the source code you use (even better: the git commit ID reported at start of the executable).
 
 ### To Reproduce
 If possible, please provide a set of input files demonstrating the reported issue. This helps to reproduce (and then track down) the issue.
