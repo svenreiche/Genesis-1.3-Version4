@@ -93,7 +93,7 @@ void SimpleHandshake::wait_for_file(const string fname)
 		while(1) {
 			sleep(1);
 
-			// try to remove the flag file (if this operation fails with ENOENT the file was there yet)
+			// try to remove the flag file (if this operation fails with ENOENT the file was not there yet)
 			int r = unlink(fname.c_str());
 			if(0==r) {
 				// Success: this means the file was there and could therefore be deleted
