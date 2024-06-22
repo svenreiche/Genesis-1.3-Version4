@@ -5,10 +5,6 @@
 #include <string>
 #include <map>
 
-#include <mpi.h>
-
-using namespace std;
-
-int genmain(string, map<string,string> &,bool);
+int genmain(std::string, std::map<std::string,std::string> &,bool);
 
 #endif
