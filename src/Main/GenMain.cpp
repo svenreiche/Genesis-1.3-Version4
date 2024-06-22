@@ -18,6 +18,7 @@
 // genesis headerfiles & classes
 //#include "CodeTracing.h"
 
+#include "genesis.h" // prototype of 'genmain'
 #include "Beam.h"
 #include "Field.h"
 #include "EField.h"
