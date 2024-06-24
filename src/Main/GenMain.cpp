@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <iomanip>
@@ -7,10 +8,8 @@
 #include <cstring>
 #include <ctime>
 
-
 #include <fenv.h>
 #include <signal.h>
-
 #include <mpi.h>
 
 
@@ -55,7 +54,7 @@
 #include "SeriesParser.h"
 #include "SimpleHandshake.h"
 
-#include <sstream>
+
 
 using namespace std;
 
@@ -540,14 +539,17 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         }
 
 
- 	if (rank==0) {
+	if (rank==0)
+	{
+	  // remark, CL, 2024-06-24: calls to clock() give the total processor time spent by the process, *not* the wall clock time
 	  double elapsed_Sec=double(clocknow-clockstart)/CLOCKS_PER_SEC;
 
-      time(&timer);
-      cout << endl<< "Program is terminating..." << endl;
+	  time(&timer);
+	  cout << endl<< "Program is terminating..." << endl;
 	  cout << "Ending Time: " << ctime(&timer);
-	  cout << "Total Wall Clock Time: " << elapsed_Sec << " seconds" << endl;
-      cout << "-------------------------------------" << endl;
+	  // CL, 2024-06-24: disabled for the time being, since calls to clock() give the total processor time spent by the process, *not* the wall clock time
+	  // cout << "Total Wall Clock Time: " << elapsed_Sec << " seconds" << endl;
+	  cout << "-------------------------------------" << endl;
 
 
 	  /* tracing report
