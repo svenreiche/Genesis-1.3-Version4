@@ -1,19 +1,18 @@
-#include "genesis.h"
-
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <map>
+#include <string>
 
 #include <getopt.h>
+#include <mpi.h>
 
+#include "genesis.h"
 #include "version.h"
-
 
 using namespace std;
 
-// very basic wrapper for genesis. Most of the genesis stuff is moved into genmain.
-#include "hdf5.h"
+
 
 void G4_usage(void)
 {
@@ -54,10 +53,6 @@ int main (int argc, char *argv[])
     int rank;
     MPI_Init(&argc, &argv); //MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &rank); // assign rank to node
-
-//    string filename (argv[argc-1]);  // input file is always last element
-//    map<string,string> arguments;
-//    bool ok=true;
 
     if (rank == 0) {
         VersionInfo vi;
@@ -148,6 +143,7 @@ int main (int argc, char *argv[])
 	}
 
 #if 0
+    /* debug code */
     if(rank==0) {
         cout << endl << "### reporting options ###" << endl;
 
@@ -183,6 +179,5 @@ int main (int argc, char *argv[])
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize(); // node turned off
 
-    // return 0;
     return(sim_core_result);
 }
