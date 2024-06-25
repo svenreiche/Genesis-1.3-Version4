@@ -1,3 +1,4 @@
+# Ubuntu 22.04LTS
 Christoph Lechner, European XFEL, 2024-06-25
 
 Starting with a fresh "normal installation" of Ubuntu 22.04LTS (DVD image: `ubuntu-22.04.4-desktop-amd64.iso`).
