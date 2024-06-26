@@ -1,6 +1,7 @@
 # Ubuntu 22.04LTS
 Christoph Lechner, European XFEL, 2024-06-25
 
+## Installing the needed packages
 Starting with a fresh "normal installation" of Ubuntu 22.04LTS (DVD image: `ubuntu-22.04.4-desktop-amd64.iso`).
 
 Installing the following packages and their dependencies:
@@ -16,6 +17,7 @@ sudo apt-get install pkg-config
 
 In the directory, you can find the output of `dpkg -l`, listing all installed software packages.
 
+## Building "Genesis 1.3"
 Now, clone "Genesis 1.3" from the git repository.
 One can compile "Genesis 1.3" as described in the manual.
 
@@ -76,7 +78,8 @@ cl@ubuntu-test:~/g4/Genesis-1.3-Version4/build$ make
 cl@ubuntu-test:~/g4/Genesis-1.3-Version4/build$
 ```
 
-
+## Running "Genesis 1.3"
+### Modifying Example3
 Modifying `Example3.in` file to reduce the resource footprint (the virtual PC only has 4 CPU cores and a total of 16GBytes of RAM):
 ```
 diff --git a/examples/Example3-TimeDependent/Example3.in b/examples/Example3-TimeDependent/Example3.in
@@ -109,12 +112,16 @@ index d39ddaf..9ceed2c 100644
  &end
 ```
 
+### Running the simulation
 Running modified Example3 on the virtual PC:
 ```
 cl@ubuntu-test:~/g4/Genesis-1.3-Version4/examples/Example3-TimeDependent$ mpirun -np 4 /home/cl/g4/Genesis-1.3-Version4/build/genesis4 Example3.in
 ```
-As one can see in the screenshot, there are 4 processes of `genesis4`, each one at 100% CPU load.
- 
+
+[![Screenshot of running simulation (click to enlarge)](g4_running_thumb.png)](g4_running.png)
+As one can see in the screenshot (click to enlarge), there are 4 processes of `genesis4`, each one at 100% CPU load.
+
+## Final remarks 
 After running the simulation, you may want to explore the generated HDF5 output files, for instance using `h5ls`. For this you need to install the package `hdf5-tools`.
 
 
