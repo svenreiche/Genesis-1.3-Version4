@@ -92,7 +92,6 @@ int main (int argc, char *argv[])
         cout << " has started..." << endl;
         cout << "Compile info: " << vi.Build() << endl;
     }
-    G4_report_lib_versions();
 
 
 	// parse the command line arguments
@@ -103,6 +102,7 @@ int main (int argc, char *argv[])
 		{"seed",	required_argument,	NULL, 's'},
 		{"semaphore-file", required_argument,	NULL, 'S'},
 		{"help",	no_argument,		NULL, 'h'},
+		{"dbg-versions",no_argument,		NULL, 'd'},
 		{NULL, 0, NULL, 0}	/* marks end of list => do not remove */
 	};
 
@@ -154,6 +154,11 @@ int main (int argc, char *argv[])
 			case 'h':
                                 G4_usage_and_stop();
 				break;
+
+			case 'd': // debug functions (at start-up phase)
+				G4_report_lib_versions();
+				break;
+
 
 			case '?': /* fall-through */
 			default:
