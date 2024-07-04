@@ -62,11 +62,17 @@ void G4_report_lib_versions(void)
     // HDF5 library
     // Remark: there are macros H5_VERS_MAJOR/MINOR/RELEASE that define
     // the version at compile time, but we report version at runtime.
-    // Maybe report both?
+    // Reporting both if there is a difference...
     unsigned hdf5_maj=-1, hdf5_min=-1, hdf5_relnum=-1;
     H5get_libversion(&hdf5_maj, &hdf5_min, &hdf5_relnum);
     cout << "HDF5 library reports version: "
          << hdf5_maj << "." << hdf5_min << "." << hdf5_relnum << endl;
+    // hdf5_relnum=42; // to test the following
+    if((H5_VERS_MAJOR!=hdf5_maj) || (H5_VERS_MINOR!=hdf5_min) || (H5_VERS_RELEASE!=hdf5_relnum)) {
+        cout << "   Note: HDF5 library from header file (at build time): "
+             << H5_VERS_MAJOR << "." << H5_VERS_MINOR << "." << H5_VERS_RELEASE << endl;
+    }
+
 
     // FFTW3: is there a function that gives the version at runtime? I didn't find one ...
 }
