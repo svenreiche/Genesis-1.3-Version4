@@ -46,6 +46,31 @@ void G4_usage_and_stop(void)
     exit(1);
 }
 
+void G4_report_lib_versions(void)
+{
+    int rank;
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if(0!=rank)
+        return;
+
+    char buf[MPI_MAX_LIBRARY_VERSION_STRING];
+    int bufused=-1;
+    MPI_Get_library_version(buf, &bufused);
+    cout << "MPI library version string: " << buf << endl;
+
+    // HDF5 library
+    // Remark: there are macros H5_VERS_MAJOR/MINOR/RELEASE that define
+    // the version at compile time, but we report version at runtime.
+    // Maybe report both?
+    unsigned hdf5_maj=-1, hdf5_min=-1, hdf5_relnum=-1;
+    H5get_libversion(&hdf5_maj, &hdf5_min, &hdf5_relnum);
+    cout << "HDF5 library reports version: "
+         << hdf5_maj << "." << hdf5_min << "." << hdf5_relnum << endl;
+
+    // FFTW3: is there a function that gives the version at runtime? I didn't find one ...
+}
+
 int main (int argc, char *argv[])
 {
     //-------------------------------------------------------
@@ -67,6 +92,7 @@ int main (int argc, char *argv[])
         cout << " has started..." << endl;
         cout << "Compile info: " << vi.Build() << endl;
     }
+    G4_report_lib_versions();
 
 
 	// parse the command line arguments
