@@ -6,6 +6,7 @@
 
 #include <getopt.h>
 #include <mpi.h>
+#include <hdf5.h>
 
 #include "genesis.h"
 #include "version.h"
