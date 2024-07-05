@@ -56,63 +56,67 @@ void EFieldSolver::allocateForOutput(unsigned long nslice){
 void EFieldSolver::longRange(Beam *beam, double gamma0, double aw) {
     auto nsize = beam->beam.size();
     // check if the beam size has been changed:
-    if (nsize != beam->longESC.size()){
+    if (nsize != beam->longESC.size()) {
         beam->longESC.resize(nsize);
     }
 
-    for (unsigned long i =0; i < nsize; i++){
-        beam->longESC[i]=0;
+    for (unsigned long i = 0; i < nsize; i++) {
+        beam->longESC[i] = 0;
     }
     if (!longrange) {
         return;
     }
-    double gamma = gamma0/sqrt(1+aw*aw);
+    double gamma = gamma0 / sqrt(1 + aw * aw);
 
-    int MPIsize=1;
-    int MPIrank=0;
-    if (!MPISingle){
+    int MPIsize = 1;
+    int MPIrank = 0;
+    if (!MPISingle) {
         MPI_Comm_size(MPI_COMM_WORLD, &MPIsize); // assign rank to node
         MPI_Comm_rank(MPI_COMM_WORLD, &MPIrank); // assign rank to node
     }
 
     // resize if needed also after harmonic conversion.
-    if (fcurrent.size()!=(MPIsize*nsize)){
-        fcurrent.resize(MPIsize*nsize);
-        fsize.resize(MPIsize*nsize);
+    if (fcurrent.size() != (MPIsize * nsize)) {
+        fcurrent.resize(MPIsize * nsize);
+        fsize.resize(MPIsize * nsize);
         work1.resize(nsize);
         work2.resize(nsize);
     }
 
     // fill local slices
-    for (int i=0; i<nsize;i++){
-        work1[i]=beam->current[i];
-        work2[i]=beam->getSize(i);
+    for (int i = 0; i < nsize; i++) {
+        work1[i] = beam->current[i];
+        work2[i] = beam->getSize(i);
+        if (work2[i] <=
+            0) {  // check for zero current slices which have also no beam size and therefore will cause a NaN
+//            work1[i] = 0;
+            work2[i] = 1;
+        }
     }
 
     // gathering information on full current and beam size profile
-    MPI_Allgather(&work1.front(),static_cast<int>(nsize),MPI_DOUBLE,
-                  &fcurrent.front(),static_cast<int>(nsize),MPI_DOUBLE, MPI_COMM_WORLD);
-    MPI_Allgather(&work2.front(),static_cast<int>(nsize),MPI_DOUBLE,
-                  &fsize.front(),static_cast<int>(nsize),MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Allgather(&work1.front(), static_cast<int>(nsize), MPI_DOUBLE,
+                  &fcurrent.front(), static_cast<int>(nsize), MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Allgather(&work2.front(), static_cast<int>(nsize), MPI_DOUBLE,
+                  &fsize.front(), static_cast<int>(nsize), MPI_DOUBLE, MPI_COMM_WORLD);
 
-    double scl = beam->slicelength/2./asin(1)/299792458.0/2/8.85e-12;  // convert to units of electron rest mass.
+    double scl =
+            beam->slicelength / 2. / asin(1) / 299792458.0 / 2 / 8.85e-12;  // convert to units of electron rest mass.
 
-    for (int i=0; i < nsize; i++){
+    for (int i = 0; i < nsize; i++) {
         double EFld = 0;
-        auto isplit = nsize*MPIrank+i;
-        for (int j = 0; j < isplit; j++) {
-            double ds = static_cast<double>(j - isplit) * beam->slicelength*gamma;
-            double coef = 1 +ds/sqrt(ds*ds+fsize[j]); // ds is negative
-            EFld += coef*scl*fcurrent[j]/fsize[j];
-        }
-        for (auto j = isplit+1; j < MPIsize*nsize; j++) {
-            double ds = static_cast<double>(j - isplit) * beam->slicelength*gamma;
-            double coef = 1 -ds/sqrt(ds*ds+fsize[j]); // ds is negative
-            EFld -= coef*scl*fcurrent[j]/fsize[j];
+        int isplit = nsize * MPIrank + i;
+        for (int j = 0; j < MPIsize * nsize; j++) {
+            double ds = static_cast<double>(j - isplit) * beam->slicelength * gamma;
+            double coef = 1 - sqrt(ds * ds / (ds * ds + fsize[j])); // ds is negative
+            double sgn = (j > isplit) ? -1. : ((j < isplit) ? 1. : 0.);
+            EFld += sgn * coef * scl * fcurrent[j] / fsize[j];
         }
         beam->longESC[i] = EFld;
     }
 }
+
+
 
 
 void EFieldSolver::analyseBeam(vector<Particle> *beam){

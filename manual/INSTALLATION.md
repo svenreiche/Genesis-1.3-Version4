@@ -1,10 +1,65 @@
 # GENESIS 1.3 - Compilation and Running Genesis 1.3
 
 
+- [Conda](#Conda)
 - [Compilation](#compilation)
 - [Running](#running)
 
 
+## Conda
+
+### Using Miniforge
+
+For users new to conda, we recommend downloading and installing the latest [Miniforge](https://conda-forge.org/miniforge/) for your platform.
+
+This is a customized version of miniconda that includes the fast mamba solver by default and automatically sources packages from `conda-forge`.
+
+Open a terminal and enable `conda`-related commands by doing the following:
+```bash
+conda init
+```
+To use conda commands, you now need to open a new session of your terminal program.
+
+To install the OpenMPI version of Genesis 4, perform the following:
+
+```bash
+conda create -n genesis4 genesis4=*=mpi_openmpi*
+```
+
+To install the MPICH version of Genesis 4, perform the following:
+
+```bash
+conda create -n genesis4 genesis4=*=mpi_mpich*
+```
+
+To use Genesis4 from that environment, first activate the environment:
+
+```bash
+conda activate genesis4
+genesis4 --help
+```
+### Existing conda installation
+
+Users with Anaconda or another version of conda already installed may simply specify the channel ``conda-forge`` during the environment creation.
+
+To install the OpenMPI version of Genesis 4, perform the following:
+
+```bash
+conda create -n genesis4 -c conda-forge genesis4=*=mpi_openmpi*
+```
+
+To install the MPICH version of Genesis 4, perform the following:
+
+```bash
+conda create -n genesis4 -c conda-forge genesis4=*=mpi_mpich*
+```
+
+To use Genesis4 from that environment, first activate the environment:
+
+```bash
+conda activate genesis4
+genesis4 --help
+```
 ## Compilation 
 
 ### macOS 

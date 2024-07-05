@@ -28,7 +28,7 @@ void ShotNoise::init(int base,int rank)
 
 void ShotNoise::applyShotNoise(Particle *beam, int npart, int nbins, double ne)
 {
-
+  if (ne <=0) { return; }  // skip shotnoise calculation if the slice has no current
 
   if (npart>nwork){
     delete [] work;
