@@ -45,6 +45,37 @@ void G4_usage_and_stop(void)
     exit(1);
 }
 
+void G4_report_lib_versions(void)
+{
+    int rank;
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if(0!=rank)
+        return;
+
+    char buf[MPI_MAX_LIBRARY_VERSION_STRING];
+    int bufused=-1;
+    MPI_Get_library_version(buf, &bufused);
+    cout << "MPI library version string: " << buf << endl;
+
+    // HDF5 library
+    // Remark: there are macros H5_VERS_MAJOR/MINOR/RELEASE that define
+    // the version at compile time, but we report version at runtime.
+    // Reporting both if there is a difference...
+    unsigned hdf5_maj=-1, hdf5_min=-1, hdf5_relnum=-1;
+    H5get_libversion(&hdf5_maj, &hdf5_min, &hdf5_relnum);
+    cout << "HDF5 library reports version: "
+         << hdf5_maj << "." << hdf5_min << "." << hdf5_relnum << endl;
+    // hdf5_relnum=42; // to test the following
+    if((H5_VERS_MAJOR!=hdf5_maj) || (H5_VERS_MINOR!=hdf5_min) || (H5_VERS_RELEASE!=hdf5_relnum)) {
+        cout << "   Note: HDF5 library from header file (at build time): "
+             << H5_VERS_MAJOR << "." << H5_VERS_MINOR << "." << H5_VERS_RELEASE << endl;
+    }
+
+
+    // FFTW3: is there a function that gives the version at runtime? I didn't find one ...
+}
+
 int main (int argc, char *argv[])
 {
     //-------------------------------------------------------
@@ -72,6 +103,7 @@ int main (int argc, char *argv[])
 		{"seed",	required_argument,	NULL, 's'},
 		{"semaphore-file", required_argument,	NULL, 'S'},
 		{"help",	no_argument,		NULL, 'h'},
+		{"dbg-versions",no_argument,		NULL, 'd'},
 		{NULL, 0, NULL, 0}	/* marks end of list => do not remove */
 	};
 
@@ -123,6 +155,11 @@ int main (int argc, char *argv[])
 			case 'h':
                                 G4_usage_and_stop();
 				break;
+
+			case 'd': // debug functions (at start-up phase)
+				G4_report_lib_versions();
+				break;
+
 
 			case '?': /* fall-through */
 			default:
