@@ -6,6 +6,11 @@
  * Was implemented to trigger processing of dumped field distribution
  * before subsequent loading. Of course, the processing program needs
  * to be already running...
+ *
+ * Note, C. Lechner, 2024-June:
+ * To exclude race conditions, all file operations on the files used
+ * to synchronize with the external program must be carried out
+ * only from one MPI process. We use rank zero.
  */
 
 #include <fstream>
@@ -133,9 +138,11 @@ bool SimpleHandshake::doit(map<string,string> *arg, const string prefix)
 	// Delete any "resume" file that may still be there from a previous
 	// run before dropping the "wait" file (not handling the error
 	// that we get if there is no such file)
-	unlink(path_resume.c_str());
+	if(0==my_rank_) {
+		unlink(path_resume.c_str()); // CL: only on rank 0, to exclude any possibility for race condition
+	}
 	drop_file(path_wait);
-	wait_for_file(path_resume);
+	wait_for_file(path_resume); // !this function must be executed on all nodes to avoid deadlocks!
 
 	if(0==my_rank_) {
 		cout << endl;
