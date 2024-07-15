@@ -7,6 +7,9 @@
 #include <getopt.h>
 #include <mpi.h>
 #include <hdf5.h>
+#ifdef FFTW
+ #include <fftw3.h> // for 'fftw_version'
+#endif
 
 #include "genesis.h"
 #include "version.h"
@@ -75,6 +78,10 @@ void G4_report_lib_versions(void)
 
 
     // FFTW3: is there a function that gives the version at runtime? I didn't find one ...
+    // But there is char fftw_version[] (checked for FFTW v3.3.8)
+#ifdef FFTW
+    cout << "FFTW version string: " << fftw_version << endl;
+#endif
 }
 
 int main (int argc, char *argv[])

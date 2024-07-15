@@ -64,6 +64,7 @@ set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:$ENV{FFTW_ROOT}/lib/pkgconfig/")
 pkg_check_modules(FFTW QUIET fftw3 IMPORTED_TARGET)
 if (TARGET PkgConfig::FFTW)
     message(STATUS "FFTW found")
+    message(STATUS "Version: ${FFTW_VERSION}")
     list(APPEND _libraries PkgConfig::FFTW)
     include_directories(PkgConfig::FFTW)
 else()
@@ -181,12 +182,6 @@ target_include_directories(genesis13
 )
 
 
-# add optional macro definitions
-if (TARGET PkgConfig::FFTW)
-    message(STATUS "Defining the macro FFTW in the source code")
-    target_compile_definitions(genesis13 PRIVATE FFTW=1)
-endif()
-
 if(USE_DPI)
    target_compile_definitions(genesis13 PRIVATE USE_DPI)
 endif()
@@ -197,6 +192,13 @@ add_dependencies(genesis13 get_git_hash)
 add_executable(genesis4 src/Main/mainwrap.cpp)
 
 target_link_libraries(genesis4 genesis13 ${_libraries})
+
+# add optional macro definitions
+if (TARGET PkgConfig::FFTW)
+    message(STATUS "Defining the macro FFTW in the source code")
+    target_compile_definitions(genesis13 PRIVATE FFTW=1)
+    target_compile_definitions(genesis4  PRIVATE FFTW=1)
+endif()
 
 # Compilation of plugin testbench only when plugin system is requested
 if(USE_DPI)
