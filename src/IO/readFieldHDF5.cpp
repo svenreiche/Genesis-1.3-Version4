@@ -51,7 +51,7 @@ bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Tim
 
   double ks=4.*asin(1)/reflen;
   scl=dgrid*eev/ks/sqrt(vacimp);
-  scl=1./scl;
+  scl = 1. / scl * attenuation;
   dgrid=0.5*dgrid*static_cast<double>(ngrid-1);
 
 
@@ -119,13 +119,13 @@ bool ReadFieldHDF5::readSlice(double s, vector<complex<double> >*field){
   sprintf(name,"slice%6.6d/field-real",islice);
   readDataDouble(fid,name,work,nwork);
   for (int i=0;i<nwork;i++){
-    field->at(i)=scl*work[i];
+    field->at(i) = scl * work[i];
   }
 
   sprintf(name,"slice%6.6d/field-imag",islice);
   readDataDouble(fid,name,work,nwork);
   for (int i=0;i<nwork;i++){
-    field->at(i)+=complex<double>(0,scl*work[i]);
+    field->at(i)+=complex<double>(0,scl * work[i]);
   }
 
 
