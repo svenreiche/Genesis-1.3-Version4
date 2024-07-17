@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <vector>
 #include "SeriesParser.h"
-#include "Sequence.h"
+#include "Sequence.h" // contains implementation of several classes
 
 bool SeriesParser::init(int rank, std::map<std::string,std::string> *arg, std::string element, SeriesManager *sm){
     // slit for the different cases
