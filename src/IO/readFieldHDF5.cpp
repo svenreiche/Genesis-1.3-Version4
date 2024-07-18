@@ -103,7 +103,7 @@ bool ReadFieldHDF5::readSlice(double s, vector<complex<double> >*field){
 
   if(!isOpen){ return false; } // skip if partfile option is not selected
   
-  double rslice=(s-s0)/slicelen;
+  double rslice=(s-s0+offset)/slicelen;
   if (fabs(rslice-round(rslice))>1e-3){ return false; }
   int islice=static_cast<int> (round(rslice))+1;
 
