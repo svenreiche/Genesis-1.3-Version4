@@ -80,6 +80,7 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
   if (idx<0){
     field=new Field;
     if (rank==0) {cout << "Importing radiation field distribution from file: " << file << " ..." << endl; }
+    if (rank==0) {cout << "Using attenuation: " << attenuation << " and offset " << offset << endl; }
   } else {
     if (rank==0) {cout << "*** Error: Cannot import field, because field is already defined" << endl; }
     return false;
