@@ -40,7 +40,7 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
   if (arg->find("time")!=end)    {dotime = atob(arg->at("time").c_str()); arg->erase(arg->find("time"));}
   if (arg->find("harmonic")!=end){harm = atoi(arg->at("harmonic").c_str()); arg->erase(arg->find("harmonic"));}
   if (arg->find("attenuation")!=end)  {attenuation = atof(arg->at("attenuation").c_str()); arg->erase(arg->find("attenuation"));}
-  if (arg->find("offset")!=end)  {offset = atof(arg->at("offset").c_str()); arg->erase(arg->find("offset"));}
+  // if (arg->find("offset")!=end)  {offset = atof(arg->at("offset").c_str()); arg->erase(arg->find("offset"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &importfield" << endl; this->usage();}
@@ -51,7 +51,8 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
 
   ReadFieldHDF5 import;
   import.attenuation = attenuation;
-  import.offset = offset;
+  // deactivated
+  // import.offset = offset;
 
   bool check=import.readGlobal(rank, size, file, setup, time, harm, dotime);
   if (!check) { 
