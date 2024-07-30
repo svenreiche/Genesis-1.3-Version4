@@ -79,6 +79,8 @@ cmake --build build
 ```
 
 ### Unix
+(For detailed instructions for Ubuntu 22.04LTS including a list of required packages, see [here](build_notes/ubuntu_22.04/).)
+
 Genesis supports now the automatic configuration with CMAKE. Following commands will build Genesis from source on Linux platforms. The minimal command to compile the code from the source code root directory is:
 
 ```
