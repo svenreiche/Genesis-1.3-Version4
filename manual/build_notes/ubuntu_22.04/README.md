@@ -17,11 +17,18 @@ sudo apt-get install pkg-config
 
 In the directory, you can find the output of `dpkg -l`, listing all installed software packages.
 
+### Remark, 2024-07-30
+If you plan to use features such as computation of field divergence angles, you need to ensure that also the FFTW3 library is available.
+Install the following package:
+```
+sudo apt-get install libfftw3-dev
+```
+
 ## Building "Genesis 1.3"
 Now, clone "Genesis 1.3" from the git repository.
 One can compile "Genesis 1.3" as described in the manual.
 
-After the preparation phase, the output of `cmake` is the following:
+After the preparation phase, the output of `cmake` is the following (if FFTW3 is not available):
 ```
 cl@ubuntu-test:~/g4/Genesis-1.3-Version4$ mkdir build
 cl@ubuntu-test:~/g4/Genesis-1.3-Version4$ cd build
@@ -118,7 +125,9 @@ Running modified Example3 on the virtual PC:
 cl@ubuntu-test:~/g4/Genesis-1.3-Version4/examples/Example3-TimeDependent$ mpirun -np 4 /home/cl/g4/Genesis-1.3-Version4/build/genesis4 Example3.in
 ```
 
+
 [![Screenshot of running simulation (click to enlarge)](g4_running_thumb.png)](g4_running.png)
+
 As one can see in the screenshot (click to enlarge), there are 4 processes of `genesis4`, each one at 100% CPU load.
 
 ## Final remarks 
