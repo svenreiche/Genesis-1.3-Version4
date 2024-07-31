@@ -53,9 +53,13 @@ void G4_report_lib_versions(void)
 {
     int rank;
 
+    // only rank 0 prints infos...
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if(0!=rank)
         return;
+
+
+    cout << endl; // some whitespace
 
     char buf[MPI_MAX_LIBRARY_VERSION_STRING];
     int bufused=-1;
@@ -81,7 +85,11 @@ void G4_report_lib_versions(void)
     // But there is char fftw_version[] (checked for FFTW v3.3.8)
 #ifdef FFTW
     cout << "FFTW version string: " << fftw_version << endl;
+#else
+    cout << "FFTW version string: not compiled in" << endl;
 #endif
+
+    cout << endl;
 }
 
 int main (int argc, char *argv[])
