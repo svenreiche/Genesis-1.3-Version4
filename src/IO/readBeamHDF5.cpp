@@ -120,8 +120,8 @@ bool ReadBeamHDF5::readSlice(double s, vector<Particle> *slice, double *current,
 
 
   // get size of data set from slice
-  char name[20];
-  sprintf(name,"slice%6.6d/gamma",islice);
+  char name[32];
+  sprintf(name,"slice%6.6d/gamma",islice); // note by CL, 2024-07-30: consider replacing these by snprintf or stringstream operations
 
   int nsize=getDatasetSize(fid, name);
 

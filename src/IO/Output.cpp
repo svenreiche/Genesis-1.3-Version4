@@ -374,7 +374,7 @@ void Output::writeBeamBuffer(Beam *beam)
   this->writeBuffer(gid, "current","A",&beam->cu);
 
   int bh=beam->getBunchingHarmonics();
-  char bgroup[20];
+  char bgroup[32];
   for (int i=1; i<bh;i++){
     sprintf(bgroup,"bunching%d",(i+1));
     this->writeBuffer(gid, bgroup, " ",  &beam->bh[i-1]);
