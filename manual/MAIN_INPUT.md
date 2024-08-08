@@ -292,7 +292,7 @@ Note that this namelist will be expanded in the future, to enable tilts and matc
 - `alphay`(*double, 0 or matched value*): If matching is enabled, new alpha function in $y$.
 - `eval_start` (*double, 0*): evaluation start.
 - `eval_end` (*double, 1*): evaluation end.
-- `settimewindow` (*bool, true*): set time window.
+- `settimewindow` (*bool, false*): set time window.
 - `align` (*int, 0*): currently unused.
 - `align_start` (*double, 0*): currently unused.
 - `align_end` (*double, 1*): currently unused.

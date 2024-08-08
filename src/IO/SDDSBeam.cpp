@@ -34,7 +34,7 @@ void SDDSBeam::usage(){
   cout << " string file = <empty> " << endl;
   cout << " double charge   = 0 / <distribution file>" << endl;
   cout << " double slicewidth = 0.01" << endl;
-  cout << " bool settimewindow = true" << endl;
+  cout << " bool settimewindow = false" << endl;
   cout << " bool center = false " << endl;
   cout << " double gamma0 = gammaref " << endl;
   cout << " double x0 = 0 " << endl;
