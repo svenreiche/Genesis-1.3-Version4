@@ -22,9 +22,9 @@ sample = 3
 &end
 ```
 
-Here the total length is 20 microns and with a sample rate of 3 times the reference wavelength which is defined as **gammaref** in the main setup namelist.
+Here the total length is 20 microns and with a sample rate of 3 times the reference wavelength which is defined as **lambda0** in the main setup namelist.
 The sample rate cannot be smaller than 1 but can be increased as long as the sample rate is still smaller than the cooperation length. The choice of the sample rate also defines
-the spectral bandwidth according to Nyquist theorem. For the maximum sample rate the frequency is +/-50% around the central frequency. With larger samplerate the bandwidth is restricted
+the spectral bandwidth according to Nyquist theorem. For the maximum sample rate the frequency is +/-50% around the central frequency. With larger sample rate the bandwidth is restricted
 to +/- 50/**sample** percent.  Due to the underlying solver the FEL should be well within the given bandwidth of the simulation. Where this is valid or not, will not be checked by Genesis (Example would be
 simulation with a very large energy chirp in the electron beam or seed signal well different from the central frequency). On the other hand the resonant frequency of the FEL does not need to be
 exact the same as the central frequency.
