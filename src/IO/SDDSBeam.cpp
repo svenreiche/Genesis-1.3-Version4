@@ -276,6 +276,7 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
       double ratio=sqrt(gavg/gamma);
       g[i]+=gamma-gavg;  // take out center so that the rematching is correct
       x[i]-=xavg;
+      y[i]-=yavg;
       px[i]-=pxavg;
       py[i]-=pyavg;
       x[i]*=ratio;   // rescaling is needed to preserve emittance
