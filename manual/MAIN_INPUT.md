@@ -274,7 +274,16 @@ This namelist initiate the generation of the field distribution. It differs in o
 
 This namelist controls the import of an external distribution which are generated from Elegant. The file has to be in HDF5 format. In the distribution is a shell script to convert an Elegant sdds-output file into the HDF5 format. The distribution has to provide all 6 dimensions while the charge is supplied in this namelist. When imported the longitudinal position is changed so that the last particles is at $s=0$ micron.
 
-Note that this namelist will be expanded in the future, to enable tilts and match/center to a core part of the beam
+Genesis will import the distribution and evaluate a part of the distribution in terms of emittance, twiss function etc. The part is defined by the parameters `eval_start` and `eval_end`. They are given in relative terms with respect to the total length of the distribution. E.g. values of 0.25 and 0.75 for these two parameters, respectively will use the central 50% of the bunch to determine the twiss function.
+
+The beam can be match to new twiss parameters defined explicitly in the input deck or by the default values. Note that the matching region is defined by the evaluation range. So it is possible to match a certain slice in the distribution and the rest of the distribution will follow that distribution.
+
+The flag `settimewindow` will update the length of the timewindow. But it is required that a time window is enabled in the input deck first. Also in this case import distribution needs to be called before the field definition.
+
+One important parameter is slicewidth, with is the relative length of a slice in the distribution, for which the contained particles are used to recreate the internal distribution. It is a rolling window averaging of the particle distribution. Here a compromise has to be found between sufficient resolution to retrieve the time-dependent variation in current, emittance etc and having sufficient particles for a valid reconstruction.
+A crude rule of thumb is that in average there should be at least 1000 particle for the recreation. As an example: a distribution of 200000 particles would allow for 200 slices with about 1000 particles in it.
+These 200 slices correspond to a `slicewidth`  of 0.005.
+
 
 - `file` (*string, \<empty>*): The file name of the distribution, including possible relative directories.
 - `charge` (*double, 0*): Total charge of the distribution to calculate the current and individual charge per macro particle.
