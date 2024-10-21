@@ -225,6 +225,9 @@ ID *LatticeParser::parseID(int idx,int rank, double zin, SeriesManager *sm)
 
   this->chop(argument[idx],&par);
   for (int i=0;i<par.size();i++){
+      if (par[i].length() < 1){  // in the case of C: COR = {};  one is getting a zero length string.
+          continue;
+      }
     size_t pos=par[i].find_first_of("=");
     if (pos==string::npos){
       if (rank==0){cout << "*** Warning: Ignoring invalid format: " << par[i] << " for element " << label[idx]<< endl;}
@@ -303,11 +306,14 @@ Corrector *LatticeParser::parseCorrector(int idx,int rank, double zin)
 
   this->chop(argument[idx],&par);
   for (int i=0;i<par.size();i++){
+      if (par[i].length() < 1){  // in the case of C: COR = {};  one is getting a zero length string.
+          continue;
+      }
     size_t pos=par[i].find_first_of("=");
-    if (pos==string::npos){
-      if (rank==0){cout << "*** Warning: Ignoring invalid format: " << par[i] << " for element " << label[idx]<< endl;}
-      continue;  
+    if (par[i].length() < 1){  // in the case of C: COR = {};  one is getting a zero length string.
+        continue;
     }
+
     fld=par[i].substr(0,pos);
     val=par[i].erase(0,pos+1);
     this->trim(fld);
@@ -339,6 +345,9 @@ Chicane *LatticeParser::parseChicane(int idx,int rank, double zin)
 
   this->chop(argument[idx],&par);
   for (int i=0;i<par.size();i++){
+      if (par[i].length() < 1){  // in the case of C: COR = {};  one is getting a zero length string.
+          continue;
+      }
     size_t pos=par[i].find_first_of("=");
     if (pos==string::npos){
       if (rank==0){cout << "*** Warning: Ignoring invalid format: " << par[i] << " for element " << label[idx]<< endl;}
@@ -373,6 +382,9 @@ Marker *LatticeParser::parseMarker(int idx,int rank, double zin)
 
   this->chop(argument[idx],&par);
   for (int i=0;i<par.size();i++){
+      if (par[i].length() < 1){  // in the case of C: COR = {};  one is getting a zero length string.
+          continue;
+      }
     size_t pos=par[i].find_first_of("=");
     if (pos==string::npos){
       if (rank==0){cout << "*** Warning: Ignoring invalid format: " << par[i] << " for element " << label[idx]<< endl;}
@@ -410,6 +422,9 @@ Drift *LatticeParser::parseDrift(int idx,int rank, double zin)
 
   this->chop(argument[idx],&par);
   for (int i=0;i<par.size();i++){
+      if (par[i].length() < 1){  // in the case of C: COR = {};  one is getting a zero length string.
+          continue;
+      }
     size_t pos=par[i].find_first_of("=");
     if (pos==string::npos){
       if (rank==0){cout << "*** Warning: Ignoring invalid format: " << par[i] << " for element " << label[idx]<< endl;}
@@ -444,6 +459,9 @@ Quadrupole *LatticeParser::parseQuad(int idx,int rank, double zin)
 
   this->chop(argument[idx],&par);
   for (int i=0;i<par.size();i++){
+      if (par[i].length() < 1){  // in the case of C: COR = {};  one is getting a zero length string.
+          continue;
+      }
     size_t pos=par[i].find_first_of("=");
     if (pos==string::npos){
       if (rank==0){cout << "*** Warning: Ignoring invalid format: " << par[i] << " for element " << label[idx]<< endl;}
@@ -479,10 +497,13 @@ Phaseshifter *LatticeParser::parsePhaseshifter(int idx,int rank, double zin, Ser
 
   this->chop(argument[idx],&par);
   for (int i=0;i<par.size();i++){
+      if (par[i].length() < 1){  // in the case of C: COR = {};  one is getting a zero length string.
+          continue;
+      }
     size_t pos=par[i].find_first_of("=");
     if (pos==string::npos){
       if (rank==0){cout << "*** Warning: Ignoring invalid format: " << par[i] << " for element " << label[idx]<< endl;}
-      continue;  
+      continue;
     }
     fld=par[i].substr(0,pos);
     val=par[i].erase(0,pos+1);

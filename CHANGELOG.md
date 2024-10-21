@@ -1,5 +1,8 @@
 # Change Log
 
+### [4.6.6] - 2024/10/21
+- fixed: If beamline elements have not a single explicit argument it causes an error message of unsupported element. This is changed to generating an element with default values.
+
 ### [4.6.6] - 2024/09/13
 - fixed: Matching an imported distribution caused NaN values and therefore a non-sensical simulation. This has been fixed.
 - added some explanation to the manual for importdistribution
