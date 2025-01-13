@@ -35,6 +35,7 @@ class ImportField : public StringProcessing{
    int harm;
    double offset;
    bool dotime;
+   double attenuation;
 };
 
 

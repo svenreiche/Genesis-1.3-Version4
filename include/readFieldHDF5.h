@@ -28,7 +28,8 @@ class ReadFieldHDF5 : public HDF5Base {
   void close();
   int getNGrid();
   double getDGrid();
-
+  double attenuation=1.0;
+  double offset=0.0;
 
  private:
   hid_t fid;
