@@ -36,10 +36,12 @@ private:
    double ds,dscur;
    unsigned int ns;
    int size,rank,ncur;
-   double *wakeext, *wakeint, *wakeres, *wakegeo, *wakerou, *wake, *current, *dcurrent;
+   //double *wakeext, *wakeint, *wakeres, *wakegeo, *wakerou, *wake, *current, *dcurrent;
    // double *cur;
    std::vector<double> cur;
-   int *count;
+   std::vector<double> wakeext, wakeint, wakeres,wakegeo,wakerou,wake,current,dcurrent;
+   std::vector<int> count;
+//   int *count;
 
 
 };

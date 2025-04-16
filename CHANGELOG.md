@@ -1,4 +1,6 @@
 # Change Log
+### [4.6.7] - 2025/04/16
+- Fixed bug of wakefield calculation, which caused some rounding errors und as a consequence heap memory corruption.
 
 ### [4.6.7] - 2024/11/12
 - Release of version 4.6.7

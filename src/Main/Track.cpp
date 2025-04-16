@@ -139,6 +139,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   if(!core.run(beam,field,setup,und,isTime,isScan, filter)) {
     /* execution of simulation was not successful, for instance because of IO error during a file write triggered by marker */
     if  (rank==0) { cout << "End of Track (after error)" << endl;}
+    delete und;
     return(false);
   }
 

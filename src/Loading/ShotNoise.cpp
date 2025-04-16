@@ -9,8 +9,8 @@ ShotNoise::ShotNoise(){
 ShotNoise::~ShotNoise()
 {
   delete [] work;
+  if (sran !=NULL) { delete sran; }
 }
-
 
 
 void ShotNoise::init(int base,int rank)
