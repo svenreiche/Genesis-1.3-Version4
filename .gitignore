@@ -4,8 +4,10 @@ lib
 build
 build_info.c
 *.*~
-cmake-build-debug/*
-cmake-build-release/*
+cmake-build-debug/
+cmake-build-release/
+build/
 debug/*
 /benchmark/
+.idea/
 

@@ -117,7 +117,7 @@ add_library(genesis13 STATIC
         src/Util/Hammerslay.cpp
         src/Util/Inverfc.cpp
         src/Util/RandomU.cpp
-	src/Util/SimpleHandshake.cpp
+	    src/Util/SimpleHandshake.cpp
         src/Util/Sorting.cpp
         src/Util/StringProcessing.cpp
         src/Util/SemaFile.cpp
@@ -162,6 +162,7 @@ add_library(genesis13 STATIC
         src/Loading/ImportTransformation.cpp
         src/Main/AlterSetup.cpp
         src/Main/Dump.cpp
+        src/Main/BeamShaping.cpp
         src/Main/EField.cpp
         src/Main/FieldManipulator.cpp
         src/Main/GenMain.cpp
