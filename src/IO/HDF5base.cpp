@@ -471,15 +471,17 @@ bool HDF5Base::simpleReadDouble1D(const string &path, vector<double> *data){
   stringstream ss(path);
   string file;
   string group;
+  string seg;
+
+
   char delim='/';             // does not compile it I use double quotation marks
-  if (getline(ss,file,delim)){
-     if (!getline(ss,group)){
-       return false;
-     }
-  } else {
-    return false;
+  while (getline(ss, group, delim)){
+      if (file.size()>0){
+          file+="/";
+      }
+      file+=seg;
+      seg=group;
   }
-  
 
   hid_t fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);
   int nsize=this->getDatasetSize(fid,(char *)group.c_str());

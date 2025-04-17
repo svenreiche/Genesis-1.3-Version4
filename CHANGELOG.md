@@ -2,6 +2,7 @@
 ### [4.6.7] - 2025/04/16
 - Fixed bug of wakefield calculation, which caused some rounding errors und as a consequence heap memory corruption.
 - added support for sequence definition in the lattice file. See lattice file for more information.
+- add support for relative paths and sub-directories in profile_file
 
 ### [4.6.7] - 2024/11/12
 - Release of version 4.6.7
