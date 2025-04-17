@@ -42,6 +42,8 @@ class LatticeParser : public StringProcessing {
    vector<int> zref;
    vector<double> zoff;
    int refele;
+
+   void addSequence(const string& label, string argument, int rank, SeriesManager *sm);
 };
 
 

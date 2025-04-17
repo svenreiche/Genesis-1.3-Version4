@@ -20,7 +20,9 @@ Following beamline elements are currently supported: undulator, quadrupole, drif
   - [chicane](#chicane)
   - [phaseshifter](#phaseshifter)
   - [marker](#marker)
+  - [sequence](#sequence)
   - [line](#line)
+  
 
 Labels are used to identify elements and are referred to in the line element. More information is given at the end of this section.
 
@@ -77,7 +79,7 @@ Labels are used to identify elements and are referred to in the line element. Mo
 - `l` (*double, 0, [m]*): Length of the phase shifter in meter.
 - `phi` (*double, 0, [rad]*): Change in the ponderomotive phase of the electrons in units of rad. Note that Genesis 1.3 is doing an autophasing, so that the electrons at reference energy are not changing in ponderomotive phase in drifts.
 
-[Back](#supported-lattice-elements)]]
+[Back](#supported-lattice-elements)
 
 ### marker
 
@@ -87,6 +89,22 @@ Labels are used to identify elements and are referred to in the line element. Mo
 - `stop` (*int, 0/1*): A non-zero value stops the execution of the tracking module. Note that the output file still contains the full length with zeros as output for those integration steps which are no further calculated.
 
 [Back](#supported-lattice-elements)
+
+### sequence
+This element provides the functionality of sequences in the same way as in the main input deck.
+Note that it has nothing to do with beamline sequences used in tracking programs, e.g. MadX. 
+See the manual for the main input deck for the explicit argument requirements for each sequence.
+The label of the sequence is used as the reference to the sequence.
+
+- `type` (*string, empty*) - String defining the type of sequence. It must match of the possibilities given in the input deck, e.g. `const` for a constant sequence
+- `...` Same arguments as in the namelists, except that the field `label` is automatically defined by the label field in the lattice file.
+
+An example for a sequence definition is:
+```
+VAL: SEQUENCE = {type = const, c0 = 3.5};
+UND: UNDULATOR = {lambdau=0.015000, nwig=266, aw=@val, helical= True};
+```
+Note that occurences of sequences are parsed first before evaluating individual elements. Thus the sequence definition can occur at any location in the lattice file.
 
 ### line
 
