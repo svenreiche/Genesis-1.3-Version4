@@ -42,6 +42,7 @@ struct FilterBeam{
     bool spatial {true};
     bool energy {true};
     bool current {false};
+    bool twiss {false};
     bool auxiliar {true};
     int harm {1};
 };

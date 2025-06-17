@@ -344,13 +344,21 @@ std::map<std::string,OutputInfo> DiagBeam::getTags(FilterDiagnostics & filter_in
     } else {
         tags["current"] = {false, true, "A"};
     }
-    tags["emitx"]={false,true,"m"};
-    tags["emity"]={false,true,"m"};
-    tags["betax"]={false,true,"m"};
-    tags["betay"]={false,true,"m"};
-    tags["alphax"]={false,true,"rad"};
-    tags["alphay"]={false,true,"rad"};
-
+    if (filter_in.beam.twiss) {
+        tags["emitx"] = {false, false, "m"};
+        tags["emity"] = {false, false, "m"};
+        tags["betax"] = {false, false, "m"};
+        tags["betay"] = {false, false, "m"};
+        tags["alphax"] = {false, false, "rad"};
+        tags["alphay"] = {false, false, "rad"};
+    } else {
+        tags["emitx"] = {false, true, "m"};
+        tags["emity"] = {false, true, "m"};
+        tags["betax"] = {false, true, "m"};
+        tags["betay"] = {false, true, "m"};
+        tags["alphax"] = {false, true, "rad"};
+        tags["alphay"] = {false, true, "rad"};
+    }
     return tags;
 }
 
@@ -502,16 +510,27 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
         } else {
             this->storeValue(val,"current",idx,beam->current[is]);
         }
-        if (iz == 0) {
-            // because genesis works with momenta and not divergence, the emittance does not need energy
-            double ex=sqrt(fabs((x2-x1*x1)*(px2-px1*px1)-(xpx-x1*px1)*(xpx-x1*px1)));
-            double ey=sqrt(fabs((y2-y1*y1)*(py2-py1*py1)-(ypy-y1*py1)*(ypy-y1*py1)));
-            this->storeValue(val,"emitx",is,ex);
-            this->storeValue(val,"emity",is,ey);
-            this->storeValue(val,"betax",is,(x2-x1*x1)/ex*g1);
-            this->storeValue(val,"betay",is,(y2-y1*y1)/ey*g1);
-            this->storeValue(val,"alphax",is,-(xpx-x1*px1)/ex);
-            this->storeValue(val,"alphay",is,-(ypy-y1*py1)/ey);
+        if (tags["emitx"].once) {
+            if (iz == 0) {
+                // because genesis works with momenta and not divergence, the emittance does not need energy
+                double ex = sqrt(fabs((x2 - x1 * x1) * (px2 - px1 * px1) - (xpx - x1 * px1) * (xpx - x1 * px1)));
+                double ey = sqrt(fabs((y2 - y1 * y1) * (py2 - py1 * py1) - (ypy - y1 * py1) * (ypy - y1 * py1)));
+                this->storeValue(val, "emitx", idx, ex);
+                this->storeValue(val, "emity", idx, ey);
+                this->storeValue(val, "betax", idx, (x2 - x1 * x1) / ex * g1);
+                this->storeValue(val, "betay", idx, (y2 - y1 * y1) / ey * g1);
+                this->storeValue(val, "alphax", idx, -(xpx - x1 * px1) / ex);
+                this->storeValue(val, "alphay", idx, -(ypy - y1 * py1) / ey);
+            }
+        } else {
+            double ex = sqrt(fabs((x2 - x1 * x1) * (px2 - px1 * px1) - (xpx - x1 * px1) * (xpx - x1 * px1)));
+            double ey = sqrt(fabs((y2 - y1 * y1) * (py2 - py1 * py1) - (ypy - y1 * py1) * (ypy - y1 * py1)));
+            this->storeValue(val, "emitx", idx, ex);
+            this->storeValue(val, "emity", idx, ey);
+            this->storeValue(val, "betax", idx, (x2 - x1 * x1) / ex * g1);
+            this->storeValue(val, "betay", idx, (y2 - y1 * y1) / ey * g1);
+            this->storeValue(val, "alphax", idx, -(xpx - x1 * px1) / ex);
+            this->storeValue(val, "alphay", idx, -(ypy - y1 * py1) / ey);
         }
         //-------------------------------------------------------------------------
         // gather moments for all slices with current as weighting factor

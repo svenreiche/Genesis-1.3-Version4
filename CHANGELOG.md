@@ -1,6 +1,8 @@
 # Change Log
+### [4.6.8] - 2025/07/17
+- Added support for output of twiss parameters at each integration step
 
-### [4.6.8] - 2024/11/12
+### [4.6.8] - 2025/05/01
 - Release of version 4.6.8
 
 ### [4.6.7] - 2025/04/16

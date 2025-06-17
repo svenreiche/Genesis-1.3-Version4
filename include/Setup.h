@@ -89,7 +89,7 @@ class Setup: public StringProcessing{
    double gamma0,lambda0,delz;
    bool one4one,shotnoise;
    bool beam_global_stat, field_global_stat;
-   bool exclude_spatial_output, exclude_fft_output, exclude_intensity_output, exclude_energy_output, exclude_aux_output, exclude_current_output, exclude_field_dump;
+   bool exclude_spatial_output, exclude_fft_output, exclude_intensity_output, exclude_energy_output, exclude_aux_output, exclude_current_output, exclude_twiss_output, exclude_field_dump;
    bool do_write_outfile;
 
    bool beam_write_filter;

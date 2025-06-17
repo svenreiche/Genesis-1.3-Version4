@@ -31,6 +31,7 @@ Setup::Setup()
   exclude_energy_output=false;
   exclude_aux_output=false;
   exclude_current_output=true;
+  exclude_twiss_output=true;
   exclude_field_dump=false;
   do_write_outfile=true;
 
@@ -71,6 +72,7 @@ void Setup::usage(){
   cout << " bool exclude_energy_output = false" << endl;
   cout << " bool exclude_aux_output = false" << endl;
   cout << " bool exclude_current_output = true" << endl;
+  cout << " bool exclude_twiss_output = true" << endl;
   cout << " bool exclude_field_dump = false" << endl;
   cout << " bool write_meta_file = false" << endl;
   cout << " bool write_semaphore_file = false" << endl;
@@ -107,6 +109,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, SeriesManage
   if (arg->find("exclude_energy_output")!=end)    {exclude_energy_output   = atob(arg->at("exclude_energy_output"));    arg->erase(arg->find("exclude_energy_output"));}
   if (arg->find("exclude_aux_output")!=end)       {exclude_aux_output      = atob(arg->at("exclude_aux_output"));       arg->erase(arg->find("exclude_aux_output"));}
   if (arg->find("exclude_current_output")!=end)   {exclude_current_output  = atob(arg->at("exclude_current_output"));   arg->erase(arg->find("exclude_current_output"));}
+  if (arg->find("exclude_twiss_output")!=end)   {exclude_twiss_output  = atob(arg->at("exclude_twiss_output"));   arg->erase(arg->find("exclude_twiss_output"));}
   if (arg->find("exclude_field_dump")!=end)   {exclude_field_dump  = atob(arg->at("exclude_field_dump"));   arg->erase(arg->find("exclude_field_dump"));}
 
   if (arg->find("write_meta_file")!=end)   {write_meta_file = atob(arg->at("write_meta_file"));   arg->erase(arg->find("write_meta_file"));}
@@ -153,6 +156,7 @@ bool Setup::init(int inrank, map<string,string> *arg, Lattice *lat, SeriesManage
   filter.beam.spatial = !exclude_spatial_output;
   filter.beam.energy = !exclude_energy_output;
   filter.beam.current = !exclude_current_output;
+  filter.beam.twiss = !exclude_twiss_output;
   filter.beam.auxiliar = !exclude_aux_output;
   filter.field.global = field_global_stat;
   filter.field.spatial = !exclude_spatial_output;
