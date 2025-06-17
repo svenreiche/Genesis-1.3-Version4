@@ -27,7 +27,7 @@ class LatticeParser : public StringProcessing {
    Quadrupole *parseQuad(int,int,double);
    Drift *parseDrift(int,int,double);
    Marker *parseMarker(int,int,double);
-   Chicane *parseChicane(int,int,double);
+   Chicane *parseChicane(int,int,double, SeriesManager *);
    Corrector *parseCorrector(int,int,double);
    ID *parseID(int,int,double, SeriesManager *);
    Phaseshifter *parsePhaseshifter(int,int,double, SeriesManager *);
