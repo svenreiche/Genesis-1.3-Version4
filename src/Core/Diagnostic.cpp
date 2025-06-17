@@ -341,8 +341,8 @@ std::map<std::string,OutputInfo> DiagBeam::getTags(FilterDiagnostics & filter_in
     }
     if (filter_in.beam.current) {
         tags["current"] = {false, false, "A"};
-    } else{
-        tags["current"]= {false,true,"A"};
+    } else {
+        tags["current"] = {false, true, "A"};
     }
     tags["emitx"]={false,true,"m"};
     tags["emity"]={false,true,"m"};
