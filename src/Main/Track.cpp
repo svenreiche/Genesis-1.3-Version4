@@ -9,6 +9,7 @@ Track::Track()
   dumpFieldStep=0;
   dumpBeamStep=0;
   bunchharm=1;
+  exclharm = false;
 }
 
 Track::~Track(){}
@@ -26,6 +27,7 @@ void Track::usage(){
   cout << " int beam_dump_step  = 0" << endl;
   cout << " int sort_step = 0" << endl;
   cout << " int bunchharm = 1" << endl;
+  cout << " bool exclusive_harmonics = false" << endl;
   cout << "&end" << endl << endl;
   /* currently undocumented debugging options: dbg_report_lattice, dbg_suppress_outfile */
 
@@ -68,6 +70,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   if (arg->find("beam_dump_step")!=end)   {dumpBeamStep = atoi(arg->at("beam_dump_step").c_str());  arg->erase(arg->find("beam_dump_step"));}
   if (arg->find("sort_step")!=end)   {sort_step= atoi(arg->at("sort_step").c_str());  arg->erase(arg->find("sort_step"));}
   if (arg->find("bunchharm")!=end)   {bunchharm= atoi(arg->at("bunchharm").c_str());  arg->erase(arg->find("bunchharm"));}
+  if (arg->find("exclusive_harmonics")!=end) {exclharm = atob(arg->at("exclusive_harmonics")); arg->erase(arg->find("exclusive_harmonics"));}
   if (arg->find("dbg_report_lattice")!=end) {dbg_report_lattice = atob(arg->at("dbg_report_lattice")); arg->erase(arg->find("dbg_report_lattice"));}
   if (arg->find("dbg_suppress_outfile")!=end) {dbg_no_outfile = atob(arg->at("dbg_suppress_outfile")); arg->erase(arg->find("dbg_suppress_outfile"));}
 
@@ -77,6 +80,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   }
   if (bunchharm <1) { bunchharm = 1; }
   filter.beam.harm = bunchharm;
+  filter.beam.exclharm = exclharm;
   if (output_step < 1) { output_step=1; }
 
  

@@ -45,6 +45,7 @@ struct FilterBeam{
     bool twiss {false};
     bool auxiliar {true};
     int harm {1};
+    bool exclharm {false};
 };
 
 struct FilterField{

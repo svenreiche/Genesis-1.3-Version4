@@ -1,6 +1,7 @@
 # Change Log
 ### [4.6.8] - 2025/07/17
 - Added support for output of twiss parameters at each integration step
+- Added support to select only a specific harmonics for output in the main output file
 
 ### [4.6.8] - 2025/05/01
 - Release of version 4.6.8

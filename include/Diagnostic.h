@@ -38,6 +38,7 @@ class Setup;
 class DiagBeam: public DiagBeamBase{
 private:
     unsigned int nharm {1};    // beam specific for calculating harmonics in the bunching
+    bool exclharm {false};
 public:
     ~DiagBeam() = default;
     DiagBeam() = default; // this is needed since the harmonics can be changed

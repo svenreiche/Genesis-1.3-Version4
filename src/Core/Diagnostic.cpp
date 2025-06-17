@@ -286,6 +286,7 @@ std::map<std::string,OutputInfo> DiagBeam::getTags(FilterDiagnostics & filter_in
     filter.clear();
 
     nharm = filter_in.beam.harm;
+    exclharm = filter_in.beam.exclharm;
     global = filter_in.beam.global;
 
     if (filter_in.beam.energy) {
@@ -316,11 +317,18 @@ std::map<std::string,OutputInfo> DiagBeam::getTags(FilterDiagnostics & filter_in
     tags["bunching"] = {false, false, " "};
     tags["bunchingphase"] = {false, false, "rad"};
     char buff[30];
-    for (int iharm = 1; iharm < nharm; iharm++) {
-        snprintf(buff, sizeof(buff), "bunching%d", iharm + 1);
+    if (exclharm && (nharm > 1)) {
+        snprintf(buff, sizeof(buff), "bunching%d", nharm);
         tags[buff] = {false, false, " "};
-        snprintf(buff, sizeof(buff), "bunchingphase%d", iharm + 1);
+        snprintf(buff, sizeof(buff), "bunchingphase%d", nharm);
         tags[buff] = {false, false, "rad"};
+    } else {
+        for (int iharm = 1; iharm < nharm; iharm++) {
+            snprintf(buff, sizeof(buff), "bunching%d", iharm + 1);
+            tags[buff] = {false, false, " "};
+            snprintf(buff, sizeof(buff), "bunchingphase%d", iharm + 1);
+            tags[buff] = {false, false, "rad"};
+        }
     }
     if (filter_in.beam.auxiliar) {
         filter["aux"] = true;
@@ -376,72 +384,72 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
     double g_y1=0;
     double g_y2=0;
 
-    for (auto const &slice :beam->beam){
-        double g1=0;
-        double g2=0;
-        double x1=0;
-        double x2=0;
-        double y1=0;
-        double y2=0;
-        double px1=0;
-        double py1=0;
-        double px2=0;
-        double py2=0;
-        double xpx=0;
-        double ypy=0;
+    for (auto const &slice :beam->beam) {
+        double g1 = 0;
+        double g2 = 0;
+        double x1 = 0;
+        double x2 = 0;
+        double y1 = 0;
+        double y2 = 0;
+        double px1 = 0;
+        double py1 = 0;
+        double px2 = 0;
+        double py2 = 0;
+        double xpx = 0;
+        double ypy = 0;
         // min and max values
-        double xmin=1e5;
-        double xmax=-1e5;
-        double pxmin=1e5;
-        double pxmax=-1e5;
-        double ymin=1e5;
-        double ymax=-1e5;
-        double pymin=1e5;
-        double pymax=-1e5;
-        double gmin=1e7;
-        double gmax=1;
+        double xmin = 1e5;
+        double xmax = -1e5;
+        double pxmin = 1e5;
+        double pxmax = -1e5;
+        double ymin = 1e5;
+        double ymax = -1e5;
+        double pymin = 1e5;
+        double pymax = -1e5;
+        double gmin = 1e7;
+        double gmax = 1;
 
-        for (int iharm=0; iharm<nharm; iharm++){
+        for (int iharm = 0; iharm < nharm; iharm++) {
             b[iharm] = 0;
         }
-        for (auto const &par: slice){
-           x1 += par.x;
-           x2 += par.x*par.x;
-           y1 += par.y;
-           y2 += par.y*par.y;
-           g1 += par.gamma;
-           g2 += par.gamma*par.gamma;
-           px1 += par.px;
-           py1 += par.py;
-           px2 += par.px*par.px;
-           py2 += par.py*par.py;
-           xpx += par.x*par.px;
-           ypy += par.y*par.py;
+        for (auto const &par: slice) {
+            x1 += par.x;
+            x2 += par.x * par.x;
+            y1 += par.y;
+            y2 += par.y * par.y;
+            g1 += par.gamma;
+            g2 += par.gamma * par.gamma;
+            px1 += par.px;
+            py1 += par.py;
+            px2 += par.px * par.px;
+            py2 += par.py * par.py;
+            xpx += par.x * par.px;
+            ypy += par.y * par.py;
 //           complex<double> phasor = complex<double> (cos(par.theta),sin(par.theta));
 //           complex<double> phasor_acc = phasor;
 //           b[0] += phasor;
-           for(int iharm=0; iharm<nharm;iharm++){
- //              phasor_acc *= phasor;
+            for (int iharm = 0; iharm < nharm; iharm++) {
+                //              phasor_acc *= phasor;
 //               b[iharm]+=phasor_acc;
-                b[iharm]+=complex<double> (cos((iharm+1)*par.theta),sin((iharm+1)*par.theta));
+                b[iharm] += complex<double>(cos((iharm + 1) * par.theta), sin((iharm + 1) * par.theta));
 //                b[iharm]+=phasor*phasor;
-           }
-        }
-        if (filter["aux"]){
-            for (auto const &par: slice){
-                if (par.x < xmin) {xmin = par.x;}
-                if (par.x > xmax) {xmax = par.x;}
-                if (par.px < pxmin) {pxmin = par.px;}
-                if (par.px > pxmax) {pxmax = par.px;}
-                if (par.y < ymin) {ymin = par.y;}
-                if (par.y > ymax) {ymax = par.y;}
-                if (par.py < pymin) {pymin = par.py;}
-                if (par.py > pymax) {pymax = par.py;}
-                if (par.gamma < gmin) {gmin = par.gamma;}
-                if (par.gamma > gmax) {gmax = par.gamma;}
             }
         }
-        double norm=1.;
+        if (filter["aux"]) {
+            for (auto const &par: slice) {
+                if (par.x < xmin) { xmin = par.x; }
+                if (par.x > xmax) { xmax = par.x; }
+                if (par.px < pxmin) { pxmin = par.px; }
+                if (par.px > pxmax) { pxmax = par.px; }
+                if (par.y < ymin) { ymin = par.y; }
+                if (par.y > ymax) { ymax = par.y; }
+                if (par.py < pymin) { pymin = par.py; }
+                if (par.py > pymax) { pymax = par.py; }
+                if (par.gamma < gmin) { gmin = par.gamma; }
+                if (par.gamma > gmax) { gmax = par.gamma; }
+            }
+        }
+        double norm = 1.;
         if (!slice.empty()) {
             norm = 1. / static_cast<double>(slice.size());
         }
@@ -456,35 +464,42 @@ void DiagBeam::getValues(Beam *beam,std::map<std::string,std::vector<double> >&v
         py2 *= norm;
         g1 *= norm;
         g2 *= norm;
-        xpx *=norm;
+        xpx *= norm;
         ypy *= norm;
-        for (int iharm=0; iharm<nharm;iharm++){
-            b[iharm]*=norm;
+        for (int iharm = 0; iharm < nharm; iharm++) {
+            b[iharm] *= norm;
         }
 
         //-------------------------------------------------------------------------------
         // save into the allocated memory space
-        int idx = iz*ns+is;         // index for saving the data
-        if (filter["energy"]){
-            this->storeValue(val,"energy",idx,g1);
-            this->storeValue(val,"energyspread",idx,sqrt(fabs(g2-g1*g1)));
+        int idx = iz * ns + is;         // index for saving the data
+        if (filter["energy"]) {
+            this->storeValue(val, "energy", idx, g1);
+            this->storeValue(val, "energyspread", idx, sqrt(fabs(g2 - g1 * g1)));
         }
-        if (filter["spatial"]){
-            this->storeValue(val,"xposition",idx,x1);
-            this->storeValue(val,"xsize",idx,sqrt(fabs(x2-x1*x1)));
-            this->storeValue(val,"yposition",idx,y1);
-            this->storeValue(val,"ysize",idx,sqrt(fabs(y2-y1*y1)));
-            this->storeValue(val,"pxposition",idx,px1);
-            this->storeValue(val,"pyposition",idx,py1);
+        if (filter["spatial"]) {
+            this->storeValue(val, "xposition", idx, x1);
+            this->storeValue(val, "xsize", idx, sqrt(fabs(x2 - x1 * x1)));
+            this->storeValue(val, "yposition", idx, y1);
+            this->storeValue(val, "ysize", idx, sqrt(fabs(y2 - y1 * y1)));
+            this->storeValue(val, "pxposition", idx, px1);
+            this->storeValue(val, "pyposition", idx, py1);
         }
-        this->storeValue(val,"bunching",idx,std::abs(b[0]));
-        this->storeValue(val,"bunchingphase",idx,atan2(b[0].imag(),b[0].real()));
+        this->storeValue(val, "bunching", idx, std::abs(b[0]));
+        this->storeValue(val, "bunchingphase", idx, atan2(b[0].imag(), b[0].real()));
         char buff[100];
-        for (int iharm = 1; iharm < nharm; iharm++) {
-            snprintf(buff, sizeof(buff), "bunching%d", iharm + 1);
-            this->storeValue(val,buff,idx,std::abs(b[iharm]));
-            snprintf(buff, sizeof(buff), "bunchingphase%d", iharm + 1);
-            this->storeValue(val,buff,idx,atan2(b[iharm].imag(),b[iharm].real()));
+        if (exclharm && (nharm>1)){
+            snprintf(buff, sizeof(buff), "bunching%d", nharm);
+            this->storeValue(val, buff, idx, std::abs(b[nharm-1]));
+            snprintf(buff, sizeof(buff), "bunchingphase%d", nharm);
+            this->storeValue(val, buff, idx, atan2(b[nharm-1].imag(), b[nharm-1].real()));
+        } else {
+            for (int iharm = 1; iharm < nharm; iharm++) {
+                snprintf(buff, sizeof(buff), "bunching%d", iharm + 1);
+                this->storeValue(val, buff, idx, std::abs(b[iharm]));
+                snprintf(buff, sizeof(buff), "bunchingphase%d", iharm + 1);
+                this->storeValue(val, buff, idx, atan2(b[iharm].imag(), b[iharm].real()));
+            }
         }
         if (filter["aux"]) {
             this->storeValue(val,"efield",idx,beam->eloss[is] + beam->longESC[is]);

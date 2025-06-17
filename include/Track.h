@@ -33,6 +33,7 @@ class Track{
    double zstop,slen,s0;
    int output_step,dumpFieldStep,dumpBeamStep,sort_step,bunchharm;
    int rank, size;
+   bool exclharm;
 };
 
 

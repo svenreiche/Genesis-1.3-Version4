@@ -441,11 +441,12 @@ This namelist initiate the actually tracking through the undulator and then writ
 - `output_step` (*int, 1*): Defines the number of integration steps before the particle and field distribution is analyzed for output.
 - `field_dump_step` (*int, 0*): Defines the number of integration steps before a field dump is written. Be careful because for time-dependent simulation it can generate many large output files.
 - `beam_dump_step` (*int, 0*): Defines the number of integration steps before a particle dump is written. Be careful because for time-dependent simulation it can generate many large output files.
--  `sort_step` (*int,0*): Defines the number of steps of integration before the particle distribution is sorted. Works only for one-4-one simulations.
+- `sort_step` (*int,0*): Defines the number of steps of integration before the particle distribution is sorted. Works only for one-4-one simulations.
 - `s0` (*double, <taken from TIME module>*): Option to override the default time window start from the TIME module.
 - `slen` (*double, <taken from TIME module>*): Option to override the default time window length from the TIME module.
 - `field_dump_at_undexit` (*bool, false*): Field dumps at the exit of the undulator (one dump for each undulator in the expanded lattice).
 - `bunchharm` (*int, 1*): Bunching harmonic output setting. Must be >= 1.
+- `exclusive_harmonics` (*bool, false*): If set to true than only the requested bunching harmonic is included in output. Otherwise all harmonic sup and including the specified harmonics are included.
 
 
 [Back](#supported-namelists)
