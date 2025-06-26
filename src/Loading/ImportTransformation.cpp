@@ -129,7 +129,7 @@ void ImportTransformation::applyMatrix(vector<vector<Particle>> &beam) {
             r0.at(2)=beam.at(islice).at(ipart).y;
             r0.at(3)=beam.at(islice).at(ipart).py/gamma;
             r0.at(4)=beam.at(islice).at(ipart).theta/kr;
-            r0.at(5)=beam.at(islice).at(ipart).gamma/gamma;
+            r0.at(5)=beam.at(islice).at(ipart).gamma/gamma-1;
 
             for (int j=0;j<6;j++){
                 r1.at(j) = 0;
@@ -151,7 +151,7 @@ void ImportTransformation::applyMatrix(vector<vector<Particle>> &beam) {
             beam.at(islice).at(ipart).y = r1.at(2);
             beam.at(islice).at(ipart).py = r1.at(3) * gamma;
             beam.at(islice).at(ipart).theta = r1.at(4) * kr;
-            beam.at(islice).at(ipart).gamma = r1.at(5) * gamma;
+            beam.at(islice).at(ipart).gamma = 1+r1.at(5) * gamma;
         }
     }
 }
