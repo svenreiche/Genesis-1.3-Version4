@@ -39,6 +39,7 @@ void ShotNoise::applyShotNoise(Particle *beam, int npart, int nbins, double ne)
   int mpart=npart/nbins;
 
   double nbl=ne/static_cast<double>(mpart);  // number of simulated electrons per beamlet 
+  if (nbl < 10) {nbl = 10;}  // check for case when there are more macro particles then electrons to be simulated.
 
   for (int i=0; i< npart; i++){
     work[i]=0;

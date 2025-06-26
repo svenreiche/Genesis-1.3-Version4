@@ -1,7 +1,8 @@
 # Change Log
 ### [4.6.8]
 - Fixed bug that transformation of particle distribution are now using the energy deviation E_j/<E> -1 and thus avoiding an offset.
-- 
+- Fixed issue 225 that for very low current and quiet loading the applied shot noise diverges. This has been limited so that the particles stay in the same or at least adjacent bucket. It doe snot change in the bunching factor since in this case the shotnoise is pure random.
+
 ### [4.6.8] - 2025/07/17
 - Added support for output of twiss parameters at each integration step
 - Added support to select only a specific harmonics for output in the main output file
