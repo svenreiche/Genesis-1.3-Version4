@@ -26,6 +26,7 @@
 #include "GenProfile.h"
 #include "Setup.h"
 #include "AlterSetup.h"
+#include "AlterBeam.h"
 #include "Lattice.h"
 #include "GenTime.h"
 #include "Gencore.h"
@@ -123,19 +124,19 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
     map<string, string> argument;
 
     // some dummy argument used earlier
-    string latstring = "";
-    string outstring = "";
+    string latstring;
+    string outstring;
     int in_seed = 0;
 
 
     //-------------------------------------------
     // instances of main classes
-    Setup *setup = new Setup;
-    AlterLattice *alt = new AlterLattice;
-    Lattice *lattice = new Lattice;
-    Profile *profile = new Profile;
-    SeriesManager *series = new SeriesManager;
-    Series *seq = new Series;
+    auto *setup = new Setup;
+    auto *alt = new AlterLattice;
+    auto *lattice = new Lattice;
+    auto *profile = new Profile;
+    auto *series = new SeriesManager;
+    auto *seq = new Series;
     Time *timewindow = new Time;
     FilterDiagnostics filter;
 
@@ -347,6 +348,15 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
             auto *loadbeam = new LoadBeam;
             if (!loadbeam->init(rank, size, &argument, beam, setup, timewindow, profile, lattice)) { break; }
             delete loadbeam;
+            continue;
+        }
+        //----------------------------------------------------
+        // direct manipulation of external field
+
+        if (element == "&alter_beam") {
+            auto *alterbeam = new AlterBeam;
+            if (!alterbeam->init(rank, size, &argument, beam, setup, timewindow, profile)) { break; }
+            delete alterbeam;
             continue;
         }
 
