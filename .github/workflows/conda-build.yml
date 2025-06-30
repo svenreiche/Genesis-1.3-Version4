@@ -1,0 +1,49 @@
+name: Genesis4 - Conda Build & Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-conda:
+    name: conda-${{ matrix.os }}-${{ matrix.mpi }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        mpi: [openmpi, mpich]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          use-mamba: true
+          activate-environment: genesis4-build
+          channels: conda-forge
+          environment-file: .github/genesis4-build-env-${{ matrix.mpi }}.yaml
+          python-version: 3.12
+          conda-remove-defaults: true
+
+      - name: Build Genesis4 with Conda
+        env:
+          MPI: ${{ matrix.mpi }}
+        shell: bash -eo pipefail -l {0}
+        run: .github/scripts/build.sh
+
+      - name: Upload Genesis4 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis4-${{ matrix.os }}-${{ matrix.mpi }}-conda
+          path: build/genesis4
+
+      - name: Run tests
+        shell: bash -eo pipefail -l {0}
+        run: .github/scripts/run_tests.sh 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
