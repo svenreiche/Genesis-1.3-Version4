@@ -1,0 +1,10 @@
+# conda env create -f .github/genesis4-build-env-mpich.yml
+name: genesis4-build-openmpi
+channels:
+  - conda-forge
+dependencies:
+  - compilers
+  - cmake
+  - fftw * mpi_openmpi*
+  - hdf5 * mpi_openmpi*
+  - openmpi
