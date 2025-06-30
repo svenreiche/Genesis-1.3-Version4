@@ -8,9 +8,8 @@ set(CMAKE_CXX_EXTENTIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 # set(CMAKE_INSTALL_RPATH "/usr/local/lib")
-set(CMAKE_CXX_FLAGS -lstdc++)
-#set(CMAKE_CXX_FLAGS '-lstdc++ -Wall -Wextra')
-#set(CMAKE_CXX_FLAGS '-g')
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 # developer options
 set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -199,4 +198,4 @@ add_dependencies(genesis13 get_git_hash)
 
 add_executable(genesis4 src/Main/mainwrap.cpp)
 
-target_link_libraries(genesis4 genesis13 ${_libraries})
+target_link_libraries(genesis4 genesis13 stdc++ ${_libraries})
