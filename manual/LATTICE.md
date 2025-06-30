@@ -96,8 +96,7 @@ Note that it has nothing to do with beamline sequences used in tracking programs
 See the manual for the main input deck for the explicit argument requirements for each sequence.
 The label of the sequence is used as the reference to the sequence.
 
-- `type` (*string, empty*) - String defining the type of sequence. It must match of the possibilities given in the input deck, e.g. `const` for a constant sequence
-- `...` Same arguments as in the namelists, except that the field `label` is automatically defined by the label field in the lattice file.
+`type` must be specified to select the sequence type. This mirrors the main input namelists. See the following sections for specific sequence types.
 
 An example for a sequence definition is:
 ```
@@ -105,6 +104,56 @@ VAL: SEQUENCE = {type = const, c0 = 3.5};
 UND: UNDULATOR = {lambdau=0.015000, nwig=266, aw=@val, helical= True};
 ```
 Note that occurences of sequences are parsed first before evaluating individual elements. Thus the sequence definition can occur at any location in the lattice file.
+
+#### sequence_const
+
+- `type` (*string, "const"*): Type name for this specific sequence.
+- `c0` (*double, 0*): constant value to be used.
+
+Example:
+```
+VAL: SEQUENCE = {type = const, c0 = 3.5};
+```
+
+#### sequence_polynom
+
+- `type` (*string, "polynom"*): Type name for this specific sequence.
+- `c0`(*double, 0*): Constant term
+- `c1`(*double, 0*): Term proportional to s
+- `c2`(*double, 0*): Term proportional to s^2
+- `c3`(*double, 0*): Term proportional to s^3
+- `c4`(*double, 0*): Term proportional to s^4
+
+Example:
+```
+VAL: SEQUENCE = {type = polynom, c0 = 3.5, c1=0.0, c2=0.0, c3=0.0, c4=0.0};
+```
+
+#### sequence_power
+
+- `type` (*string, "power"*): Type name for this specific sequence.
+- `c0` (*double, 0*): Constant term
+- `dc` (*double, 0*): Term scaling the growing power series before added to the constant term
+- `alpha` (*double, 0*): power of the series
+- `n0` (*integer, 1*): starting index of power growth. Otherwise the sequence uses only the constant term
+
+Example:
+```
+VAL: SEQUENCE = {type = power, c0 = 3.5};
+```
+
+#### sequence_random
+
+- `type` (*string, "random"*): Type name for this specific sequence.
+- `c0` (*double, 0*): Mean value
+- `dc` (*double, 0*): Amplitude of the error, either the standard division for normal distribution or the min and max value for uniform distribution.
+- `seed` (*integer, 100*): seed for the random number generator
+- `normal` (*bool, true*): Flag for Gaussian distribution. If set to false a uniform distribution is used.
+
+Example:
+```
+VAL: SEQUENCE = {type = random, c0 = 3.5, dc=0.001};
+```
 
 ### line
 
