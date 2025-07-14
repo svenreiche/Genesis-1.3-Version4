@@ -14,7 +14,7 @@ endif()
 message(STATUS "Git hash is ${GIT_HASH}")
 set(_GENESIS_VERSION_MAJOR "4")
 set(_GENESIS_VERSION_MINOR "6")
-set(_GENESIS_VERSION_REV "8")
+set(_GENESIS_VERSION_REV "9")
 set(_GENESIS_VERSION_BETA "false")
 execute_process(
         COMMAND

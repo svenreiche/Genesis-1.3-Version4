@@ -22,6 +22,7 @@ bool AlterBeam::init(int rank, int size, std::map<std::string,std::string> *arg,
     bool one4one = setup->getOne4One();            // check for one4one simulations
     bool dotime = time->isTime();
 
+
     // default value
     double dgamma = 0;
     double phase = 0;
@@ -67,18 +68,16 @@ bool AlterBeam::init(int rank, int size, std::map<std::string,std::string> *arg,
         return false;
     }
 
-    bool doAverage = !dotime &
-                     one4one;  // non-average calculation only possible with one4one simulation with an explicit time-profile.
+    bool doAverage = !(dotime & one4one); // non-average calculation only possible with one4one simulation with an explicit time-profile.
 
     if (doAverage) {
         double rat = round(lambdaM / lambda);
         lambdaM = rat * lambda;
         if (rank == 0) {
-            std::cout << "Adjusting modulation wavelength to " << lambdaM * 1e9 << " nm to yield integer harmonics"
-                      << endl;
+            std::cout << "Adjusting modulation wavelength to " << lambdaM * 1e9 << " nm to yield integer harmonic of h = " << static_cast<int>(rat)
+                      << std::endl;
         }
     }
-
     // get s position along the bunches
     std::vector<double> s;
     auto nslice = time->getPosition(&s);
@@ -89,6 +88,7 @@ bool AlterBeam::init(int rank, int size, std::map<std::string,std::string> *arg,
         return false;
     }
     auto kr = 4. * asin(1.) / lambdaM;
+    auto invk0 = lambda/(4. * asin(1.));
     for (size_t j = 0; j < nsliceNode; j++) {
         auto i = j + ioffset;
         auto delgam = prof->value(s.at(i), dgamma, dgammaref);
@@ -99,7 +99,7 @@ bool AlterBeam::init(int rank, int size, std::map<std::string,std::string> *arg,
                 auto theta = beam->beam.at(j).at(ip).theta;
                 auto gamma = beam->beam.at(j).at(ip).gamma;
                 // note that theta is treated as theta at longer wavelength!
-                gamma += delgam * asin(theta + rphase);
+                gamma += delgam * sin(theta + rphase);
                 theta += kr * r56 * (gamma - gammaref) / gammaref;
                 beam->beam.at(j).at(ip).gamma = gamma;
                 beam->beam.at(j).at(ip).theta = theta * lambdaM / lambda;  // apply harmonic conversion
@@ -108,11 +108,11 @@ bool AlterBeam::init(int rank, int size, std::map<std::string,std::string> *arg,
             for (int ip = 0; ip < npart; ip++) {
                 auto theta = beam->beam.at(j).at(ip).theta;
                 auto gamma = beam->beam.at(j).at(ip).gamma;
-                auto sloc = s.at(i) + theta / kr * lambda / lambdaM;
+                auto sloc = s.at(i) + theta *invk0;
                 auto delgamloc = prof->value(sloc, dgamma, dgammaref);
                 auto rphaseloc = prof->value(sloc, phase, phaseref);
-                gamma += delgamloc * asin(kr * sloc + rphaseloc);
-                theta += kr * r56 * (gamma - gammaref) / gammaref;
+                gamma += delgamloc * sin(kr * sloc + rphaseloc);
+                theta += lambdaM/lambda*kr * r56 * (gamma - gammaref) / gammaref;
                 beam->beam.at(j).at(ip).gamma = gamma;
                 beam->beam.at(j).at(ip).theta = theta;
             }
