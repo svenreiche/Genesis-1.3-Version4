@@ -1,0 +1,88 @@
+name: Genesis4 - System Libraries Build & Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-system:
+    name: system-${{ matrix.os }}-${{ matrix.mpi }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            mpi: openmpi
+          - os: ubuntu-latest
+            mpi: mpich
+          - os: macos-latest
+            mpi: openmpi
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies (Ubuntu) - OpenMPI
+        if: runner.os == 'Linux' && matrix.mpi == 'openmpi'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            pkg-config \
+            cmake \
+            libfftw3-mpi-dev \
+            libhdf5-openmpi-dev \
+            libopenmpi-dev \
+            openmpi-bin
+
+      - name: Install system dependencies (Ubuntu) - MPICH
+        if: runner.os == 'Linux' && matrix.mpi == 'mpich'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            pkg-config \
+            cmake \
+            libfftw3-mpi-dev \
+            libhdf5-mpich-dev \
+            libmpich-dev \
+            mpich
+
+      - name: Install system dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install \
+            cmake \
+            gcc \
+            fftw \
+            hdf5-mpi \
+            ${{ matrix.mpi }}
+
+      - name: Setup MPI environment
+        run: |
+          which mpicc
+          which mpicxx
+          which h5pcc
+          mpicc --version
+          mpicxx --version
+
+      - name: Build Genesis4
+        env:
+          MPI: ${{ matrix.mpi }}
+        shell: bash -eo pipefail -l {0}
+        run: .github/scripts/build.sh
+
+      - name: Upload Genesis4 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis4-${{ matrix.os }}-${{ matrix.mpi }}-system
+          path: build/genesis4
+
+      - name: Run tests
+        run: |
+          .github/scripts/run_tests.sh 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
