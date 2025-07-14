@@ -161,7 +161,7 @@ add_library(genesis13 STATIC
         src/Loading/ImportTransformation.cpp
         src/Main/AlterSetup.cpp
         src/Main/Dump.cpp
-        src/Main/BeamShaping.cpp
+        src/Main/AlterBeam.cpp
         src/Main/EField.cpp
         src/Main/FieldManipulator.cpp
         src/Main/GenMain.cpp

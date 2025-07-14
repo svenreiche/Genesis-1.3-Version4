@@ -2,8 +2,8 @@
 // Created by reiche on 4/17/25.
 //
 
-#ifndef GENESIS_1_3_VERSION4_BEAMSHAPING_H
-#define GENESIS_1_3_VERSION4_BEAMSHAPING_H
+#ifndef GENESIS_1_3_VERSION4_ALTERBEAM_H
+#define GENESIS_1_3_VERSION4_ALTERBEAM_H
 
 #include <iostream>
 #include <map>
@@ -14,17 +14,17 @@
 #include "GenProfile.h"
 #include "Beam.h"
 
-class BeamShaping : public StringProcessing{
+class AlterBeam : public StringProcessing{
 public:
-    BeamShaping();
-    virtual ~BeamShaping();
+    AlterBeam();
+    virtual ~AlterBeam();
 
     bool init(int rank, int size, std::map<std::string,std::string>* arg, Beam *beam, Setup *setup, Time *time, Profile *prof);
 
 
 private:
-    void usage();
+    static void usage();
 };
 
 
-#endif //GENESIS_1_3_VERSION4_BEAMSHAPING_H
+#endif //GENESIS_1_3_VERSION4_ALTERBEAM_H

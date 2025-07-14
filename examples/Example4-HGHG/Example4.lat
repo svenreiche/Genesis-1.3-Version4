@@ -1,0 +1,9 @@
+D1: DRIFT = { l = 0.44};
+D2: DRIFT = { l = 0.24};
+QF: QUADRUPOLE = { l = 0.080000, k1= 1.000000 };
+QD: QUADRUPOLE = { l = 0.080000, k1= -1.000000 };
+UND: UNDULATOR = { lambdau=0.038000, nwig=50, aw=2.297, helical= True};
+
+FODO: LINE={UND,D1,QF,D2,UND,D1,QD,D2};
+
+FEL: LINE={3*FODO};

@@ -1,0 +1,62 @@
+&setup
+rootname=Example4_a
+lattice=Example4.lat
+beamline=FEL
+lambda0=53e-9
+gamma0=1500.
+delz=0.038
+shotnoise=1
+one4one = 0
+npart=65536
+&end
+
+&lattice
+zmatch=5.32
+&end
+
+&time
+slen = 53e-6
+sample = 1
+&end
+
+&profile_gauss
+label=current
+c0 = 100
+s0 = 26.5e-6
+sig = 10e-6
+&end
+
+&profile_gauss
+label=emod
+c0 = 0.7
+s0 = 26.5e-6
+sig = 20e-6
+&end
+
+&field
+power=0
+dgrid=2.000000e-03
+ngrid=255
+waist_size=200e-6
+&end
+
+&beam
+current=@current
+delgam=0.100000
+ex=4.000000e-07
+ey=4.000000e-07
+&end
+
+&alter_beam
+dgamma=@emod
+lambda=265e-9
+r56=1.1e-4
+&end
+
+
+&write
+beam=dump_a
+&end
+
+&track
+&end
