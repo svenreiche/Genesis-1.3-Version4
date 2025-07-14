@@ -26,6 +26,7 @@ The following describes all supported namelist with their variables, including i
     - [sequence_power](#psequence_power)
     - [sequence_random](#profile_random)
   - [beam](#beam)
+  - [alter_beam](#alter_beam)
   - [field](#field)
   - [importdistribution](#importdistribution)
   - [importbeam](#importbeam)
@@ -242,6 +243,19 @@ This namelist initiates the generation of the particle distribution to be kept i
 - `bunchphase` (*double, 0 or profile label*): Initial phase of the bunching
 - `emod` (*double, 0 or profile label*): Initial energy modulation in units of the electron rest mass. This modulation is on the scale of the reference wavelength
 - `emodphase` (*double, 0 or profile label*): Initial phase of the energy modulation
+
+[Back](#supported-namelists)
+
+
+### alter_beam
+This applies a transformation of the electron beam distribution after its generation. Primary example is the combination of the energy modulation by an external laser and the 
+transformation of a succeeding magnetic chicane. Note that this namelist can applied several times, e.g. to model EEHG. 
+For `one4one` simulation it is recommended to following this namelist with a sort command.
+
+- `dgamma` (*double, 0 or profile label*): Amplitude of the sinusoidal modulation in units of the electron rest mass
+- `phase` (*double, 0 or profile label*): Phase of the energy modulation in units of radians.
+- `lambda` (*double, 800e-9*):  wavelength in $m$ of the external energy modulation
+- `r56` (*double, 0*): R56 element of the magnetic chicane in $m$
 
 [Back](#supported-namelists)
 
