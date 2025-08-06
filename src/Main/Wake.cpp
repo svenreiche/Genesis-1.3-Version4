@@ -248,87 +248,176 @@ void Wake::singleWakeGeometric(int rank)
 
 
  
+/**
+ * @brief Compute the longitudinal resistive-wall wake w(s) for round or flat chambers.
+ *
+ * Physics source for all formulas: Bane & Stupakov, SLAC-PUB-10707 (rev. Oct. 2004).
+ *
+ * Key relations used here (see cited equation numbers in the paper):
+ *   • AC (Drude) conductivity in k-space (Eq. (1)):
+ *       σ̃(k) = σ0 / (1 − i k c τ),  with ctau = c τ stored in member `relaxation` [m].
+ *
+ *   • Surface impedance (good conductor, Leontovich; re-expression of the wall physics):
+ *       ζ(k) = (1 − i) * sqrt( k / ( 2 σ̃(k) Z0 ) )   [SI units].
+ *
+ *   • Round (circular) pipe (radius a), m=0 Leontovich form (equivalent to Eqs. (2)–(3)):
+ *       Z(k) = [ Z0 / (2π a) ] / [ 1/ζ(k) − i k a / 2 ]        [Ω/m].
+ *
+ *   • Flat (parallel plates, half-gap a) kernel integral (Eq. (13), recast via ζ(k) and x=qa):
+ *       Z(k) = ∫_0^∞  [ Z0/(2π a) ] /
+ *               { cosh x [ cosh x / ζ(k) − i k a sinhc(x) ] }  dx
+ *       where  sinhc(x) = sinh(x)/x  (evaluated with a stable series near x=0).
+ *
+ *   • Wake from impedance (inverse FT; one-sided cosine consistent with W(s<0)=0):
+ *       w(s) = (2c/π) ∫_0^{kmax} Re Z(k) cos(k s) dk .
+ *
+ * Numerics:
+ *   • Build Z(k) on a uniform k-grid, k ∈ [0, kmax], kmax = κmax/s0 with κmax≈100.
+ *   • Flat case: trapezoid in x ∈ [0, XMAX] with endpoint ½-weights.
+ *   • Cosine transform: single block for both geometries; endpoint ½-weights in k.
+ *   • Final: multiply by (−e) once (converts V/C to signed energy-kick units for electrons).
+ *
+ * Implementation notes:
+ *   • Prints "k  Re(Zk)  Im(Zk)" on rank==0 for quick cross-checks; comment out later.
+ *   • Tunables: KAPPA_MAX, NK (k-grid); XMAX, NQ (flat x-integral).
+ */
 void Wake::singleWakeResistive(int rank)
 {
+    // Zero output; early exit if no conductivity
+    for (int i = 0; i < ns; ++i) wakeres[i] = 0.0;
+    if (conductivity <= 0.0) return;
 
-   for (int i=0; i< ns; i++){
-      wakeres[i]=0;
-   }
+    // ---- Constants & characteristic scales ----
+    const double c_light = 299792458.0;                // m/s
+    const double Z0      = vacimp;                     // Ω  (vacuum impedance, SI)
+    const double a       = radius;                     // m  (round radius or flat half-gap)
+    const double s0      = std::pow(2.0 * a * a / (Z0 * conductivity), 1.0 / 3.0); // (2 a^2 / Z0 σ0)^(1/3)
+    const double pi      = 2.0 * std::asin(1.0);
 
-   if (conductivity <=0){
-      return;
-   }
+    // k-grid (shared)
+    const double       KAPPA_MAX = 100.0;              // κ_max
+    const unsigned int NK        = 1000;               // # of k-intervals → NK+1 samples
+    const double       kmax      = KAPPA_MAX / s0;     // 1/m
+    const double       dk        = kmax / static_cast<double>(NK);
 
-   double s0=pow(2*radius*radius/vacimp/conductivity,1./3.); // characteristic length in SI units
-   double gamma=relaxation/s0;
-   double coef = radius/(s0*s0);
-   double pi=2.*asin(1.);
+    // Flat Z(k): x-integral controls (∫_0^∞ → [0, XMAX] with trapezoid)
+    const double XMAX = 15.0;
+    const int    NQ   = 20000;
 
-   double kappamax=100;  // empirical cut-off in impedance spectrum
+    // Final −e factor (V/C → signed energy-kick units)
+    constexpr double e_charge = 1.602176634e-19;       // C
 
-   unsigned int nk=1000;
-   unsigned int nq=10000;
+    using cd = std::complex<double>;
 
-   double Zre[1000],Zim[1000]; 
-   if (roundpipe) {
-     for (int i =0; i<nk; i++){
-        double kappa=(i+1.)*kappamax/nk;  // value of kappa	 
- 	double t = kappa/sqrt(1+kappa*kappa*gamma*gamma);
-        double lambdaRe=coef*sqrt(t)*sqrt(1.-t*gamma);
-  	double lambdaIm=coef*sqrt(t)*sqrt(1.+t*gamma)-kappa*kappa*radius*0.5/s0/s0;
-	double nomi=2.*kappa/(299792458.0*radius*s0)/(lambdaRe*lambdaRe+lambdaIm*lambdaIm);
-	Zre[i]=lambdaRe*nomi;
-	Zim[i]=-lambdaIm*nomi;
-     }
-   } else {
-      double coh[10000],sih[10000];
-      double dq=15/static_cast<double>(nq-1);
-      for (int i =1; i<10000;i++){
-	   coh[i]=0.5*(exp(dq*i)+exp(-dq*i));
-	   sih[i]=coh[i]-exp(-dq*i);
-	   sih[i]/=dq*i;
-      }
-      coh[0]=1.;
-      sih[0]=1.;
-        
-      for (int i =0; i<nk; i++){       
-           double kappa=(i+1.)*kappamax/nk;  // value of kappa	 
- 	   double t = kappa/sqrt(1+kappa*kappa*gamma*gamma);
-           double scale=2.*15.*kappa/(299792458.0*radius*s0*(2*nq-1));
-	   Zre[i]=0;
-	   Zim[i]=0;	 
-       // integrate over q-> infty which is actually exp(30)
-           for (int j=1;j<nq;j++){
-               double lambdaRe=coef*sqrt(t)*sqrt(1.-t*gamma)*coh[j]*coh[j];
-    	       double lambdaIm=coef*sqrt(t)*sqrt(1.+t*gamma)*coh[j]*coh[j]-kappa*kappa*radius*0.5/s0/s0*sih[j]*coh[j];
-	       double nomi=scale/(lambdaRe*lambdaRe+lambdaIm*lambdaIm);
-	       Zre[i]+=lambdaRe*nomi;
-	       Zim[i]+=-lambdaIm*nomi;	 
-	   }
-      }
-   }	 	 
-   
- 
-   // reconstructing the wakepotential
-   coef=ds*kappamax/nk/s0;
-   for (int i=0;i<ns;i++){
-      wakeres[i]=0;
-      for (int j=0;j<nk;j++){
-	  double phi=i*coef*(1.e0+j);
-	  wakeres[i]+=Zre[j]*cos(phi)+Zim[j]*sin(phi);
-      }
-   }
-   coef=-kappamax/nk/s0*299792458.0/pi*(vacimp*ce/4/pi); // to scale to SI units
-   coef*=0.5;  // emperical adjustment of amplitude, needs checking!!!!!
+    // ---- Helpers: stable sinhc, Drude σ̃(k), surface impedance ζ(k) ----
 
-   for (int i = 0; i < ns; i++){
-     wakeres[i]*=coef;
-   }
+    // Numerically stable sinhc(x) = sinh(x)/x with a small-x series
+    auto sinhc_stable = [](double x) {
+        const double ax = std::abs(x);
+        if (ax < 1e-5) {                               // ≈ 1 + x^2/6 + x^4/120
+            const double x2 = x * x;
+            return 1.0 + x2 * (1.0/6.0 + x2 * (1.0/120.0));
+        }
+        return std::sinh(x) / x;
+    };
 
+    // σ̃(k) = σ0 / (1 − i k c τ)   (SLAC-PUB-10707, Eq. (1))
+    auto sigma_k = [&](double k) -> cd {
+        return conductivity / (cd(1.0, 0.0) - cd(0.0, 1.0) * k * relaxation);
+    };
 
-   if (rank==0){
-       cout << "Resistive Wake calculated (s0 = " << s0 << ")..." << endl;   
-   }
+    // ζ(k) = (1 − i) sqrt( k / ( 2 σ̃(k) Z0 ) )   (Leontovich surface impedance, SI form)
+    auto zeta_k = [&](double k) -> cd {
+        const cd arg  = cd(k, 0.0) / (cd(2.0, 0.0) * sigma_k(k) * cd(Z0, 0.0));
+        const cd root = std::sqrt(arg);
+        return cd(1.0, -1.0) * root;
+    };
 
+    // ---- Geometry-specific Z(k) ----
+
+    // Flat (parallel plates) integrand recast in ζ(k) and x = q a.
+    // Equivalent in structure to SLAC-PUB-10707 Eq. (13) after variable change and SI units.
+    auto Zint_flat = [&](double k, double x) -> cd {
+        const double C   = std::cosh(x);
+        const double Shc = sinhc_stable(x);
+        const cd z       = zeta_k(k);
+
+        // denom = cosh(x) * ( cosh(x)/ζ  −  i k a sinhc(x) )
+        const cd term1 = cd(C, 0.0) / z;
+        const cd term2 = cd(0.0, -k * a * Shc);
+        const cd denom = cd(C, 0.0) * (term1 + term2);
+
+        // prefactor = Z0 / (2π a)   [Ω/m]
+        const double pref = Z0 / (2.0 * pi * a);
+        if (!std::isfinite(denom.real()) || !std::isfinite(denom.imag())) return cd(0.0, 0.0);
+        return cd(pref, 0.0) / denom;
+    };
+
+    // Flat Z(k) via trapezoid in x ∈ [0, XMAX]
+    auto Zk_flat = [&](double k) -> cd {
+        if (k == 0.0) return cd(0.0, 0.0);
+        const double dx = XMAX / static_cast<double>(NQ - 1);
+        cd acc = Zint_flat(k, 0.0) * 0.5;              // endpoint ½-weights
+        for (int j = 1; j < NQ - 1; ++j) acc += Zint_flat(k, dx * static_cast<double>(j));
+        acc += Zint_flat(k, XMAX) * 0.5;
+        return acc * dx;
+    };
+
+    // Round (circular) Z(k), Leontovich m=0 (equivalent to the Eqs. (2)–(3) form in 10707)
+    // Z(k) = [ Z0/(2π a) ] / [ 1/ζ(k) − i k a / 2 ]
+    auto Zk_round = [&](double k) -> cd {
+        if (k == 0.0) return cd(0.0, 0.0);
+        const cd z   = zeta_k(k);
+        const cd den = cd(1.0, 0.0) / z - cd(0.0, 0.5 * k * a);
+        const double pref = Z0 / (2.0 * pi * a);
+        if (!std::isfinite(den.real()) || !std::isfinite(den.imag())) return cd(0.0, 0.0);
+        return cd(pref, 0.0) / den;
+    };
+
+    // ---- Build Re Z(k) on a uniform k-grid ----
+    std::vector<double> ks(NK + 1), ReZ(NK + 1);
+    for (unsigned int j = 0; j <= NK; ++j) ks[j] = dk * static_cast<double>(j);
+
+    if (rank == 0) std::cout << std::setprecision(16);
+
+    if (roundpipe) {
+        for (unsigned int j = 0; j <= NK; ++j) {
+            const double k = ks[j];
+            const cd Z = Zk_round(k);
+            ReZ[j] = Z.real();
+            if (rank == 0) std::cout << k << " " << Z.real() << " " << Z.imag() << "\n";
+        }
+    } else {
+        for (unsigned int j = 0; j <= NK; ++j) {
+            const double k = ks[j];
+            const cd Z = Zk_flat(k);
+            ReZ[j] = Z.real();
+            if (rank == 0) std::cout << k << " " << Z.real() << " " << Z.imag() << "\n";
+        }
+    }
+
+    // ---- One-sided cosine transform (shared) ----
+    // As stated in SLAC-PUB-10707, the wake is the inverse FT of Z(k);
+    // with W(s<0)=0 this gives the one-sided cosine form used here.
+    ReZ.front() *= 0.5;                                // endpoint ½-weights
+    ReZ.back()  *= 0.5;
+    const double cos_pref = (2.0 * c_light / pi) * dk; // (2c/π) Δk
+
+    for (int i = 0; i < ns; ++i) {
+        const double s_i = i * ds;
+        double acc = 0.0;
+        for (unsigned int j = 0; j <= NK; ++j) {
+            acc += ReZ[j] * std::cos(ks[j] * s_i);
+        }
+        wakeres[i] = acc * cos_pref;                   // V/C
+    }
+
+    // ---- Final conversion: V/C → signed energy kick (electron sign) ----
+    for (int i = 0; i < ns; ++i) wakeres[i] *= -e_charge;
+
+    if (rank == 0) {
+        std::cout << "Resistive Wake (" << (roundpipe ? "ROUND" : "FLAT")
+                  << ") calculated (s0 = " << s0 << ")..." << std::endl;
+    }
 }
 
