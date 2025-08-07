@@ -278,7 +278,7 @@ void Wake::singleWakeGeometric(int rank)
  *   • Final: multiply by (−e) once (converts V/C to signed energy-kick units for electrons).
  *
  * Implementation notes:
- *   • Prints "k  Re(Zk)  Im(Zk)" on rank==0 for quick cross-checks; comment out later.
+ *   • Commented out "k  Re(Zk)  Im(Zk)" and "z Wz" on rank==0 for quick cross-checks, 
  *   • Tunables: KAPPA_MAX, NK (k-grid); XMAX, NQ (flat x-integral).
  */
 void Wake::singleWakeResistive(int rank)
@@ -385,14 +385,14 @@ void Wake::singleWakeResistive(int rank)
             const double k = ks[j];
             const cd Z = Zk_round(k);
             ReZ[j] = Z.real();
-            if (rank == 0) std::cout << k << " " << Z.real() << " " << Z.imag() << "\n";
+            //if (rank == 0) std::cout << k << " " << Z.real() << " " << Z.imag() << "\n";
         }
     } else {
         for (unsigned int j = 0; j <= NK; ++j) {
             const double k = ks[j];
             const cd Z = Zk_flat(k);
             ReZ[j] = Z.real();
-            if (rank == 0) std::cout << k << " " << Z.real() << " " << Z.imag() << "\n";
+            //if (rank == 0) std::cout << k << " " << Z.real() << " " << Z.imag() << "\n";
         }
     }
 
@@ -410,10 +410,26 @@ void Wake::singleWakeResistive(int rank)
             acc += ReZ[j] * std::cos(ks[j] * s_i);
         }
         wakeres[i] = acc * cos_pref;                   // V/C
+        //if (rank == 0) std::cout << std::setprecision(16) << (i * ds) << " " << wakeres[i] << '\n';
+
     }
 
     // ---- Final conversion: V/C → signed energy kick (electron sign) ----
     for (int i = 0; i < ns; ++i) wakeres[i] *= -e_charge;
+
+
+    // Debug print to file
+    if (rank == 0) {
+        std::ofstream out("Wz.txt");           // use std::ios::app to append
+        out << std::setprecision(16);
+        for (int i = 0; i < ns; ++i) {
+            const double z = i * ds;
+            out << z << " " << wakeres[i] << '\n';   // z [m], W(z) (after −e scaling)
+        }
+        // out.close(); // optional; destructor closes automatically
+    }
+    
+
 
     if (rank == 0) {
         std::cout << "Resistive Wake (" << (roundpipe ? "ROUND" : "FLAT")
