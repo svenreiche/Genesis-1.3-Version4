@@ -1,10 +1,8 @@
 # GENESIS 1.3 - Compilation and Running Genesis 1.3
 
-
-- [Conda](#Conda)
+- [Conda](#conda)
 - [Compilation](#compilation)
 - [Running](#running)
-
 
 ## Conda
 
@@ -15,9 +13,11 @@ For users new to conda, we recommend downloading and installing the latest [Mini
 This is a customized version of miniconda that includes the fast mamba solver by default and automatically sources packages from `conda-forge`.
 
 Open a terminal and enable `conda`-related commands by doing the following:
+
 ```bash
 conda init
 ```
+
 To use conda commands, you now need to open a new session of your terminal program.
 
 To install the OpenMPI version of Genesis 4, perform the following:
@@ -38,9 +38,10 @@ To use Genesis4 from that environment, first activate the environment:
 conda activate genesis4
 genesis4 --help
 ```
+
 ### Existing conda installation
 
-Users with Anaconda or another version of conda already installed may simply specify the channel ``conda-forge`` during the environment creation.
+Users with Anaconda or another version of conda already installed may simply specify the channel `conda-forge` during the environment creation.
 
 To install the OpenMPI version of Genesis 4, perform the following:
 
@@ -60,25 +61,65 @@ To use Genesis4 from that environment, first activate the environment:
 conda activate genesis4
 genesis4 --help
 ```
-## Compilation 
 
-### macOS 
+## Compilation
+
+### Conda
+
+Users of conda may find it easiest to compile Genesis with conda-forge compilers. These do not require `sudo` (or any privileged user access).
+
+Create a build environment for the OpenMPI variant and build as follows:
+
+```bash
+# Create and activate the environment:
+conda create -n genesis-build-env 'fftw=*=mpi_openmpi*' 'hdf5=*=mpi_openmpi*' openmpi compilers cmake
+conda activate genesis-build-env
+
+# Configure and build Genesis4:
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+make -C build -j 4
+
+# Here's the built binary:
+ls -la build/genesis4
+```
+
+The GitHub Actions used by Genesis4 have some helper files and scripts for this as well.
+The following steps are equivalent to the above manual steps:
+
+```bash
+# Use the environment file to create the build environment
+conda env create -f ./.github/genesis4-build-env-openmpi.yaml
+conda activate genesis4-build-openmpi
+
+# Use the same build process as GitHub Actions to build the binary:
+bash .github/scripts/build.sh
+
+# Here's the built binary:
+ls -l build/genesis4
+```
+
+### macOS
+
+#### MacPorts
 
 Installation on macOS requires a suitable compiler and dependencies, which can be provided by [MacPorts](https://www.macports.org). With a working MacPorts, install these:
+
 ```bash
 sudo port install gcc12
 sudo port select gcc mp-gcc12
-sudo port install hdf5 +openmpi 
+sudo port install hdf5 +openmpi
 sudo port install fftw-3
 ```
 
 Then build Genesis:
+
 ```
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
 ### Unix
+
 Genesis supports now the automatic configuration with CMAKE. Following commands will build Genesis from source on Linux platforms. The minimal command to compile the code from the source code root directory is:
 
 ```
@@ -88,15 +129,11 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
 
-Depending on your compiler and system configuration, additional information may be given to CMAKE. Most important is the used compiler. This can be done with the additional definition ```-DCMAKE_CXX_COMPILER=####``` in the cmake command overwriting the default compiler, where ```###``` is the compiler, e.g. `mpicxx` or `CC`. If debugging is needed the CMAKE_BUILD_TARGET should be changed to `Debug`.
+Depending on your compiler and system configuration, additional information may be given to CMAKE. Most important is the used compiler. This can be done with the additional definition `-DCMAKE_CXX_COMPILER=####` in the cmake command overwriting the default compiler, where `###` is the compiler, e.g. `mpicxx` or `CC`. If debugging is needed the CMAKE_BUILD_TARGET should be changed to `Debug`.
 The executable is found in the build directory. For a successful build the libraries openmpi/mpich and parallel HDF5 are needed. The FFTW3 is recommended but might become mandatory in upcoming releases.
 
 To complete the installation it is recommended to install the scripts in the directory `sdds2hdf` in a directory (e.g. /bin), which is included in your search path. The files will convert Elegant output distribution into HDF5 format. More info can be found later in the manual.
 Also, the directory `xgenesis` includes some functions, which allows Matlab to parse the output file of Genesis and to plot the results. They are not required for running Genesis itself. To use them add the given folder to your Matlab Path or place the file in a directory, which is already in the search path.
-
-
-
-
 
 ## Running
 
@@ -127,7 +164,7 @@ However this excluded features such long range space charge fields, exchanging p
 Nb=ns*ng*ng*16 Bytes,
 ```
 
-where ns is the number of slices and ng the number of grid points. 
+where ns is the number of slices and ng the number of grid points.
 
 For the electron distribution it is
 
@@ -136,9 +173,8 @@ Nb=ns*ne*48 Bytes,
 ```
 
 with ne the number of macro particles per slice.
-Both numbers should be added up and for safety multiplied by a factor of 2 for some overhead (aligning arrays in memory, temporary working arrays, arrays to buffer the output information etc.). The memory request will be distributed  over the nodes. Non time-dependent simulation should be small enough to run on any computer.
+Both numbers should be added up and for safety multiplied by a factor of 2 for some overhead (aligning arrays in memory, temporary working arrays, arrays to buffer the output information etc.). The memory request will be distributed over the nodes. Non time-dependent simulation should be small enough to run on any computer.
 
 In time-dependent runs the number of slices are equally distributed over all cores. The number of slices are even increased to guarantee symmetry, extending the time-window of the simulations. More information about that can be found in the next section. Often it is useful to calculate the number of generated slices in advance, in particular if advanced option such as subharmonic conversion are used. In the case of subharmonic conversion the slices per core should be an integer of the subharmonic number. Otherwise artefacts of numerically enhanced bunching causes wrong results.
-
 
 <div style="page-break-after: always; visibility: hidden"> \pagebreak </div>
