@@ -3,7 +3,6 @@
 # for test of diagnostic plugin interface (DPI), available only on Linux
 ARG_DPI=""
 if [ ! -z "$WITH_DPI" ] ; then
-	echo x
 	ARG_DPI="-DUSE_DPI=1"
 fi
 
