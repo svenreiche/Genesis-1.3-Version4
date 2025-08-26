@@ -35,6 +35,10 @@ rm -f $SEMAFILE
 $G4 --semaphore-file $SEMAFILE $INFILE
 RESULT=$?
 echo "exit code of G4 test run: ${RESULT}"
+if [[ "$RESULT" -ne "0" ]] ; then
+	echo "non-zero exit code indicates issue, stopping"
+	exit 1
+fi
 
 # test for existence of semaphore file signalling successful completion of G4 run
 if [[ ! -f $SEMAFILE ]] ; then
