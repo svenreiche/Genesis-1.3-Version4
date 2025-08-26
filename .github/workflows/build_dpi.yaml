@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-system:
-    name: system-${{ matrix.os }}-${{ matrix.mpi }}
+    name: system-dpi-${{ matrix.os }}-${{ matrix.mpi }}
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -62,13 +62,13 @@ jobs:
           mpicc --version
           mpicxx --version
 
-      - name: Build Genesis4
+      - name: Build Genesis4 (with DPI)
         env:
           MPI: ${{ matrix.mpi }}
           WITH_DPI: 1
         shell: bash -eo pipefail -l {0}
         run: .github/scripts/build.sh
 
-      - name: Run tests
+      - name: Run tests (with DPI)
         run: |
           .github/scripts/run_tests.sh 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
