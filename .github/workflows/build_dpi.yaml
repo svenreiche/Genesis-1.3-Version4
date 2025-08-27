@@ -1,0 +1,74 @@
+name: Genesis4 - System Libraries Build & Test (diagnostic plugins)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# Based on build.yaml from commit id bbed450 (Aug 6, 2025).
+# As of 2025-Aug, diagnostic plugins are only available on the Linux platform
+# -> kicking out all macos stuff
+
+jobs:
+  build-system:
+    name: system-dpi-${{ matrix.os }}-${{ matrix.mpi }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            mpi: openmpi
+          - os: ubuntu-latest
+            mpi: mpich
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies (Ubuntu) - OpenMPI
+        if: runner.os == 'Linux' && matrix.mpi == 'openmpi'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            pkg-config \
+            cmake \
+            libfftw3-mpi-dev \
+            libhdf5-openmpi-dev \
+            libopenmpi-dev \
+            openmpi-bin
+
+      - name: Install system dependencies (Ubuntu) - MPICH
+        if: runner.os == 'Linux' && matrix.mpi == 'mpich'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            pkg-config \
+            cmake \
+            libfftw3-mpi-dev \
+            libhdf5-mpich-dev \
+            libmpich-dev \
+            mpich
+
+      - name: Setup MPI environment
+        run: |
+          which mpicc
+          which mpicxx
+          which h5pcc
+          mpicc --version
+          mpicxx --version
+
+      - name: Build Genesis4 (with DPI)
+        env:
+          MPI: ${{ matrix.mpi }}
+          WITH_DPI: 1
+        shell: bash -eo pipefail -l {0}
+        run: .github/scripts/build.sh
+
+      - name: Run tests (with DPI)
+        run: |
+          .github/scripts/run_tests.sh 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
