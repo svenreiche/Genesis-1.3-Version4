@@ -142,7 +142,10 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
 
     //-----------------------------------------------------------
     // main loop for parsing
-    parser.open(inputfile, rank);
+    if (!parser.open(inputfile, rank)) {
+        // could not open input file
+	return(1); // exit code signals error
+    }
     if (0 == rank) {
         cout << "Opened input file " << inputfile << endl;
     }
@@ -570,6 +573,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         }
 
 
+        // return value of this function is the exit code of G4 binary (0 signals OK)
         ret = (successful_run) ? 0 : 1;
         return(ret);
 }
