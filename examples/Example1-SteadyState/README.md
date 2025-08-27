@@ -1,4 +1,5 @@
 ## Example 1 : Steady-State Simulation
+**Note:** The steady-state simulation in this directory is part of automatic testing via GitHub Actions. If you change something be sure to check afterwards that script `TEST_power.py` gives "OK" status.
 
 *All files for running the example are found in the subdirectory examples/Example1-SteadyState of the source code distribution*
 
