@@ -202,6 +202,6 @@ target_link_libraries(genesis4 genesis13 stdc++ ${_libraries})
 
 
 # Compilation of plugin testbench only when plugin system is requested
-if(USE_DPI)
-   add_subdirectory(misc/plugin_testbench)
-endif()
+#if(USE_DPI)
+#   add_subdirectory(misc/plugin_testbench)
+#endif()
