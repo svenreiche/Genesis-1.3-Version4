@@ -2,6 +2,10 @@
 
 # Christoph Lechner, Aug 2025
 # Demo for automatic testing: reports FEL power at the end of the simulated beamline
+#
+# Script exit code signals result to test framework:
+# 0 => OK
+# 1 => not OK
 
 import h5py as h5
 import sys
