@@ -44,6 +44,16 @@ jobs:
           name: genesis4-${{ matrix.os }}-${{ matrix.mpi }}-conda
           path: build/genesis4
 
+
+      - name: prepare Python environment for steady-state test simulation
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: install Python dependencies
+        shell: bash -eo pipefail -l {0}
+        run: |
+          pip install h5py
+
       - name: Run tests
         shell: bash -eo pipefail -l {0}
         run: .github/scripts/run_tests.sh 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
