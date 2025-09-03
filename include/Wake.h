@@ -28,21 +28,21 @@ class Wake: public StringProcessing{
 
 
  private:   
-   void usage();
-   void singleWakeResistive(int);
-   void singleWakeGeometric(int);
-   void singleWakeRoughness(int);
-   void KernelRoughness(vector<complex<double> > *, complex<double>, complex<double>);
-   double TrapIntegrateRoughness(vector< complex<double> > *, complex<double> , complex<double> , double);
+    void usage();
+    void singleWakeResistive(int);
+    void singleWakeGeometric(int);
+    void singleWakeRoughness(int);
+    void KernelRoughness(vector<complex<double> > *, complex<double>, complex<double>);
+    double TrapIntegrateRoughness(vector< complex<double> > *, complex<double> , complex<double> , double);
 
-   double radius, relaxation,conductivity,ztrans,gap,lgap,hrough,lrough,rrough;
-   double loss;
-   string lossref;
-   bool roundpipe,transient, hasWake;
+    double radius, relaxation,conductivity,ztrans,gap,lgap,hrough,lrough,rrough;
+    double loss;
+    string lossref;
+    bool roundpipe,transient, hasWake;
 
-   unsigned int ns;
-   double slen,ds;
-   double *wakeres, *wakegeo, *wakerou, *wakeext, *wakeint;
+    unsigned int ns;
+    double slen,ds;
+    double *wakeres, *wakegeo, *wakerou, *wakeext, *wakeint;
 
 
 };

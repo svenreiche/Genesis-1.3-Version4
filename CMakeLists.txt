@@ -146,6 +146,7 @@ add_library(genesis13 STATIC
         src/IO/SDDSBeam.cpp
         src/IO/writeBeamHDF5.cpp
         src/IO/writeFieldHDF5.cpp
+        src/IO/writeWakeHDF5.cpp
         src/IO/readMapHDF5.cpp
         src/Loading/ImportBeam.cpp
         src/Loading/ImportField.cpp

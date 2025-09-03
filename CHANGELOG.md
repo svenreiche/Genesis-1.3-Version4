@@ -1,4 +1,9 @@
 # Change Log
+
+### [4.6.9] - 2025/09/03
+- Added a new routine for roughness wake calculation
+- Added the option to dump the single particle wakes in the wake namelist
+
 ### [4.6.9] - 2025/07/17
 - Release of version 4.6.9
 - Added the new namelist alter_beam for transformation 1D transformation of the electron distribution by applying periodic energy modulation and the effect of chicanes

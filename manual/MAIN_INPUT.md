@@ -424,6 +424,7 @@ Genesis supports the calculation of three types of wakefields by specifying the 
 - `lrough` (*double, 1*): period lengthin meters of the sinusoidal corrugation of the surface roughness model.
 - `transient` (*bool, false*): If set to `true`, Genesis includes the catch-up length of the origin of the wakefield to the particle effects. E.g. particles do not see immediatly the wake from those closer ahead of them than those further away. The catch-up distance is the distance in the undulator added to the starting position `ztrans`. If set to false the steady-state model is used, effectively setting `ztrans` to infinity. Enabling transient calculation will update the wakefield at each integration step, which can slow down the calculations.
 - `ztrans` (*double, 0*): Reference location of the first source of the wake fields. A positive value means that the condition for wakes (e.g. a small aperture in the vacuum chamber) has already started and there has been already some length to establish the wakes. For a value of zero the source is right at the undulator start, while a negative value prevents any wake, till the interation position has passed that point.
+- `output` (*string, \<empty>*): Root of the filename, where the single particle wakes are written. The root is extended by `.wake.h5` to form the filename.
 
 [Back](#supported-namelists)
 

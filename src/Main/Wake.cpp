@@ -1,21 +1,22 @@
 #include "Wake.h"
 #include "Beam.h"
+#include "writeWakeHDF5.h"
 
 Wake::Wake()
 {
-  loss = 0;
-  lossref="";
-  radius=2.5e-3;
-  conductivity=0;
-  relaxation=0;
-  roundpipe=true;
-  transient=false;
-  ztrans=0;
-  gap=0;
-  lgap=1;
-  hrough=0;
-  lrough=1;
-  ns=0;
+    loss = 0;
+    lossref="";
+    radius=2.5e-3;
+    conductivity=0;
+    relaxation=0;
+    roundpipe=true;
+    transient=false;
+    ztrans=0;
+    gap=0;
+    lgap=1;
+    hrough=0;
+    lrough=1;
+    ns=0;
 }
 
 Wake::~Wake(){}
@@ -23,57 +24,57 @@ Wake::~Wake(){}
 
 void Wake::usage(){
 
-  cout << "List of keywords for Wake" << endl;
-  cout << "&wake" << endl;
-  cout << " string loss =  0 / reference" << endl;
-  cout << " double radius = 2.5e-3" << endl;
-  cout << " bool   roundpipe   = true" << endl;
-  cout << " string material  = <empty>" << endl;
-  cout << " double conductivity = 0e-6" << endl;
-  cout << " double relaxation  = 0e-6" << endl;
-  cout << " double gap = 0e-6" << endl;
-  cout << " double lgap  = 1.0" << endl;
-  cout << " double hrough = 0.0" << endl;
-  cout << " double lrough = 1.0" << endl;
-  cout << " bool transient = false" << endl;
-  cout << " double ztrans = 0" << endl;
-  cout << "&end" << endl << endl;
-  return;
+    cout << "List of keywords for Wake" << endl;
+    cout << "&wake" << endl;
+    cout << " string loss =  0 / reference" << endl;
+    cout << " double radius = 2.5e-3" << endl;
+    cout << " bool   roundpipe   = true" << endl;
+    cout << " string material  = <empty>" << endl;
+    cout << " double conductivity = 0e-6" << endl;
+    cout << " double relaxation  = 0e-6" << endl;
+    cout << " double gap = 0e-6" << endl;
+    cout << " double lgap  = 1.0" << endl;
+    cout << " double hrough = 0.0" << endl;
+    cout << " double lrough = 1.0" << endl;
+    cout << " bool transient = false" << endl;
+    cout << " double ztrans = 0" << endl;
+    cout << " double ztrans = 0" << endl;
+    cout << " string output = <empty>" << endl;
+    cout << "&end" << endl << endl;
 }
 
 // input parameter
 
 bool Wake::init(int rank, int size, map<string,string> *arg,  Time *time, Setup *setup, Beam *beam, Profile *prof)
 {
+    std::string material;
+    std::string output;
+    const auto end = arg->end();
 
-  string material="";
-  map<string,string>::iterator end=arg->end();
-  map<string,string>::iterator iter=arg->begin();
-  
-  if (arg->find("loss")!=end    ){this->reference(arg->at("loss"),&loss,&lossref); arg->erase(arg->find("loss"));}
-  if (arg->find("radius")!=end) {radius = atof(arg->at("radius").c_str());  arg->erase(arg->find("radius"));}
-  if (arg->find("conductivity")!=end) {conductivity= atof(arg->at("conductivity").c_str());  arg->erase(arg->find("conductivity"));}
-  if (arg->find("relaxation")!=end) {relaxation = atof(arg->at("relaxation").c_str());  arg->erase(arg->find("relaxation"));}
-  if (arg->find("roundpipe")!=end)    {roundpipe    = atob(arg->at("roundpipe").c_str());  arg->erase(arg->find("roundpipe"));}
-  if (arg->find("material")!=end){material = arg->at("material"); arg->erase(arg->find("material"));}
-  if (arg->find("gap")!=end)  {gap = atof(arg->at("gap").c_str());  arg->erase(arg->find("gap"));}
-  if (arg->find("lgap")!=end) {lgap = atof(arg->at("lgap").c_str());  arg->erase(arg->find("lgap"));}
-  if (arg->find("hrough")!=end) {hrough = atof(arg->at("hrough").c_str());  arg->erase(arg->find("hrough"));}
-  if (arg->find("lrough")!=end) {lrough = atof(arg->at("lrough").c_str());  arg->erase(arg->find("lrough"));}
-  if (arg->find("transient")!=end)    {transient    = atob(arg->at("transient").c_str());  arg->erase(arg->find("transient"));}
-  if (arg->find("ztrans")!=end) {ztrans = atof(arg->at("ztrans").c_str());  arg->erase(arg->find("ztrans"));}
+    if (arg->find("loss")!=end    ){this->reference(arg->at("loss"),&loss,&lossref); arg->erase(arg->find("loss"));}
+    if (arg->find("radius")!=end) {radius = atof(arg->at("radius").c_str());  arg->erase(arg->find("radius"));}
+    if (arg->find("conductivity")!=end) {conductivity= atof(arg->at("conductivity").c_str());  arg->erase(arg->find("conductivity"));}
+    if (arg->find("relaxation")!=end) {relaxation = atof(arg->at("relaxation").c_str());  arg->erase(arg->find("relaxation"));}
+    if (arg->find("roundpipe")!=end)    {roundpipe    = atob(arg->at("roundpipe").c_str());  arg->erase(arg->find("roundpipe"));}
+    if (arg->find("material")!=end){material = arg->at("material"); arg->erase(arg->find("material"));}
+    if (arg->find("gap")!=end)  {gap = atof(arg->at("gap").c_str());  arg->erase(arg->find("gap"));}
+    if (arg->find("lgap")!=end) {lgap = atof(arg->at("lgap").c_str());  arg->erase(arg->find("lgap"));}
+    if (arg->find("hrough")!=end) {hrough = atof(arg->at("hrough").c_str());  arg->erase(arg->find("hrough"));}
+    if (arg->find("lrough")!=end) {lrough = atof(arg->at("lrough").c_str());  arg->erase(arg->find("lrough"));}
+    if (arg->find("transient")!=end)    {transient    = atob(arg->at("transient").c_str());  arg->erase(arg->find("transient"));}
+    if (arg->find("ztrans")!=end) {ztrans = atof(arg->at("ztrans").c_str());  arg->erase(arg->find("ztrans"));}
+    if (arg->find("output")!=end) {output = arg->at("output"); arg->erase(arg->find("output"));}
 
-
-  if (arg->size()!=0){
+  if (!arg->empty()){
     if (rank==0){ cout << "*** Error: Unknown elements in &wake" << endl; this->usage();}
     return false;
   }
 
   // check for external wake function
   
- string wrongProf="";
+ string wrongProf;
   if (prof->check(lossref)== false)  { wrongProf=lossref;}
-  if (wrongProf.size() > 0){
+  if (!wrongProf.empty()){
     if (rank==0){cout << "*** Error: Unknown profile reference in &wake: " << wrongProf << endl;}
     return false;
   }    
@@ -117,6 +118,10 @@ bool Wake::init(int rank, int size, map<string,string> *arg,  Time *time, Setup 
   // transfer wakes into beam class
   beam->initWake(ns,nsNode, ds,wakeext,wakeres,wakegeo,wakerou,ztrans,radius,transient);
 
+  if (!output.empty()) {
+      WriteWakeHDF5 out;
+      out.write(output,&s[0],wakeres,wakegeo,wakerou,ns);
+  }
   delete[] wakeres;
   delete[] wakegeo;
   delete[] wakerou;
@@ -150,7 +155,7 @@ double Wake::TrapIntegrateRoughness(vector< complex<double> > *K, complex<double
   int N=K->size();
   complex<double> dq=(q2-q1)/static_cast<double>(N-1);
   complex<double> i=complex<double> (0,1);  
-  complex<double> val=0;
+  complex<double> val=complex<double> (0.,0.);
 
   for (int j=0; j< N;j++){
     complex<double> q=q1+static_cast<double>(j)*dq;
