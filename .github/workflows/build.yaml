@@ -56,8 +56,10 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew update
+          # Avoid reinstalling cmake due to runner image pinning issue
+          # (https://github.com/actions/runner-images/issues/12912)
+          brew list cmake > /dev/null || brew install cmake
           brew install \
-            cmake \
             gcc \
             fftw \
             hdf5-mpi \
@@ -83,15 +85,14 @@ jobs:
           name: genesis4-${{ matrix.os }}-${{ matrix.mpi }}-system
           path: build/genesis4
 
-
       - name: prepare Python environment for steady-state test simulation
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.x"
       - name: install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install h5py   
+          pip install h5py
 
       - name: Run tests
         run: |
