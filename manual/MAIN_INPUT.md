@@ -354,7 +354,7 @@ The modules controls the import of a Genesis 1.3 field file to replace the inter
 - `harmonic` (*int, 1*) defines the harmonic for the given Genesis run.
 - `time` (*bool, true*): If the time window hasn’t been defined it allows to run Genesis with the imported distribution in scan mode, when set to `false`. This would disable all slippage and long-range collective effects in the simulation
 - `attenuation` (*double, 1.0*): apply an on-the-flight scaling factor to the field to be imported, without the need of modifying the original field file.
-- `offset` (*double, 0*): currently unused.
+- `offset` (*double, 0*): Additional offset of the field with respect to the time frame. It should be an integer of the slice length as defined in the field dump file
 
 [Back](#supported-namelists)
 

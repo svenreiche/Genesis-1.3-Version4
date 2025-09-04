@@ -22,21 +22,27 @@ extern const double eev;
 class ReadFieldHDF5 : public HDF5Base {
  public:
   ReadFieldHDF5();
-  virtual ~ReadFieldHDF5();
-  bool readGlobal(int, int, string, Setup *,Time *, int, bool);
+  ~ReadFieldHDF5() override;
+  bool readGlobal(int, int, const string&, Setup *,Time *, int, bool);
   bool readSlice(double, vector<complex<double> >*);
   void close();
   int getNGrid();
   double getDGrid();
-  double attenuation=1.0;
-  double offset=0.0;
+  void setOffset(double);
+  void setAttenuation(double);
+
 
  private:
-  hid_t fid;
-  double s0,slicelen,slen,dgrid,scl;
-  int  nwork,count,ngrid;
-  double *work;
+  double attenuation=1.0;
+  double offset=0.0;
+  hid_t fid{};
+  double s0{},slicelen{},slen{},dgrid{},scl{};
+  int  nwork,count{},ngrid{};
+  double *work{};
 };
+
+inline void ReadFieldHDF5::setOffset(double off) { offset = off; }
+inline void ReadFieldHDF5::setAttenuation(double att) { attenuation = att; }
 
 inline int ReadFieldHDF5::getNGrid(){
   return ngrid;

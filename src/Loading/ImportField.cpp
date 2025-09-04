@@ -19,6 +19,7 @@ void ImportField::usage(){
   cout << " string file = <empty>" << endl;
   cout << " int harmonic = 1" << endl;
   cout << " double attenuation = 1.0" << endl;
+  cout << " double offset = 0.0" << endl;
   cout << " bool time = true" << endl;
   cout << "&end" << endl << endl;
   return;
@@ -40,7 +41,7 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
   if (arg->find("time")!=end)    {dotime = atob(arg->at("time").c_str()); arg->erase(arg->find("time"));}
   if (arg->find("harmonic")!=end){harm = atoi(arg->at("harmonic").c_str()); arg->erase(arg->find("harmonic"));}
   if (arg->find("attenuation")!=end)  {attenuation = atof(arg->at("attenuation").c_str()); arg->erase(arg->find("attenuation"));}
-  // if (arg->find("offset")!=end)  {offset = atof(arg->at("offset").c_str()); arg->erase(arg->find("offset"));}
+  if (arg->find("offset")!=end)  {offset = atof(arg->at("offset").c_str()); arg->erase(arg->find("offset"));}
 
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &importfield" << endl; this->usage();}
@@ -50,9 +51,8 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
 
 
   ReadFieldHDF5 import;
-  import.attenuation = attenuation;
-  // deactivated
-  // import.offset = offset;
+  import.setAttenuation(attenuation);
+  import.setOffset(offset);
 
   bool check=import.readGlobal(rank, size, file, setup, time, harm, dotime);
   if (!check) { 
@@ -62,22 +62,24 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
 
   
 
-  // sample rate and time dependent run could have changed when taken by externaldistribution in readGlobal
-  double sample=static_cast<double>(time->getSampleRate());         // check slice length
+  // sample rate and time dependent run could have changed when taken by external distribution in readGlobal
+  auto sample=time->getSampleRate();         // check slice length
   dotime=time->isTime();                                            // check for time simulation
 
   vector<double> s;
-  int nslice=time->getPosition(&s);
+  int nslice=time->getPosition(&s);  // is needed to get s filled
 
 
+  // check if a field with the requested harmonics is already defined
+  // browse through existing fields
   int idx=-1;
   Field *field;
   for (int i=0; i<fieldin->size();i++){
     if (fieldin->at(i)->harm==harm){
-      field=fieldin->at(i);
       idx=i;
     }
   }
+
   if (idx<0){
     field=new Field;
     if (rank==0) {cout << "Importing radiation field distribution from file: " << file << " ..." << endl; }
@@ -90,22 +92,14 @@ bool ImportField::init(int rank, int size, map<string,string> *arg, vector<Field
 
 
   field->init(time->getNodeNSlice(),import.getNGrid(),import.getDGrid(),lambda,sample*lambda,s[0],harm);
-  
-  if (idx<0){
-    fieldin->push_back(field);
-    idx=fieldin->size()-1;
-  }
-
-
- 
 
   for (int j=0; j<time->getNodeNSlice(); j++){
     int i=j+time->getNodeOffset();
-    double sloc=s[i];
     import.readSlice(s[i],&field->field[j]);
   }
   import.close();
-  
+
+  fieldin->push_back(field);
 
   return true;
 

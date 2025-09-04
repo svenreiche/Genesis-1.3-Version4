@@ -18,7 +18,7 @@ void ReadFieldHDF5::close(){
 }
   
 
-bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Time *time, int harm, bool dotime)
+bool ReadFieldHDF5::readGlobal(int rank, int size, const string& file, Setup *setup, Time *time, int harm, bool dotime)
 {
 
 
@@ -35,6 +35,9 @@ bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Tim
   readDataDouble(fid,(char *)"slicespacing",&slicelen,1);
   readDataInt(fid,(char *)"slicecount",&count,1);
   readDataInt(fid,(char *)"gridpoints",&ngrid,1);
+
+  s0 += slicelen*round(offset/slicelen);   // apply offset to starting point but make sure it is an integer of samplerate*wavelength
+
   isOpen=true;
 
   nwork=ngrid*ngrid;
@@ -76,18 +79,11 @@ bool ReadFieldHDF5::readGlobal(int rank, int size,string file, Setup *setup, Tim
 
 
 
-  double sample=static_cast<double>(time->getSampleRate());         // check slice length
+  auto sample = time->getSampleRate();         // check slice length
   if (fabs(slicelen-lambda*sample)/slicelen>1e-6){
       if (rank==0){ cout << "*** Error: Mismatch in sample rate of run and of input file" << endl;}
       return false;
   }
-
-
-
-
-
-
-
 
   return true;
 } 

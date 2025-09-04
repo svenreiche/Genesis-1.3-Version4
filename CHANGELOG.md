@@ -1,4 +1,6 @@
 # Change Log
+### [4.6.9] - 2025/09/04
+- Enabling the offset feature of the radiation beam when importing from a dump file with importbeam
 
 ### [4.6.9] - 2025/09/03
 - Added a new routine for roughness wake calculation
