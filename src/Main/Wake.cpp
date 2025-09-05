@@ -422,20 +422,6 @@ void Wake::singleWakeResistive(int rank)
     // ---- Final conversion: V/C → signed energy kick (electron sign) ----
     for (int i = 0; i < ns; ++i) wakeres[i] *= -e_charge;
 
-
-    // Debug print to file
-    if (rank == 0) {
-        std::ofstream out("Wz.txt");           // use std::ios::app to append
-        out << std::setprecision(16);
-        for (int i = 0; i < ns; ++i) {
-            const double z = i * ds;
-            out << z << " " << wakeres[i] << '\n';   // z [m], W(z) (after −e scaling)
-        }
-        // out.close(); // optional; destructor closes automatically
-    }
-    
-
-
     if (rank == 0) {
         std::cout << "Resistive Wake (" << (roundpipe ? "ROUND" : "FLAT")
                   << ") calculated (s0 = " << s0 << ")..." << std::endl;
