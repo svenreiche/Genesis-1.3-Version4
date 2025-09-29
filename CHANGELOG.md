@@ -1,4 +1,7 @@
 # Change Log
+### [4.6.10] - 2025/10/29
+- Release of Version 4.6.10
+
 ### [4.6.9] - 2025/09/04
 - Enabling the offset feature of the radiation beam when importing from a dump file with importbeam
 
