@@ -9,8 +9,6 @@
  * C. Lechner, EuXFEL
  */
 
-#define PLUGIN_TEST
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
