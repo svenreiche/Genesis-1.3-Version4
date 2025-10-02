@@ -24,6 +24,10 @@ add_library(demo SHARED
 	DiagFieldPowerDemo.cc
 	DiagUtil.cc
 )
+add_library(demo_test SHARED
+	DiagFieldPowerDemo_Test.cc
+	DiagUtil.cc
+)
 
 #project(beamdemo VERSION 1.0.0 DESCRIPTION "diagbeamdemo")
 add_library(beamdemo SHARED
