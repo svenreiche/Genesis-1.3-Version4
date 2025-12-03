@@ -7,6 +7,8 @@
  *
  */
 
+#include <algorithm>
+#include <cctype>
 #include "StringProcessing.h"
 
 StringProcessing::StringProcessing(){}
@@ -50,7 +52,8 @@ void StringProcessing::trim(string &str){
 bool StringProcessing::atob(string in){
     
 	bool ret=false;
-	if ((in.compare("1")==0)||(in.compare("true")==0)||(in.compare("t")==0)) { ret=true; }
+	std::transform(in.begin(), in.end(), in.begin(),[](unsigned char c){ return std::tolower(c); });
+	if (in=="1"||in=="true"||in=="t") { ret=true; }
 	return ret;
 }
 
