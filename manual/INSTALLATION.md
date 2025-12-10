@@ -111,6 +111,15 @@ sudo port install hdf5 +openmpi
 sudo port install fftw-3
 ```
 
+With newer versions of Mac OS the support of MacPorts is not working. In this case Homebrew package manager should be used instead.
+
+```bash
+brew install hdf5-mpi
+brew install cmake
+brew install pkg-config`
+```
+
+
 Then build Genesis:
 
 ```
