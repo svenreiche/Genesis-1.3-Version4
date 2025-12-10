@@ -224,10 +224,10 @@ bool LatticeParser::parse(string file, string line, int rank, vector<Element *> 
     idx=this->findIndex(&label,sequence[i]);
     // //    cout << "Element: " << sequence[i] << " Type: " << type[idx] << " Pos:" << z << " Offset: " << zoff[i] << endl;
     // cout << "Element " << i << " Type: " << type[idx] << endl;
-    if (type[idx].compare("quad")==0){ error=false; lat.push_back(this->parseQuad(idx,rank,z));}
+    if (type[idx].compare("quad")==0){ error=false; lat.push_back(this->parseQuad(idx,rank,z,sm));}
     if (type[idx].compare("undu")==0){ error=false; lat.push_back(this->parseID(idx,rank,z,sm)); }
     if (type[idx].compare("drif")==0){ error=false; lat.push_back(this->parseDrift(idx,rank,z));}
-    if (type[idx].compare("corr")==0){ error=false; lat.push_back(this->parseCorrector(idx,rank,z));}
+    if (type[idx].compare("corr")==0){ error=false; lat.push_back(this->parseCorrector(idx,rank,z,sm));}
     if (type[idx].compare("chic")==0){ error=false; lat.push_back(this->parseChicane(idx,rank,z,sm)); }
     if (type[idx].compare("mark")==0){ error=false; lat.push_back(this->parseMarker(idx,rank,z)); }
     if (type[idx].compare("phas")==0){ error=false; lat.push_back(this->parsePhaseshifter(idx,rank,z,sm)); }
@@ -306,16 +306,16 @@ ID *LatticeParser::parseID(int idx,int rank, double zin, SeriesManager *sm)
     }
 #endif
     if(extractParameterValue(fld,val,sm,rank, "aw", &ele->aw)) {found=true;}
+    if(extractParameterValue(fld,val,sm,rank, "ax", &ele->ax)) {found=true;}
+    if(extractParameterValue(fld,val,sm,rank, "ay", &ele->ay)) {found=true;}
+    if(extractParameterValue(fld,val,sm,rank, "gradx", &ele->gradx)) {found=true;}
+    if(extractParameterValue(fld,val,sm,rank, "grady", &ele->grady)) {found=true;}
     if (fld.compare("aw_perp")==0)  { ele->paw=atof(val.c_str()); found=true; };
     if (fld.compare("nwig")==0) { ele->nwig=atof(val.c_str()); found=true; };
     if (fld.compare("kx")==0)   { ele->kx=atof(val.c_str()); found=true; haskx = true;};
     if (fld.compare("ky")==0)   { ele->ky=atof(val.c_str()); found=true; haskx = true;};
     if (fld.compare("kx_perp")==0)  { ele->pkx=atof(val.c_str()); found=true; };
     if (fld.compare("ky_perp")==0)  { ele->pky=atof(val.c_str()); found=true; };
-    if (fld.compare("ax")==0)   { ele->ax=atof(val.c_str()); found=true; };
-    if (fld.compare("ay")==0)   { ele->ay=atof(val.c_str()); found=true; };
-    if (fld.compare("gradx")==0) { ele->gradx=atof(val.c_str()); found=true; };
-    if (fld.compare("grady")==0) { ele->grady=atof(val.c_str()); found=true; };
     if (fld.compare("gradx_perp")==0){ ele->pdadx=atof(val.c_str()); found=true; };
     if (fld.compare("grady_perp")==0){ ele->pdady=atof(val.c_str()); found=true; };
     if (fld.compare("phase_perp")==0){ ele->phase=atof(val.c_str()); found=true; };
@@ -338,7 +338,7 @@ ID *LatticeParser::parseID(int idx,int rank, double zin, SeriesManager *sm)
 }
 
 
-Corrector *LatticeParser::parseCorrector(int idx,int rank, double zin)
+Corrector *LatticeParser::parseCorrector(int idx,int rank, double zin, SeriesManager *sm)
 {
   Corrector *ele=new Corrector;
 
@@ -366,8 +366,8 @@ Corrector *LatticeParser::parseCorrector(int idx,int rank, double zin)
     this->trim(fld);
     bool found=false;
     if (fld.compare("l")==0)    { ele->l=atof(val.c_str());  found=true; };
-    if (fld.compare("cx")==0)   { ele->cx=atof(val.c_str()); found=true; };
-    if (fld.compare("cy")==0)   { ele->cy=atof(val.c_str()); found=true; };
+    if (extractParameterValue(fld,val,sm,rank, "cx", &ele->cx)) {found=true;}
+    if (extractParameterValue(fld,val,sm,rank, "cy", &ele->cy)) {found=true;}
     if (found==false){
       if (rank==0){cout << "*** Warning: Ignoring unknown parameter: " << fld << " for element " << label[idx]<< endl;}
     }
@@ -490,7 +490,7 @@ Drift *LatticeParser::parseDrift(int idx,int rank, double zin)
 }
 
 
-Quadrupole *LatticeParser::parseQuad(int idx,int rank, double zin)
+Quadrupole *LatticeParser::parseQuad(int idx,int rank, double zin,SeriesManager *sm)
 {
   Quadrupole *ele=new Quadrupole;
 
@@ -519,9 +519,9 @@ Quadrupole *LatticeParser::parseQuad(int idx,int rank, double zin)
     this->trim(fld);
     bool found=false;
     if (fld.compare("l")==0) { ele->l=atof(val.c_str());  found=true; };
-    if (fld.compare("k1")==0){ ele->k1=atof(val.c_str()); found=true; };
-    if (fld.compare("dx")==0){ ele->dx=atof(val.c_str()); found=true; };
-    if (fld.compare("dy")==0){ ele->dy=atof(val.c_str()); found=true; };
+    if (extractParameterValue(fld,val,sm,rank, "k1", &ele->k1)){ found=true; };
+    if (extractParameterValue(fld,val,sm,rank, "dx", &ele->dx)){ found=true; };
+    if (extractParameterValue(fld,val,sm,rank, "dy", &ele->dy)){ found=true; };
     if (found==false){
       if (rank==0){cout << "*** Warning: Ignoring unknown parameter: " << fld << " for element " << label[idx]<< endl;}
     }

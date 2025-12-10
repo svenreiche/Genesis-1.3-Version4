@@ -24,11 +24,11 @@ class LatticeParser : public StringProcessing {
    bool parse(string,string, int, vector<Element *> &, SeriesManager *);
 
  private:
-   Quadrupole *parseQuad(int,int,double);
+   Quadrupole *parseQuad(int,int,double,SeriesManager *);
    Drift *parseDrift(int,int,double);
    Marker *parseMarker(int,int,double);
    Chicane *parseChicane(int,int,double, SeriesManager *);
-   Corrector *parseCorrector(int,int,double);
+   Corrector *parseCorrector(int,int,double,SeriesManager *);
    ID *parseID(int,int,double, SeriesManager *);
    Phaseshifter *parsePhaseshifter(int,int,double, SeriesManager *);
    bool extractParameterValue(string, string, SeriesManager *, int, string, double *);
