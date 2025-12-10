@@ -1,5 +1,5 @@
 # Contributing
-
+We welcome anyone who would like to contribute to the Genesis 1.3 project.
 When contributing to this repository, please first discuss the change you wish to make via issue,
 email, or any other method with the owners of this repository before making a change. 
 
