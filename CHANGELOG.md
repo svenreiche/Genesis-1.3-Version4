@@ -1,8 +1,13 @@
 # Change Log
+
+### [4.6.12] - 2025/12/12
+- Check implemented if lattice file references an undefined sequence
+- Added a contribution.md file
+
 ### [4.6.11] - 2025/12/03
 - Release of Version 4.6.11
 - Fixed that bool input parameter in the main input deck where case sensitive (e.g. True would result in a false statement)
-- Fixed the incorrect matrix transformation of the particel vector in importtransformation namelist.
+- Fixed the incorrect matrix transformation of the particle vector in importtransformation namelist.
 
 ### [4.6.10] - 2025/10/29
 - Release of Version 4.6.10
