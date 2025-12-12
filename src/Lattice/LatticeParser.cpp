@@ -531,7 +531,7 @@ Quadrupole *LatticeParser::parseQuad(int idx,int rank, double zin,SeriesManager 
 
 Phaseshifter *LatticeParser::parsePhaseshifter(int idx,int rank, double zin, SeriesManager *sm)
 {
-  Phaseshifter *ele=new Phaseshifter;
+  auto *ele=new Phaseshifter;
 
   ele->type="Phaseshifter";
   ele->z=zin;
@@ -544,7 +544,7 @@ Phaseshifter *LatticeParser::parsePhaseshifter(int idx,int rank, double zin, Ser
 
   this->chop(argument[idx],&par);
   for (int i=0;i<par.size();i++){
-      if (par[i].length() < 1){  // in the case of C: COR = {};  one is getting a zero length string.
+      if (par[i].empty()){  // in the case of C: COR = {};  one is getting a zero length string.
           continue;
       }
     size_t pos=par[i].find_first_of("=");
@@ -738,9 +738,18 @@ bool LatticeParser::extractParameterValue(string fld, string val, SeriesManager 
    this->reference(val, &q, &refname);
    if(!refname.empty()) {
      // we got a reference to a sequence, query it
-     q=sm->getElement(refname);
-     if(0==rank) {
-       cout << "*** Ref to series " << refname << ", result is: " << parameterName<<"="<< q << " ***" << endl;
+     auto check = sm->check(refname.c_str());
+     if (check==false) {
+        q = 0;
+        if(0==rank) {
+          cout << "*** ERROR: Referencing unknown sequence " << refname << endl;
+       }
+       return false;
+     } else {
+       q=sm->getElement(refname);
+       if(0==rank) {
+         cout << "*** Ref to series " << refname << ", result is: " << parameterName<<"="<< q << " ***" << endl;
+       }
      }
    }
    *pv = q;
