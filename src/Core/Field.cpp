@@ -1,7 +1,6 @@
 
 #include "Field.h"
-//#include "genesis_fortran_common.h"
-
+#include "FieldSolverADI.h"
 
 #include <fstream>
 
@@ -67,6 +66,7 @@ void Field::init(int nsize, int ngrid_in, double dgrid_in, double xlambda0, doub
   first=0;                                // pointer to slice which correspond to first in the time window
   dz_save=0;
 
+  solver  = new FieldSolverADI;
   
   return;
 }
@@ -168,8 +168,8 @@ void Field::track(double delz, Beam *beam, Undulator *und)
 {
   
 
-  solver.getDiag(delz,dgrid,xks,ngrid);  // check whether step size has changed and recalculate aux arrays
-  solver.advance(delz,this,beam,und);
+  solver->init(delz,dgrid,xks,ngrid);  // check whether step size has changed and recalculate aux arrays
+  solver->advance(delz,this,beam,und);
   return;
 
 }

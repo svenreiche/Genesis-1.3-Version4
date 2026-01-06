@@ -84,7 +84,7 @@ class Field{
    fftw_plan p;
 #endif
      
-   FieldSolver solver;
+   FieldSolver *solver;
 };
 
 
