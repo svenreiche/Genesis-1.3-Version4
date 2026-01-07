@@ -133,6 +133,7 @@ add_library(genesis13 STATIC
         src/Core/EFieldSolver.cpp
         src/Core/Field.cpp
         src/Core/FieldSolverADI.cpp
+        src/Core/FieldSolverFFT.cpp
         src/Core/Gencore.cpp
         src/Core/Incoherent.cpp
         src/Core/TrackBeam.cpp

@@ -1,7 +1,7 @@
 
 #include "Field.h"
 #include "FieldSolverADI.h"
-
+#include "FieldSolverFFT.h"
 #include <fstream>
 
 
