@@ -1,4 +1,8 @@
 # Change Log
+### [4.6.12] - 2026/01/08
+- Fixed bug in the ADI methods of the field solver, where the out edge weren't calculated.
+- Added support for a FFT based field solver. The type of field solver can be chosen in the track command
+- Added support for source term filtering to supress strongly diffracting radiation field components for a rough distribution of the source term.
 
 ### [4.6.12] - 2025/12/12
 - Check implemented if lattice file references an undefined sequence

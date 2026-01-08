@@ -31,9 +31,10 @@ class Track{
    bool atob(string);
 
    double zstop,slen,s0;
+   double xc,yc,sig;
    int output_step,dumpFieldStep,dumpBeamStep,sort_step,bunchharm;
    int rank, size;
-   bool exclharm;
+   bool exclharm,fftsolver,doFilter;
 };
 
 

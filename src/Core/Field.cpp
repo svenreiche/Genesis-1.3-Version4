@@ -1,8 +1,7 @@
 
 #include "Field.h"
-//#include "genesis_fortran_common.h"
-
-
+#include "FieldSolverADI.h"
+#include "FieldSolverFFT.h"
 #include <fstream>
 
 
@@ -67,10 +66,21 @@ void Field::init(int nsize, int ngrid_in, double dgrid_in, double xlambda0, doub
   first=0;                                // pointer to slice which correspond to first in the time window
   dz_save=0;
 
-  
-  return;
+  solver  = new FieldSolverADI;
 }
 
+void Field::initSolver(bool isFFT,bool filter, double xc, double yc, double sig) {
+    if (hasSolver_) {
+        delete solver;
+    }
+    if (isFFT) {
+        solver = new FieldSolverFFT;
+        solver->initSourceFilter(xc,yc,sig,filter);
+    } else {
+        solver = new FieldSolverADI;
+    }
+    hasSolver_=true;
+}
 
 // at each run the buffer should be cleared.
 void Field::initDiagnostics(int nz)
@@ -168,8 +178,8 @@ void Field::track(double delz, Beam *beam, Undulator *und)
 {
   
 
-  solver.getDiag(delz,dgrid,xks,ngrid);  // check whether step size has changed and recalculate aux arrays
-  solver.advance(delz,this,beam,und);
+  solver->init(delz,dgrid,xks,ngrid);  // check whether step size has changed and recalculate aux arrays
+  solver->advance(delz,this,beam,und);
   return;
 
 }

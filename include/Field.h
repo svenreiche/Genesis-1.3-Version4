@@ -31,6 +31,7 @@ class Field{
    Field();
    virtual ~Field();
    void initDiagnostics(int);
+   void initSolver(bool,bool,double,double,double);
    void diagnostics(bool);
    void resetSlippage();
 
@@ -72,6 +73,7 @@ class Field{
 #endif
 
  private:
+   bool hasSolver_ {false};
    int idx;
    bool disabled;
    double rharm;
@@ -84,7 +86,7 @@ class Field{
    fftw_plan p;
 #endif
      
-   FieldSolver solver;
+   FieldSolver *solver;
 };
 
 

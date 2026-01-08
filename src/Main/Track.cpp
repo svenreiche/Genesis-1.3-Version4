@@ -10,6 +10,7 @@ Track::Track()
   dumpBeamStep=0;
   bunchharm=1;
   exclharm = false;
+  fftsolver = false;
 }
 
 Track::~Track(){}
@@ -28,6 +29,11 @@ void Track::usage(){
   cout << " int sort_step = 0" << endl;
   cout << " int bunchharm = 1" << endl;
   cout << " bool exclusive_harmonics = false" << endl;
+  cout << " bool fft_fieldsolver = false" << endl;
+  cout << " bool source_filter = false" << endl;
+  cout << " double xcut = 1 " << endl;
+  cout << " double ycut = 1 " << endl;
+  cout << " double sigmoid = 1" << endl;
   cout << "&end" << endl << endl;
   /* currently undocumented debugging options: dbg_report_lattice, dbg_suppress_outfile */
 
@@ -57,7 +63,11 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   double sample=time->getSampleRate();
   s0=time->getTimeWindowStart();
   slen=time->getTimeWindowLength();
-
+  fftsolver = false;
+  doFilter = false;
+  xc = 1;
+  yc = 1;
+  sig = 1;
   
   map<string,string>::iterator end=arg->end();
 
@@ -70,10 +80,14 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   if (arg->find("beam_dump_step")!=end)   {dumpBeamStep = atoi(arg->at("beam_dump_step").c_str());  arg->erase(arg->find("beam_dump_step"));}
   if (arg->find("sort_step")!=end)   {sort_step= atoi(arg->at("sort_step").c_str());  arg->erase(arg->find("sort_step"));}
   if (arg->find("bunchharm")!=end)   {bunchharm= atoi(arg->at("bunchharm").c_str());  arg->erase(arg->find("bunchharm"));}
+  if (arg->find("fft_fieldsolver")!=end) {fftsolver = atob(arg->at("fft_fieldsolver")); arg->erase(arg->find("fft_fieldsolver"));}
   if (arg->find("exclusive_harmonics")!=end) {exclharm = atob(arg->at("exclusive_harmonics")); arg->erase(arg->find("exclusive_harmonics"));}
   if (arg->find("dbg_report_lattice")!=end) {dbg_report_lattice = atob(arg->at("dbg_report_lattice")); arg->erase(arg->find("dbg_report_lattice"));}
   if (arg->find("dbg_suppress_outfile")!=end) {dbg_no_outfile = atob(arg->at("dbg_suppress_outfile")); arg->erase(arg->find("dbg_suppress_outfile"));}
-
+  if (arg->find("xcut")!=end)     {xc= atof(arg->at("xcut").c_str());  arg->erase(arg->find("xcut"));}
+  if (arg->find("ycut")!=end)     {yc= atof(arg->at("ycut").c_str());  arg->erase(arg->find("ycut"));}
+  if (arg->find("sigmoid")!=end)     {sig= atof(arg->at("sigmoid").c_str());  arg->erase(arg->find("sigmoid"));}
+  if (arg->find("source_filter")!=end) {doFilter = atob(arg->at("source_filter")); arg->erase(arg->find("source_filter"));}
   if (arg->size()!=0){
     if (rank==0){ cout << "*** Error: Unknown elements in &track" << endl; this->usage();}
     return false;
@@ -83,7 +97,15 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   filter.beam.exclharm = exclharm;
   if (output_step < 1) { output_step=1; }
 
- 
+  // select solver
+#ifndef FFTW
+  fftsolver=false;    // FFT solver nees FFTW library
+#endif
+  for (int i=0; i<field->size();i++){
+    field->at(i)->initSolver(fftsolver,doFilter,xc,yc,sig);
+  }
+
+
   Undulator *und = new Undulator;
 
   lat->generateLattice(setup, alt, und); /* !changes to 'lat' after this function call may have no effect, as this function also stores the generated lattice into the provided Undulator instance! */
