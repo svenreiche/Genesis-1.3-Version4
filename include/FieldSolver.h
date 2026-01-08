@@ -19,9 +19,10 @@ using namespace std;
 
 class FieldSolver{
  public:
-   virtual ~FieldSolver() {};
-   virtual void init(double,double,double,int) = 0;
-   virtual void advance(double, Field *, Beam *, Undulator *) = 0;
+    virtual ~FieldSolver() {};
+    virtual void init(double,double,double,int) = 0;
+    virtual void advance(double, Field *, Beam *, Undulator *) = 0;
+    virtual void initSourceFilter(double,double,double,bool) = 0;
 };
 
 

@@ -67,10 +67,20 @@ void Field::init(int nsize, int ngrid_in, double dgrid_in, double xlambda0, doub
   dz_save=0;
 
   solver  = new FieldSolverADI;
-  
-  return;
 }
 
+void Field::initSolver(bool isFFT,bool filter, double xc, double yc, double sig) {
+    if (hasSolver_) {
+        delete solver;
+    }
+    if (isFFT) {
+        solver = new FieldSolverFFT;
+        solver->initSourceFilter(xc,yc,sig,filter);
+    } else {
+        solver = new FieldSolverADI;
+    }
+    hasSolver_=true;
+}
 
 // at each run the buffer should be cleared.
 void Field::initDiagnostics(int nz)

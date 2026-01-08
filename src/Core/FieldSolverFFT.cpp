@@ -76,6 +76,12 @@ void FieldSolverFFT::FFT(vector<complex<double> > &crfield)
     for (unsigned long ii = 0; ii < crfield.size(); ii++) {
         sf[ii] = out[ii];
     }
+    // filter source term
+    if (doFilter_) {
+        for (unsigned long ii = 0; ii < crfield.size(); ii++) {
+            sf[ii]*=sigmoid_[ii];
+        }
+    }
 
     // do the actual propagation
     for (unsigned long ii = 0; ii < crfield.size(); ii++) {
@@ -102,18 +108,25 @@ void FieldSolverFFT::init(double delz,double dgrid, double xks, int ngrid_in) {
         uf.resize(ngrid*ngrid);
         sf.resize(ngrid*ngrid);
         K2.resize(ngrid*ngrid);
+        sigmoid_.resize(ngrid*ngrid);
+
         double shift=-0.5*static_cast<double> (ngrid-1);
         for (int iy=0;iy<ngrid;iy++) {
             double dy=static_cast<double>(iy)+shift;
+            double y = dy / static_cast<double>(ngrid) /yc ;
             for (int ix=0;ix<ngrid;ix++) {
                 double dx=static_cast<double>(ix)+shift;
+                double x = dx / static_cast<double>(ngrid) /xc ;
                 int iiy=(iy+(ngrid+1)/2) % ngrid;
                 int iix=(ix+(ngrid+1)/2) % ngrid;
                 int ii=iiy*ngrid+iix;
                 K2[ii] = complex<double>(0,-(dx*dx+dy*dy)*dk*dk/2./xks);
+                double r = (sqrt(x * x + y * y) - 1) / sig;
+                sigmoid_[ii] = 1. / (1 + exp(r));
             }
         }
         crsource.resize(ngrid* ngrid);
+
 
 #ifdef FFTW
         p  = fftw_plan_dft_2d(ngrid,ngrid,reinterpret_cast<fftw_complex*>(in),reinterpret_cast<fftw_complex*>(out),FFTW_FORWARD,FFTW_MEASURE);
@@ -123,3 +136,12 @@ void FieldSolverFFT::init(double delz,double dgrid, double xks, int ngrid_in) {
     }
 }
 
+void FieldSolverFFT::initSourceFilter(double xc_in, double yc_in, double sig_in,bool do_filter) {
+    doFilter_ = do_filter;
+    if (sig <= 0) {  // check for unphysical input
+        doFilter_ = false;
+    }
+    xc=xc_in;
+    yc=yc_in;
+    sig=sig_in;
+};

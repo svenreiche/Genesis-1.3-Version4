@@ -19,9 +19,10 @@ using namespace std;
 
 class FieldSolverADI : public FieldSolver{
  public:
-   ~FieldSolverADI();
-   void init(double,double,double,int);
-   void advance(double, Field *, Beam *, Undulator *);
+    ~FieldSolverADI();
+    void init(double,double,double,int);
+    void advance(double, Field *, Beam *, Undulator *);
+    void initSourceFilter(double,double,double,bool);
 
  private:
    int ngrid {0};
@@ -34,5 +35,7 @@ class FieldSolverADI : public FieldSolver{
    void tridagy(vector<complex< double > > &);
    
 };
+
+inline void FieldSolverADI::initSourceFilter(double x,double y,double z ,bool t) { return;}
 
 #endif
