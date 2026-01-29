@@ -8,8 +8,8 @@ Lattice::Lattice()
 
 Lattice::~Lattice()
 {
-  for (int i=0;i<lat.size();i++){
-    delete lat[i];
+  for (auto & i : lat){
+    delete i;
   }
   lat.clear();
 }
@@ -20,8 +20,8 @@ bool Lattice::parse(string filename, string beamline, int rank, SeriesManager *s
 
   // release old lattice
 
-  for (int i=0;i<lat.size();i++){
-    delete lat[i];
+  for (auto & i : lat){
+    delete i;
   }
   lat.clear();
 
@@ -36,10 +36,10 @@ bool Lattice::parse(string filename, string beamline, int rank, SeriesManager *s
   
   layout.clear();  // layout holds start and end point of each value
   
-  for(int i=0; i<lat.size();i++){
-    double z0=lat[i]->z;    
+  for(auto & i : lat){
+    double z0=i->z;
     layout[z0]=1;
-    layout[z0+lat[i]->l]=1;
+    layout[z0+i->l]=1;
   }
 
   return true;
@@ -60,7 +60,7 @@ bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
 
   und->setGammaRef(gamma);
 
-  int ndata=lat_aw.size();
+  unsigned long ndata=lat_aw.size();
 
   und->aw.resize(ndata);
   und->ax.resize(ndata);
@@ -107,22 +107,23 @@ bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
       und->chic_lt[i]=lat_lt[i];       // here it is the total length but it will change to the time delay.
       
       if (und->chic_angle[i]!=0){
-       double delay=fabs(und->chic_angle[i]);
-       double tmin=0;
-       double tmax=asin(1)-0.001;
-       bool converged=false;
-       double theta,d;
-       while (!converged){
-         theta=0.5*(tmax+tmin);
-         d=4*und->chic_lb[i]*(theta/sin(theta)-1)+2*und->chic_ld[i]*(1/cos(theta)-1);
-         if (d>delay) {
+        double delay=fabs(und->chic_angle[i]);
+        double tmin=0;
+        double tmax=asin(1)-0.001;
+        bool converged=false;
+        double theta = 0.5*(tmax+tmin);
+        double d;
+        while (!converged){
+          theta=0.5*(tmax+tmin);
+          d=4*und->chic_lb[i]*(theta/sin(theta)-1)+2*und->chic_ld[i]*(1/cos(theta)-1);
+          if (d>delay) {
            tmax=theta;
-         } else {
-          tmin=theta;
-	 }
-         if (fabs(delay-d)<1e-15) { converged=true; }
-       }
-       und->chic_angle[i]=theta;
+          } else {
+           tmin=theta;
+          }
+          if (fabs(delay-d)<1e-15) { converged=true; }
+        }
+        und->chic_angle[i]=theta;
       }
 
 
@@ -139,7 +140,7 @@ bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
   if (lastmark < 0){
     und->marker[ndata]=0;
   } else {
-        Marker *mark=(Marker *)lat[lastmark];
+        auto *mark=(Marker *)lat[lastmark];
         und->marker[ndata]=mark->action; 
   }
 
@@ -151,7 +152,7 @@ bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
 void Lattice::calcSlippage(double lambda, double gamma)
 {
 
-  int nz=lat_aw.size();
+  unsigned long nz=lat_aw.size();
   lat_slip.resize(nz);                                  // this needs to be improved for chicanes
   lat_phase.resize(nz);
   
@@ -233,9 +234,6 @@ void Lattice::getMatchedOptics(double *betax, double *alphax, double *betay, dou
     *betay =mbetay;
     *alphay=malphay;
   }
-
-  return;
-
 }
 
 void Lattice::match(int rank, double z0, double gammaref)
@@ -286,8 +284,7 @@ void Lattice::match(int rank, double z0, double gammaref)
     if (rank==0){ cout << "*** Warning: Cannot find a matching solution" << endl; }
     matched=false;
   }
-  return;
-}
+  }
   
 
 void Lattice::unrollLattice(double delz)
@@ -306,8 +303,8 @@ void Lattice::unrollLattice(double delz)
 
 
 
-  map<double,int>::iterator it=layout.begin();
-  map<double,int>::iterator iend=layout.end();
+  auto it=layout.begin();
+  auto iend=layout.end();
   iend--;
   
 
@@ -336,13 +333,13 @@ void Lattice::unrollLattice(double delz)
 
       } else {
         ID *und=(ID *)lat[iele];
-        int nz=round(dz/delz);
+        int nz=static_cast<int>(round(dz/delz));
         if (nz==0) {nz=1;}
         dz=dz/static_cast<double>(nz);
         for (int iz=0;iz<nz;iz++){
-	  lat_dz.push_back(dz);
+	        lat_dz.push_back(dz);
           lat_aw.push_back(und->aw);
-	  double ku=4.*asin(1)/und->lambdau;
+	        double ku=4.*asin(1)/und->lambdau;
           lat_ku.push_back(ku);
           lat_kx.push_back(ku*ku*und->kx);
           lat_ky.push_back(ku*ku*und->ky);
@@ -355,7 +352,7 @@ void Lattice::unrollLattice(double delz)
       }
   }
 
-  int nz=lat_aw.size();
+  unsigned long nz=lat_aw.size();
   lat_z.resize(nz);
   lat_z[0]=0; 
   for (int i=1; i<nz;i++){
@@ -400,7 +397,7 @@ void Lattice::unrollLattice(double delz)
 
     int iele=this->findElement(z0,z1,"Quadrupole");
     if (iele!=-1){     // found quadrupole
-        Quadrupole *quad=(Quadrupole *)lat[iele];
+        auto *quad=(Quadrupole *)lat[iele];
         lat_qf[i]=quad->k1; 
         lat_qx[i]=quad->dx; 
         lat_qy[i]=quad->dy; 
@@ -411,7 +408,7 @@ void Lattice::unrollLattice(double delz)
     if (iele!=-1){ 
       if (iele!=lastChicane){
 	if ((!inUnd)&&(!inQuad)){
-          Chicane *chicane=(Chicane *)lat[iele];
+          auto *chicane=(Chicane *)lat[iele];
           lat_delay[i]=chicane->delay; 
           lat_lb[i]=chicane->lb; 
           lat_ld[i]=chicane->ld; 
@@ -425,14 +422,14 @@ void Lattice::unrollLattice(double delz)
 
     iele=this->findElement(z0,z1,"Corrector");
     if (iele!=-1){                                     // outside of a bend
-        Corrector *cor=(Corrector *)lat[iele];
+        auto *cor=(Corrector *)lat[iele];
         lat_cx[i]=cor->cx; 
         lat_cy[i]=cor->cy; 
     } 
 
     iele=this->findElement(z0,z1,"Phaseshifter");
     if (iele!=-1){                                     // outside of a bend
-        Phaseshifter *cor=(Phaseshifter *)lat[iele];
+        auto *cor=(Phaseshifter *)lat[iele];
         lat_ps[i]=cor->phi; 
     }
 
@@ -440,12 +437,11 @@ void Lattice::unrollLattice(double delz)
     // Thus a marker as the last element is ignored.
     iele=this->findMarker(z0,"Marker");
     if (iele!=-1){   
-        Marker *mark=(Marker *)lat[iele];
+        auto *mark=(Marker *)lat[iele];
         lat_mk[i]=mark->action; 
     }
   }
 
-  return;  
 }
 
 bool Lattice::alterElement(string element, string field, double value, string valueref, SeriesManager *seq, int instance, bool add)
@@ -466,41 +462,39 @@ bool Lattice::alterElement(string element, string field, double value, string va
 
     if (!ele.compare(tag)){
       count++;
-      if ((count == instance) || (instance == 0)){
+      if ((count == instance) || (instance == 0)) {
         double val = value;
         if (seq->check(valueref)){}
-	        val=seq->getElement(valueref);
-            if (ele=="undu"){
-	      ID *id=(ID *)lat[i];
-	      if (field == "aw") { id->aw = val+wei * id->aw; }
-	      if (field == "ax") { id->ax = val+wei * id->ax; }
-	      if (field == "ay") { id->ay = val+wei * id->ay; }
-	      if (field == "kx") { id->kx = val+wei * id->kx; }
-	      if (field == "ky") { id->ky = val+wei * id->ky; }
-	      if (field == "gradx") { id->gradx = val+wei*id->gradx; }
-	      if (field == "grady") { id->grady = val+wei*id->grady; }
-	    }
-            if (ele=="quad"){
-              Quadrupole *qd=(Quadrupole *)lat[i];
-	      if (field == "k1") { qd->k1 = val+wei*qd->k1; }
-	      if (field == "dx") { qd->dx = val+wei*qd->dx; }
-	      if (field == "dy") { qd->dy = val+wei*qd->dy; }
-	    }
-            if (ele=="corr"){
-              Corrector *co=(Corrector *)lat[i];
-	      if (field == "cx") { co->cx = val+wei*co->cx; }
-	      if (field == "cy") { co->cy = val+wei*co->cy; }
-	    }
-            if (ele=="chic"){
-              Chicane *ch=(Chicane *)lat[i];
-	      if (field == "delay") { ch->delay = val+wei*ch->delay; }
-	    }
-            if (ele=="phas"){
-              Phaseshifter *ps=(Phaseshifter *)lat[i];
-	      if (field == "phi") { ps->phi = val+wei*ps->phi; }
-	    }
-
-
+        val=seq->getElement(valueref);
+        if (ele=="undu") {
+          ID *id=(ID *)lat[i];
+          if (field == "aw") { id->aw = val+wei * id->aw; }
+          if (field == "ax") { id->ax = val+wei * id->ax; }
+          if (field == "ay") { id->ay = val+wei * id->ay; }
+          if (field == "kx") { id->kx = val+wei * id->kx; }
+          if (field == "ky") { id->ky = val+wei * id->ky; }
+          if (field == "gradx") { id->gradx = val+wei*id->gradx; }
+          if (field == "grady") { id->grady = val+wei*id->grady; }
+        }
+        if (ele=="quad") {
+          auto *qd=(Quadrupole *)lat[i];
+          if (field == "k1") { qd->k1 = val+wei*qd->k1; }
+          if (field == "dx") { qd->dx = val+wei*qd->dx; }
+          if (field == "dy") { qd->dy = val+wei*qd->dy; }
+        }
+        if (ele=="corr") {
+          auto *co=(Corrector *)lat[i];
+          if (field == "cx") { co->cx = val+wei*co->cx; }
+          if (field == "cy") { co->cy = val+wei*co->cy; }
+        }
+        if (ele=="chic") {
+          auto *ch=(Chicane *)lat[i];
+          if (field == "delay") { ch->delay = val+wei*ch->delay; }
+        }
+        if (ele=="phas") {
+          auto *ps=(Phaseshifter *)lat[i];
+          if (field == "phi") { ps->phi = val+wei*ps->phi; }
+        }
       }
     }
   }
@@ -511,7 +505,7 @@ bool Lattice::alterElement(string element, string field, double value, string va
 void Lattice::report(string fn_report)
 {
   ofstream fo;
-  int nz=lat_aw.size();
+  unsigned long nz=lat_aw.size();
 
   fo.open(fn_report.c_str());
   fo << "i,lat_z,lat_aw,lat_qf,lat_mk,lat_mk_decoded" << endl;

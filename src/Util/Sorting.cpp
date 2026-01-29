@@ -19,8 +19,7 @@ Sorting::Sorting()
   stat_max_xfer_size=0;
 }
 
-Sorting::~Sorting(){
-}
+Sorting::~Sorting()= default;
 
 
 
@@ -29,9 +28,7 @@ void Sorting::init(int rank_in,int size_in, bool doshift_in, bool dosort_in)
   rank=rank_in;  // rank of the node (0-size-1)
   size=size_in;  // size of the mpi run
   dosort=dosort_in;        // flag to do the sorting at all
-  doshift=doshift_in;      // flag to apply the global shifting, meaning that the radiationfield is rather moved than the beam
-  return;
-
+  doshift=doshift_in;
 }
 
 
@@ -43,9 +40,7 @@ void Sorting::configure(double s0_in, double slicelen_in, double sendmin_in, dou
   sendmax=sendmax_in;  // same in the other direction
   keepmin=keepmin_in;  // s < keepmin -> particle is deleted from internal slice
   keepmax=keepmax_in;  // same in the other direction
-  globalframe=frame_in; // flag whether particle position is global or not
-  return;
-
+  globalframe=frame_in;
 }
 
 
@@ -147,12 +142,11 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
   //  cout<<"Rank: " << rank << " Slice: " << i << " received: " << count[i] << " send: "<<count2[i]<<endl;
   //} 
    
-  return;
-}
+  }
 
 
 // Helper function for memory management
-void Sorting::shrink_pushvectors(void)
+void Sorting::shrink_pushvectors()
 {
   const char *q = getenv("G4_TEST_NOSHRINK");
 
@@ -265,8 +259,6 @@ void Sorting::globalSort(vector <vector <Particle> > *rec)
   pushbackward.clear();
   globalSort_completion_msg();
   shrink_pushvectors();
-
-  return;
 }
 
 
@@ -324,7 +316,7 @@ void Sorting::recv(int source, vector <vector <Particle> > *rec ,vector<double> 
  
 
    //Determines whether the data needs to be pushed forward or backwards or stored in the correct slices
-   int np=rec->size();                      // number of slices
+   auto np=rec->size();                      // number of slices
    if (source>rank) {                       // data are coming from higher node -> particles are pushed backward
      for (unsigned long a=0;a<ndata;a+=6) {
        double s = s0+slen*(np-1)+data[a];  // get the actual positionassume that backward the particles are placed in the last slice !
@@ -367,8 +359,7 @@ void Sorting::recv(int source, vector <vector <Particle> > *rec ,vector<double> 
      }
    }
 
-   return;
-}
+   }
 
 
 
@@ -437,7 +428,7 @@ void Sorting::fillPushVectors(vector< vector <Particle> >*rec)
   // cross check
   int transfer=count-pushforward.size()/6-pushbackward.size()/6;
   if (transfer !=0) {
-      cout << "*** Non-matching PArticle Transfar: Rank: " <<rank << " Deleted: " << count << " Forward: " << pushforward.size()/6 << " Backward: " <<pushbackward.size()/6 << endl;
+      cout << "*** Non-matching Particle Transfar: Rank: " <<rank << " Deleted: " << count << " Forward: " << pushforward.size()/6 << " Backward: " <<pushbackward.size()/6 << endl;
   }    
 }
 

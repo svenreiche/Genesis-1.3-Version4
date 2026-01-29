@@ -1,6 +1,6 @@
 #include "Undulator.h"
 
-Undulator::~Undulator(){}
+Undulator::~Undulator()= default;
 
 Undulator::Undulator()
 {
@@ -28,8 +28,7 @@ void Undulator::updateOutput(int nzout)
     } 
   }
 
-  return;
-}
+  }
 
 void Undulator::updateMarker(int nfld, int npar, int nsort, double zstop_in)
 {
@@ -62,14 +61,13 @@ void Undulator::updateMarker(int nfld, int npar, int nsort, double zstop_in)
             marker.at(i)|=8;
         }
     }
-    return;
-}
+    }
 
 // Field dumps at the exit of the undulator (one dump for each undulator
 // in the expanded lattice)?
-void Undulator::markUndExits(void)
+void Undulator::markUndExits()
 {
-  int nz=marker.size();
+  auto nz=marker.size();
   for (int i=0;i<nz;i++)
   {
     // NOTE: Setting flag for next integration step (the first one with aw==0),
@@ -87,7 +85,7 @@ void Undulator::markUndExits(void)
 void Undulator::reportLattice(string fn_report)
 {
   ofstream fo;
-  int nz=aw.size(); /* aw is one element shorter than marker (as of git commit 1a9d191), see Lattice::generateLattice */
+  auto nz=aw.size(); /* aw is one element shorter than marker (as of git commit 1a9d191), see Lattice::generateLattice */
 
   fo.open(fn_report.c_str());
   fo << "i,z,aw,qf,marker,marker_decoded" << endl;
@@ -110,120 +108,6 @@ void Undulator::reportLattice(string fn_report)
   }
   fo.close();
 }
-
-
-/*
-
-bool Undulator::init(hid_t fid)
-{
-
-  nzout=1; 
-  zstop=1e9;
-
-  readDataDouble(fid,(char *)"/Global/gamma0",&gammaref,1);
-  readDataDouble(fid,(char *)"/Global/zstop",&zstop,1);
-  readDataInt(fid,(char *)"/Global/nzout",&nzout,1);
-  
-
-  int nwork=getDatasetSize(fid,(char *)"/Lattice/aw");
-
-  aw.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/aw",&aw[0],nwork);
-  helical.resize(nwork);
-  readDataInt(fid,(char *)"/Lattice/helical",&helical[0],nwork);
-  ax.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/ax",&ax[0],nwork);
-  ay.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/ay",&ay[0],nwork);
-  ku.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/ku",&ku[0],nwork);
-  kx.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/kx",&kx[0],nwork);
-  ky.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/ky",&ky[0],nwork);
-  gradx.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/gradx",&gradx[0],nwork);
-  grady.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/grady",&grady[0],nwork);
-  qf.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/qf",&qf[0],nwork);
-  qx.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/qx",&qx[0],nwork);
-  qy.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/qy",&qy[0],nwork);
-  z.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/z",&z[0],nwork);
-  dz.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/dz",&dz[0],nwork);
-  slip.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/slippage",&slip[0],nwork);
-  phaseshift.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/phaseshift",&phaseshift[0],nwork);
-  cx.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/cx",&cx[0],nwork);
-  cy.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/cy",&cy[0],nwork);
-  chic_lb.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/lb",&chic_lb[0],nwork);
-  chic_ld.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/ld",&chic_ld[0],nwork);
-  chic_lt.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/lt",&chic_lt[0],nwork);
-  chic_angle.resize(nwork);
-  readDataDouble(fid,(char *)"/Lattice/delay",&chic_angle[0],nwork);
-  marker.resize(nwork);
-  readDataInt(fid,(char *)"/Lattice/marker",&marker[0],nwork);
-
-  // convert delay into bending angle
-  
-
-  for (int i=0; i<aw.size(); i++){
-    if (chic_angle[i]!=0){
-       double delay=fabs(chic_angle[i]);
-       double tmin=0;
-       double tmax=asin(1)-0.001;
-       bool converged=false;
-       double theta,d;
-       while (!converged){
-         theta=0.5*(tmax+tmin);
-         d=4*chic_lb[i]*(theta/sin(theta)-1)+2*chic_ld[i]*(1/cos(theta)-1);
-         if (d>delay) {
-           tmax=theta;
-         } else {
-          tmin=theta;
-	 }
-         if (fabs(delay-d)<1e-15) { converged=true; }
-       }
-       chic_angle[i]=theta;
-    }
-  }
- 
-
-
-
-
-
-
-// calculate the size of the output record
-
-  istepz=-1;
-  nstepz=aw.size();
-  nout=1;
-  out.resize(nstepz+1);
-  out[0]=true;  // first is always output
-  for (int i=1;i<(nstepz+1);i++){   
-    out[i]=false;
-    if (((i % nzout)==0)&&(z[i]<zstop)){
-      out[i]=true;
-      nout++;
-    } 
-  }
-
-  return true;
-
-}
-*/
-
 
 bool Undulator::advance(int rank)
 {

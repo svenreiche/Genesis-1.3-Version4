@@ -42,9 +42,9 @@ class Lattice{
 
    map<double,int> layout;
    vector<Element *> lat;
-   int nlat;
+   int nlat{};
    bool matched;
-   double mbetax,mbetay,malphax,malphay;
+   double mbetax{},mbetay{},malphax{},malphay{};
    int findElement(double, double, string);
    int findMarker(double, string);
    void unrollLattice(double);
