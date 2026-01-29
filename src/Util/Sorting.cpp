@@ -88,14 +88,14 @@ void Sorting::localSort(vector <vector <Particle> > * recdat)  // most arguments
   vector<int> count,count2;
   count.resize(recdat->size());
   count2.resize(recdat->size());
-  for  (int i=0; i< count.size(); i++){ 
+  for  (unsigned long i=0; i< count.size(); i++){
      count[i]=0;
      count2[i]=0;
   }
 
 
-  for (int a=0;a<recdat->size();a++){  //Run over the slices 
-    int b=0;
+  for (unsigned long a=0;a<recdat->size();a++){  //Run over the slices
+    unsigned long b=0;
     while ( b < recdat->at(a).size()){
       double theta=recdat->at(a).at(b).theta;
       int atar=static_cast<int>(floor(theta*invslen));   // relative target slice. atar = 0 -> stays in same slice
@@ -326,7 +326,7 @@ void Sorting::recv(int source, vector <vector <Particle> > *rec ,vector<double> 
    //Determines whether the data needs to be pushed forward or backwards or stored in the correct slices
    int np=rec->size();                      // number of slices
    if (source>rank) {                       // data are coming from higher node -> particles are pushed backward
-     for (int a=0;a<ndata;a+=6) {
+     for (unsigned long a=0;a<ndata;a+=6) {
        double s = s0+slen*(np-1)+data[a];  // get the actual positionassume that backward the particles are placed in the last slice !
        if (s<sendmin){
          olddata->push_back(data[a]+shift*np);  // if the particle isstillpushed through than it phase is adjusted by slen*slicenumber
@@ -346,7 +346,7 @@ void Sorting::recv(int source, vector <vector <Particle> > *rec ,vector<double> 
        }
      }
    } else {    // particles are coming from a lower node -> particles are pushed forward
-     for (int a=0;a<ndata;a+=6) {
+     for (unsigned long a=0;a<ndata;a+=6) {
        double s = s0+data[a];  // get the actual position assume that forward the particles are placed in the first slice !
        if (s>sendmax){
 	 olddata->push_back(data[a]-shift*np);
@@ -382,14 +382,14 @@ void Sorting::fillPushVectors(vector< vector <Particle> >*rec)
   pushforward.clear();
   pushbackward.clear();
   
-  int nsize=rec->size();
+  unsigned long nsize=rec->size();
   double shift=slen;  // flag to indicate correction in position because each slice has its own position ( 3pi in slice 5 is pi in slice 6}
   if (globalframe) {shift = 0;} // don't change position if it is a global frame (e.g. when importing elegant distibution)
   
-  int count = 0;
+  unsigned long count = 0;
 
-  for (int i = 0; i < nsize; i++){  // loop over slices
-    for (int j = 0; j < rec->at(i).size(); j++){ // loop over particles in slice
+  for (unsigned long i = 0; i < nsize; i++){  // loop over slices
+    for (unsigned long j = 0; j < rec->at(i).size(); j++){ // loop over particles in slice
       double s = s0+slen*i+rec->at(i).at(j).theta;  // get the actual position
       if (s<sendmin){
 	pushbackward.push_back(rec->at(i).at(j).theta+(i+1)*shift); 
@@ -414,13 +414,13 @@ void Sorting::fillPushVectors(vector< vector <Particle> >*rec)
       }
     }
 
-    int j=0;
+    unsigned long j=0;
 
     while (j<rec->at(i).size()){
         double s = s0+slen*i+rec->at(i).at(j).theta;  // get the actual position
         if ((s<keepmin)||(s>keepmax)){
           count++;
- 	  int ilast=rec->at(i).size()-1;
+ 	  auto ilast=rec->at(i).size()-1;
 	  rec->at(i).at(j).theta=rec->at(i).at(ilast).theta;
 	  rec->at(i).at(j).gamma=rec->at(i).at(ilast).gamma;
 	  rec->at(i).at(j).x    =rec->at(i).at(ilast).x;

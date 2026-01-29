@@ -112,7 +112,7 @@ inline void SequenceList::init(std::vector<double> &val_in, double def_in)
 
 inline double SequenceList::getElement() {
     i++;
-    if (i > val.size()) {
+    if (unsigned(i) > val.size()) {
         return def;
     }
     return val.at(i - 1);

@@ -22,15 +22,12 @@ Hammerslay::Hammerslay(unsigned int base_in)
 	idx=0;
 }
 
-Hammerslay::~Hammerslay(){}
+Hammerslay::~Hammerslay()= default;
 
 
 void Hammerslay::set(unsigned int i)
 {
 	idx=i;
-   if (idx<0) {
-	   idx=0;
-   }
 }
 
 double Hammerslay::getElement()

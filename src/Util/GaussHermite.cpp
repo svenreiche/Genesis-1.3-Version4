@@ -11,9 +11,9 @@
 
 // Constructor/Destructor
 
-GaussHermite::GaussHermite(){}
+GaussHermite::GaussHermite()= default;
 
-GaussHermite::~GaussHermite(){}
+GaussHermite::~GaussHermite()= default;
 
 
 
@@ -30,8 +30,6 @@ void GaussHermite::loadGauss(complex<double> *field, FieldSlice *slice, double d
 
 
   complex<double> qz=complex<double>(-z0,zr);  // q(z)= z-z0 + i zr , see Siegman p.664
-  complex<double> q0=complex<double>(0,  zr);
- 
   complex<double> coef=complex<double>(0,1)*0.5*k/qz;		
 
   // some normalization crap
@@ -61,8 +59,7 @@ void GaussHermite::loadGauss(complex<double> *field, FieldSlice *slice, double d
 	  field[iy*ngrid+ix]=zscale*exp(-coef*r2+phi)*Hx*Hy;
      } 
   }
-  return;	
-		
+
 }
 
 int GaussHermite::fac(int n)
