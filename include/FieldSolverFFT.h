@@ -24,12 +24,12 @@ using namespace std;
 class FieldSolverFFT : public FieldSolver{
  public:
    ~FieldSolverFFT();
-   void init(double,double,double,int);
+   void init(double,double,double,unsigned int);
    void advance(double, Field *, Beam *, Undulator *);
    void initSourceFilter(double,double,double,bool);
 
  private:
-    int ngrid {0} ;
+    unsigned int ngrid {0} ;
     double delz_save {0};
     double ks {1};
     double dk {1};

@@ -72,7 +72,10 @@ void FieldSolverFFT::FFT(vector<complex<double> > &crfield)
         uf[ii] = out[ii];
         in[ii] = crsource[ii];
     }
-    fftw_execute(p);
+    #ifdef FFTW
+        fftw_execute(p);
+    #endif
+
     for (unsigned long ii = 0; ii < crfield.size(); ii++) {
         sf[ii] = out[ii];
     }
@@ -87,8 +90,9 @@ void FieldSolverFFT::FFT(vector<complex<double> > &crfield)
     for (unsigned long ii = 0; ii < crfield.size(); ii++) {
         in[ii]=uf[ii]*exp(K2[ii]*delz_save) + 2.*sf[ii]; // - complex<double>(0,1.) *sf[ii];
     }
-
-    fftw_execute(ip);
+#ifdef FFTW
+        fftw_execute(ip);
+#endif
     double norm = 1./static_cast<double>(ngrid*ngrid);
     for (unsigned long ii = 0; ii < crfield.size(); ii++) {
         crfield[ii]=out[ii]*norm;
@@ -96,7 +100,7 @@ void FieldSolverFFT::FFT(vector<complex<double> > &crfield)
 }
 
 
-void FieldSolverFFT::init(double delz,double dgrid, double xks, int ngrid_in) {
+void FieldSolverFFT::init(double delz,double dgrid, double xks, unsigned int ngrid_in) {
 
     delz_save = delz;
     if (!hasPlan) {

@@ -122,7 +122,7 @@ void FieldSolverADI::tridagy(vector<complex<double > > &u) {
 }
 
 
-void FieldSolverADI::init(double delz,double dgrid, double xks, int ngrid_in) {
+void FieldSolverADI::init(double delz,double dgrid, double xks, unsigned int ngrid_in) {
 
     if (delz == delz_save) {
         return;
