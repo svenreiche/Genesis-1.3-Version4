@@ -67,14 +67,16 @@ void FieldSolverFFT::FFT(vector<complex<double> > &crfield)
     for (unsigned long ii = 0; ii < crfield.size(); ii++) {
         in[ii] = crfield[ii];
     }
-    fftw_execute(p);
+#ifdef FFTW
+        fftw_execute(p);
+#endif
     for (unsigned long ii = 0; ii < crfield.size(); ii++) {
         uf[ii] = out[ii];
         in[ii] = crsource[ii];
     }
-    #ifdef FFTW
+#ifdef FFTW
         fftw_execute(p);
-    #endif
+#endif
 
     for (unsigned long ii = 0; ii < crfield.size(); ii++) {
         sf[ii] = out[ii];
