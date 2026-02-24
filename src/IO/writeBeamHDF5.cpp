@@ -183,8 +183,7 @@ void WriteBeamHDF5::writeGlobal(Beam *beam, int count)
     itmp[0]=slice_inc;
     writeSingleNodeInt(fid,"slicerange_inc",&itmp);
   }
-  
-  return;
+
 }
 
 // filter function for selective dumping of slices
