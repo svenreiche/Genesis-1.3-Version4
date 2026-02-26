@@ -34,53 +34,38 @@ bool Profile::init(int rank, map<string,string> *arg,string element)
   } 
   if (element.compare("&profile_file")==0){
     p=(ProfileBase *)new ProfileFile();
-    ProfileFile *f;
     label=p->init(rank,arg);
-    f=static_cast<ProfileFile *>(p);
-    if (f->names.size()>0){
-      map<string,string> derivedArg;
-      for (int i=0; i < f->names.size(); i++){
-	derivedArg.clear();
-	derivedArg["label"]=f->names[i];
-        stringstream ss(f->xdataset);
-	string file;
-	char delim='/';             // does not compile it I use double quotation marks
-	getline(ss,file,delim);
-	string ydata=file+'/'+f->names[i];
-	derivedArg["xdata"]=f->xdataset;
-	derivedArg["ydata"]=ydata;
-	string bstr="false";
-	if (f->isTime) {bstr="true";}
-	derivedArg["isTime"]=bstr;
-	bstr="false";
-	if (f->revert) {bstr="true";};
-	derivedArg["reverse"]=bstr;
-	derivedArg["autoassign"]="false";
-	this->init(rank,&derivedArg,"&profile_file");		   
-      }
-      return true;
-    }
   }
   if (element.compare("&profile_file_multi")==0) {
-    ProfileFileMulti p;
-    p.setup(rank, arg, &prof);
+    ProfileFileMulti pm;
+    vector<map<string,string> > namelists;
+    pm.setup(rank, arg, &namelists);  // creates a list of individal namelist for Profile_file
+    for (auto nl : namelists) {
+      p=(ProfileBase *)new ProfileFile();
+      label=p->init(rank,&nl);
+      if (label.empty()){
+        return false;
+      }
+      prof[label]=p;
+      if (rank==0) {cout << "Adding profile with label: " << label << endl;}
+    }
 
     /* no need to continue as ProfileFileMulti registered all profiles */
     return(true);
   }
 
   // register profiles for later use (all except "profile_file_multi")
-  if (label.size()<1){
+  if (label.empty()){
     return false;
-  } else {
-    prof[label]=p;
   }
+  prof[label]=p;
+
   if (rank==0) {cout << "Adding profile with label: " << label << endl;}
   return true;
 }
 
 bool Profile::check(string label){
-  if (label.size() < 1) { return true; }
+  if (label.empty()) { return true; }
   if (prof.find(label)!=prof.end()){  
     return true;
   }
@@ -90,7 +75,7 @@ bool Profile::check(string label){
 /* This function is called to evaluate the Profile named 'label' at position 's' (central entrance point) */
 double Profile::value(double s, double val, string label)
 {
-  if ((label.size()<1)||(prof.find(label)==prof.end())){  
+  if ((label.empty())||(prof.find(label)==prof.end())){
     return val;
   } else {
     return  prof[label]->value(s);
@@ -431,13 +416,7 @@ void ProfileFile::usage(){
  * Generates profile objects 'prof.gamma', 'prof.delgam', 'prof.current', etc., each one corresponding to one &profile_file.
  */
 
-/*****
- *   This routine still has some explicit HDF5 routine. this should be delegated to the HDF5 base class!
- *
- *
- *
- *
- *****/
+
 
 void ProfileFileMulti::usage()
 {
@@ -450,154 +429,53 @@ void ProfileFileMulti::usage()
 	cout << " bool isTime = false" << endl;
 	cout << " bool reverse = false" << endl;
 	cout << "&end" << endl << endl;
-	return;
 }
 
-bool ProfileFileMulti::setup(int rank, map<string,string> *arg, map<string, ProfileBase *> *pprof)
-{
-	map<string,string>::iterator end=arg->end();
-	string h5file, label_prefix, xobj, ydatasets;
-	bool isTime=false, revert=false;
-
-	vector<string> yobjs;
-	vector<double> xdata;
-	vector<vector<double> *> ydata;
-	bool ok=true;
-
-	if (arg->find("file")!=end)    {h5file = arg->at("file");  arg->erase(arg->find("file"));}
-	if (arg->find("label_prefix")!=end) {label_prefix = arg->at("label_prefix");  arg->erase(arg->find("label_prefix"));}
-	if (arg->find("xdata")!=end)   {xobj = arg->at("xdata");  arg->erase(arg->find("xdata"));}
-	if (arg->find("ydata")!=end)   {ydatasets = arg->at("ydata");  arg->erase(arg->find("ydata"));}
-	if (arg->find("isTime")!=end)  {isTime = atob(arg->at("isTime").c_str()); arg->erase(arg->find("isTime"));}
-	if (arg->find("reverse")!=end) {revert = atob(arg->at("reverse").c_str()); arg->erase(arg->find("reverse"));}
-
-	if (arg->size()!=0){
-		if (rank==0){ cout << "*** Error: Unknown elements in &profile_file_multi" << endl; this->usage();}
-		return(false);
-	}
-
-	/* verify that all needed info was provided */
-	if ((h5file.size()<1) || (xobj.size()<1) || (ydatasets.size()<1) || (label_prefix.size()<1))
-	{
-		if(rank==0) {
-			cout << "*** Error: you must provide arguments file, xdata, ydata, and label_prefix" << endl;
-		}
-		return(false);
-	}
-
-	/* break up ydata argument into list of objects to obtain from HDF5 file */
-	chop(ydatasets, &yobjs);
+bool ProfileFileMulti::setup(int rank, map<string,string> *arg, vector<map<string,string>> *namelists) {
+  auto end=arg->end();
+  string h5file, label_prefix, xobj, ydatasets,isTime,revert;
+  vector<string> yobjs;
 
 
-	/* open HDF5 file for read (code from "HDF5Base::simpleReadDouble1D") */
-	hid_t fid=H5Fopen(h5file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);
+  if (arg->find("file")!=end)    {h5file = arg->at("file");  arg->erase(arg->find("file"));}
+  if (arg->find("label_prefix")!=end) {label_prefix = arg->at("label_prefix");  arg->erase(arg->find("label_prefix"));}
+  if (arg->find("xdata")!=end)   {xobj = arg->at("xdata");  arg->erase(arg->find("xdata"));}
+  if (arg->find("ydata")!=end)   {ydatasets = arg->at("ydata");  arg->erase(arg->find("ydata"));}
+  if (arg->find("isTime")!=end)  {isTime = arg->at("isTime"); arg->erase(arg->find("isTime"));}
+  if (arg->find("reverse")!=end) {revert = arg->at("reverse"); arg->erase(arg->find("reverse"));}
 
-	/* obtain xdata (common to add y data sets) */
-	int nx = getDatasetSize(fid, (char *) xobj.c_str());
-	xdata.resize(nx);
-	readDataDouble(fid, (char *) xobj.c_str(), &xdata.at(0), nx);
-	bool is_mono=true;
-	for(unsigned j=1; j<nx; j++) {
-		if(xdata[j-1]>=xdata[j]) {
-			is_mono=false;
-			break;
-		}
-	}
-	if(!is_mono) {
-		ok=false;
-		if(rank==0) {
-			cout << "*** Error: &profile_file_multi requires 'xdata' to be monotonically increasing (HDF5 object " << xobj << ")" << endl;
-		}
-	}
+  if (!arg->empty()){
+    if (rank==0){ cout << "*** Error: Unknown elements in &profile_file_multi" << endl; this->usage();}
+    return(false);
+  }
 
-	/* obtain ydata sets and perform sanity checks */
-	for(unsigned j=0; j<yobjs.size(); j++)
-	{
-		vector<double> *pv;
-		int ny = getDatasetSize(fid, (char *) yobjs[j].c_str());
-		pv = new vector<double>(ny);
-		readDataDouble(fid, (char *) yobjs[j].c_str(), &pv->at(0), ny);
-		ydata.push_back(pv);
+  /* verify that all needed info was provided */
+  if ((h5file.empty()) || (xobj.empty()) || (ydatasets.empty()) || (label_prefix.empty()))
+  {
+    if(rank==0) {
+      cout << "*** Error: you must provide arguments file, xdata, ydata, and label_prefix" << endl;
+    }
+    return(false);
+  }
 
-		if (nx!=ny) {
-			ok=false;
-			if(rank==0) {
-				cout << "*** Error: &profile_file_multi detected size mismatch of HDF5 objects " << xobj << " and " << yobjs[j] << endl;
-			}
-		}
-	}
-	H5Fclose(fid);
+  /* break up ydata argument into list of objects to obtain from HDF5 file */
+  chop(ydatasets, &yobjs);
 
-	/* if not ok, tidy up and return */
-	if(!ok) {
-		for(unsigned j=0; j<ydata.size(); j++)
-			delete ydata[j];
-
-		return(false);
-	}
-
-	if(isTime) {
-		for(unsigned j=0; j<xdata.size(); j++)
-			xdata[j]*=299792458.0; // using same speed_of_light value as in ProfileFile, to avoid that different results are obtained with &profile_file and &profile_file_multi
-	}
-	if(revert) {
-		if(rank==0)
-			cout << "Info: &profile_file_multi: reverse flag has no effect (not implemented, yet)" << endl;
-	}
-
-	/*
-	 * generate data container objects and register them
-	 * data cont holds vector for xdata and 1 ydata vector, interpolation function
-	 */
-	for(unsigned j=0; j<yobjs.size(); j++)
-	{
-		stringstream l;
-		ProfileInterpolator *pi;
-
-		l << label_prefix << "." << yobjs[j];
-
-		pi = new ProfileInterpolator(l.str(), &xdata, ydata[j]);
-		(*pprof)[l.str()] = pi;
-		if (rank==0) {
-			cout << "Adding profile with label: " << l.str() << endl;
-		}
-	}
-
-
-	for(unsigned j=0; j<ydata.size(); j++)
-		delete ydata[j];
-
-	return(true);
+  map<string,string> nl;
+  for (const auto& yobj: yobjs) {
+    nl.clear();
+    nl.insert({"xdata",h5file+'/'+xobj});
+    nl.insert({"ydata",h5file+'/'+yobj});
+    nl.insert({"label",label_prefix+'.'+yobj});
+    if (!isTime.empty()) {
+      nl.insert({"isTime",isTime});
+    }
+    if (!revert.empty()) {
+      nl.insert({"reverse",revert});
+    }
+    namelists->push_back(nl);
+  }
+  return true;
 }
 
-
-
-
-
-
-ProfileInterpolator::ProfileInterpolator(string l, vector<double> *x, vector<double> *y)
-{
-	xdat_ = *x;
-	ydat_ = *y;
-	label_ = l; /* keeping 'label' as member variable as this can help during test phase */
-}
-ProfileInterpolator::~ProfileInterpolator() { }
-string ProfileInterpolator::init(int a, map<string,string> *b) {return("");}
-void ProfileInterpolator::usage() {}
-
-double ProfileInterpolator::value(double z)
-{
-	if (z<xdat_[0]){ return ydat_[0]; }
-	if (z>=xdat_[xdat_.size()-1]){ return ydat_[xdat_.size()-1]; }
-
-	int idx=0;
-	while(z>=xdat_.at(idx)){
-		idx++;
-	}
-	idx--;
-
-	double wei=(z-xdat_.at(idx))/(xdat_.at(idx+1)-xdat_.at(idx));
-	double val=ydat_.at(idx)*(1-wei)+wei*ydat_.at(idx+1);
-	return val;
-}
 

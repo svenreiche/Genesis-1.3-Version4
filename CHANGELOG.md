@@ -1,8 +1,10 @@
 # Change Log
 
 ### [4.6.12] - 2026/02/26
+- Release of Version 4.6.12
 - Allows for parsing recursively though groups in hdf5 files for profile_file namelist
 - Fixed autoassign functionality in profile_file namelist. It assigns only the label if the label is not explicitly defined in the namelist.
+- change profile_file_multi to loop over individual profile_file namelists.
 
 ### [4.6.12] - 2026/01/08
 - Fixed bug in the ADI methods of the field solver, where the out edge weren't calculated.

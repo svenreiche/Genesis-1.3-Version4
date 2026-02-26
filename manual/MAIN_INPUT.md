@@ -20,6 +20,7 @@ The following describes all supported namelist with their variables, including i
     - [profile_step](#profile_step)
     - [profile_polynom](#profile_polynom)
     - [profile_file](#profile_file)
+    - [profile_file_multi](#profile_file_multi)
   - [sequence](#sequences)
     - [sequence_const](#sequence_const)
     - [sequence_polynom](#sequence_polynom)
@@ -164,12 +165,25 @@ Profiles are defining a dependence on the position in the time frame, which then
 
 #### profile_file
 
+Reading look-up tables from an HDF5 file.
 - `label`(*string, \<empty>*): Name of the profile, which is used to refer to it in later calls of namelists
 - `xdata` (*string, \<empty>*): Points to a dataset in an HDF5 file to define the `s`-position for the look-up table. The format is `filename/group1/.../groupn/datasetname`, where the naming of groups is not required if the dataset is at root level of the HDF file
 - `ydata` (*string, \<empty>*): Same as y data but for the function values of the look-up table.
 - `isTime` (*bool, false*): If true the `s`-position is a time variable and therefore multiplied with the speed of light `c` to get the position in meters.
 - `reverse`(*bool, false*): if true the order in the look-up table is reverse. This is sometimes needed because time and spatial coordinates differ sometimes by a minus sign.
-- `autoassign`(*bool, false*): use the HDF5 file from `xdata` (TODO more details).
+- `autoassign`(*bool, false*): use the dataset name of `ydata` as the label. I does not overwrite the label if it is explicitly defined in the namelist
+
+#### profile_file_multi
+
+A wrapper around `profile_file`.
+
+- `file`(*string, \<empty>*): Name of the HDF5 file, which contains all the dataset
+- `xdata` (*string, \<empty>*): Points to a dataset in an HDF5 file to define the `s`-position for the look-up table. The format is `group1/.../groupn/datasetname`, where the naming of groups is not required if the dataset is at root level of the HDF file
+- `ydata` (*string, \<empty>*): A comma separated list of multiple dataset names. The individual format is the same as `xdata` but for the function values of the look-up table.
+- `label_prefix` (*string,\<empty>*): The labels are generated with this prefix, a comma and the individual name of the dataset, given in `ydata`
+- `isTime` (*bool, false*): If true the `s`-position is a time variable and therefore multiplied with the speed of light `c` to get the position in meters.
+- `reverse`(*bool, false*): if true the order in the look-up table is reverse. This is sometimes needed because time and spatial coordinates differ sometimes by a minus sign.
+
 
 [Back](#supported-namelists)
 
