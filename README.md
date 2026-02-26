@@ -3,7 +3,7 @@
 A scientific code to simulate the interaction of electrons within the magnetic field of an undulator to produce coherent radiation, based on the Free-electron Laser process.
 
 **News:**
-Version 4.6.11 has been released
+Version 4.6.12 has been released
 
 **Current Development:**
 * [Contribute to the Project](CONTRIBUTING.md)
@@ -20,6 +20,7 @@ Version 4.6.11 has been released
 * [Example 2 - Field and Particle Dumps](examples/Example2-Dumps/)
 * [Example 3 - Time-dependent Simulation](examples/Example3-TimeDependent/)
 * [Example 4 - HGHG Simulation](examples/Example4-HGHG/)
+
 
 
 
