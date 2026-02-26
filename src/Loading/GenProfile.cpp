@@ -309,7 +309,7 @@ string ProfileFile::init(int rank, map<string,string>*arg)
     return "";
   }
 
-
+	// this routine seems to be unfinished
   bool success;
 
   if (autoassign){
@@ -320,13 +320,13 @@ string ProfileFile::init(int rank, map<string,string>*arg)
     return "";
   }
 
-  if ((label.size()<1)&&(rank==0)){
+
+  if ((label.empty())&&(rank==0)){
     cout << "*** Error: Label not defined in &profile_file" << endl; this->usage();
   }
 
 
   int ndata=-1;
-
   success=this->simpleReadDouble1D(xdataset,&xdat);
   if (!success){
     if (rank==0){
@@ -373,8 +373,8 @@ string ProfileFile::init(int rank, map<string,string>*arg)
 
 
   if (isTime){ 
-    for (int i=0; i<xdat.size();i++){
-      xdat[i]*=299792458.0;         // scale time variable to space varial by multiplying the speed of light
+    for (double & i : xdat){
+      i*=299792458.0;         // scale time variable to space varial by multiplying the speed of light
     }  
   }
   
@@ -434,6 +434,15 @@ void ProfileFile::usage(){
  *
  * Generates profile objects 'prof.gamma', 'prof.delgam', 'prof.current', etc., each one corresponding to one &profile_file.
  */
+
+/*****
+ *   This routine still has some explicit HDF5 routine. this should be delegated to the HDF5 base class!
+ *
+ *
+ *
+ *
+ *****/
+
 void ProfileFileMulti::usage()
 {
 	cout << "List of keywords for PROFILE_FILE_MULTI" << endl;

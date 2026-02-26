@@ -31,7 +31,7 @@ class HDF5Base{
   void  writeVersion(hid_t gid);
   bool create_outfile(hid_t *, string);
   
-  // function from output and wrideHDF5beam/field
+  // function from output and writeHDF5beam/field
   void writeBuffer(hid_t,string,string,vector<double> *);
   void writeBufferULL(hid_t,string,string,vector<unsigned long long> *);
   void writeSingleNode(hid_t,string,string,vector<double> *) const;
@@ -61,8 +61,9 @@ class HDF5Base{
   void writeInt1D(hsize_t reclen, hsize_t datsize, int *data, hid_t,  string);
   void writeChar1D(hsize_t reclen, hsize_t datsize, const char *data, hid_t,  string);
 
-  void readDouble1D(hid_t fid, const char *name, double *data, hsize_t dat, hsize_t chunk);
 
+  bool simpleRecursiveRead(const string &path, hid_t hid, vector<double> *data);
+  void readDouble1D(hid_t fid, const char *name, double *data, hsize_t dat, hsize_t chunk);
   bool simpleReadDouble1D(const string &path, vector<double> *data);
   bool browseFile(const string &path, vector<string> *);
 

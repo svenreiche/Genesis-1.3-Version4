@@ -497,35 +497,50 @@ bool HDF5Base::browseFile(const string &path,vector<string> *names){
     }
   }
   return false;
-  
- 
 }
 
-bool HDF5Base::simpleReadDouble1D(const string &path, vector<double> *data){
-  vector<string> ele;
+
+
+bool HDF5Base::simpleRecursiveRead(const string &path, hid_t hid, vector<double> *data) {
   stringstream ss(path);
-  string file;
-  string group;
-  string seg;
-
-
-  char delim='/';             // does not compile it I use double quotation marks
-  while (getline(ss, group, delim)){
-      if (file.size()>0){
-          file+="/";
+  char delim='/';
+  string file,group;
+  bool status = true;
+  if (path.find(delim) == string::npos) {
+    //cout << "Reading Dataset: " << path << endl;
+    int nsize=this->getDatasetSize(hid,(char *)path.c_str());
+    data->resize(nsize);
+    //cout << "Datasize: " << nsize << endl;
+    this->readDataDouble(hid, (char *)path.c_str(), &data->at(0), nsize);
+  } else {
+    getline(ss,file,delim);
+    if (hid == 0) {
+      //cout << "Opening file: " << file << endl;
+      hid_t fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);
+      if (getline(ss,group) ){
+        this->simpleRecursiveRead(group,fid,data);
+      } else {
+        status = false;
       }
-      file+=seg;
-      seg=group;
+      H5Fclose(fid);
+    } else {
+      //cout << "Opening group: " << file << endl;
+      hid_t gid = H5Gopen(hid,file.c_str(),H5P_DEFAULT);
+      if (getline(ss,group) ){
+        this->simpleRecursiveRead(group,gid,data);
+      } else {
+        status = false;
+      }
+      H5Gclose(gid);
+    }
   }
+  return status;
 
-  hid_t fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);
-  int nsize=this->getDatasetSize(fid,(char *)group.c_str());
-  
-  data->resize(nsize);
-  this->readDataDouble(fid, (char *)group.c_str(), &data->at(0), nsize);
-  H5Fclose(fid);
- 
-  return true;
+}
+
+
+bool HDF5Base::simpleReadDouble1D(const string &path, vector<double> *data){
+  return this->simpleRecursiveRead(path,0,data);
 }
 
 
