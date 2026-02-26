@@ -34,32 +34,7 @@ bool Profile::init(int rank, map<string,string> *arg,string element)
   } 
   if (element.compare("&profile_file")==0){
     p=(ProfileBase *)new ProfileFile();
-    ProfileFile *f;
     label=p->init(rank,arg);
-    f=static_cast<ProfileFile *>(p);
-    if (f->names.size()>0){
-      map<string,string> derivedArg;
-      for (int i=0; i < f->names.size(); i++){
-	derivedArg.clear();
-	derivedArg["label"]=f->names[i];
-        stringstream ss(f->xdataset);
-	string file;
-	char delim='/';             // does not compile it I use double quotation marks
-	getline(ss,file,delim);
-	string ydata=file+'/'+f->names[i];
-	derivedArg["xdata"]=f->xdataset;
-	derivedArg["ydata"]=ydata;
-	string bstr="false";
-	if (f->isTime) {bstr="true";}
-	derivedArg["isTime"]=bstr;
-	bstr="false";
-	if (f->revert) {bstr="true";};
-	derivedArg["reverse"]=bstr;
-	derivedArg["autoassign"]="false";
-	this->init(rank,&derivedArg,"&profile_file");		   
-      }
-      return true;
-    }
   }
   if (element.compare("&profile_file_multi")==0) {
     ProfileFileMulti p;
@@ -450,7 +425,6 @@ void ProfileFileMulti::usage()
 	cout << " bool isTime = false" << endl;
 	cout << " bool reverse = false" << endl;
 	cout << "&end" << endl << endl;
-	return;
 }
 
 bool ProfileFileMulti::setup(int rank, map<string,string> *arg, map<string, ProfileBase *> *pprof)
