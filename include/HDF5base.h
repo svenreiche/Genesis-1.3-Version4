@@ -26,6 +26,7 @@ class HDF5Base{
   int nwork;
   double *work;
   int s0;
+  string lastdataset;
   hsize_t ds; // size in s for 2D array inwrite buffer
 
   void  writeVersion(hid_t gid);

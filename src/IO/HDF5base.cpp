@@ -512,6 +512,7 @@ bool HDF5Base::simpleRecursiveRead(const string &path, hid_t hid, vector<double>
     data->resize(nsize);
     //cout << "Datasize: " << nsize << endl;
     this->readDataDouble(hid, (char *)path.c_str(), &data->at(0), nsize);
+    lastdataset=path;
   } else {
     getline(ss,file,delim);
     if (hid == 0) {

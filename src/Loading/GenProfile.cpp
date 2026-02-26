@@ -310,24 +310,15 @@ string ProfileFile::init(int rank, map<string,string>*arg)
   }
 
 	// this routine seems to be unfinished
-  bool success;
-
-  if (autoassign){
-    success=this->browseFile(xdataset,&names);
-    if (!success) {
-      if (rank==0) { cout << "*** Error: Cannot autoparse the HDF5 file for the dataset: " << xdataset  << endl;}
-    } 
-    return "";
-  }
 
 
-  if ((label.empty())&&(rank==0)){
+  if ((label.empty()) && (rank==0) && !autoassign){
     cout << "*** Error: Label not defined in &profile_file" << endl; this->usage();
   }
 
 
-  int ndata=-1;
-  success=this->simpleReadDouble1D(xdataset,&xdat);
+
+  bool success=this->simpleReadDouble1D(xdataset,&xdat);
   if (!success){
     if (rank==0){
       cout << "*** Error: Cannot read the HDF5 dataset: " << xdataset << endl;
@@ -342,6 +333,11 @@ string ProfileFile::init(int rank, map<string,string>*arg)
     }
     return "";
   }
+	if (autoassign) {
+		if (label.empty()) {
+			label = lastdataset;
+		}
+	}
 
   /* check that
    * . x is monotonically increasing (needed for reversal and interpolation algorithms)
