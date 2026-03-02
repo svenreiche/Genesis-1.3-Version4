@@ -11,6 +11,7 @@ Track::Track()
   bunchharm=1;
   exclharm = false;
   fftsolver = false;
+  periodic = false;
 }
 
 Track::~Track(){}
@@ -22,6 +23,7 @@ void Track::usage(){
   cout << " double zstop = 1e9" << endl;
   cout << " double s0    = <taken from TIME module>" << endl;
   cout << " double slen  = <taken from TIME module>" << endl;
+  cout << " bool periodic = false" << endl;
   cout << " int output_step  = 1" << endl;
   cout << " int field_dump_step  = 0" << endl;
   cout << " bool field_dump_at_undexit = false" << endl;
@@ -40,13 +42,16 @@ void Track::usage(){
   return;
 }
 
-/* from StringProcessing.cpp */
+
+ /* from StringProcessing.cpp */
+/*
 bool Track::atob(string in)
 {
 	bool ret=false;
 	if ((in.compare("1")==0)||(in.compare("true")==0)||(in.compare("t")==0)) { ret=true; }
 	return ret;
 }
+*/
 
 bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, vector<Field *> *field,Setup *setup, Lattice *lat, AlterLattice *alt,Time *time, FilterDiagnostics &filter)
 {
@@ -82,6 +87,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
   if (arg->find("bunchharm")!=end)   {bunchharm= atoi(arg->at("bunchharm").c_str());  arg->erase(arg->find("bunchharm"));}
   if (arg->find("fft_fieldsolver")!=end) {fftsolver = atob(arg->at("fft_fieldsolver")); arg->erase(arg->find("fft_fieldsolver"));}
   if (arg->find("exclusive_harmonics")!=end) {exclharm = atob(arg->at("exclusive_harmonics")); arg->erase(arg->find("exclusive_harmonics"));}
+  if (arg->find("periodic")!=end) {periodic = atob(arg->at("periodic")); arg->erase(arg->find("periodic"));}
   if (arg->find("dbg_report_lattice")!=end) {dbg_report_lattice = atob(arg->at("dbg_report_lattice")); arg->erase(arg->find("dbg_report_lattice"));}
   if (arg->find("dbg_suppress_outfile")!=end) {dbg_no_outfile = atob(arg->at("dbg_suppress_outfile")); arg->erase(arg->find("dbg_suppress_outfile"));}
   if (arg->find("xcut")!=end)     {xc= atof(arg->at("xcut").c_str());  arg->erase(arg->find("xcut"));}
@@ -162,7 +168,7 @@ bool Track::init(int inrank, int insize, map<string,string> *arg, Beam *beam, ve
 
   // call to gencore to do the actual tracking.  
   Gencore core;
-  if(!core.run(beam,field,setup,und,isTime,isScan, filter)) {
+  if(!core.run(beam,field,setup,und,isTime,isScan, periodic, filter)) {
     /* execution of simulation was not successful, for instance because of IO error during a file write triggered by marker */
     if  (rank==0) { cout << "End of Track (after error)" << endl;}
     delete und;

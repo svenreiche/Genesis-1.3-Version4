@@ -10,7 +10,7 @@
 Control::Control()
 {
   nwork=0;
-  work=NULL;
+  work=nullptr;
 }
 
 
@@ -105,10 +105,11 @@ void Control::output(Beam *beam, vector<Field*> *field, Undulator *und, Diagnost
 #endif
 
 
-bool Control::init(int inrank, int insize, const string in_rootname, Beam *beam, vector<Field*> *field, Undulator *und, bool inTime, bool inScan)
+bool Control::init(int inrank, int insize, const string in_rootname, Beam *beam, vector<Field*> *field, Undulator *und, bool inTime, bool inScan, bool inPeriodic)
 {
   rank=inrank;
   size=insize;
+  periodic = inPeriodic;
   root = in_rootname;
 
   one4one=beam->one4one;
@@ -134,7 +135,10 @@ bool Control::init(int inrank, int insize, const string in_rootname, Beam *beam,
        cout << "Scan run with " << ntotal << " slices" << endl; 
     } else {
        if(timerun) { 
-         cout << "Time-dependent run with " << ntotal << " slices" << " for a time window of " << slen*1e6 << " microns" << endl; 
+         cout << "Time-dependent run with " << ntotal << " slices" << " for a time window of " << slen*1e6 << " microns" << endl;
+         if (periodic) {
+           cout << "Periodic boundary condition of time window enabled" << endl;
+         }
        } else { 
          cout << "Steady-state run" << endl;
        }
@@ -151,8 +155,7 @@ bool Control::init(int inrank, int insize, const string in_rootname, Beam *beam,
 
 
 
-void Control::applySlippage(double slippage, Field *field)
-{
+void Control::applySlippage(double slippage, Field *field) {
   if (timerun==false) { return; }
 
  
@@ -178,93 +181,96 @@ void Control::applySlippage(double slippage, Field *field)
   
 
   while(abs(field->accuslip)>(sample*0.8)){
-      // check for anormal direction of slippage (backwards slippage)
-      if (field->accuslip<0) {direction=-1;} 
+    // check for anormal direction of slippage (backwards slippage)
+    if (field->accuslip<0) {direction=-1;}
 
-      field->accuslip-=sample*direction; 
+    field->accuslip-=sample*direction;
 
-      // get adjacent node before and after in chain
-      int rank_next=rank+1;
-      int rank_prev=rank-1;
-      if (rank_next >= size ) { rank_next=0; }
-      if (rank_prev < 0 ) { rank_prev = size-1; }	
+    // get adjacent node before and after in chain
+    int rank_next=rank+1;
+    int rank_prev=rank-1;
+    if (rank_next >= size ) { rank_next=0; }
+    if (rank_prev < 0 ) { rank_prev = size-1; }
 
-      // for inverse direction swap targets
-      if (direction<0) {
-	int tmp=rank_next;
-        rank_next=rank_prev;
-        rank_prev=tmp; 
+    // for inverse direction swap targets
+    if (direction<0) {
+      int tmp=rank_next;
+      rank_next=rank_prev;
+      rank_prev=tmp;
+    }
+
+    int tag=1;
+
+    // get slice which is transmitted
+    auto last=(field->first+field->field.size()-1)  %  field->field.size();
+    // get first slice for inverse direction
+    if (direction<0){
+      last=(last+1) % field->field.size();  //  this actually first because it is sent backwards
+    }
+
+    // Prevent transfer sizes resulting in overflow (MPI_send argument 'count' has data type 'int').
+    // For typical transverse grid sizes, this is not a relevant limitation.
+    // (All MPI processes have identical transverse field parameters.)
+    if(2*ncells > INT_MAX) {
+      if(rank==0) {
+        cout << "Large field mesh size results in request for MPI transfer size exceeding INT_MAX, exiting." << endl;
       }
+      MPI_Abort(MPI_COMM_WORLD,1);
+    }
 
-      int tag=1;
-   
-      // get slice which is transmitted
-      int last=(field->first+field->field.size()-1)  %  field->field.size();
-      // get first slice for inverse direction
-      if (direction<0){
-	last=(last+1) % field->field.size();  //  this actually first because it is sent backwards
-      }
+    MPI_Status status;
+    //      MPI_Errhandler_set(MPI_COMM_WORLD,MPI_ERRORS_RETURN);
+    //      int ierr;
 
-      // Prevent transfer sizes resulting in overflow (MPI_send argument 'count' has data type 'int').
-      // For typical transverse grid sizes, this is not a relevant limitation.
-      // (All MPI processes have identical transverse field parameters.)
-      if(2*ncells > INT_MAX) {
-        if(rank==0) {
-          cout << "Large field mesh size results in request for MPI transfer size exceeding INT_MAX, exiting." << endl;
+    if (size>1) {
+      if ( (rank % 2)==0 ){                   // even nodes are sending first and then receiving field
+        for (int i=0; i<ncells; i++){
+          work[2*i]  =field->field[last].at(i).real();
+          work[2*i+1]=field->field[last].at(i).imag();
         }
-        MPI_Abort(MPI_COMM_WORLD,1);
+        MPI_Send(work,2*ncells, /* <= number of DOUBLES */
+            MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
+        MPI_Recv(work,2*ncells, MPI_DOUBLE,rank_prev,tag,MPI_COMM_WORLD,&status);
+        for (int i=0; i<ncells; i++){
+          complex <double> ctemp=complex<double> (work[2*i],work[2*i+1]);
+          field->field[last].at(i)=ctemp;
+        }
+      } else {                               // odd nodes are receiving first and then sending
+
+        MPI_Recv(work,2*ncells, /* <= number of DOUBLES */
+                  MPI_DOUBLE,rank_prev,tag,MPI_COMM_WORLD,&status);
+
+        for (int i=0; i<ncells; i++){
+          complex <double> ctemp=complex<double> (work[2*i],work[2*i+1]);
+          work[2*i]  =field->field[last].at(i).real();
+          work[2*i+1]=field->field[last].at(i).imag();
+          field->field[last].at(i)=ctemp;
+        }
+        MPI_Send(work,2*ncells,MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
       }
+    }
 
-      MPI_Status status;
-      //      MPI_Errhandler_set(MPI_COMM_WORLD,MPI_ERRORS_RETURN);
-      //      int ierr;
-	
-      if (size>1){
-        if ( (rank % 2)==0 ){                   // even nodes are sending first and then receiving field
-           for (int i=0; i<ncells; i++){
-	     work[2*i]  =field->field[last].at(i).real();
-	     work[2*i+1]=field->field[last].at(i).imag();
-	   }
-	   MPI_Send(work,2*ncells, /* <= number of DOUBLES */
-               MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
-	   MPI_Recv(work,2*ncells, MPI_DOUBLE,rank_prev,tag,MPI_COMM_WORLD,&status);
-	   for (int i=0; i<ncells; i++){
-	     complex <double> ctemp=complex<double> (work[2*i],work[2*i+1]);
-	     field->field[last].at(i)=ctemp;
-	   }
-	} else {                               // odd nodes are receiving first and then sending
 
-	  MPI_Recv(work,2*ncells, /* <= number of DOUBLES */
-              MPI_DOUBLE,rank_prev,tag,MPI_COMM_WORLD,&status);
-
-	  for (int i=0; i<ncells; i++){
-	    complex <double> ctemp=complex<double> (work[2*i],work[2*i+1]);
-	    work[2*i]  =field->field[last].at(i).real();
-	    work[2*i+1]=field->field[last].at(i).imag();
-	    field->field[last].at(i)=ctemp;
-	  }
-	  MPI_Send(work,2*ncells,MPI_DOUBLE,rank_next,tag,MPI_COMM_WORLD);
-	}
-      }
-
-      // first node has empty field slipped into the time window
+    // first node has empty field slipped into the time window
+    if (!periodic) {
       if ((rank==0) && (direction >0)){
         for (int i=0; i<ncells; i++){
-	  field->field[last].at(i)=complex<double> (0,0);
+          field->field[last].at(i)=complex<double> (0,0);
         }
       }
 
       if ((rank==(size-1)) && (direction <0)){
         for (int i=0; i<ncells; i++){
-	  field->field[last].at(i)=complex<double> (0,0);
+          field->field[last].at(i)=complex<double> (0,0);
         }
       }
+    }
 
-      // last was the last slice to be transmitted to the succeding node and then filled with the 
-      // the field from the preceeding node, making it now the start of the field record.
-      field->first=last;
-      if (direction<0){
-	field->first=(last+1) % field->field.size();
-      }
+    // last was the last slice to be transmitted to the succeding node and then filled with the
+    // the field from the preceeding node, making it now the start of the field record.
+    field->first=last;
+    if (direction<0){
+      field->first=(last+1) % field->field.size();
+    }
   }
 }

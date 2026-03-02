@@ -20,7 +20,8 @@ using namespace std;
 class StringProcessing {
 public:
 	StringProcessing();
-	~StringProcessing();
+
+	virtual ~StringProcessing();
 protected:
 	void trim(string &); 
 	void chop(string, vector<string> *);  

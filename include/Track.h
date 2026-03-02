@@ -18,23 +18,23 @@
 #include "Beam.h"
 #include "Field.h"
 #include "Diagnostic.h"
+#include "StringProcessing.h"
 
 using namespace std;
 
-class Track{
+class Track: public StringProcessing{
  public:
    Track();
    virtual ~Track();
    bool init(int, int, map<string,string> *,Beam *, vector<Field *> *,Setup *, Lattice *, AlterLattice *, Time *, FilterDiagnostics &);
  private:
    void usage();
-   bool atob(string);
 
    double zstop,slen,s0;
    double xc,yc,sig;
    int output_step,dumpFieldStep,dumpBeamStep,sort_step,bunchharm;
    int rank, size;
-   bool exclharm,fftsolver,doFilter;
+   bool exclharm,fftsolver,doFilter,periodic;
 };
 
 

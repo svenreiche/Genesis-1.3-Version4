@@ -6,7 +6,7 @@
 
 extern bool MPISingle;
 
-bool Gencore::run(Beam *beam, vector<Field*> *field, Setup *setup, Undulator *und,bool isTime, bool isScan, FilterDiagnostics &filter)
+bool Gencore::run(Beam *beam, vector<Field*> *field, Setup *setup, Undulator *und,bool isTime, bool isScan, bool periodic, FilterDiagnostics &filter)
 {
     // function returns 'true' if everything is ok
 
@@ -32,7 +32,7 @@ bool Gencore::run(Beam *beam, vector<Field*> *field, Setup *setup, Undulator *un
     setup->getRootName(&rn);
     setup->RootName_to_FileName(&fnbase, &rn); // includes .RunX. if not the first &track command
     Control   *control=new Control;
-    control->init(rank,size,fnbase,beam,field,und,isTime,isScan);
+    control->init(rank,size,fnbase,beam,field,und,isTime,isScan, periodic);
 
     Diagnostic diag;
 #ifdef USE_DPI
