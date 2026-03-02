@@ -469,6 +469,7 @@ It allows also to chose the type of field solver. The default behaviour is the a
 The fft methods allows also to filter the source term to exclude unphysical strongly divergent modes, which can bounce of the grid edge, resulting in model pattern of the wavefront. However a very agressive filtering can also 
 affect the actual FEL process. It is recommended to not use it unless you are very familiar with the code and its affect.
 - `zstop` (*double, 1e9*): If `zstop` is shorter than the lattice length the tracking stops at the specified position.
+- `periodic` (*bool, false*): If set to true, Genesis uses a periodic boundary condition of the time-window. Any radiation which slips out of the window is pushed back into it from the other side
 - `output_step` (*int, 1*): Defines the number of integration steps before the particle and field distribution is analyzed for output.
 - `field_dump_step` (*int, 0*): Defines the number of integration steps before a field dump is written. Be careful because for time-dependent simulation it can generate many large output files.
 - `beam_dump_step` (*int, 0*): Defines the number of integration steps before a particle dump is written. Be careful because for time-dependent simulation it can generate many large output files.
