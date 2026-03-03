@@ -92,10 +92,10 @@ class ProfileFile : public ProfileBase, StringProcessing, HDF5Base
   vector<double> xdat,ydat;
 };
 
-class ProfileFileMulti: public StringProcessing /* cannot get interpolated value from this class: ProfileBase is not a base class */
+class ProfileFileMulti: public StringProcessing, HDF5Base /* cannot get interpolated value from this class: ProfileBase is not a base class */
 {
 public:
-	ProfileFileMulti(){};
+	ProfileFileMulti()= default;
 	~ProfileFileMulti(){};
 	bool setup(int, map<string, string> *, vector< map<string, string>> *);
 	void usage();

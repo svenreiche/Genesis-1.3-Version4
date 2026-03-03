@@ -178,13 +178,13 @@ Reading look-up tables from an HDF5 file.
 
 A wrapper around `profile_file`.
 
-- `file`(*string, \<empty>*): Name of the HDF5 file, which contains all the dataset
+- `file` (*string, \<empty>*): Name of the HDF5 file, which contains all the dataset
 - `xdata` (*string, \<empty>*): Points to a dataset in an HDF5 file to define the `s`-position for the look-up table. The format is `group1/.../groupn/datasetname`, where the naming of groups is not required if the dataset is at root level of the HDF file
 - `ydata` (*string, \<empty>*): A comma separated list of multiple dataset names. The individual format is the same as `xdata` but for the function values of the look-up table.
-- `label_prefix` (*string,\<empty>*): The labels are generated with this prefix, a comma and the individual name of the dataset, given in `ydata`
+- `label_prefix` (*string,\<empty>*): The labels are generated with this prefix, a period and the individual name of the dataset, given in `ydata`
 - `isTime` (*bool, false*): If true the `s`-position is a time variable and therefore multiplied with the speed of light `c` to get the position in meters.
-- `reverse`(*bool, false*): if true the order in the look-up table is reverse. This is sometimes needed because time and spatial coordinates differ sometimes by a minus sign.
-
+- `reverse` (*bool, false*): if true the order in the look-up table is reverse. This is sometimes needed because time and spatial coordinates differ sometimes by a minus sign.
+- `autoassign` (*bool, false*): if true the code gathers all dataset in the specified and defines a profile for each with the laben given by the dataset name or - in case `label_prefix` is defined - to concatenation of `label_prefix`, a period and the datasetname
 
 [Back](#supported-namelists)
 

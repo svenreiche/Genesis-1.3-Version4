@@ -428,11 +428,13 @@ void ProfileFileMulti::usage()
 	cout << " string ydata = <empty>" << endl;
 	cout << " bool isTime = false" << endl;
 	cout << " bool reverse = false" << endl;
+  cout << " bool autoassign = false"  << endl;
 	cout << "&end" << endl << endl;
 }
 
 bool ProfileFileMulti::setup(int rank, map<string,string> *arg, vector<map<string,string>> *namelists) {
   auto end=arg->end();
+  bool autoassign = false;
   string h5file, label_prefix, xobj, ydatasets,isTime,revert;
   vector<string> yobjs;
 
@@ -443,14 +445,14 @@ bool ProfileFileMulti::setup(int rank, map<string,string> *arg, vector<map<strin
   if (arg->find("ydata")!=end)   {ydatasets = arg->at("ydata");  arg->erase(arg->find("ydata"));}
   if (arg->find("isTime")!=end)  {isTime = arg->at("isTime"); arg->erase(arg->find("isTime"));}
   if (arg->find("reverse")!=end) {revert = arg->at("reverse"); arg->erase(arg->find("reverse"));}
-
+  if (arg->find("autoassign")!=end) {autoassign = atob(arg->at("autoassign")); arg->erase(arg->find("autoassign"));}
   if (!arg->empty()){
     if (rank==0){ cout << "*** Error: Unknown elements in &profile_file_multi" << endl; this->usage();}
     return(false);
   }
 
   /* verify that all needed info was provided */
-  if ((h5file.empty()) || (xobj.empty()) || (ydatasets.empty()) || (label_prefix.empty()))
+  if ((h5file.empty()) || (xobj.empty())) // || (ydatasets.empty()) || (label_prefix.empty()))
   {
     if(rank==0) {
       cout << "*** Error: you must provide arguments file, xdata, ydata, and label_prefix" << endl;
@@ -458,15 +460,30 @@ bool ProfileFileMulti::setup(int rank, map<string,string> *arg, vector<map<strin
     return(false);
   }
 
-  /* break up ydata argument into list of objects to obtain from HDF5 file */
-  chop(ydatasets, &yobjs);
+  if (autoassign) {
+    auto success=this->browseFile(h5file,&yobjs);
+    yobjs.erase(std::remove(yobjs.begin(), yobjs.end(), xobj), yobjs.end());
+  } else {
+    /* break up ydata argument into list of objects to obtain from HDF5 file */
+    chop(ydatasets, &yobjs);
+  }
+  if (yobjs.empty()) {
+    if(rank==0) {
+      cout << "*** Error: you must provide arguments for ydata" << endl;
+    }
+    return(false);
+  }
 
   map<string,string> nl;
   for (const auto& yobj: yobjs) {
     nl.clear();
     nl.insert({"xdata",h5file+'/'+xobj});
     nl.insert({"ydata",h5file+'/'+yobj});
-    nl.insert({"label",label_prefix+'.'+yobj});
+    if (!label_prefix.empty()) {
+      nl.insert({"label",label_prefix+'.'+yobj});
+    } else {
+      nl.insert({"label",yobj});
+    }
     if (!isTime.empty()) {
       nl.insert({"isTime",isTime});
     }
