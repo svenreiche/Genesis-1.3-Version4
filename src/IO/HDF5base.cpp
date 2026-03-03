@@ -466,7 +466,7 @@ int HDF5Base::getDatasetSize(hid_t fid, char *name)
 herr_t file_info(hid_t loc_id,const char *name, const H5L_info_t *linfo, void *opdata) {
   auto group_names=reinterpret_cast< std::vector<std::string>* >(opdata);
   H5O_info_t oinfo;
-  herr_t info  = H5Oget_info_by_name(loc_id,name,&oinfo, H5P_DEFAULT);
+  herr_t info  = H5Oget_info_by_name2(loc_id,name,&oinfo, H5O_INFO_BASIC,H5P_DEFAULT);
   if (oinfo.type == H5O_TYPE_DATASET) {
     group_names->push_back(name);
   }
