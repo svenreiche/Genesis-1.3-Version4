@@ -70,7 +70,7 @@ class HDF5Base{
 
 };
 
-extern "C"  herr_t file_info(hid_t loc_id,const char *name, const H5L_info_t *linfo, void *opdata); 
+extern "C"  herr_t file_info(hid_t loc_id,const char *name, const H5O_info_t *linfo, void *opdata);
 
 
 #endif
