@@ -4,6 +4,7 @@
 - Added periodic boundary condition where radiation slips out of time window is injected back into it from the other side
 - fixed the explicitly defined atob function in profile_file_multi with the one provided by StringProcessing as a base class
 - added the namelist &alter_field to the manual.
+- allows in profile_file_multi an autoassign functionality for all datasets contained in the file 
 
 ### [4.6.12] - 2026/02/26
 - Release of Version 4.6.12
