@@ -463,9 +463,11 @@ int HDF5Base::getDatasetSize(hid_t fid, char *name)
 // simple read functions
 
 
-herr_t file_info(hid_t loc_id,const char *name, const H5O_info_t *oinfo, void *opdata) {
+herr_t file_info(hid_t loc_id,const char *name, const H5L_info_t *linfo, void *opdata) {
   auto group_names=reinterpret_cast< std::vector<std::string>* >(opdata);
-  if (oinfo->type == H5O_TYPE_DATASET) {
+  H5O_info_t oinfo;
+  herr_t info  = H5Oget_info_by_name(loc_id,name,&oinfo, H5P_DEFAULT);
+  if (oinfo.type == H5O_TYPE_DATASET) {
     group_names->push_back(name);
   }
   return 0;
@@ -474,7 +476,7 @@ herr_t file_info(hid_t loc_id,const char *name, const H5O_info_t *oinfo, void *o
 bool HDF5Base::browseFile(const string &file,vector<string> *names){
 
   hid_t fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);
-  herr_t idx=H5Ovisit2(fid,H5_INDEX_NAME,H5_ITER_INC, file_info, reinterpret_cast<void *> (names),  H5O_INFO_BASIC);
+  herr_t idx=H5Lvisit(fid,H5_INDEX_NAME,H5_ITER_INC, file_info, reinterpret_cast<void *> (names));
   H5Fclose(fid);
   return false;
 }
