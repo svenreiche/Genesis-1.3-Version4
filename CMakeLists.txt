@@ -28,6 +28,7 @@ if(EXISTS "/opt/local/bin/h5pcc")
   set(CMAKE_CXX_COMPILER /opt/local/bin/h5pcc)
 endif()
 
+
 if (CMAKE_CXX_COMPILER MATCHES  "h5pcc")
    Message(STATUS "h5pcc compiler wrapper found - No additional libraries needed")
 else()
