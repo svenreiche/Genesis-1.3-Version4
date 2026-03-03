@@ -1,5 +1,9 @@
 # Change Log
 
+### [4.6.13-beta] - 2026/03/02
+- Added periodic boundary condition where radiation slips out of time window is injected back into it from the other side
+- fixed the explicitly defined atob function in profile_file_multi with the one provided by StringProcessing as a base class
+
 ### [4.6.12] - 2026/02/26
 - Release of Version 4.6.12
 - Allows for parsing recursively though groups in hdf5 files for profile_file namelist
