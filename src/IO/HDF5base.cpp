@@ -474,7 +474,7 @@ herr_t file_info(hid_t loc_id,const char *name, const H5O_info_t *oinfo, void *o
 bool HDF5Base::browseFile(const string &file,vector<string> *names){
 
   hid_t fid=H5Fopen(file.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);
-  herr_t idx=H5Ovisit(fid,H5_INDEX_NAME,H5_ITER_INC, file_info, reinterpret_cast<void *> (names));
+  herr_t idx=H5Ovisit(fid,H5_INDEX_NAME,H5_ITER_INC, file_info, reinterpret_cast<void *> (names),  H5O_INFO_BASIC);
   H5Fclose(fid);
   return false;
 }
