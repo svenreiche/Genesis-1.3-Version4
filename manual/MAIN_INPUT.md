@@ -29,6 +29,7 @@ The following describes all supported namelist with their variables, including i
   - [beam](#beam)
   - [alter_beam](#alter_beam)
   - [field](#field)
+  - [alter_field](#alter_field)
   - [importdistribution](#importdistribution)
   - [importbeam](#importbeam)
   - [importfield](#importfield)
@@ -294,6 +295,18 @@ This namelist initiate the generation of the field distribution. It differs in o
 - `nx` (*int, 0*): Mode number in $x$ of the Gauss-Hermite mode
 - `ny` (*int, 0*): Mode number in $y$ of the Gauss-Hermite mode
 - `accumulate` (*bool, false*): If set the generated field is added to an existing field instead of overwriting it.
+
+[Back](#supported-namelists)
+
+### alter_field
+This applies some transformation of the radiation field. This includes scaling the radiation power and to apply a spiral phase plate (SPP)
+
+- `harm` (*int, 1*): Harmonic to select the corresponding radiation field for the transformation.
+- `scale_power` (*double, 1.0*): Scales the radiation power to the whole field.
+- `spp_phi0` (*double, 0*): Global phase shift to the radiation field. 
+- `spp_l` (*double, 0*): Angular momentum of SPP adding a phase proportional angular momentum * azimuthal angle of the transverse plane
+- `spp_nsect` (*int, 0*):  Model of a discrete SPP with `spp_nsect`  sections.
+
 
 [Back](#supported-namelists)
 
