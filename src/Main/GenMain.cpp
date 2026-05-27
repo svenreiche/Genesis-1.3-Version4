@@ -3,17 +3,10 @@
 #include <string>
 #include <vector>
 #include <iomanip>
-#include <stdio.h>
-#include <cstring>
 #include <ctime>
-
-
-#include <fenv.h>
-#include <signal.h>
+#include <csignal>
 
 #include <mpi.h>
-
-
 
 // genesis headerfiles & classes
 //#include "CodeTracing.h"
@@ -29,7 +22,6 @@
 #include "AlterBeam.h"
 #include "Lattice.h"
 #include "GenTime.h"
-#include "Gencore.h"
 #include "LoadField.h"
 #include "LoadBeam.h"
 #include "AlterLattice.h"
@@ -40,9 +32,6 @@
 #include "ImportBeam.h"
 #include "ImportField.h"
 #include "ImportTransformation.h"
-#include "writeBeamHDF5.h"
-#include "writeFieldHDF5.h"
-#include "readMapHDF5.h"
 #include "Collective.h"
 #include "Wake.h"
 #include "Diagnostic.h"
@@ -51,11 +40,8 @@
 #ifdef USE_DPI
   #include "RegPlugin.h"
 #endif
-#include "SeriesManager.h"
 #include "SeriesParser.h"
 #include "SimpleHandshake.h"
-
-#include <sstream>
 
 using namespace std;
 
@@ -73,7 +59,7 @@ bool MPISingle;  // global variable to do mpic or not
 //vector<double> evtime;
 //double evt0;
 
-int genmain (string inputfile, map<string,string> &comarg, bool split) {
+int genmain (const string& inputfile, map<string,string> &comarg, bool split) {
     meta_inputfile = inputfile;
     int ret = 0;
     MPISingle = split;
@@ -126,8 +112,6 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
     // some dummy argument used earlier
     string latstring;
     string outstring;
-    int in_seed = 0;
-
 
     //-------------------------------------------
     // instances of main classes
@@ -234,13 +218,13 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //---------------------------------------------------
         // adding sequence elements
         //
-        if ((element.compare("&sequence_const") == 0) ||
-            (element.compare("&sequence_polynom") == 0) ||
-            (element.compare("&sequence_power") == 0) ||
-            (element.compare("&sequence_list") == 0) ||
-            (element.compare("&sequence_filelist")==0) ||
-            (element.compare("&sequence_random") == 0)) {
-            SeriesParser *seriesparser = new SeriesParser;
+        if ((element == "&sequence_const") ||
+            (element == "&sequence_polynom") ||
+            (element == "&sequence_power") ||
+            (element == "&sequence_list") ||
+            (element=="&sequence_filelist") ||
+            (element == "&sequence_random")) {
+            auto *seriesparser = new SeriesParser;
             if (!seriesparser->init(rank, &argument, element, series)) { break; }
             delete seriesparser;
 //                if (!seq->init(rank,&argument,element)){ break; }
@@ -253,12 +237,12 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //---------------------------------------------------
         // adding profile elements
 
-        if ((element.compare("&profile_const") == 0) ||
-            (element.compare("&profile_gauss") == 0) ||
-            (element.compare("&profile_file") == 0) ||
-            (element.compare("&profile_file_multi") == 0) ||
-            (element.compare("&profile_polynom") == 0) ||
-            (element.compare("&profile_step") == 0)) {
+        if ((element == "&profile_const") ||
+            (element == "&profile_gauss") ||
+            (element == "&profile_file") ||
+            (element == "&profile_file_multi") ||
+            (element == "&profile_polynom") ||
+            (element == "&profile_step")) {
             if (!profile->init(rank, &argument, element)) { break; }
             continue;
         }
@@ -375,7 +359,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
 
         //-----------------------------------
         // register plugins for diagnostics
-        if (element.compare("&add_plugin_fielddiag") == 0) {
+        if (element == "&add_plugin_fielddiag") {
 #ifdef USE_DPI
             AddPluginFieldDiag *d = new AddPluginFieldDiag;
         if (!d->init(rank,size,&argument,setup)){ break;}
@@ -388,7 +372,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
             break;
 #endif
         }
-        if (element.compare("&add_plugin_beamdiag") == 0) {
+        if (element == "&add_plugin_beamdiag") {
 #ifdef USE_DPI
             AddPluginBeamDiag *d = new AddPluginBeamDiag;
         if (!d->init(rank,size,&argument,setup)){ break;}
@@ -405,8 +389,8 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------------
         // tracking - the very core part of Genesis
 
-        if (element.compare("&track") == 0) {
-            Track *track = new Track;
+        if (element == "&track") {
+            auto *track = new Track;
             if (!track->init(rank, size, &argument, beam, &field, setup, lattice, alt, timewindow, filter)) { break; }
             delete track;
             continue;
@@ -415,7 +399,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------------
         // write beam, field or undulator to file
 
-        if (element.compare("&sort") == 0) {
+        if (element == "&sort") {
             beam->sort();
             continue;
         }
@@ -424,7 +408,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------------
         // write beam, field or undulator to file
 
-        if (element.compare("&write") == 0) {
+        if (element == "&write") {
             Dump *dump = new Dump;
             if (!dump->init(rank, size, &argument, setup, beam, &field)) { break; }
             delete dump;
@@ -435,8 +419,8 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------------
         // import beam from a particle dump
 
-        if (element.compare("&importbeam") == 0) {
-            ImportBeam *import = new ImportBeam;
+        if (element == "&importbeam") {
+            auto *import = new ImportBeam;
             if (!import->init(rank, size, &argument, beam, setup, timewindow)) { break; }
             delete import;
             continue;
@@ -446,8 +430,8 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------------
         // import field from a field dump
 
-        if (element.compare("&importfield") == 0) {
-            ImportField *import = new ImportField;
+        if (element == "&importfield") {
+            auto *import = new ImportField;
             if (!import->init(rank, size, &argument, &field, setup, timewindow)) { break; }
             delete import;
             continue;
@@ -457,7 +441,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
         //----------------------------------------------------
         // stop execution of input file here (useful for debugging)
 
-        if (element.compare("&stop") == 0) {
+        if (element == "&stop") {
             if (rank == 0) {
                 cout << endl << "*** &stop element: User requested end of simulation ***" << endl;
             }
@@ -465,8 +449,8 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
             break;
         }
 
-	      if (element.compare("&simple_handshake")==0){
-            SimpleHandshake *hs=new SimpleHandshake;
+	      if (element=="&simple_handshake"){
+            auto *hs=new SimpleHandshake;
             string prefix;
             setup->getOutputdir(&prefix);
 	        if (!hs->doit(prefix)){ break;}
@@ -513,9 +497,9 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
     delete beam;
 
     // release memory allocated for fields
-    for (int i = 0; i < field.size(); i++) {
-    delete field[i];
-}
+    for (auto & i : field) {
+        delete i;
+    }
 
 	/*
 	 * Synchronization, without in some cases the semaphore file

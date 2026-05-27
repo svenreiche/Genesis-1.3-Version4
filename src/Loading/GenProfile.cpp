@@ -2,8 +2,7 @@
 
 
 Profile::Profile()
-{
-}
+= default;
 
 Profile::~Profile()
 {
@@ -16,27 +15,27 @@ bool Profile::init(int rank, map<string,string> *arg,string element)
   ProfileBase *p;
   string label;
 
-  if (element.compare("&profile_const")==0){
+  if (element=="&profile_const"){
     p=(ProfileBase *)new ProfileConst();
     label=p->init(rank,arg);
   } 
-  if (element.compare("&profile_gauss")==0){
+  if (element=="&profile_gauss"){
     p=(ProfileBase *)new ProfileGauss();
     label=p->init(rank,arg);
   } 
-  if (element.compare("&profile_polynom")==0){
+  if (element=="&profile_polynom"){
     p=(ProfileBase *)new ProfilePolynom();
     label=p->init(rank,arg);
   } 
-  if (element.compare("&profile_step")==0){
+  if (element=="&profile_step"){
     p=(ProfileBase *)new ProfileStep();
     label=p->init(rank,arg);
   } 
-  if (element.compare("&profile_file")==0){
+  if (element=="&profile_file"){
     p=(ProfileBase *)new ProfileFile();
     label=p->init(rank,arg);
   }
-  if (element.compare("&profile_file_multi")==0) {
+  if (element=="&profile_file_multi") {
     ProfileFileMulti pm;
     vector<map<string,string> > namelists;
     pm.setup(rank, arg, &namelists);  // creates a list of individal namelist for Profile_file
@@ -96,7 +95,7 @@ string ProfileConst::init(int rank, map<string,string>*arg)
 
   string label="";
   c0=0;
-  map<string,string>::iterator end=arg->end();
+  auto end=arg->end();
 
   if (arg->find("label")!=end){label = arg->at("label");  arg->erase(arg->find("label"));}
   if (arg->find("c0")!=end)   {c0    = atof(arg->at("c0").c_str());  arg->erase(arg->find("c0"));}
@@ -122,8 +121,7 @@ void ProfileConst::usage(){
   cout << " string label = <empty>" << endl;
   cout << " double c0 = 0" << endl;
   cout << "&end" << endl << endl;
-  return;
-}
+  }
 
 //-----------------------
 
@@ -132,7 +130,7 @@ string ProfilePolynom::init(int rank, map<string,string>*arg)
   string label="";
   map<string,string>::iterator end=arg->end();
   c.resize(5);
-  for (int i=0; i< c.size();i++){ c[i]=0;}
+  for (double & i : c){ i=0;}
   
 
   if (arg->find("label")!=end){label = arg->at("label");  arg->erase(arg->find("label"));}
@@ -143,11 +141,11 @@ string ProfilePolynom::init(int rank, map<string,string>*arg)
   if (arg->find("c4")!=end)   {c[4]    = atof(arg->at("c4").c_str());  arg->erase(arg->find("c4"));}
 
 
-  if (arg->size()!=0){
+  if (!arg->empty()){
     if (rank==0){ cout << "*** Error: Unknown element in &profile_polynom" << endl; this->usage();}
     return "";
   }
-  if ((label.size()<1)&&(rank==0)){
+  if ((label.empty())&&(rank==0)){
     cout << "*** Error: Label not defined in &profile_polynom" << endl; this->usage();
   }
   return label;
