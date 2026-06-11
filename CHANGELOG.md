@@ -1,5 +1,11 @@
 # Change Log
 
+### [4.6.13] - 2026/06/11
+- Release of Version 4.6.13
+- Added support for field errors in the namelist &lattice. One can specify the relative fluctuation of 
+the field errors and the corresponding kick to the orbit. The algorithm ensures that the first and second field interale (net offset and momentum) are almost zero.
+- Fixed the manual that undulator element in the lattice accept 0.5 as a valid value for the number of periods.
+
 ### [4.6.13-beta] - 2026/03/02
 - Added periodic boundary condition where radiation slips out of time window is injected back into it from the other side
 - fixed the explicitly defined atob function in profile_file_multi with the one provided by StringProcessing as a base class

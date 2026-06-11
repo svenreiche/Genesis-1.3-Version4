@@ -1,5 +1,6 @@
 #include "Lattice.h"
 
+
 Lattice::Lattice()
 {
   matched=false;
@@ -55,7 +56,7 @@ bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
   double lambda=setup->getReferenceLength();
   double gamma=setup->getReferenceEnergy();
 
-  this->unrollLattice(delz);
+  this->unrollLattice(delz,gamma, alt->getFieldError(),alt->getOrbitError(),alt->getSeed());
   this->calcSlippage(lambda,gamma);
 
   und->setGammaRef(gamma);
@@ -100,7 +101,7 @@ bool Lattice::generateLattice(Setup *setup, AlterLattice *alt, Undulator *und)
       und->qy[i]=lat_qy[i];
       und->cx[i]=lat_cx[i];
       und->cy[i]=lat_cy[i];
-
+   //   cout << " == " << lat_cx[i] << endl;
       und->chic_angle[i]=lat_delay[i];  // here it is the delay but will converted to angle
       und->chic_lb[i]=lat_lb[i];
       und->chic_ld[i]=lat_ld[i];
@@ -241,7 +242,7 @@ void Lattice::match(int rank, double z0, double gammaref)
 
   double phix,phiy;
 
-  this->unrollLattice(20);
+  this->unrollLattice(20,0 ,false,1,gammaref);
   Optics opt;
   opt.init();
 
@@ -285,9 +286,58 @@ void Lattice::match(int rank, double z0, double gammaref)
     matched=false;
   }
   }
-  
 
-void Lattice::unrollLattice(double delz)
+void Lattice::generateFieldErrors(double aw0, vector<double> *awout, double awerr)
+{
+  auto daw = aw0*awerr;
+  for (double & i : *awout)
+  {
+    i = aw0+daw*(erf.value(2*seq->getElement()));
+  }
+}
+
+void Lattice::generateKickErrors( vector<double> *awout, vector<double> *kicks, double delz, double gamref)
+{
+  auto nz = kicks->size();
+  double px = 0.;
+  int sgn = -1;
+
+  // first field integral
+  for (unsigned int i = 1; i < nz;i++){
+    px += (awout->at(i)-awout->at(i-1))*sgn/gamref;
+    sgn *= -1;
+  }
+  auto delaw = -px/static_cast<double>(nz)*gamref;
+  for (unsigned int i = 0; i < nz;i+=2){
+    awout->at(i)+=delaw;
+  }
+  for (unsigned int i = 0; i < nz;i++){
+    awout->at(i)-=0.5*delaw;
+  }
+  // second field integral
+  sgn = -1;
+  px = 0.;
+  double x = 0;
+  for (unsigned int i = 1; i < nz;i++)
+  {
+    x += px*delz;
+    px += (awout->at(i)-awout->at(i-1))*sgn/gamref;
+    sgn *= -1;
+  }
+  delaw=-x/static_cast<double>(nz)/delz*gamref;
+  awout->at(0)+=delaw;
+  awout->at(nz-1)+=sgn*delaw;
+  // calculate individual kicks
+  sgn=-1;
+  kicks->at(0) = 0;
+  for (unsigned int i = 1; i < nz;i++){
+    kicks->at(i)=(awout->at(i)-awout->at(i-1))*sgn/gamref*sqrt(2.);
+    sgn *= -1;
+  }
+}
+
+
+void Lattice::unrollLattice(double delz,double gamref, double fielderror, bool orbiterror,unsigned long iseed)
 {
   lat_aw.clear();
   lat_ku.clear();
@@ -300,8 +350,12 @@ void Lattice::unrollLattice(double delz)
   lat_helical.clear();
   lat_dz.clear();
   lat_z.clear();
+  lat_cx.clear();
+  lat_cy.clear();
 
-
+  auto awout = new vector<double> ;
+  auto kicks = new vector<double> ;
+  seq  = new RandomU (iseed);
 
   auto it=layout.begin();
   auto iend=layout.end();
@@ -330,15 +384,28 @@ void Lattice::unrollLattice(double delz)
         lat_ax.push_back(0);
         lat_ay.push_back(0);
         lat_helical.push_back(0);
+        lat_cx.push_back(0);
 
       } else {
         ID *und=(ID *)lat[iele];
         int nz=static_cast<int>(round(dz/delz));
         if (nz==0) {nz=1;}
         dz=dz/static_cast<double>(nz);
+        awout->resize(nz);
+        kicks->resize(nz);
+        this->generateFieldErrors(und->aw, awout,fielderror);
+        if (orbiterror)
+        {
+          this->generateKickErrors(awout,kicks,dz,gamref);
+        } else {
+          for (unsigned long i=0;i<nz;i++) { kicks->at(i) = 0;}
+        }
         for (int iz=0;iz<nz;iz++){
 	        lat_dz.push_back(dz);
-          lat_aw.push_back(und->aw);
+//          lat_aw.push_back(und->aw);
+          lat_aw.push_back(awout->at(iz));
+          lat_cx.push_back(kicks->at(iz));
+          lat_cy.push_back(0);
 	        double ku=4.*asin(1)/und->lambdau;
           lat_ku.push_back(ku);
           lat_kx.push_back(ku*ku*und->kx);
@@ -351,6 +418,9 @@ void Lattice::unrollLattice(double delz)
         }
       }
   }
+  delete awout;
+  delete kicks;
+  delete seq;
 
   unsigned long nz=lat_aw.size();
   lat_z.resize(nz);
@@ -367,8 +437,8 @@ void Lattice::unrollLattice(double delz)
   lat_lb.resize(nz);
   lat_ld.resize(nz);
   lat_lt.resize(nz);
-  lat_cx.resize(nz);
-  lat_cy.resize(nz);
+  //lat_cx.resize(nz);
+  //lat_cy.resize(nz);
   lat_mk.resize(nz);
   lat_ps.resize(nz);
   for (int i=0; i<nz;i++){
@@ -379,8 +449,8 @@ void Lattice::unrollLattice(double delz)
     lat_lb[i]=0;
     lat_ld[i]=0;
     lat_lt[i]=0;
-    lat_cx[i]=0;
-    lat_cy[i]=0;
+    //lat_cx[i]=0;
+    //lat_cy[i]=0;
     lat_mk[i]=0;
     lat_ps[i]=0;
   }
@@ -423,8 +493,8 @@ void Lattice::unrollLattice(double delz)
     iele=this->findElement(z0,z1,"Corrector");
     if (iele!=-1){                                     // outside of a bend
         auto *cor=(Corrector *)lat[iele];
-        lat_cx[i]=cor->cx; 
-        lat_cy[i]=cor->cy; 
+        lat_cx[i]+=cor->cx;
+        lat_cy[i]+=cor->cy;
     } 
 
     iele=this->findElement(z0,z1,"Phaseshifter");

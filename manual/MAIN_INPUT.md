@@ -101,6 +101,7 @@ A namelist to change some parameters within the simulation, which have been defi
 ### lattice
 
 This namelist is used to change the raw lattice from the lattice file, such as generating errors in the position of the elements. The namelist can be defined several times to add more than one error source to the lattice.
+It handles also the generation of undulator errors both the variation in the undulator field as well as resulting orbit wander, resulting from imperfectly shimmed undulator field. The model is only exact for planar undulator and integration step of half the undulator period.
 
 - `zmatch` (*double, 0*): If the position within the undulator in meter is non-zero than Genesis tries to calculate the matched optics function for a periodic solution. In the case that it cannot find a solution than it will report it. Found solution will also be the default values for a succeeding beam generation, so that no explicit optical functions need to be defined any longer. If the lattice is highly non-periodic it is recommended
     to find the matching condition with an external program such as MAdX.
@@ -110,6 +111,12 @@ This namelist is used to change the raw lattice from the lattice file, such as g
 - `instance` (*integer, 0*): The instances of affected elements. If a positive value is given, than only that element is changed, where its occurence matches the number. E.g. for a value of 3 only the third element is selected. For a value of 0 all elements are changed. The ability to change more than one but less than all is currently not supported.
 - `add` (*bool, true*): If the value is `true`, the changes are added to the existing value. For a value of `false`, the old values are overwritten.
 - `resolvePeriod` (*bool, false*): currently unused.
+- `fielderror` (*double, 0*): the relative rms fluctuation of the undulator field
+- `orbiterror` (*bool, false*): if set to true Genesis applies kicks to the orbit, base don the change in the K-values per integration set.
+It is recommended to set integration setsize to half the undulator period but the algorithm works also for larger integration step. Also the kick is only correct for 
+planar undulator configuration by kicking only in the x-plane. For helical the kick is also generated but in reality it would be a kick in both planes. The kick error tries to set the first and second field integral to zero, meaning that the 
+error does not introduce a net offset or angle per undulator module.
+- `seed` (*int, 1234567*): Seed for the random number generator for the field errors.
 
 [Back](#supported-namelists)
 

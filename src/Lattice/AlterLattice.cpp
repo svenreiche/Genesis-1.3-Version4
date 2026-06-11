@@ -10,6 +10,8 @@ AlterLattice::AlterLattice()
   instance= 0;
   resolve = false;
   add     = true;
+  fielderror = 0;
+  orbiterror=false;
 }
 
 AlterLattice::~AlterLattice(){}
@@ -25,9 +27,10 @@ void AlterLattice::usage(){
   cout << " int instance   = 0 " << endl;
   cout << " bool resolvePeriod = false" << endl;
   cout << " bool add = true" << endl;
-   cout << "&end" << endl << endl;
-  return;
-}
+  cout << " bool fielderror = 0" << endl;
+  cout << " bool orbiterror = false" << endl;
+  cout << "&end" << endl << endl;
+  }
 
 
 bool AlterLattice::init(int inrank, int insize, map<string,string> *arg, Lattice *lat, Setup *setup, SeriesManager *seq)
@@ -43,8 +46,11 @@ bool AlterLattice::init(int inrank, int insize, map<string,string> *arg, Lattice
   instance= 0;
   resolve = false;
   add     = true;
+  fielderror = 0;
+  orbiterror=false;
+  iseed = 1234567;
  
-  map<string,string>::iterator end=arg->end();
+  auto end=arg->end();
 
 
   if (arg->find("zmatch")!=end)  {zmatch= atof(arg->at("zmatch").c_str());  arg->erase(arg->find("zmatch"));}
@@ -54,17 +60,19 @@ bool AlterLattice::init(int inrank, int insize, map<string,string> *arg, Lattice
   if (arg->find("instance")!=end){instance= atoi(arg->at("instance").c_str());  arg->erase(arg->find("instance"));}
   if (arg->find("resolvePeriod")!=end)  {resolve= atob(arg->at("resolvePeriod"));  arg->erase(arg->find("resolvePeriod"));}
   if (arg->find("add")!=end)     {add  = atob(arg->at("add"));    arg->erase(arg->find("add"));}
+  if (arg->find("orbiterror")!=end)     {orbiterror  = atob(arg->at("orbiterror"));    arg->erase(arg->find("orbiterror"));}
+  if (arg->find("fielderror")!=end)  {fielderror= atof(arg->at("fielderror").c_str());  arg->erase(arg->find("fielderror"));}
+  if (arg->find("seed")!=end){ iseed= atoi(arg->at("iseed").c_str());  arg->erase(arg->find("iseed"));}
 
-
-  if (arg->size()!=0){
+  if (!arg->empty()){
     if (rank==0){ cout << "*** Error: Unknown elements in &lattice" << endl; this->usage();}
     return false;
   }
   
 
-  string wrongSeq="";
+  string wrongSeq;
   if (seq->check(valueref)== false)  { wrongSeq=valueref;}
-  if (wrongSeq.size() > 0){
+  if (!wrongSeq.empty()){
     if (rank==0){cout << "*** Error: Unknown Sequence reference in &lattice: " << wrongSeq << endl;}
     return false;
   }    
@@ -75,7 +83,7 @@ bool AlterLattice::init(int inrank, int insize, map<string,string> *arg, Lattice
     lat->match(rank, zmatch, setup->getReferenceEnergy());
   }
 
-  if (element!=""){
+  if (!element.empty()){
     bool val= lat->alterElement(element,field,value, valueref, seq, instance,add);
     if (!val) {
       if (rank == 0 ) {

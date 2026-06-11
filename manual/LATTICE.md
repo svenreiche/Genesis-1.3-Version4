@@ -30,7 +30,7 @@ Labels are used to identify elements and are referred to in the line element. Mo
 
 - `aw` (*double, 0*): The dimensionless rms undulator parameter. For planar undulator this value is smaller by a factor $1 / \sqrt{2}$ than its K-value, while for helical undulator rms and peak values are identical.
 - `lambdau` (*double, 0, [m]*): Undulator period length in meter. Default is 0 m.
-- `nwig` (*int, 0*): Number of periods.
+- `nwig` (*double, 0*): Number of periods. It should be an integer but Genesis allows also a value of 0.5 to resolve half-periods.
 - `helical` (*bool, false*): Boolean flag whether the undulator is planar or helical. A planar undulator has helical=`false`. Note that setting it to `true`, does not change the roll-off parameters for focusing. To be consistent they have to be set directly.
 - `kx` (*double, 0*): Roll-off parameter of the quadratic term of the undulator field in x. It is normalized with respect to $k_u^2$. 
 - `ky` (*double, 1*): Roll-off parameter of the quadratic term of the undulator field in y. 
