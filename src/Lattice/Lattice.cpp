@@ -385,6 +385,7 @@ void Lattice::unrollLattice(double delz,double gamref, double fielderror, bool o
         lat_ay.push_back(0);
         lat_helical.push_back(0);
         lat_cx.push_back(0);
+        lat_cy.push_back(0);
 
       } else {
         ID *und=(ID *)lat[iele];
