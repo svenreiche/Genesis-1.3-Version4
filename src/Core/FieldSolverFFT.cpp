@@ -63,41 +63,53 @@ void FieldSolverFFT::advance(double delz, Field *field, Beam *beam, Undulator *u
 
 void FieldSolverFFT::FFT(vector<complex<double> > &crfield)
 {
-    // Do the FFT of the field and source term
+    // Transform the field into Fourier space
     for (unsigned long ii = 0; ii < crfield.size(); ii++) {
         in[ii] = crfield[ii];
     }
 #ifdef FFTW
         fftw_execute(p);
 #endif
-    for (unsigned long ii = 0; ii < crfield.size(); ii++) {
-        uf[ii] = out[ii];
-        in[ii] = crsource[ii];
-    }
+
+    if (doFilter_) {
+        // The source term is filtered in Fourier space, so it needs its own
+        // forward transform.
+        for (unsigned long ii = 0; ii < crfield.size(); ii++) {
+            uf[ii] = out[ii];
+            in[ii] = crsource[ii];
+        }
 #ifdef FFTW
         fftw_execute(p);
 #endif
-
-    for (unsigned long ii = 0; ii < crfield.size(); ii++) {
-        sf[ii] = out[ii];
-    }
-    // filter source term
-    if (doFilter_) {
         for (unsigned long ii = 0; ii < crfield.size(); ii++) {
-            sf[ii]*=sigmoid_[ii];
+            sf[ii] = out[ii] * sigmoid_[ii];
         }
-    }
-
-    // do the actual propagation
-    for (unsigned long ii = 0; ii < crfield.size(); ii++) {
-        in[ii]=uf[ii]*exp(K2[ii]*delz_save) + 2.*sf[ii]; // - complex<double>(0,1.) *sf[ii];
+        // do the actual propagation
+        for (unsigned long ii = 0; ii < crfield.size(); ii++) {
+            in[ii] = uf[ii] * exp(K2[ii] * delz_save) + 2. * sf[ii];
+        }
+    } else {
+        // Without the filter the source term is not modified in Fourier space.
+        // The transform is linear, so IFFT(FFT(crsource))/ngrid^2 == crsource
+        // and the source can simply be added in real space after the back
+        // transform. This saves one of the three 2D FFTs per slice and step.
+        for (unsigned long ii = 0; ii < crfield.size(); ii++) {
+            in[ii] = out[ii] * exp(K2[ii] * delz_save);
+        }
     }
 #ifdef FFTW
         fftw_execute(ip);
 #endif
+
     double norm = 1./static_cast<double>(ngrid*ngrid);
-    for (unsigned long ii = 0; ii < crfield.size(); ii++) {
-        crfield[ii]=out[ii]*norm;
+    if (doFilter_) {
+        for (unsigned long ii = 0; ii < crfield.size(); ii++) {
+            crfield[ii] = out[ii] * norm;
+        }
+    } else {
+        for (unsigned long ii = 0; ii < crfield.size(); ii++) {
+            crfield[ii] = out[ii] * norm + 2. * crsource[ii];
+        }
     }
 }
 
