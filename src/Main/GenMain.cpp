@@ -60,7 +60,10 @@
 using namespace std;
 
 const double vacimp = 376.73;
-const double eev    = 510999.06; 
+// Electron rest energy in eV. CODATA 2022: 0.510 998 950 69 MeV, with an
+// uncertainty in the last two digits.
+// https://physics.nist.gov/cgi-bin/cuu/Value?mec2mev
+const double eev    = 510998.95069;
 const double ce     = 4.8032045e-11;
 
 // info for the meta group in the hdf5 output file
