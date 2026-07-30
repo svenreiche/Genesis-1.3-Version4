@@ -33,7 +33,7 @@ class FieldSolverFFT : public FieldSolver{
     double delz_save {0};
     double ks {1};
     double dk {1};
-    double xc,yc,sig;
+    double xc {1}, yc {1}, sig {1};
     bool hasPlan {false};
     bool doFilter_ {false};
     complex<double> *in, *out;

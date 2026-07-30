@@ -143,11 +143,13 @@ void FieldSolverFFT::init(double delz,double dgrid, double xks, unsigned int ngr
 }
 
 void FieldSolverFFT::initSourceFilter(double xc_in, double yc_in, double sig_in,bool do_filter) {
-    doFilter_ = do_filter;
-    if (sig <= 0) {  // check for unphysical input
-        doFilter_ = false;
-    }
     xc=xc_in;
     yc=yc_in;
     sig=sig_in;
+    doFilter_ = do_filter;
+    // check for unphysical input. xc and yc are used as divisors when the
+    // sigmoid is tabulated, sig is its width.
+    if ((sig <= 0) || (xc <= 0) || (yc <= 0)) {
+        doFilter_ = false;
+    }
 };
