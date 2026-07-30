@@ -29,6 +29,7 @@ void AlterLattice::usage(){
   cout << " bool add = true" << endl;
   cout << " bool fielderror = 0" << endl;
   cout << " bool orbiterror = false" << endl;
+  cout << " int seed = 1234567" << endl;
   cout << "&end" << endl << endl;
   }
 
@@ -62,7 +63,7 @@ bool AlterLattice::init(int inrank, int insize, map<string,string> *arg, Lattice
   if (arg->find("add")!=end)     {add  = atob(arg->at("add"));    arg->erase(arg->find("add"));}
   if (arg->find("orbiterror")!=end)     {orbiterror  = atob(arg->at("orbiterror"));    arg->erase(arg->find("orbiterror"));}
   if (arg->find("fielderror")!=end)  {fielderror= atof(arg->at("fielderror").c_str());  arg->erase(arg->find("fielderror"));}
-  if (arg->find("seed")!=end){ iseed= atoi(arg->at("iseed").c_str());  arg->erase(arg->find("iseed"));}
+  if (arg->find("seed")!=end){ iseed= atoi(arg->at("seed").c_str());  arg->erase(arg->find("seed"));}
 
   if (!arg->empty()){
     if (rank==0){ cout << "*** Error: Unknown elements in &lattice" << endl; this->usage();}
