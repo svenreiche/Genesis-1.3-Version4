@@ -52,50 +52,60 @@ void DiagBeamUser::getValues(Beam *beam, std::map<std::string,std::vector<double
     double g_norm = 0;   // global variable for normalizing the other global variables (here the current)
     double g_loss = 0;   // global variable for beam loss
 
+    // Resolve the output record once, before the slice loop. Everything below
+    // that touches individual particles exists only to fill "modulation", and
+    // it costs a sine and a cosine per particle per slice per integration step.
+    // With the template disabled that work is thrown away, so check first
+    // whether the output was actually requested. A user adding a diagnostic
+    // here should guard their own per-particle work the same way.
+    std::vector<double> *v_modulation = nullptr;
+    auto it_mod = val.find("modulation");
+    if (it_mod != val.end()) { v_modulation = &it_mod->second; }
+
     // loop over the slices in the electron bunch
     for (auto const &slice: beam->beam) {
-        double gamavg=0.;
-        complex<double> emod = 0; // parameter for the energy modulation
-        double norm = 1.;
-
-        if (!slice.empty()) {
-            norm = 1./static_cast<double>(slice.size()); // normalize with the number of particles per slice
-        }
-
-        // compute average gamma value (lechner, 2022-Dec)
-        // Needed for correct computation of Emod by first
-        // subtracting <gamma>.
-        // My key parameters: I=5kA, one4one=true, 16.5GeV, emod=10, 17keV
-        for (auto const &par: slice) {
-            gamavg+=par.gamma;
-        }
-        gamavg *= norm;
-
-        // loop over the particle in each slice
-        for (auto const &par: slice) {
-            emod += (par.gamma-gamavg) * complex<double>(cos(par.theta),sin(par.theta));
-        }
-        emod *= norm;
-
-        // Compute modulation *amplitude*
-        // Factor of 2: cos(phi) = 1/2*(exp(i*phi)+exp(-i*phi))
-        double emod_ampl = 2 * abs(emod);
-
-
-        // gather info for the global variables
-        g_norm += beam->current[is];
-        g_loss += beam->current[is] * beam->eloss[is];
-
-
         // saving the calculated values into the records defined with getTags.
         // (1) Compute index into data array.
         //     For 'once' parameters it would be just idx=is
         //     For 'global' parameters it would just iz
         int idx = iz*ns + is;         // index for saving the data in the individual vectors of 'val'
 
-        // (2) Store value
-        // It is good practice to check whether a given tag exists, since they can vary with filter flags, such as for global parameters
-        if (val.find("modulation") != val.end()) { val["modulation"][idx] = emod_ampl; }
+        if (v_modulation != nullptr) {
+            double gamavg=0.;
+            complex<double> emod = 0; // parameter for the energy modulation
+            double norm = 1.;
+
+            if (!slice.empty()) {
+                norm = 1./static_cast<double>(slice.size()); // normalize with the number of particles per slice
+            }
+
+            // compute average gamma value (lechner, 2022-Dec)
+            // Needed for correct computation of Emod by first
+            // subtracting <gamma>.
+            // My key parameters: I=5kA, one4one=true, 16.5GeV, emod=10, 17keV
+            for (auto const &par: slice) {
+                gamavg+=par.gamma;
+            }
+            gamavg *= norm;
+
+            // loop over the particle in each slice
+            for (auto const &par: slice) {
+                emod += (par.gamma-gamavg) * complex<double>(cos(par.theta),sin(par.theta));
+            }
+            emod *= norm;
+
+            // Compute modulation *amplitude*
+            // Factor of 2: cos(phi) = 1/2*(exp(i*phi)+exp(-i*phi))
+            double emod_ampl = 2 * abs(emod);
+
+            // (2) Store value
+            (*v_modulation)[idx] = emod_ampl;
+        }
+
+        // gather info for the global variables
+        g_norm += beam->current[is];
+        g_loss += beam->current[is] * beam->eloss[is];
+
         is++; // and increment slice counter (FIXME: consider replacing the outer loop by traditional 'for' loop)
     }
 
