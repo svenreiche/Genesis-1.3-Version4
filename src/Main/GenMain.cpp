@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <cstring>
 #include <ctime>
+#include <chrono>
 
 
 #include <fenv.h>
@@ -87,8 +88,14 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
     }
 
     time_t timer;
-    clock_t clocknow;
-    clock_t clockstart = clock();
+    // Wall clock, as the line printed at the end says. It used to be clock(),
+    // which is processor time: equal to the wall clock for a run that computes
+    // on the host without waiting, but not for one that waits on a GPU, on a
+    // file system or on another rank, where it under-reports, sometimes by a
+    // factor of four.
+    std::chrono::steady_clock::time_point clocknow;
+    const std::chrono::steady_clock::time_point clockstart =
+        std::chrono::steady_clock::now();
     //	evt0 = double(clockstart);
     //	event.push_back("start");
     //	evtime.push_back(0);
@@ -527,7 +534,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
 	/* take time stamp (I/O for generating semaphore file could skew result if file system is busy) */ 
 	//	event.push_back("end");
 	//	evtime.push_back(double(clocknow-clockstart));
-	clocknow=clock();
+	clocknow=std::chrono::steady_clock::now();
 
 
         /* NOW, generate the semaphore file */
@@ -551,7 +558,7 @@ int genmain (string inputfile, map<string,string> &comarg, bool split) {
 
 
  	if (rank==0) {
-	  double elapsed_Sec=double(clocknow-clockstart)/CLOCKS_PER_SEC;
+	  double elapsed_Sec=std::chrono::duration<double>(clocknow-clockstart).count();
 
       time(&timer);
       cout << endl<< "Program is terminating..." << endl;
