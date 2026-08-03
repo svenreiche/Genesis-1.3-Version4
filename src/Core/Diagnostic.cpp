@@ -847,7 +847,12 @@ void DiagField::getValues(Field *field,std::map<std::string,std::vector<double> 
 #endif
 
 
-        int i=(ngrid*ngrid-1)/2;
+        // Cell on the axis. (ngrid*ngrid-1)/2 is that cell only for an odd
+        // ngrid, which is the traditional Genesis convention; for an even one
+        // it lands on the last column of the row below the middle, at the edge
+        // of the grid, where the field is orders of magnitude smaller than on
+        // axis. This form is identical for odd ngrid and correct for even.
+        int i=(ngrid/2)*ngrid+(ngrid/2);
         loc=slice.at(i);
         double inten=loc.real()*loc.real()+loc.imag()*loc.imag();
         double intenphi=atan2(loc.imag(),loc.real());

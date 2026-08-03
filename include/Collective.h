@@ -14,6 +14,7 @@ class Undulator;
 
 extern bool MPISingle; 
 extern const double ce;   
+extern const double eev;
 
 using namespace std;
 
