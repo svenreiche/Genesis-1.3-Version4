@@ -86,7 +86,11 @@ bool Wake::init(int rank, int size, map<string,string> *arg,  Time *time, Setup 
   int nsNode=time->getNodeNSlice();
   
   ns=ns*time->getSampleRate();
-  ds=(s[1]-s[0])/time->getSampleRate();
+  // getPosition returns a single slice for a steady-state run, so s[1] is one
+  // past the end of the vector. A lone slice is one reference length long,
+  // which is what getPosition would have spaced the second one by.
+  ds = (s.size() > 1) ? (s[1]-s[0])/time->getSampleRate()
+                      : setup->getReferenceLength();
 
   wakeres = new double [ns];
   wakegeo = new double [ns];
