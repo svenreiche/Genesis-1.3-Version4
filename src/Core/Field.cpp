@@ -432,7 +432,9 @@ void Field::diagnostics(bool output)
     if (bfarfield > 0){
       bphiff=atan2(ff.imag(),ff.real());
     }
-    int i=(ngrid*ngrid-1)/2;
+    // Cell on the axis; see the same expression in DiagField::getValues. The
+    // older (ngrid*ngrid-1)/2 is the axis only for an odd ngrid.
+    int i=(ngrid/2)*ngrid+(ngrid/2);
     loc=field.at(islice).at(i);
     bintensity=loc.real()*loc.real()+loc.imag()*loc.imag();
     if (bintensity > 0) {
