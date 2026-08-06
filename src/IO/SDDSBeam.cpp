@@ -331,7 +331,7 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
   int nslice=time->getPosition(&s);
   int node_off=time->getNodeOffset();
   int node_len=time->getNodeNSlice();
-  beam->init(time->getNodeNSlice(),nbins,lambda,sample*lambda,s[0],one4one);  // init beam
+  beam->init(time->getNodeNSlice(),nbins,lambda,sample*lambda,s[0],node_off,one4one);  // init beam
   beam->initSorting(rank,size,false,one4one); 
 
   double smin=s[node_off];
@@ -379,7 +379,7 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
 
   this->initRandomSeq(setup->getSeed());
   ShotNoise sn;
-  sn.init(setup->getSeed(),rank);
+  sn.init(setup->getSeed());
 
   int nwork=100;
   Particle *work;
@@ -415,6 +415,7 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
     }
 
     // step 4 - refill particle phase completely new
+    ran->set(seedFromIndex(ranbase,static_cast<unsigned long>(islice+node_off),SeedStream::sddsphase));
     for (int i=0;i<beam->beam.at(islice).size();i++){
       beam->beam.at(islice).at(i).theta=theta0*ran->getElement();  // for one2one this should be the correct shot noise
     }
@@ -443,6 +444,7 @@ bool SDDSBeam::init(int inrank, int insize, map<string,string> *arg, Beam *beam,
       for (int i=0;i<mpart*nbins;i++){
       	work[i].theta=beam->beam.at(islice).at(i).theta;  
       }
+      sn.setSlice(islice+node_off);
       sn.applyShotNoise(work,mpart*nbins,nbins,ne);
       for (int i=0;i<mpart*nbins;i++){
       	beam->beam.at(islice).at(i).theta=work[i].theta;  
@@ -719,13 +721,7 @@ void SDDSBeam::analyse(double ttotal,int nsize)
 
 void SDDSBeam::initRandomSeq(int base)
 {
-     RandomU rseed(base);
-     double val;
-     for (int i=0; i<=rank+10000;i++){
-        val=rseed.getElement();
-     }
-     val*=1e9;
-     int locseed=static_cast<int> (round(val));
-     ran  =  new RandomU (locseed);
+     ranbase=static_cast<unsigned int>(base);
+     ran = new RandomU (seedFromIndex(ranbase,0,SeedStream::sddsphase));
      return;
 }

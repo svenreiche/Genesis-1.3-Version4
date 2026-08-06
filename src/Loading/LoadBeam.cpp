@@ -140,7 +140,7 @@ bool LoadBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, Set
   vector<double> s;
   int nslice=time->getPosition(&s);
 
-  beam->init(time->getNodeNSlice(),nbins,lambda,sample*lambda,s[0],one4one);
+  beam->init(time->getNodeNSlice(),nbins,lambda,sample*lambda,s[0],time->getNodeOffset(),one4one);
   beam->initSorting(rank,size,false,one4one);  // sorting routine is initialized, with default values to suppress field slippage but do sorting if one4one is enabled
 
   int nbeam=1024;
@@ -163,7 +163,7 @@ bool LoadBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, Set
   }
 
   
-  sn.init(setup->getSeed(),rank);
+  sn.init(setup->getSeed());
 
 
   for (int j=0; j<time->getNodeNSlice(); j++){
@@ -197,7 +197,10 @@ bool LoadBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, Set
     }
 
     ql.loadQuiet(beamslice, &slice, npartloc, nbins,theta0,i);
-    if ((shotnoise)&&(!one4one)&&(dotime)){ sn.applyShotNoise(beamslice,npartloc,nbins,ne); }
+    if ((shotnoise)&&(!one4one)&&(dotime)){
+      sn.setSlice(i);
+      sn.applyShotNoise(beamslice,npartloc,nbins,ne);
+    }
 
     beam->beam[j].resize(npartloc);
     beam->current[j]=slice.current;

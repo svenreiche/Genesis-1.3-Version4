@@ -3,6 +3,7 @@
 ShotNoise::ShotNoise(){
   sran=NULL;
   nwork=1000;
+  base=0;
   work=new double [nwork];
 }
 
@@ -13,17 +14,21 @@ ShotNoise::~ShotNoise()
 }
 
 
-void ShotNoise::init(int base,int rank)
+void ShotNoise::init(int base_in)
 {
-  RandomU rseed(base);
-  double val;
-  for (int i=0; i<=rank;i++){
-    val=rseed.getElement();
-  }
-  val*=1e9;
-  int locseed=static_cast<int> (round(val));
+  base=static_cast<unsigned int>(base_in);
   if (sran !=NULL) { delete sran; }
-  sran  = new RandomU (locseed);
+  sran = new RandomU(seedFromIndex(base,0,SeedStream::shotnoise));
+}
+
+
+// Restarts the generator for one slice of the time window. 'islice' has to be
+// the index of the slice in the whole window, not in one core's share of it,
+// because that is what makes the shot noise a property of the slice rather
+// than of the core layout the run happened to use.
+void ShotNoise::setSlice(unsigned long islice)
+{
+  sran->set(seedFromIndex(base,islice,SeedStream::shotnoise));
 }
 
 void ShotNoise::applyShotNoise(Particle *beam, int npart, int nbins, double ne)

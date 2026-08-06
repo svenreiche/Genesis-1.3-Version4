@@ -40,6 +40,7 @@ class SDDSBeam: public StringProcessing, HDF5Base{
    void initRandomSeq(int);
    double distance(Particle, Particle);
    RandomU *ran;
+   unsigned int ranbase;
    int rank,size;
    double betax,betay,alphax,alphay,charge;
    double xcen,ycen,pxcen,pycen,gamma;

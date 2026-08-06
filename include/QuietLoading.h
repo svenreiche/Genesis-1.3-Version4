@@ -59,6 +59,8 @@ public:
 	
 private:
         Sequence *sx,*sy,*st,*spx,*spy,*sg;
+        bool doOne4One;
+        unsigned int base0;
 };
 
 

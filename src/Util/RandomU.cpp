@@ -10,13 +10,26 @@
 
 // Routine Ran2 from Numerical Receipe
 
+#include <cstdint>
+
 #include "RandomU.h"
 
 // constructor + destructor
 
 RandomU::RandomU(unsigned int istart)
 {
+  this->set(istart);
+}
 
+RandomU::~RandomU(){}
+
+
+
+// Restarts the generator on a new seed. This used to be an empty function,
+// which silently defeated every attempt in the code to re-key a random
+// sequence, QuietLoading::loadQuiet being the one that matters.
+void RandomU::set(unsigned int istart)
+{
 const int ia1=40014;
 const int im1=2147483563;
 const int iq1=53668;
@@ -34,13 +47,16 @@ for (int i=ntab+7;i>=0;i--){
 iy=iv[0]; 
 }
 
-RandomU::~RandomU(){}
 
-
-
-void RandomU::set(unsigned int istart)
+unsigned int seedFromIndex(unsigned int base, unsigned long index, SeedStream stream)
 {
-  return;
+	uint64_t z = static_cast<uint64_t>(base) * 0x9e3779b97f4a7c15ULL;
+	z ^= (static_cast<uint64_t>(stream) + 0x165667b19e3779f9ULL) * 0xc2b2ae3d27d4eb4fULL;
+	z += static_cast<uint64_t>(index) + 0x9e3779b97f4a7c15ULL;
+	z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9ULL;
+	z = (z ^ (z >> 27)) * 0x94d049bb133111ebULL;
+	z =  z ^ (z >> 31);
+	return static_cast<unsigned int>(z % 2147483562ULL) + 1u;
 }
 
 double RandomU::getElement()
