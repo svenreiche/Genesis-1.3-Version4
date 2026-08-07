@@ -87,6 +87,7 @@ for n in $RANKS ; do
 done
 
 launcher=""
+reason="it was not found"
 while IFS= read -r candidate ; do
 	[ -n "$candidate" ] || continue
 	command -v "$candidate" > /dev/null 2>&1 || continue
@@ -100,13 +101,18 @@ while IFS= read -r candidate ; do
 	# candidates, and a launcher which drains it leaves nothing to read for
 	# the next turn of the loop.
 	if "$candidate" -n "$probe_ranks" "$GENESIS4" -o probe sase.in \
-			< /dev/null > log_probe.txt 2>&1 \
-	   && comm_size_is "$probe_ranks" log_probe.txt ; then
-		launcher="$candidate"
-		break
+			< /dev/null > log_probe.txt 2>&1 ; then
+		if comm_size_is "$probe_ranks" log_probe.txt ; then
+			launcher="$candidate"
+			break
+		fi
+		reason="it reported $(grep -cE '^MPI-Comm Size:' log_probe.txt) communicator(s) of another size"
+	else
+		reason="it exited with an error: $(tail -3 log_probe.txt | tr '\n' ' ')"
 	fi
+
 	if [ -z "$mpiexec_given" ] ; then
-		echo "$candidate cannot start a job of $probe_ranks ranks here"
+		echo "$candidate cannot start a job of $probe_ranks ranks; $reason"
 	fi
 done <<EOF
 $(launcher_candidates)
@@ -116,7 +122,7 @@ if [ -z "$launcher" ] ; then
 	if [ -n "$mpiexec_given" ] ; then
 		# The launcher was named explicitly, so a failure to use it is an
 		# error rather than something to work around.
-		echo "the MPI launcher $mpiexec_given cannot start a job of $probe_ranks ranks"
+		echo "the MPI launcher $mpiexec_given cannot start a job of $probe_ranks ranks; $reason"
 		echo "it probably does not match the library $GENESIS4 was linked against"
 		exit 1
 	fi
