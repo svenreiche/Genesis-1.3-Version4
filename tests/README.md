@@ -74,7 +74,17 @@ Each deck is also run once more with a different seed, and the comparison is
 required to detect that. A test which cannot distinguish two different random
 realizations would pass for the wrong reason.
 
+Every run is additionally required to report the number of MPI ranks it was
+asked for. A launcher which does not match the library the executable was linked
+against starts several independent single-rank jobs instead, all of which write
+the same output, so without that check the case would agree with itself and pass
+having tested nothing.
+
 The window holds 24 slices, which divides evenly by every rank count in the
 default set. Genesis extends the time window so that every rank holds the same
 number of slices, so a window whose length were not a multiple of the rank count
 would change between the runs for a second and unrelated reason.
+
+Not yet covered: the beam imported from an SDDS distribution, whose phase
+reconstruction and shot noise are seeded separately in `SDDSBeam`. That path
+needs a distribution file which the repository does not currently carry.

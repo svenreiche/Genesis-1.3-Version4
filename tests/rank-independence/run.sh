@@ -58,6 +58,20 @@ run() {
 		tail -20 "log_$rootname.txt"
 		return 1
 	fi
+
+	# A launcher which does not match the MPI library the executable was
+	# linked against starts N independent single-rank jobs rather than one
+	# job of N ranks, and says nothing about it. Every one of those jobs
+	# would write the same output as the single-rank run, so the comparison
+	# below would agree and the case would pass while testing nothing.
+	# Genesis reports the size of the communicator it was actually given, so
+	# require it to be the size that was asked for.
+	if ! grep -Eq "^MPI-Comm Size: $nranks nodes?\$" "log_$rootname.txt" ; then
+		echo "genesis4 did not run on $nranks rank(s) for $deck; it reported:"
+		grep -E "^MPI-Comm Size:" "log_$rootname.txt" | sort | uniq -c
+		echo "the MPI launcher $MPIEXEC probably does not match the library $GENESIS4 was linked against"
+		return 1
+	fi
 	return 0
 }
 
