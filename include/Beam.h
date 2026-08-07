@@ -20,10 +20,10 @@ class Beam{
  public:
    Beam();
    virtual ~Beam();
-   void init(int, int, double,double, double,bool);
+   void init(int, int, double,double, double,int,bool);
    void initSorting(int,int,bool,bool);
    void initEField(double,int,int,int,double,bool);
-   void initIncoherent(int, int, bool,bool);
+   void initIncoherent(int, bool,bool);
    void initWake(unsigned int, unsigned int, double, double *, double *, double *,double *, double,double, bool);
    void checkBeforeTracking();
    bool harmonicConversion(int,bool);
@@ -58,6 +58,7 @@ class Beam{
 
    double reflength,slicelength;   // for conversion of theta in Particle to real position
    double s0;         // starting position of the time-window
+   int noff;          // index of the first slice held here within the full time-window
    bool one4one;     // flag whether one4one simulation is done
    int nbins;
 
@@ -98,8 +99,8 @@ inline bool Beam::outputSpatial(){ return doSpatial;}
 inline bool Beam::outputEnergy(){ return doEnergy;}
 inline bool Beam::outputAux(){ return doAux;}
 
-inline void Beam::initIncoherent(int base, int rank, bool spread, bool loss){
-  incoherent.init(base,rank,spread,loss);
+inline void Beam::initIncoherent(int base, bool loss, bool spread){
+  incoherent.init(base,loss,spread);
 }
 
 inline void Beam::initEField(double rmax, int ngrid, int nz, int nphi, double lambda, bool lngr){

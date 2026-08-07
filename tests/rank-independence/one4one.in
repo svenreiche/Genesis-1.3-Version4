@@ -1,0 +1,44 @@
+# One-to-one simulation, which loads the particles from a different generator
+# than the beamlet path above and is the case which depends on RandomU::set.
+# The current is low so that resolving every electron stays cheap: it gives
+# about 5000 electrons per slice. See sase.in for why the window holds 24
+# slices.
+
+&setup
+rootname=one4one
+lattice=lattice.lat
+beamline=FEL
+lambda0=1e-10
+gamma0=11357.82
+delz=0.1
+seed=987654321
+shotnoise=1
+one4one=true
+&end
+
+&lattice
+zmatch=9.5
+&end
+
+&time
+slen=1.92e-8
+sample=8
+&end
+
+&field
+power=0
+dgrid=2.000000e-04
+ngrid=51
+waist_size=30e-6
+&end
+
+&beam
+current=1
+delgam=1.000000
+ex=4.000000e-07
+ey=4.000000e-07
+&end
+
+&track
+zstop=1.0
+&end

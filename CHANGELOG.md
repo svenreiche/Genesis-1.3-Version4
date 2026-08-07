@@ -1,5 +1,15 @@
 # Change Log
 
+### [Unreleased]
+- The result of a run no longer depends on the number of cores it is run on. Every random
+sequence, shot noise included, is now keyed on the position of a slice within the time window
+rather than on the core which holds that slice, so a given `seed` produces a given realization
+at any core count. This changes the numbers a given deck produces relative to earlier versions.
+The time window is still extended to give every core the same number of slices, which the run
+now reports.
+- Fixed `RandomU::set`, which had an empty body and therefore silently ignored every request in
+the code to re-key a random sequence.
+
 ### [4.6.14] - 2026/06/22
 - Release of Version 4.6.14
 - Some minor bug fixes

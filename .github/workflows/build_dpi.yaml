@@ -45,11 +45,14 @@ jobs:
         if: runner.os == 'Linux' && matrix.mpi == 'mpich'
         run: |
           sudo apt-get update
+          # libfftw3-dev rather than libfftw3-mpi-dev: only the serial FFTW is
+          # used, and the MPI variant is built against Open MPI, which would
+          # put a second MPI runtime into a build meant to use MPICH.
           sudo apt-get install -y \
             build-essential \
             pkg-config \
             cmake \
-            libfftw3-mpi-dev \
+            libfftw3-dev \
             libhdf5-mpich-dev \
             libmpich-dev \
             mpich
