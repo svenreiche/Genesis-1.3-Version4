@@ -14,7 +14,7 @@
 #
 # Environment variables:
 #   GENESIS4  path to the executable under test  (default: build/genesis4)
-#   MPIEXEC   MPI launcher                       (default: mpiexec)
+#   MPIEXEC   MPI launcher                       (default: chosen by the case)
 #   PYTHON    Python interpreter with h5py       (default: python3)
 #   RANKS     rank counts to compare             (default: set by each case)
 #   WORKDIR   directory for the generated files  (default: ./genesis4-test-work)
@@ -28,9 +28,12 @@ set -u
 here="$(cd "$(dirname "$0")" && pwd)"
 
 : "${GENESIS4:=$here/../build/genesis4}"
-: "${MPIEXEC:=mpiexec}"
 : "${PYTHON:=python3}"
 : "${WORKDIR:=$PWD/genesis4-test-work}"
+
+# MPIEXEC deliberately has no default: a case which needs a launcher picks one
+# that works, because the generic name on the path does not always belong to
+# the MPI the executable was linked against. Setting it forces that choice.
 
 if [ $# -ge 1 ] ; then
 	GENESIS4="$1"
@@ -47,7 +50,10 @@ case "$WORKDIR" in
 	*) WORKDIR="$PWD/$WORKDIR" ;;
 esac
 
-export GENESIS4 MPIEXEC PYTHON WORKDIR
+export GENESIS4 PYTHON WORKDIR
+if [ -n "${MPIEXEC:-}" ] ; then
+	export MPIEXEC
+fi
 
 if [ ! -x "$GENESIS4" ] ; then
 	echo "no genesis4 executable at $GENESIS4"

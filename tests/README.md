@@ -34,10 +34,21 @@ can be examined.
 | Variable   | Meaning                             | Default          |
 | ---------- | ----------------------------------- | ---------------- |
 | `GENESIS4` | executable under test               | `build/genesis4` |
-| `MPIEXEC`  | MPI launcher                        | `mpiexec`        |
+| `MPIEXEC`  | MPI launcher                        | discovered, see below |
 | `PYTHON`   | Python interpreter, needs `h5py`    | `python3`        |
 | `RANKS`    | MPI rank counts to compare          | `1 2 3`          |
 | `WORKDIR`  | where the generated files are put   | `./genesis4-test-work` |
+
+A launcher has to belong to the same MPI implementation that the executable was
+linked against. One which does not starts several independent single-rank jobs
+instead of one job of several ranks, and reports no error while doing so. The
+name `mpiexec` on the path is not a reliable guide to this: a package manager
+may install one implementation while leaving that name pointing at another. A
+case which needs a launcher therefore tries the candidates it knows of, starting
+with the one CMake recorded in `CMakeCache.txt`, and uses the first which is
+observed to produce a job of the requested size. Setting `MPIEXEC` overrides the
+search, and the case then fails rather than looking elsewhere if that launcher
+does not work.
 
 ## Adding a case
 
@@ -78,7 +89,9 @@ Every run is additionally required to report the number of MPI ranks it was
 asked for. A launcher which does not match the library the executable was linked
 against starts several independent single-rank jobs instead, all of which write
 the same output, so without that check the case would agree with itself and pass
-having tested nothing.
+having tested nothing. The same check is what selects the launcher in the first
+place, as described under Settings above; the case skips if no launcher on the
+system passes it.
 
 The window holds 24 slices, which divides evenly by every rank count in the
 default set. Genesis extends the time window so that every rank holds the same
