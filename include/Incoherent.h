@@ -25,12 +25,19 @@ class Incoherent{
  public:
    Incoherent();
    virtual ~Incoherent();
-   void init(int, int,bool,bool);
+   void init(int,bool,bool);
    void apply(Beam *,Undulator *und, double );
 
  private:
+   // Builds one generator per slice held on this core, each keyed on the index
+   // of its slice in the full time window. Called on first use because
+   // &sponrad may be parsed before the beam has been loaded.
+   void ensureStreams(const Beam *);
+
    bool doLoss,doSpread;
-   RandomU *sran;
+   unsigned int base;
+   int noff;
+   vector<RandomU> sran;
 };
 
 #endif

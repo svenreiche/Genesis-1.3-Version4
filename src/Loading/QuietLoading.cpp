@@ -21,15 +21,11 @@ void QuietLoading::init(bool one4one, int *base)
   delete st;
   delete sg;
 
+  doOne4One = one4one;
+  base0 = static_cast<unsigned int>(base[0]);
+
   if (one4one){
-     RandomU rseed(base[0]);
-     double val;
-     for (int i=0; i<=base[1];i++){
-        val=rseed.getElement();
-     }
-     val*=1e9;
-     int locseed=static_cast<int> (round(val));
-     st  = (Sequence *) new RandomU (locseed);
+     st  = (Sequence *) new RandomU (seedFromIndex(base0,0,SeedStream::one4one));
      sg  = st;
      sx  = st;
      sy  = st;
@@ -51,18 +47,25 @@ void QuietLoading::loadQuiet(Particle *beam, BeamSlice *slice, int npart, int nb
 {
 
 
-  // resets Hammersley sequence but does nothing for random sequence;
-  Sequence *seed = new RandomU(islice);
-  int iseed=static_cast<int>(round(seed->getElement()*1e9));
-  delete seed;
+  // Re-key every sequence on the index of this slice in the full time window,
+  // so that the slice is loaded identically however the window is split over
+  // cores. For one4one the six pointers are the same random generator, which
+  // takes a mixed seed; otherwise they are Hammersley sequences, for which the
+  // key is simply the position to restart at.
+  if (doOne4One){
+    st->set(seedFromIndex(base0,static_cast<unsigned long>(islice),SeedStream::one4one));
+  } else {
+    Sequence *seed = new RandomU(islice);
+    int iseed=static_cast<int>(round(seed->getElement()*1e9));
+    delete seed;
 
-  // initialize the sequence to new values to avoid that all core shave the same distribution
-  st->set(iseed);
-  sg->set(iseed);
-  sx->set(iseed);
-  sy->set(iseed);
-  spx->set(iseed);
-  spy->set(iseed);
+    st->set(iseed);
+    sg->set(iseed);
+    sx->set(iseed);
+    sy->set(iseed);
+    spx->set(iseed);
+    spy->set(iseed);
+  }
 
   int mpart=npart/nbins;
 

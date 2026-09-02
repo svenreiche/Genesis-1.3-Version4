@@ -2,30 +2,42 @@
 #include "Beam.h"
 
 Incoherent::Incoherent(){
-  sran=NULL;
+  base=0;
+  noff=-1;
   doLoss=false;
   doSpread=false;
 }
 
 Incoherent::~Incoherent(){}
 
-void Incoherent::init(int base, int rank, bool doLoss_in,bool doSpread_in)
+void Incoherent::init(int base_in, bool doLoss_in,bool doSpread_in)
 {
 
   doLoss=doLoss_in;
   doSpread=doSpread_in;
+  base=static_cast<unsigned int>(base_in);
 
-
-  RandomU rseed(base);
-  double val;
-  for (int i=0; i<=rank;i++){
-    val=rseed.getElement();
-  }
-  val*=1e9;
-  int locseed=static_cast<int> (round(val));
-  if (sran !=NULL) { delete sran; }
-  sran  = new RandomU (locseed);
+  sran.clear();
+  noff=-1;
   return;
+}
+
+
+// One generator per slice, keyed on the global slice index. The alternative,
+// a single generator per core drawing for one slice after another, ties the
+// numbers a slice receives to the core layout: both the seed and the position
+// in the sequence depend on which core owns the slice and on how many slices
+// preceded it there.
+void Incoherent::ensureStreams(const Beam *beam)
+{
+  size_t nslice=beam->beam.size();
+  if ((sran.size()==nslice)&&(noff==beam->noff)) { return; }
+
+  noff=beam->noff;
+  sran.resize(nslice);
+  for (size_t i=0; i<nslice; i++){
+    sran[i].set(seedFromIndex(base,static_cast<unsigned long>(noff)+i,SeedStream::incoherent));
+  }
 }
 
 
@@ -61,15 +73,18 @@ void Incoherent::apply(Beam *beam, Undulator *und, double delz)
 
 
   // apply energy change to electorn bunch
+  this->ensureStreams(beam);
+
   int nbins=beam->nbins;
   if (beam->one4one){ nbins=1;}
   double dg=0;
 
   for (int islice=0;islice< beam->beam.size();islice++){
     int npart=beam->beam.at(islice).size();
+    RandomU &seq=sran[islice];
     for (int ip=0; ip<npart; ip++){
       if ((ip % nbins) == 0){
-         dg=-dgamavg+dgamsig*(2*sran->getElement()-1);
+         dg=-dgamavg+dgamsig*(2*seq.getElement()-1);
       }
       beam->beam.at(islice).at(ip).gamma+=dg;
     }

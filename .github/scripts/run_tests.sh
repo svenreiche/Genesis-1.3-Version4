@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Some of the steps below change directory and do not come back, so record where
+# the repository is before anything else does.
+REPO_ROOT=`pwd`
+
 output=$(./build/genesis4)
 if [[ "$output" != *"Usage: genesis4"* ]]; then
   echo "Error: Expected 'Usage: genesis4' in output but got: $output"
@@ -67,6 +71,21 @@ echo
 RESULT=$?
 if [[ "$RESULT" -ne "0" ]] ; then
 	echo "test script with non-zero exit code, stopping"
+	exit 1
+fi
+echo
+echo
+
+###
+# The test suite in tests/. Each case there decides for itself whether it can
+# run, and reports a skip rather than a failure when it cannot.
+###
+
+cd "$REPO_ROOT" || exit 1
+./tests/run_tests.sh "$G4"
+RESULT=$?
+if [[ "$RESULT" -ne "0" ]] ; then
+	echo "test suite with non-zero exit code, stopping"
 	exit 1
 fi
 echo

@@ -70,7 +70,7 @@ bool ImportBeam::init(int rank, int size, map<string,string> *arg, Beam *beam, S
   vector<double> s;
   int nslice=time->getPosition(&s);
 
-  beam->init(time->getNodeNSlice(),nbins,lambda,sample*lambda,s[0],one4one);
+  beam->init(time->getNodeNSlice(),nbins,lambda,sample*lambda,s[0],time->getNodeOffset(),one4one);
   beam->initSorting(rank,size,false,one4one);  // sorting routine is initialized, with default values to suppress field slippage but do sorting if one4
 
 

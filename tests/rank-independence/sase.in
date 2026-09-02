@@ -1,0 +1,49 @@
+# Shot noise. The bunching of every slice is set by the noise alone at the start
+# of the run, so this deck does not need to reach exponential gain to be
+# sensitive: it differs immediately, and by order unity, if the slices are given
+# different random sequences.
+#
+# The window is 24 slices, which divides evenly by every rank count the suite
+# uses. That matters because Genesis extends the window so that each rank holds
+# the same number of slices, and a window of a different length would be a
+# second, unrelated reason for two runs to disagree.
+
+&setup
+rootname=sase
+lattice=lattice.lat
+beamline=FEL
+lambda0=1e-10
+gamma0=11357.82
+delz=0.1
+seed=987654321
+shotnoise=1
+npart=2048
+nbins=4
+&end
+
+&lattice
+zmatch=9.5
+&end
+
+&time
+slen=1.92e-8
+sample=8
+&end
+
+&field
+power=0
+dgrid=2.000000e-04
+ngrid=51
+waist_size=30e-6
+&end
+
+&beam
+current=3000
+delgam=1.000000
+ex=4.000000e-07
+ey=4.000000e-07
+&end
+
+&track
+zstop=1.0
+&end

@@ -69,6 +69,7 @@ void Time::finishInit(Setup *setup)
 
   ds=setup->getReferenceLength()*sample;
   nslice=static_cast<int> (round(slen/ds));
+  int nslice_req=nslice;
   if (nslice < size) { nslice = size ; }
 
   ns_node=nslice/size;
@@ -82,6 +83,12 @@ void Time::finishInit(Setup *setup)
   
   if (rank==0){
     cout << "Setting up time window of " << slen*1e6 << " microns with " << nslice <<" sample points..." << endl;
+    if (nslice != nslice_req){
+      cout << "    Note: the requested " << nslice_req << " slices have been padded to " << nslice
+           << " so that they divide evenly over " << size << " cores." << endl;
+      cout << "          The time window therefore depends on the number of cores. For a result which" << endl;
+      cout << "          does not, choose SLEN so that SLEN/(SAMPLE*LAMBDA0) is a multiple of it." << endl;
+    }
   }
 }
 

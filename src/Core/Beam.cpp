@@ -19,12 +19,13 @@ Beam::Beam(){
       beam_write_slices_inc=1;
 }
 
-void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, double s0_in, bool one4one_in ) {
+void Beam::init(int nsize, int nbins_in, double reflen_in, double slicelen_in, double s0_in, int noff_in, bool one4one_in ) {
 
     nbins = nbins_in;
     reflength = reflen_in;  // the length corresponding to 2pi in ponderomotive phase.
     slicelength = slicelen_in;  // reflength times samplerate.
     s0 = s0_in;
+    noff = noff_in;
     one4one = one4one_in;
     do_global_stat = false;
 
@@ -205,6 +206,7 @@ bool Beam::harmonicConversion(int harmonic, bool resample)
   // blowing up the slice number
   int nsize=beam.size();
 
+  noff*=harmonic;   // slice i of the old window becomes slices harmonic*i ... harmonic*i+harmonic-1
   beam.resize(harmonic*nsize);
   current.resize(harmonic*nsize);
   eloss.resize(harmonic*nsize);
@@ -284,6 +286,7 @@ bool Beam::subharmonicConversion(int harmonic, bool resample)
       }
       beam[i].clear(); 
   }
+  noff/=harmonic;   // inverse of the up-conversion above
   beam.resize(nsize/harmonic);
   current.resize(nsize/harmonic);
   eloss.resize(nsize/harmonic);

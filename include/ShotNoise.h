@@ -28,13 +28,15 @@ public:
 	ShotNoise();
 	~ShotNoise();
         void applyShotNoise(Particle *beam, int, int, double); 
-        void init(int,int); 
+        void init(int);
+        void setSlice(unsigned long islice);
 	
 	
 private:
         RandomU *sran;
         double *work;
         int nwork;
+        unsigned int base;
 };
 
 

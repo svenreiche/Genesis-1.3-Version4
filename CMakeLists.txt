@@ -208,3 +208,13 @@ target_link_libraries(genesis4 genesis13 stdc++ ${_libraries})
 #if(USE_DPI)
 #   add_subdirectory(misc/plugin_testbench)
 #endif()
+
+
+# Test suite. The cases themselves are shell scripts under tests/, so they can
+# also be run without a build tree; registering them here is what allows a build
+# or a packaging recipe to run them with ctest.
+option(BUILD_TESTING "Register the test suite with CTest" ON)
+if(BUILD_TESTING)
+   enable_testing()
+   add_subdirectory(tests)
+endif()

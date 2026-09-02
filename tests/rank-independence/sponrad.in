@@ -1,0 +1,50 @@
+# Incoherent radiation. Shot noise is switched off and the field is seeded, so
+# the quantum fluctuation of the spontaneous emission is the only random
+# ingredient in this deck and the energy spread is the quantity which reveals
+# it. See sase.in for why the window holds 24 slices.
+
+&setup
+rootname=sponrad
+lattice=lattice.lat
+beamline=FEL
+lambda0=1e-10
+gamma0=11357.82
+delz=0.1
+seed=987654321
+shotnoise=0
+npart=2048
+nbins=4
+&end
+
+&lattice
+zmatch=9.5
+&end
+
+&time
+slen=1.92e-8
+sample=8
+&end
+
+&field
+power=5e3
+dgrid=2.000000e-04
+ngrid=51
+waist_size=30e-6
+&end
+
+&beam
+current=3000
+delgam=1.000000
+ex=4.000000e-07
+ey=4.000000e-07
+&end
+
+&sponrad
+seed=4321
+doLoss=true
+doSpread=true
+&end
+
+&track
+zstop=1.0
+&end
