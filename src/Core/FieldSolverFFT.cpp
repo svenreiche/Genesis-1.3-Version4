@@ -129,6 +129,7 @@ void FieldSolverFFT::init(double delz,double dgrid, double xks, unsigned int ngr
         sigmoid_.resize(ngrid*ngrid);
 
         double shift=-0.5*static_cast<double> (ngrid-1);
+        const int ng = static_cast<int>(ngrid);
         for (int iy=0;iy<ngrid;iy++) {
             double dy=static_cast<double>(iy)+shift;
             double y = dy / static_cast<double>(ngrid) /yc ;
@@ -138,7 +139,14 @@ void FieldSolverFFT::init(double delz,double dgrid, double xks, unsigned int ngr
                 int iiy=(iy+(ngrid+1)/2) % ngrid;
                 int iix=(ix+(ngrid+1)/2) % ngrid;
                 int ii=iiy*ngrid+iix;
-                K2[ii] = complex<double>(0,-(dx*dx+dy*dy)*dk*dk/2./xks);
+                // The transverse wavenumbers the transform carries: 0, 1, ... up to
+                // just under half of ngrid, then the negatives, each a whole multiple
+                // of dk. The shifted index dx is that same table for an odd ngrid and
+                // half a step out for an even one, where it would carry the constant
+                // mode at dk/2 rather than at zero.
+                double kx = static_cast<double>(2*iix > ng-1 ? iix-ng : iix);
+                double ky = static_cast<double>(2*iiy > ng-1 ? iiy-ng : iiy);
+                K2[ii] = complex<double>(0,-(kx*kx+ky*ky)*dk*dk/2./xks);
                 double r = (sqrt(x * x + y * y) - 1) / sig;
                 sigmoid_[ii] = 1. / (1 + exp(r));
             }
