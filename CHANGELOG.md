@@ -1,5 +1,9 @@
 # Change Log
 
+### [4.6.16] - 2026/11/05
+- Release of Version 4.6.16
+- Fixed FFT solver representation when applied to an even grid
+
 ### [4.6.15] - 2026/09/02
 - Release of Version 4.6.15
 - The result of a run no longer depends on the number of cores it is run on. Every random
