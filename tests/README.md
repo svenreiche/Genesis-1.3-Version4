@@ -73,6 +73,17 @@ benchmark.
 
 ## Cases
 
+### `field-import`
+
+Requires that a field dump read back with `&importfield` is the field which was
+written. One deck writes a fundamental and a third harmonic; a second reads both
+back into a run without a `&time` namelist, harmonic first, so that the time
+window is taken from the harmonic file. The dumps written after the import must
+agree with the originals in their scalars and, to within rounding, in the field
+of every slice.
+
+The case runs on a single rank and needs no launcher.
+
 ### `rank-independence`
 
 Requires that a run gives the same answer however many MPI ranks it is

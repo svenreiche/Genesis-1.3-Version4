@@ -1,0 +1,25 @@
+# Reads both dumps into a run without a &time namelist, so that the time window
+# is taken from the first file read. That file is the harmonic, whose recorded
+# wavelength is a third of the reference length of the run.
+
+&setup
+rootname=import_notime
+lattice=lattice.lat
+beamline=FEL
+lambda0=1e-10
+gamma0=11357.82
+delz=0.1
+&end
+
+&importfield
+file=dump.h3.fld.h5
+harmonic=3
+&end
+
+&importfield
+file=dump.fld.h5
+&end
+
+&write
+field=import_notime
+&end

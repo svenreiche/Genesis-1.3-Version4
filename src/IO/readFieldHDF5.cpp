@@ -67,7 +67,7 @@ bool ReadFieldHDF5::readGlobal(int rank, int size, const string& file, Setup *se
 
   // set-up time window if not set.
   if ((!time->isInitialized())&& (count >1)){
-      time->setSampleRate(slicelen/reflen); 
+      time->setSampleRate(slicelen/lambda);   // in units of the reference length, also for a harmonic
       time->setTimeWindowStart(s0);
       time->setTimeWindowLength(slen);
 
